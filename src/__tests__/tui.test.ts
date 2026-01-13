@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import type { Item } from "../schemas";
+import type { IndexItem } from "../schemas";
 import type { Logger } from "../logging";
 import {
   createTuiState,
@@ -12,20 +12,11 @@ import {
   createSimpleProgress,
 } from "../tui";
 
-function createTestItem(overrides: Partial<Item> = {}): Item {
+function createTestItem(overrides: Partial<IndexItem> = {}): IndexItem {
   return {
-    schema_version: 1,
     id: "foundation/001-core-types",
     title: "Core Types",
-    section: "foundation",
     state: "raw",
-    overview: "Core types for the project",
-    branch: null,
-    pr_url: null,
-    pr_number: null,
-    last_error: null,
-    created_at: "2025-01-12T00:00:00Z",
-    updated_at: "2025-01-12T00:00:00Z",
     ...overrides,
   };
 }
@@ -308,34 +299,39 @@ describe("TUI", () => {
       expect(state.currentItem).toBe("foundation/001-core-types");
     });
 
-    it("handles key input for quit", () => {
+    it("appendLog adds log entries", () => {
       const items = [createTestItem()];
-      const onQuit = vi.fn();
-      const runner = new TuiRunner(items, { onQuit });
+      const runner = new TuiRunner(items);
 
-      runner.handleKey("q");
+      runner.appendLog("Log line 1\nLog line 2");
 
-      expect(onQuit).toHaveBeenCalled();
+      const state = runner.getState();
+      expect(state.logs).toContain("Log line 1");
+      expect(state.logs).toContain("Log line 2");
     });
 
-    it("handles key input for logs", () => {
+    it("subscribe notifies on state changes", () => {
       const items = [createTestItem()];
-      const onLogs = vi.fn();
-      const runner = new TuiRunner(items, { onLogs });
+      const runner = new TuiRunner(items);
+      const callback = vi.fn();
 
-      runner.handleKey("l");
+      runner.subscribe(callback);
+      runner.update({ currentItem: "test" });
 
-      expect(onLogs).toHaveBeenCalled();
+      expect(callback).toHaveBeenCalledTimes(2);
+      expect(callback).toHaveBeenLastCalledWith(expect.objectContaining({ currentItem: "test" }));
     });
 
-    it("handles Ctrl+C", () => {
+    it("unsubscribe stops notifications", () => {
       const items = [createTestItem()];
-      const onQuit = vi.fn();
-      const runner = new TuiRunner(items, { onQuit });
+      const runner = new TuiRunner(items);
+      const callback = vi.fn();
 
-      runner.handleKey("\u0003");
+      const unsubscribe = runner.subscribe(callback);
+      unsubscribe();
+      runner.update({ currentItem: "test" });
 
-      expect(onQuit).toHaveBeenCalled();
+      expect(callback).toHaveBeenCalledTimes(1);
     });
   });
 

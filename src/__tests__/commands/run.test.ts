@@ -439,7 +439,13 @@ describe("runCommand", () => {
       await runCommand(item.id, { dryRun: true }, mockLogger);
 
       expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.stringContaining("[dry-run]")
+        expect.stringContaining("DRY RUN")
+      );
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        expect.stringContaining("Next Phase:")
+      );
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        expect.stringContaining("No changes made")
       );
       expect(mockedRunPhaseResearch).not.toHaveBeenCalled();
     });

@@ -14,10 +14,14 @@ import {
   getNextPhase,
   type WorkflowOptions,
 } from "../workflow";
+import { formatDryRunRun } from "./dryRunFormatter";
 
 export interface RunOptions {
   force?: boolean;
   dryRun?: boolean;
+  mockAgent?: boolean;
+  onAgentOutput?: (chunk: string) => void;
+  cwd?: string;
 }
 
 async function fileExists(filePath: string): Promise<boolean> {
@@ -56,9 +60,9 @@ export async function runCommand(
   options: RunOptions,
   logger: Logger
 ): Promise<void> {
-  const { force = false, dryRun = false } = options;
+  const { force = false, dryRun = false, mockAgent = false, onAgentOutput, cwd } = options;
 
-  const root = findRepoRoot(process.cwd());
+  const root = findRepoRoot(cwd ?? process.cwd());
   const config = await loadConfig(root);
 
   const itemDir = getItemDir(root, itemId);
@@ -83,6 +87,8 @@ export async function runCommand(
     logger,
     force,
     dryRun,
+    mockAgent,
+    onAgentOutput,
   };
 
   const phaseRunners = {
@@ -121,7 +127,7 @@ export async function runCommand(
     }
 
     if (dryRun) {
-      logger.info(`[dry-run] Would run ${nextPhase} phase on ${itemId}`);
+      formatDryRunRun(item, nextPhase, config, logger);
       return;
     }
 

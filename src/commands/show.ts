@@ -9,6 +9,7 @@ import { FileNotFoundError } from "../errors";
 
 export interface ShowOptions {
   json?: boolean;
+  cwd?: string;
 }
 
 export interface ItemDetails {
@@ -49,7 +50,7 @@ export async function showCommand(
   options: ShowOptions,
   logger: Logger
 ): Promise<void> {
-  const root = findRepoRoot(process.cwd());
+  const root = findRepoRoot(options.cwd ?? process.cwd());
 
   let details: ItemDetails;
   try {

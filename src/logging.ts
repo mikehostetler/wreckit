@@ -1,4 +1,6 @@
-export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+import pino from "pino";
+
+export type LogLevel = "debug" | "info" | "warn" | "error";
 
 export interface Logger {
   debug(message: string, ...args: unknown[]): void;
@@ -12,54 +14,84 @@ export interface LoggerOptions {
   verbose?: boolean;
   quiet?: boolean;
   noColor?: boolean;
+  debug?: boolean;
 }
 
-const LOG_LEVELS: Record<LogLevel, number> = {
-  debug: 0,
-  info: 1,
-  warn: 2,
-  error: 3,
-};
+function createPinoLogger(options?: LoggerOptions): pino.Logger {
+  const { verbose = false, quiet = false, debug = false } = options ?? {};
+
+  const level = quiet ? "error" : verbose ? "debug" : "info";
+
+  if (debug) {
+    return pino({
+      level,
+      timestamp: pino.stdTimeFunctions.isoTime,
+    });
+  }
+
+  return pino({
+    level,
+    transport: {
+      target: "pino-pretty",
+      options: {
+        colorize: !(options?.noColor ?? false),
+        ignore: "pid,hostname",
+        translateTime: false,
+        messageFormat: "{msg}",
+        customPrettifiers: {
+          level: () => "",
+        },
+      },
+    },
+  });
+}
+
+function createFallbackLogger(options?: LoggerOptions): pino.Logger {
+  const { verbose = false, quiet = false } = options ?? {};
+  const level = quiet ? "error" : verbose ? "debug" : "info";
+
+  return pino({
+    level,
+    timestamp: pino.stdTimeFunctions.isoTime,
+  });
+}
 
 export function createLogger(options?: LoggerOptions): Logger {
-  const { verbose = false, quiet = false, noColor = false } = options ?? {};
+  let pinoLogger: pino.Logger;
 
-  const minLevel = quiet ? LOG_LEVELS.error : verbose ? LOG_LEVELS.debug : LOG_LEVELS.info;
-
-  const colors = {
-    debug: noColor ? '' : '\x1b[90m',
-    info: noColor ? '' : '\x1b[36m',
-    warn: noColor ? '' : '\x1b[33m',
-    error: noColor ? '' : '\x1b[31m',
-    reset: noColor ? '' : '\x1b[0m',
-  };
-
-  const shouldLog = (level: LogLevel): boolean => LOG_LEVELS[level] >= minLevel;
-
-  const formatMessage = (level: LogLevel, message: string): string => {
-    const prefix = level === 'debug' ? '[debug] ' : level === 'warn' ? '[warn] ' : level === 'error' ? '[error] ' : '';
-    return `${colors[level]}${prefix}${message}${colors.reset}`;
-  };
+  try {
+    pinoLogger = createPinoLogger(options);
+  } catch {
+    pinoLogger = createFallbackLogger(options);
+  }
 
   return {
     debug(message: string, ...args: unknown[]): void {
-      if (shouldLog('debug')) {
-        console.log(formatMessage('debug', message), ...args);
+      if (args.length > 0) {
+        pinoLogger.debug({ args }, message);
+      } else {
+        pinoLogger.debug(message);
       }
     },
     info(message: string, ...args: unknown[]): void {
-      if (shouldLog('info')) {
-        console.log(formatMessage('info', message), ...args);
+      if (args.length > 0) {
+        pinoLogger.info({ args }, message);
+      } else {
+        pinoLogger.info(message);
       }
     },
     warn(message: string, ...args: unknown[]): void {
-      if (shouldLog('warn')) {
-        console.warn(formatMessage('warn', message), ...args);
+      if (args.length > 0) {
+        pinoLogger.warn({ args }, message);
+      } else {
+        pinoLogger.warn(message);
       }
     },
     error(message: string, ...args: unknown[]): void {
-      if (shouldLog('error')) {
-        console.error(formatMessage('error', message), ...args);
+      if (args.length > 0) {
+        pinoLogger.error({ args }, message);
+      } else {
+        pinoLogger.error(message);
       }
     },
     json(data: unknown): void {

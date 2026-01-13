@@ -14,3 +14,5 @@ export {
   TuiRunner,
   createSimpleProgress,
 } from "./runner";
+
+export { InkApp } from "./InkApp";

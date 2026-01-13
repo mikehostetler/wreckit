@@ -169,7 +169,13 @@ describe("orchestrator", () => {
       expect(mockedRunCommand).not.toHaveBeenCalled();
       expect(result.remaining).toEqual(["features/001-test"]);
       expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.stringContaining("[dry-run]")
+        expect.stringContaining("DRY RUN SUMMARY")
+      );
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        expect.stringContaining("Total items to process")
+      );
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        expect.stringContaining("No changes made")
       );
     });
   });

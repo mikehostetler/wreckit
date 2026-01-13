@@ -1,14 +1,30 @@
+import * as fs from "node:fs/promises";
 import type { Logger } from "../logging";
-import { findRepoRoot } from "../fs/paths";
+import type { Prd } from "../schemas";
+import { findRepoRoot, getItemDir, getResearchPath, getPlanPath, getPrdPath } from "../fs/paths";
 import { loadConfig } from "../config";
+import { readItem, readPrd } from "../fs/json";
 import { scanItems } from "./status";
 import { runCommand } from "./run";
 import { TuiRunner, createSimpleProgress } from "../tui";
+import { formatDryRunSummary, formatDryRunRun, type DryRunItemInfo } from "./dryRunFormatter";
+
+async function fileExists(filePath: string): Promise<boolean> {
+  try {
+    await fs.access(filePath);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 export interface OrchestratorOptions {
   force?: boolean;
   dryRun?: boolean;
   noTui?: boolean;
+  tuiDebug?: boolean;
+  cwd?: string;
+  mockAgent?: boolean;
 }
 
 export interface OrchestratorResult {
@@ -29,9 +45,9 @@ export async function orchestrateAll(
   options: OrchestratorOptions,
   logger: Logger
 ): Promise<OrchestratorResult> {
-  const { force = false, dryRun = false, noTui = false } = options;
+  const { force = false, dryRun = false, noTui = false, tuiDebug = false, cwd, mockAgent = false } = options;
 
-  const root = findRepoRoot(process.cwd());
+  const root = findRepoRoot(cwd ?? process.cwd());
   const config = await loadConfig(root);
 
   const items = await scanItems(root);
@@ -49,9 +65,21 @@ export async function orchestrateAll(
   result.skipped = doneItems.map((item) => item.id);
 
   if (dryRun) {
+    const dryRunInfos: DryRunItemInfo[] = [];
     for (const item of nonDoneItems) {
-      logger.info(`[dry-run] Would run: ${item.id}`);
+      const itemDir = getItemDir(root, item.id);
+      const fullItem = await readItem(itemDir);
+      let prd: Prd | null = null;
+      try {
+        prd = await readPrd(itemDir);
+      } catch {
+        // prd doesn't exist
+      }
+      const hasResearch = await fileExists(getResearchPath(root, item.id));
+      const hasPlan = await fileExists(getPlanPath(root, item.id));
+      dryRunInfos.push({ item: fullItem, prd, hasResearch, hasPlan, config });
     }
+    formatDryRunSummary(dryRunInfos, logger);
     result.remaining = nonDoneItems.map((item) => item.id);
     return result;
   }
@@ -66,8 +94,23 @@ export async function orchestrateAll(
         tuiRunner?.stop();
         process.exit(0);
       },
+      debug: tuiDebug,
+      debugLogger: tuiDebug ? logger : undefined,
     });
     tuiRunner.start();
+
+    const cleanup = () => {
+      tuiRunner?.stop();
+    };
+    process.on("exit", cleanup);
+    process.on("SIGINT", () => {
+      cleanup();
+      process.exit(0);
+    });
+    process.on("SIGTERM", () => {
+      cleanup();
+      process.exit(0);
+    });
   }
 
   for (let i = 0; i < nonDoneItems.length; i++) {
@@ -89,7 +132,16 @@ export async function orchestrateAll(
     }
 
     try {
-      await runCommand(item.id, { force, dryRun: false }, logger);
+      await runCommand(
+        item.id,
+        {
+          force,
+          dryRun: false,
+          mockAgent,
+          onAgentOutput: tuiRunner ? (chunk) => tuiRunner.appendLog(chunk) : undefined,
+        },
+        logger
+      );
       result.completed.push(item.id);
 
       if (useTui && tuiRunner) {
@@ -129,10 +181,10 @@ export async function orchestrateNext(
   options: OrchestratorOptions,
   logger: Logger
 ): Promise<{ itemId: string | null; success: boolean }> {
-  const { force = false, dryRun = false } = options;
+  const { force = false, dryRun = false, cwd, mockAgent = false } = options;
 
-  const root = findRepoRoot(process.cwd());
-  await loadConfig(root);
+  const root = findRepoRoot(cwd ?? process.cwd());
+  const config = await loadConfig(root);
 
   const nextItemId = await getNextIncompleteItem(root);
 
@@ -141,13 +193,17 @@ export async function orchestrateNext(
   }
 
   if (dryRun) {
-    logger.info(`[dry-run] Would run: ${nextItemId}`);
+    const itemDir = getItemDir(root, nextItemId);
+    const item = await readItem(itemDir);
+    const { getNextPhase } = await import("../workflow");
+    const nextPhase = getNextPhase(item);
+    formatDryRunRun(item, nextPhase || "unknown", config, logger);
     return { itemId: nextItemId, success: true };
   }
 
   try {
     logger.info(`Running: ${nextItemId}`);
-    await runCommand(nextItemId, { force, dryRun: false }, logger);
+    await runCommand(nextItemId, { force, dryRun: false, mockAgent }, logger);
     return { itemId: nextItemId, success: true };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);

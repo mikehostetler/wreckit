@@ -6,6 +6,9 @@ export interface CommandOptions {
   quiet?: boolean;
   dryRun?: boolean;
   noTui?: boolean;
+  tuiDebug?: boolean;
+  cwd?: string;
+  mockAgent?: boolean;
 }
 
 export async function executeCommand(

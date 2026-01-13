@@ -48,7 +48,7 @@ describe("initCommand", () => {
   it("creates .wreckit directory", async () => {
     tempDir = await setupTempGitRepo();
 
-    await initCommand({}, mockLogger, tempDir);
+    await initCommand({ cwd: tempDir }, mockLogger);
 
     const wreckitDir = path.join(tempDir, ".wreckit");
     const stat = await fs.stat(wreckitDir);
@@ -58,7 +58,7 @@ describe("initCommand", () => {
   it("creates config.json with defaults", async () => {
     tempDir = await setupTempGitRepo();
 
-    await initCommand({}, mockLogger, tempDir);
+    await initCommand({ cwd: tempDir }, mockLogger);
 
     const configPath = path.join(tempDir, ".wreckit", "config.json");
     const content = await fs.readFile(configPath, "utf-8");
@@ -77,7 +77,7 @@ describe("initCommand", () => {
   it("creates prompts directory with templates", async () => {
     tempDir = await setupTempGitRepo();
 
-    await initCommand({}, mockLogger, tempDir);
+    await initCommand({ cwd: tempDir }, mockLogger);
 
     const promptsDir = path.join(tempDir, ".wreckit", "prompts");
     const entries = await fs.readdir(promptsDir);
@@ -90,7 +90,7 @@ describe("initCommand", () => {
   it("creates research.md prompt template", async () => {
     tempDir = await setupTempGitRepo();
 
-    await initCommand({}, mockLogger, tempDir);
+    await initCommand({ cwd: tempDir }, mockLogger);
 
     const researchPath = path.join(tempDir, ".wreckit", "prompts", "research.md");
     const content = await fs.readFile(researchPath, "utf-8");
@@ -103,7 +103,7 @@ describe("initCommand", () => {
   it("creates plan.md prompt template", async () => {
     tempDir = await setupTempGitRepo();
 
-    await initCommand({}, mockLogger, tempDir);
+    await initCommand({ cwd: tempDir }, mockLogger);
 
     const planPath = path.join(tempDir, ".wreckit", "prompts", "plan.md");
     const content = await fs.readFile(planPath, "utf-8");
@@ -116,7 +116,7 @@ describe("initCommand", () => {
   it("creates implement.md prompt template", async () => {
     tempDir = await setupTempGitRepo();
 
-    await initCommand({}, mockLogger, tempDir);
+    await initCommand({ cwd: tempDir }, mockLogger);
 
     const implementPath = path.join(tempDir, ".wreckit", "prompts", "implement.md");
     const content = await fs.readFile(implementPath, "utf-8");
@@ -130,10 +130,10 @@ describe("initCommand", () => {
     tempDir = await setupTempGitRepo();
     await fs.mkdir(path.join(tempDir, ".wreckit"), { recursive: true });
 
-    await expect(initCommand({}, mockLogger, tempDir)).rejects.toThrow(
+    await expect(initCommand({ cwd: tempDir }, mockLogger)).rejects.toThrow(
       WreckitExistsError
     );
-    await expect(initCommand({}, mockLogger, tempDir)).rejects.toThrow(
+    await expect(initCommand({ cwd: tempDir }, mockLogger)).rejects.toThrow(
       ".wreckit/ already exists"
     );
   });
@@ -148,7 +148,7 @@ describe("initCommand", () => {
       "utf-8"
     );
 
-    await initCommand({ force: true }, mockLogger, tempDir);
+    await initCommand({ force: true, cwd: tempDir }, mockLogger);
 
     const entries = await fs.readdir(wreckitDir);
     expect(entries).not.toContain("old-file.txt");
@@ -160,10 +160,10 @@ describe("initCommand", () => {
   it("fails if not in git repo", async () => {
     tempDir = await setupTempDir();
 
-    await expect(initCommand({}, mockLogger, tempDir)).rejects.toThrow(
+    await expect(initCommand({ cwd: tempDir }, mockLogger)).rejects.toThrow(
       NotGitRepoError
     );
-    await expect(initCommand({}, mockLogger, tempDir)).rejects.toThrow(
+    await expect(initCommand({ cwd: tempDir }, mockLogger)).rejects.toThrow(
       "Not a git repository"
     );
   });
@@ -171,7 +171,7 @@ describe("initCommand", () => {
   it("prints success messages", async () => {
     tempDir = await setupTempGitRepo();
 
-    await initCommand({}, mockLogger, tempDir);
+    await initCommand({ cwd: tempDir }, mockLogger);
 
     expect(mockLogger.messages).toContain("info: Initialized .wreckit/ directory");
     expect(mockLogger.messages).toContain("info:   Created config.json");

@@ -1,74 +1,105 @@
-# wreckit
+<p align="center">
+  <img src="assets/wreckit-logo.png" alt="Wreck it Ralph Wiggum" width="400">
+</p>
 
-![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)
+# Wreck it Ralph Wiggum 🔨
 
-A CLI tool for turning ideas into automated PRs through an autonomous agent loop.
+> *"I'm gonna wreck it!"* — Wreck-It Ralph  
+> *"I'm in danger."* — Ralph Wiggum, also your codebase
+
+**Your AI agent, unsupervised, wrecking through your backlog while you sleep.**
+
+```bash
+wreckit ideas < BACKLOG.md && wreckit  # go touch grass
+```
+
+---
+
+## What Is This
+
+A CLI that runs a **Ralph Wiggum Loop** over your roadmap:
+
+```
+ideas → research → plan → implement → PR → done
+       └──────────────────────────────────┘
+         "I'm helping!" — the agent, probably
+```
+
+You dump a text file of half-baked ideas. Wreckit turns them into researched, planned, implemented, and PR'd code. You review. Merge. Ship.
+
+It's the [HumanLayer](https://github.com/humanlayer/humanlayer) **Research → Plan → Implement** workflow, fully automated. The agent researches your codebase, writes a detailed plan, then executes it story-by-story until there's a PR ready for your review.
+
+**Files are truth.** Everything lives in `.wreckit/` as JSON and Markdown. Git-trackable. Inspectable. Resumable. No magic databases. No cloud sync. Just files.
+
+---
 
 ## Quick Start
 
 ```bash
-# Install
+# Install the chaos
 npm install -g wreckit
 
-# Initialize in a repo (creates .wreckit/)
+# Initialize in your repo
 cd my-project
 wreckit init
 
-# Ingest ideas
+# Feed it ideas (literally anything)
 wreckit ideas < IDEAS.md
+# or: echo "add dark mode" | wreckit ideas
+# or: wreckit ideas --file ROADMAP.md
 
-# Run everything
+# Let Ralph loose
 wreckit
+
+# Go do something else. Come back to PRs.
 ```
 
-## How It Works
+---
 
-Transform ideas into shipped PRs through a simple workflow:
+## The Loop
+
+Each item progresses through states:
 
 ```
-ideas → research → plan → implement → PR → done
+raw → researched → planned → implementing → in_pr → done
 ```
 
-```mermaid
-graph LR
-    A[ideas.md] --> B[wreckit ideas]
-    B --> C[raw]
-    C --> D[research]
-    D --> E[plan]
-    E --> F[implement]
-    F --> G[PR]
-    G --> H[done]
-```
+| State | What Happened |
+|-------|---------------|
+| `raw` | Ingested, waiting for attention |
+| `researched` | Agent analyzed codebase, wrote `research.md` |
+| `planned` | Agent created `plan.md` + `prd.json` with user stories |
+| `implementing` | Agent coding through stories, committing as it goes |
+| `in_pr` | PR opened, awaiting your review |
+| `done` | Merged. Ralph did it. |
 
-1. **Ingest** - Parse freeform ideas into structured items
-2. **Research** - Analyze codebase and document findings
-3. **Plan** - Break down into user stories with acceptance criteria
-4. **Implement** - Code each story, commit, and verify
-5. **PR** - Create pull request for review
-6. **Done** - PR merged
+### The Workflow
 
-## CLI Reference
+1. **Research** — Agent reads your codebase thoroughly. Finds patterns. Documents file paths, conventions, integration points. Outputs `research.md`.
 
-### Core Commands
+2. **Plan** — Agent designs the solution. Breaks it into phases with success criteria. Creates user stories with acceptance criteria. Outputs `plan.md` + `prd.json`.
 
-| Command | Description |
-|---------|-------------|
-| `wreckit` | Run all items until done (TUI) |
-| `wreckit init` | Initialize .wreckit/ in the current repository |
+3. **Implement** — Agent picks the highest priority story, implements it, runs tests, commits, marks it done. Repeats until all stories complete.
+
+4. **PR** — Agent opens a pull request. You review. You merge. You ship.
+
+---
+
+## CLI Commands
+
+### The Essentials
+
+| Command | What It Does |
+|---------|--------------|
+| `wreckit` | Run everything. TUI shows progress. |
+| `wreckit init` | Initialize `.wreckit/` in repo |
 | `wreckit ideas < FILE` | Ingest ideas from stdin |
-| `wreckit ideas --file PATH` | Ingest from file |
 | `wreckit status` | List all items with state |
-| `wreckit status --json` | JSON output for scripting |
-| `wreckit show <id>` | Show item details |
 | `wreckit run <id>` | Run single item through all phases |
-| `wreckit run <id> --force` | Regenerate artifacts |
-| `wreckit next` | Run next incomplete item |
-| `wreckit doctor` | Validate all items |
-| `wreckit doctor --fix` | Auto-fix recoverable issues |
+| `wreckit next` | Run the next incomplete item |
+| `wreckit doctor` | Validate items, find issues |
 
-### Phase Commands
-
-Run individual phases for testing/debugging:
+### Phase Commands (for debugging)
 
 | Command | Transition |
 |---------|------------|
@@ -78,18 +109,21 @@ Run individual phases for testing/debugging:
 | `wreckit pr <id>` | implementing → in_pr |
 | `wreckit complete <id>` | in_pr → done |
 
-### Global Flags
+### Flags
 
-| Flag | Description |
-|------|-------------|
-| `--verbose` | Detailed logs |
+| Flag | What |
+|------|------|
+| `--verbose` | More logs |
 | `--quiet` | Errors only |
-| `--no-tui` | Disable TUI (for CI) |
-| `--dry-run` | Show what would be done |
+| `--no-tui` | Disable TUI (CI mode) |
+| `--dry-run` | Preview, don't execute |
+| `--force` | Regenerate artifacts |
+
+---
 
 ## Configuration
 
-Configuration is stored in `.wreckit/config.json`:
+Lives in `.wreckit/config.json`:
 
 ```json
 {
@@ -106,16 +140,7 @@ Configuration is stored in `.wreckit/config.json`:
 }
 ```
 
-### Options
-
-| Option | Default | Description |
-|--------|---------|-------------|
-| `base_branch` | `"main"` | Branch to create PRs against |
-| `branch_prefix` | `"wreckit/"` | Prefix for feature branches |
-| `max_iterations` | `100` | Max agent iterations per item |
-| `timeout_seconds` | `3600` | Timeout per phase (1 hour) |
-
-### Agent Configuration
+### Agent Options
 
 **Amp (default):**
 ```json
@@ -139,48 +164,41 @@ Configuration is stored in `.wreckit/config.json`:
 }
 ```
 
+---
+
 ## Folder Structure
 
 ```
 .wreckit/
-├── config.json                    # Configuration
-├── index.json                     # Item registry
-├── prompts/                       # Prompt templates
+├── config.json              # Global config
+├── index.json               # Registry of all items
+├── prompts/                 # Customizable prompt templates
 │   ├── research.md
 │   ├── plan.md
 │   └── implement.md
 └── <section>/
     └── <nnn>-<slug>/
-        ├── item.json              # Metadata, state
-        ├── research.md            # Research output
-        ├── plan.md                # Implementation plan
-        ├── prd.json               # User stories
-        ├── prompt.md              # Generated agent prompt
-        └── progress.log           # Append-only learnings
+        ├── item.json        # State and metadata
+        ├── research.md      # Codebase analysis
+        ├── plan.md          # Implementation plan
+        ├── prd.json         # User stories
+        ├── prompt.md        # Generated agent prompt
+        └── progress.log     # What the agent learned
 ```
 
-### File Descriptions
+Items are organized by section (e.g., `features/`, `bugs/`, `infra/`) with sequential numbering.
 
-| File | Description |
-|------|-------------|
-| `config.json` | Global configuration for the project |
-| `index.json` | Registry of all items with current state |
-| `prompts/*.md` | Customizable prompt templates |
-| `item.json` | Item metadata (title, state, PR info) |
-| `research.md` | Codebase analysis and findings |
-| `plan.md` | Step-by-step implementation plan |
-| `prd.json` | User stories with acceptance criteria |
-| `progress.log` | Learnings and notes from implementation |
+---
 
 ## Customization
 
 ### Prompt Templates
 
-Customize prompts by editing files in `.wreckit/prompts/`:
+Edit files in `.wreckit/prompts/` to customize agent behavior:
 
-- `research.md` - Research phase prompt
-- `plan.md` - Planning phase prompt  
-- `implement.md` - Implementation phase prompt
+- `research.md` — How the agent analyzes your codebase
+- `plan.md` — How it designs solutions
+- `implement.md` — How it executes user stories
 
 ### Template Variables
 
@@ -192,53 +210,92 @@ Customize prompts by editing files in `.wreckit/prompts/`:
 | `{{overview}}` | Item description |
 | `{{item_path}}` | Path to item folder |
 | `{{branch_name}}` | Git branch name |
-| `{{base_branch}}` | Base branch (e.g., `main`) |
-| `{{completion_signal}}` | Signal string for completion |
+| `{{base_branch}}` | Base branch |
+| `{{completion_signal}}` | Agent completion signal |
 | `{{research}}` | Contents of research.md |
 | `{{plan}}` | Contents of plan.md |
 | `{{prd}}` | Contents of prd.json |
 | `{{progress}}` | Contents of progress.log |
 
-## Development
+---
 
-### Prerequisites
+## Example Session
+
+```bash
+$ cat IDEAS.md
+Add dark mode toggle
+Fix the login timeout bug
+Migrate auth to OAuth2
+
+$ wreckit ideas < IDEAS.md
+Created 3 items:
+  features/001-dark-mode-toggle
+  bugs/001-login-timeout
+  infra/001-oauth2-migration
+
+$ wreckit status
+ID                              STATE
+features/001-dark-mode-toggle   raw
+bugs/001-login-timeout          raw
+infra/001-oauth2-migration      raw
+
+$ wreckit
+# TUI runs, agent researches, plans, implements...
+# You go do literally anything else
+
+$ wreckit status
+ID                              STATE     PR
+features/001-dark-mode-toggle   in_pr     #42
+bugs/001-login-timeout          in_pr     #43
+infra/001-oauth2-migration      implementing
+
+$ # Review PRs, merge, done
+```
+
+---
+
+## Design Principles
+
+1. **Files are truth** — JSON + Markdown, git-trackable
+2. **Idempotent** — Re-run anything safely
+3. **Resumable** — Ctrl-C and pick up where you left off
+4. **Transparent** — Every prompt is inspectable and editable
+5. **Recoverable** — `wreckit doctor --fix` repairs broken state
+
+---
+
+## Cloud Sandboxes
+
+Wreckit is designed for **multi-actor parallelism** — spin up multiple sandboxes, each working on different items from the same repo. The file-based state in `.wreckit/` means no conflicts, no coordination headaches.
+
+We recommend [Sprites](https://sprites.dev/) from Fly.io for cloud dev environments. Spin up a fleet of Ralphs, let them wreck in parallel.
+
+```bash
+# Each sandbox pulls the repo, runs one item
+wreckit next  # grabs the next incomplete item, runs it
+```
+
+---
+
+## Requirements
 
 - Node.js 18+
-- Bun (for development)
+- `gh` CLI (for GitHub PRs)
+- An AI agent CLI: [Amp](https://ampcode.com) or [Claude](https://claude.ai)
 
-### Setup
+---
+
+## Development
 
 ```bash
-git clone https://github.com/mikehostetler/wreckitloop.git
-cd wreckitloop
+git clone https://github.com/mikehostetler/wreckit.git
+cd wreckit
 bun install
-```
-
-### Build
-
-```bash
 bun run build
-```
-
-### Run Tests
-
-```bash
 bun run test
 ```
 
-### Run in Development
-
-```bash
-bun run dev
-```
-
-### Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Run tests: `bun run test`
-5. Submit a pull request
+---
 
 ## Exit Codes
 
@@ -248,6 +305,22 @@ bun run dev
 | 1 | Error |
 | 130 | Interrupted (Ctrl-C) |
 
+---
+
+## Acknowledgements
+
+The "Ralph Wiggum Loop" methodology stands on the shoulders of giants:
+
+- [Geoff Huntley](https://x.com/GeoffreyHuntley) — for evangelizing the Ralph Wiggum agent pattern
+- [Dexter Horthy](https://x.com/dexhorthy) and the entire [HumanLayer](https://humanlayer.dev) team — for the Research → Plan → Implement workflow that makes agents actually useful
+- Everyone in the community teaching agents to stop vibing and start shipping
+
+---
+
 ## License
 
 MIT
+
+---
+
+*"My code is in danger!"* — your codebase, nervously

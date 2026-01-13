@@ -279,10 +279,16 @@ describe("runPhaseCommand", () => {
 
       expect(mockedRunPhaseResearch).not.toHaveBeenCalled();
       expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.stringContaining("[dry-run]")
+        expect.stringContaining("DRY RUN")
       );
       expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.stringContaining("raw → researched")
+        expect.stringContaining("Current:")
+      );
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        expect.stringContaining("Target:")
+      );
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        expect.stringContaining("No changes made")
       );
     });
   });

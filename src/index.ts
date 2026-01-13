@@ -1,5 +1,6 @@
 #!/usr/bin/env bun
 
+import * as path from 'node:path';
 import { Command } from 'commander';
 import { initLogger, logger } from './logging';
 import { toExitCode } from './errors';
@@ -12,8 +13,16 @@ import { runCommand } from './commands/run';
 import { orchestrateAll, orchestrateNext } from './commands/orchestrator';
 import { doctorCommand } from './commands/doctor';
 import { initCommand } from './commands/init';
+import { runOnboardingIfNeeded } from './onboarding';
 
 export const program = new Command();
+
+function resolveCwd(cwdOption?: string): string {
+  if (cwdOption) {
+    return path.resolve(cwdOption);
+  }
+  return process.cwd();
+}
 
 program
   .name('wreckit')
@@ -21,17 +30,35 @@ program
   .version('0.0.1')
   .option('--verbose', 'Enable verbose output')
   .option('--quiet', 'Suppress non-essential output')
+  .option('--debug', 'Output structured JSON logs (ndjson format)')
   .option('--no-tui', 'Disable terminal UI')
-  .option('--dry-run', 'Show what would be done without making changes');
+  .option('--tui-debug', 'Enable TUI debug mode (logs render frames)')
+  .option('--dry-run', 'Show what would be done without making changes')
+  .option('--mock-agent', 'Simulate agent responses without calling the real agent')
+  .option('--cwd <path>', 'Override the working directory');
 
 program.action(async () => {
   const opts = program.opts();
-  initLogger({ verbose: opts.verbose, quiet: opts.quiet });
+  initLogger({ verbose: opts.verbose, quiet: opts.quiet, debug: opts.debug });
   await executeCommand(async () => {
+    const onboarding = await runOnboardingIfNeeded(logger, {
+      noTui: opts.noTui,
+      cwd: resolveCwd(opts.cwd),
+    });
+    if (!onboarding.proceed) {
+      if (onboarding.reason === "noninteractive") {
+        process.exit(1);
+      }
+      return;
+    }
+
     const result = await orchestrateAll({
       force: false,
       dryRun: opts.dryRun,
       noTui: opts.noTui,
+      tuiDebug: opts.tuiDebug,
+      cwd: resolveCwd(opts.cwd),
+      mockAgent: opts.mockAgent,
     }, logger);
 
     if (result.completed.length > 0) {
@@ -48,7 +75,7 @@ program.action(async () => {
     if (result.failed.length > 0) {
       process.exit(1);
     }
-  }, logger, { verbose: opts.verbose, quiet: opts.quiet, dryRun: opts.dryRun, noTui: opts.noTui });
+  }, logger, { verbose: opts.verbose, quiet: opts.quiet, dryRun: opts.dryRun, noTui: opts.noTui, tuiDebug: opts.tuiDebug });
 });
 
 program
@@ -59,10 +86,10 @@ program
     const globalOpts = cmd.optsWithGlobals();
     await executeCommand(async () => {
       await ideasCommand(
-        { file: options.file, dryRun: globalOpts.dryRun },
+        { file: options.file, dryRun: globalOpts.dryRun, cwd: resolveCwd(globalOpts.cwd) },
         logger
       );
-    }, logger, { verbose: globalOpts.verbose, quiet: globalOpts.quiet, dryRun: globalOpts.dryRun });
+    }, logger, { verbose: globalOpts.verbose, quiet: globalOpts.quiet, dryRun: globalOpts.dryRun, cwd: resolveCwd(globalOpts.cwd) });
   });
 
 program
@@ -72,8 +99,8 @@ program
   .action(async (options, cmd) => {
     const globalOpts = cmd.optsWithGlobals();
     await executeCommand(async () => {
-      await statusCommand({ json: options.json }, logger);
-    }, logger, { verbose: globalOpts.verbose, quiet: globalOpts.quiet });
+      await statusCommand({ json: options.json, cwd: resolveCwd(globalOpts.cwd) }, logger);
+    }, logger, { verbose: globalOpts.verbose, quiet: globalOpts.quiet, cwd: resolveCwd(globalOpts.cwd) });
   });
 
 program
@@ -83,8 +110,8 @@ program
   .action(async (id, options, cmd) => {
     const globalOpts = cmd.optsWithGlobals();
     await executeCommand(async () => {
-      await showCommand(id, { json: options.json }, logger);
-    }, logger, { verbose: globalOpts.verbose, quiet: globalOpts.quiet });
+      await showCommand(id, { json: options.json, cwd: resolveCwd(globalOpts.cwd) }, logger);
+    }, logger, { verbose: globalOpts.verbose, quiet: globalOpts.quiet, cwd: resolveCwd(globalOpts.cwd) });
   });
 
 program
@@ -94,8 +121,8 @@ program
   .action(async (id, options, cmd) => {
     const globalOpts = cmd.optsWithGlobals();
     await executeCommand(async () => {
-      await runPhaseCommand('research', id, { force: options.force, dryRun: globalOpts.dryRun }, logger);
-    }, logger, { verbose: globalOpts.verbose, quiet: globalOpts.quiet, dryRun: globalOpts.dryRun });
+      await runPhaseCommand('research', id, { force: options.force, dryRun: globalOpts.dryRun, cwd: resolveCwd(globalOpts.cwd) }, logger);
+    }, logger, { verbose: globalOpts.verbose, quiet: globalOpts.quiet, dryRun: globalOpts.dryRun, cwd: resolveCwd(globalOpts.cwd) });
   });
 
 program
@@ -105,8 +132,8 @@ program
   .action(async (id, options, cmd) => {
     const globalOpts = cmd.optsWithGlobals();
     await executeCommand(async () => {
-      await runPhaseCommand('plan', id, { force: options.force, dryRun: globalOpts.dryRun }, logger);
-    }, logger, { verbose: globalOpts.verbose, quiet: globalOpts.quiet, dryRun: globalOpts.dryRun });
+      await runPhaseCommand('plan', id, { force: options.force, dryRun: globalOpts.dryRun, cwd: resolveCwd(globalOpts.cwd) }, logger);
+    }, logger, { verbose: globalOpts.verbose, quiet: globalOpts.quiet, dryRun: globalOpts.dryRun, cwd: resolveCwd(globalOpts.cwd) });
   });
 
 program
@@ -116,8 +143,8 @@ program
   .action(async (id, options, cmd) => {
     const globalOpts = cmd.optsWithGlobals();
     await executeCommand(async () => {
-      await runPhaseCommand('implement', id, { force: options.force, dryRun: globalOpts.dryRun }, logger);
-    }, logger, { verbose: globalOpts.verbose, quiet: globalOpts.quiet, dryRun: globalOpts.dryRun });
+      await runPhaseCommand('implement', id, { force: options.force, dryRun: globalOpts.dryRun, cwd: resolveCwd(globalOpts.cwd) }, logger);
+    }, logger, { verbose: globalOpts.verbose, quiet: globalOpts.quiet, dryRun: globalOpts.dryRun, cwd: resolveCwd(globalOpts.cwd) });
   });
 
 program
@@ -127,8 +154,8 @@ program
   .action(async (id, options, cmd) => {
     const globalOpts = cmd.optsWithGlobals();
     await executeCommand(async () => {
-      await runPhaseCommand('pr', id, { force: options.force, dryRun: globalOpts.dryRun }, logger);
-    }, logger, { verbose: globalOpts.verbose, quiet: globalOpts.quiet, dryRun: globalOpts.dryRun });
+      await runPhaseCommand('pr', id, { force: options.force, dryRun: globalOpts.dryRun, cwd: resolveCwd(globalOpts.cwd) }, logger);
+    }, logger, { verbose: globalOpts.verbose, quiet: globalOpts.quiet, dryRun: globalOpts.dryRun, cwd: resolveCwd(globalOpts.cwd) });
   });
 
 program
@@ -137,8 +164,8 @@ program
   .action(async (id, _options, cmd) => {
     const globalOpts = cmd.optsWithGlobals();
     await executeCommand(async () => {
-      await runPhaseCommand('complete', id, { dryRun: globalOpts.dryRun }, logger);
-    }, logger, { verbose: globalOpts.verbose, quiet: globalOpts.quiet, dryRun: globalOpts.dryRun });
+      await runPhaseCommand('complete', id, { dryRun: globalOpts.dryRun, cwd: resolveCwd(globalOpts.cwd) }, logger);
+    }, logger, { verbose: globalOpts.verbose, quiet: globalOpts.quiet, dryRun: globalOpts.dryRun, cwd: resolveCwd(globalOpts.cwd) });
   });
 
 program
@@ -151,8 +178,9 @@ program
       await runCommand(id, {
         force: options.force,
         dryRun: globalOpts.dryRun,
+        cwd: resolveCwd(globalOpts.cwd),
       }, logger);
-    }, logger, { verbose: globalOpts.verbose, quiet: globalOpts.quiet, dryRun: globalOpts.dryRun });
+    }, logger, { verbose: globalOpts.verbose, quiet: globalOpts.quiet, dryRun: globalOpts.dryRun, cwd: resolveCwd(globalOpts.cwd) });
   });
 
 program
@@ -160,11 +188,25 @@ program
   .description('Run next incomplete item')
   .action(async (_options, cmd) => {
     const globalOpts = cmd.optsWithGlobals();
-    initLogger({ verbose: globalOpts.verbose, quiet: globalOpts.quiet });
+    initLogger({ verbose: globalOpts.verbose, quiet: globalOpts.quiet, debug: globalOpts.debug });
     await executeCommand(async () => {
+      const onboarding = await runOnboardingIfNeeded(logger, {
+        noTui: globalOpts.noTui,
+        cwd: resolveCwd(globalOpts.cwd),
+      });
+      if (!onboarding.proceed) {
+        if (onboarding.reason === "noninteractive") {
+          process.exit(1);
+        }
+        return;
+      }
+
       const result = await orchestrateNext({
         dryRun: globalOpts.dryRun,
         noTui: globalOpts.noTui,
+        tuiDebug: globalOpts.tuiDebug,
+        cwd: resolveCwd(globalOpts.cwd),
+        mockAgent: globalOpts.mockAgent,
       }, logger);
 
       if (result.itemId === null) {
@@ -175,7 +217,7 @@ program
         logger.error(`Failed: ${result.itemId}`);
         process.exit(1);
       }
-    }, logger, { verbose: globalOpts.verbose, quiet: globalOpts.quiet, dryRun: globalOpts.dryRun, noTui: globalOpts.noTui });
+    }, logger, { verbose: globalOpts.verbose, quiet: globalOpts.quiet, dryRun: globalOpts.dryRun, noTui: globalOpts.noTui, tuiDebug: globalOpts.tuiDebug, cwd: resolveCwd(globalOpts.cwd) });
   });
 
 program
@@ -184,10 +226,10 @@ program
   .option('--fix', 'Auto-fix recoverable issues')
   .action(async (options, cmd) => {
     const globalOpts = cmd.optsWithGlobals();
-    initLogger({ verbose: globalOpts.verbose, quiet: globalOpts.quiet });
+    initLogger({ verbose: globalOpts.verbose, quiet: globalOpts.quiet, debug: globalOpts.debug });
     await executeCommand(async () => {
-      await doctorCommand(options, logger);
-    }, logger, { verbose: globalOpts.verbose, quiet: globalOpts.quiet });
+      await doctorCommand({ fix: options.fix, cwd: resolveCwd(globalOpts.cwd) }, logger);
+    }, logger, { verbose: globalOpts.verbose, quiet: globalOpts.quiet, cwd: resolveCwd(globalOpts.cwd) });
   });
 
 program
@@ -196,10 +238,10 @@ program
   .option('--force', 'Overwrite existing .wreckit/')
   .action(async (options, cmd) => {
     const globalOpts = cmd.optsWithGlobals();
-    initLogger({ verbose: globalOpts.verbose, quiet: globalOpts.quiet });
+    initLogger({ verbose: globalOpts.verbose, quiet: globalOpts.quiet, debug: globalOpts.debug });
     await executeCommand(async () => {
-      await initCommand({ force: options.force }, logger);
-    }, logger, { verbose: globalOpts.verbose, quiet: globalOpts.quiet });
+      await initCommand({ force: options.force, cwd: resolveCwd(globalOpts.cwd) }, logger);
+    }, logger, { verbose: globalOpts.verbose, quiet: globalOpts.quiet, cwd: resolveCwd(globalOpts.cwd) });
   });
 
 async function main(): Promise<void> {
@@ -210,6 +252,7 @@ async function main(): Promise<void> {
     initLogger({
       verbose: opts.verbose,
       quiet: opts.quiet,
+      debug: opts.debug,
     });
   });
 

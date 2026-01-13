@@ -13,12 +13,14 @@ import {
   type PhaseResult,
   type WorkflowOptions,
 } from "../workflow";
+import { formatDryRunPhase } from "./dryRunFormatter";
 
 export type Phase = "research" | "plan" | "implement" | "pr" | "complete";
 
 export interface PhaseOptions {
   force?: boolean;
   dryRun?: boolean;
+  cwd?: string;
 }
 
 const PHASE_CONFIG: Record<
@@ -113,9 +115,9 @@ export async function runPhaseCommand(
   options: PhaseOptions,
   logger: Logger
 ): Promise<void> {
-  const { force = false, dryRun = false } = options;
+  const { force = false, dryRun = false, cwd } = options;
 
-  const root = findRepoRoot(process.cwd());
+  const root = findRepoRoot(cwd ?? process.cwd());
   const config = await loadConfig(root);
 
   const itemDir = getItemDir(root, itemId);
@@ -160,9 +162,7 @@ export async function runPhaseCommand(
   }
 
   if (dryRun) {
-    logger.info(
-      `[dry-run] Would run ${phase} phase on ${itemId} (${item.state} → ${phaseConfig.targetState})`
-    );
+    formatDryRunPhase(phase, item, phaseConfig.targetState, config, logger);
     return;
   }
 

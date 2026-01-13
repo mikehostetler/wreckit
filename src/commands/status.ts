@@ -7,6 +7,7 @@ import { readItem } from "../fs/json";
 
 export interface StatusOptions {
   json?: boolean;
+  cwd?: string;
 }
 
 export async function scanItems(root: string): Promise<IndexItem[]> {
@@ -61,7 +62,7 @@ export async function statusCommand(
   options: StatusOptions,
   logger: Logger
 ): Promise<void> {
-  const root = findRepoRoot(process.cwd());
+  const root = findRepoRoot(options.cwd ?? process.cwd());
   const items = await scanItems(root);
 
   if (options.json) {

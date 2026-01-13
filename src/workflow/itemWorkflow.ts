@@ -36,6 +36,8 @@ export interface WorkflowOptions {
   logger: Logger;
   force?: boolean;
   dryRun?: boolean;
+  mockAgent?: boolean;
+  onAgentOutput?: (chunk: string) => void;
 }
 
 export interface PhaseResult {
@@ -138,7 +140,7 @@ export async function runPhaseResearch(
   itemId: string,
   options: WorkflowOptions
 ): Promise<PhaseResult> {
-  const { root, config, logger, force = false, dryRun = false } = options;
+  const { root, config, logger, force = false, dryRun = false, mockAgent = false, onAgentOutput } = options;
 
   let item = await loadItem(root, itemId);
   const researchPath = getResearchPath(root, item.id);
@@ -180,9 +182,18 @@ export async function runPhaseResearch(
     prompt,
     logger,
     dryRun,
+    mockAgent,
+    onStdoutChunk: onAgentOutput,
+    onStderrChunk: onAgentOutput,
   });
 
   if (dryRun) {
+    return { success: true, item };
+  }
+
+  if (mockAgent) {
+    item = { ...item, state: "researched", last_error: null };
+    await saveItem(root, item);
     return { success: true, item };
   }
 
@@ -221,7 +232,7 @@ export async function runPhasePlan(
   itemId: string,
   options: WorkflowOptions
 ): Promise<PhaseResult> {
-  const { root, config, logger, force = false, dryRun = false } = options;
+  const { root, config, logger, force = false, dryRun = false, mockAgent = false, onAgentOutput } = options;
 
   let item = await loadItem(root, itemId);
   const planPath = getPlanPath(root, item.id);
@@ -260,9 +271,18 @@ export async function runPhasePlan(
     prompt,
     logger,
     dryRun,
+    mockAgent,
+    onStdoutChunk: onAgentOutput,
+    onStderrChunk: onAgentOutput,
   });
 
   if (dryRun) {
+    return { success: true, item };
+  }
+
+  if (mockAgent) {
+    item = { ...item, state: "planned", last_error: null };
+    await saveItem(root, item);
     return { success: true, item };
   }
 
@@ -317,7 +337,7 @@ export async function runPhaseImplement(
   itemId: string,
   options: WorkflowOptions
 ): Promise<PhaseResult> {
-  const { root, config, logger, force = false, dryRun = false } = options;
+  const { root, config, logger, force = false, dryRun = false, mockAgent = false, onAgentOutput } = options;
 
   let item = await loadItem(root, itemId);
   const itemDir = getItemDir(root, item.id);
@@ -328,6 +348,27 @@ export async function runPhaseImplement(
       item,
       error: `Item is in state ${item.state}, expected 'planned' or 'implementing' for implement phase`,
     };
+  }
+
+  if (mockAgent) {
+    item = { ...item, state: "implementing", last_error: null };
+    await saveItem(root, item);
+    
+    const template = await loadPromptTemplate(root, "implement");
+    const variables = await buildPromptVariables(root, item, config);
+    const prompt = renderPrompt(template, variables);
+    const agentConfig = getAgentConfig(config);
+    await runAgent({
+      config: agentConfig,
+      cwd: itemDir,
+      prompt,
+      logger,
+      dryRun,
+      mockAgent,
+      onStdoutChunk: onAgentOutput,
+      onStderrChunk: onAgentOutput,
+    });
+    return { success: true, item };
   }
 
   let prd = await loadPrdSafe(itemDir);
@@ -376,6 +417,9 @@ export async function runPhaseImplement(
       prompt,
       logger,
       dryRun,
+      mockAgent,
+      onStdoutChunk: onAgentOutput,
+      onStderrChunk: onAgentOutput,
     });
 
     if (dryRun) {

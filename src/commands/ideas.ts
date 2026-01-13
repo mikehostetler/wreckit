@@ -8,6 +8,7 @@ import { FileNotFoundError } from "../errors";
 export interface IdeasOptions {
   file?: string;
   dryRun?: boolean;
+  cwd?: string;
 }
 
 export async function readStdin(): Promise<string> {
@@ -46,9 +47,9 @@ export async function readFile(filePath: string): Promise<string> {
 export async function ideasCommand(
   options: IdeasOptions,
   logger: Logger,
-  cwd: string = process.cwd(),
   inputOverride?: string
 ): Promise<void> {
+  const cwd = options.cwd ?? process.cwd();
   const root = findRepoRoot(cwd);
 
   let input: string;

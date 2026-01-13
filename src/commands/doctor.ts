@@ -9,6 +9,7 @@ import {
 
 export interface DoctorOptions {
   fix?: boolean;
+  cwd?: string;
 }
 
 function severityOrder(severity: DiagnosticSeverity): number {
@@ -32,7 +33,7 @@ export async function doctorCommand(
   options: DoctorOptions,
   logger: Logger
 ): Promise<void> {
-  const root = findRepoRoot(process.cwd());
+  const root = findRepoRoot(options.cwd ?? process.cwd());
   const result = await runDoctor(root, { fix: options.fix }, logger);
 
   const { diagnostics, fixes } = result;

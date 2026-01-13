@@ -7,6 +7,7 @@ import { getDefaultTemplate, type PromptName } from "../prompts";
 
 export interface InitOptions {
   force?: boolean;
+  cwd?: string;
 }
 
 export class NotGitRepoError extends WreckitError {
@@ -45,9 +46,9 @@ async function wreckitExists(cwd: string): Promise<boolean> {
 
 export async function initCommand(
   options: InitOptions,
-  logger: Logger,
-  cwd: string = process.cwd()
+  logger: Logger
 ): Promise<void> {
+  const cwd = options.cwd ?? process.cwd();
   if (!(await isGitRepo(cwd))) {
     throw new NotGitRepoError(
       "Not a git repository. Run 'git init' first or navigate to a git repository."

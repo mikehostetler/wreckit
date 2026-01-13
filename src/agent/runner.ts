@@ -24,6 +24,9 @@ export interface RunAgentOptions {
   prompt: string;
   logger: Logger;
   dryRun?: boolean;
+  mockAgent?: boolean;
+  onStdoutChunk?: (chunk: string) => void;
+  onStderrChunk?: (chunk: string) => void;
 }
 
 export function getAgentConfig(config: ConfigResolved): AgentConfig {
@@ -36,8 +39,40 @@ export function getAgentConfig(config: ConfigResolved): AgentConfig {
   };
 }
 
+async function simulateMockAgent(options: RunAgentOptions, config: AgentConfig): Promise<AgentResult> {
+  const mockLines = [
+    "🤖 [mock-agent] Starting simulated agent run...",
+    "📋 [mock-agent] Analyzing prompt...",
+    "🔍 [mock-agent] Researching codebase...",
+    "✏️  [mock-agent] Making changes...",
+    "✅ [mock-agent] Changes complete!",
+    `${config.completion_signal}`,
+  ];
+
+  let output = "";
+  for (const line of mockLines) {
+    const delay = 300 + Math.random() * 400;
+    await new Promise((resolve) => setTimeout(resolve, delay));
+    const chunk = line + "\n";
+    output += chunk;
+    if (options.onStdoutChunk) {
+      options.onStdoutChunk(chunk);
+    } else {
+      process.stdout.write(chunk);
+    }
+  }
+
+  return {
+    success: true,
+    output,
+    timedOut: false,
+    exitCode: 0,
+    completionDetected: true,
+  };
+}
+
 export async function runAgent(options: RunAgentOptions): Promise<AgentResult> {
-  const { config, cwd, prompt, logger, dryRun = false } = options;
+  const { config, cwd, prompt, logger, dryRun = false, mockAgent = false } = options;
 
   if (dryRun) {
     logger.info(`[dry-run] Would run: ${config.command} ${config.args.join(" ")}`);
@@ -50,6 +85,11 @@ export async function runAgent(options: RunAgentOptions): Promise<AgentResult> {
       exitCode: 0,
       completionDetected: true,
     };
+  }
+
+  if (mockAgent) {
+    logger.info(`[mock-agent] Simulating agent run...`);
+    return simulateMockAgent(options, config);
   }
 
   return new Promise((resolve) => {
@@ -92,7 +132,11 @@ export async function runAgent(options: RunAgentOptions): Promise<AgentResult> {
     child.stdout?.on("data", (data: Buffer) => {
       const chunk = data.toString();
       output += chunk;
-      process.stdout.write(chunk);
+      if (options.onStdoutChunk) {
+        options.onStdoutChunk(chunk);
+      } else {
+        process.stdout.write(chunk);
+      }
       if (output.includes(config.completion_signal)) {
         completionDetected = true;
       }
@@ -101,7 +145,11 @@ export async function runAgent(options: RunAgentOptions): Promise<AgentResult> {
     child.stderr?.on("data", (data: Buffer) => {
       const chunk = data.toString();
       output += chunk;
-      process.stderr.write(chunk);
+      if (options.onStderrChunk) {
+        options.onStderrChunk(chunk);
+      } else {
+        process.stderr.write(chunk);
+      }
       if (output.includes(config.completion_signal)) {
         completionDetected = true;
       }

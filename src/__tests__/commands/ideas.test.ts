@@ -42,7 +42,7 @@ describe("ideasCommand", () => {
     const ideasFile = path.join(tempDir, "ideas.md");
     await fs.writeFile(ideasFile, "# Add dark mode\nTheme support\n\n# Fix bug\nBroken login");
 
-    await ideasCommand({ file: ideasFile }, mockLogger, tempDir);
+    await ideasCommand({ file: ideasFile, cwd: tempDir }, mockLogger);
 
     const featuresDir = path.join(tempDir, ".wreckit", "features");
     const bugsDir = path.join(tempDir, ".wreckit", "bugs");
@@ -58,7 +58,7 @@ describe("ideasCommand", () => {
     const ideasFile = path.join(tempDir, "ideas.md");
     await fs.writeFile(ideasFile, "# First feature\n\n# Second feature");
 
-    await ideasCommand({ file: ideasFile }, mockLogger, tempDir);
+    await ideasCommand({ file: ideasFile, cwd: tempDir }, mockLogger);
 
     const featuresDir = path.join(tempDir, ".wreckit", "features");
     const entries = await fs.readdir(featuresDir);
@@ -71,7 +71,7 @@ describe("ideasCommand", () => {
     const ideasFile = path.join(tempDir, "ideas.md");
     await fs.writeFile(ideasFile, "# Add feature\n# Fix bug");
 
-    await ideasCommand({ file: ideasFile }, mockLogger, tempDir);
+    await ideasCommand({ file: ideasFile, cwd: tempDir }, mockLogger);
 
     expect(mockLogger.messages).toContain("info: Created 2 items:");
     expect(mockLogger.messages.some((m) => m.includes("features/001-add-feature"))).toBe(true);
@@ -82,7 +82,7 @@ describe("ideasCommand", () => {
     const ideasFile = path.join(tempDir, "ideas.md");
     await fs.writeFile(ideasFile, "# Add dark mode");
 
-    await ideasCommand({ file: ideasFile, dryRun: true }, mockLogger, tempDir);
+    await ideasCommand({ file: ideasFile, dryRun: true, cwd: tempDir }, mockLogger);
 
     const featuresDir = path.join(tempDir, ".wreckit", "features");
     await expect(fs.access(featuresDir)).rejects.toThrow();
@@ -95,11 +95,11 @@ describe("ideasCommand", () => {
     const ideasFile = path.join(tempDir, "ideas.md");
     await fs.writeFile(ideasFile, "# Add dark mode");
 
-    await ideasCommand({ file: ideasFile }, mockLogger, tempDir);
+    await ideasCommand({ file: ideasFile, cwd: tempDir }, mockLogger);
 
     mockLogger.messages.length = 0;
 
-    await ideasCommand({ file: ideasFile }, mockLogger, tempDir);
+    await ideasCommand({ file: ideasFile, cwd: tempDir }, mockLogger);
 
     expect(mockLogger.messages.some((m) => m.includes("Skipped 1 existing items"))).toBe(true);
   });
@@ -108,7 +108,7 @@ describe("ideasCommand", () => {
     const ideasFile = path.join(tempDir, "ideas.md");
     await fs.writeFile(ideasFile, "");
 
-    await ideasCommand({ file: ideasFile }, mockLogger, tempDir);
+    await ideasCommand({ file: ideasFile, cwd: tempDir }, mockLogger);
 
     expect(mockLogger.messages).toContain("info: No items created");
   });
@@ -117,13 +117,13 @@ describe("ideasCommand", () => {
     const ideasFile = path.join(tempDir, "ideas.md");
     await fs.writeFile(ideasFile, "   \n\n   \n");
 
-    await ideasCommand({ file: ideasFile }, mockLogger, tempDir);
+    await ideasCommand({ file: ideasFile, cwd: tempDir }, mockLogger);
 
     expect(mockLogger.messages).toContain("info: No items created");
   });
 
   it("works with inputOverride parameter", async () => {
-    await ideasCommand({}, mockLogger, tempDir, "# Test feature\n# Fix test bug");
+    await ideasCommand({ cwd: tempDir }, mockLogger, "# Test feature\n# Fix test bug");
 
     const featuresDir = path.join(tempDir, ".wreckit", "features");
     const bugsDir = path.join(tempDir, ".wreckit", "bugs");
