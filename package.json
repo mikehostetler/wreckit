@@ -1,0 +1,33 @@
+{
+  "name": "wreckitloop",
+  "version": "0.0.1",
+  "description": "A CLI tool built with Bun and Commander",
+  "type": "module",
+  "main": "./dist/index.js",
+  "bin": {
+    "wreck": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --clean",
+    "dev": "bun run ./src/index.ts",
+    "prepublishOnly": "bun run build"
+  },
+  "keywords": [
+    "cli",
+    "wreck"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/node": "^22.10.5",
+    "chalk": "^5.3.0",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "commander": "^12.1.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
