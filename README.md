@@ -311,6 +311,7 @@ bun run test
 
 The "Ralph Wiggum Loop" methodology stands on the shoulders of giants:
 
+- [Ryan Carson](https://x.com/ryancarson) — for the Ralph pattern that inspired the core loop
 - [Geoff Huntley](https://x.com/GeoffreyHuntley) — for evangelizing the Ralph Wiggum agent pattern
 - [Dexter Horthy](https://x.com/dexhorthy) and the entire [HumanLayer](https://humanlayer.dev) team — for the Research → Plan → Implement workflow that makes agents actually useful
 - Everyone in the community teaching agents to stop vibing and start shipping

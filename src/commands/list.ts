@@ -1,13 +1,29 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import type { Logger } from "../logging";
-import type { Index, IndexItem, Item } from "../schemas";
+import type { IndexItem } from "../schemas";
 import { findRepoRoot, getWreckitDir } from "../fs/paths";
 import { readItem } from "../fs/json";
 
-export interface StatusOptions {
+export interface ListOptions {
   json?: boolean;
+  state?: string;
   cwd?: string;
+}
+
+function extractTitle(rawTitle: string): string {
+  // Try to parse JSON if it looks like JSON
+  if (rawTitle.startsWith("{")) {
+    try {
+      const parsed = JSON.parse(rawTitle);
+      if (typeof parsed.title === "string") {
+        return parsed.title;
+      }
+    } catch {
+      // Fall through to return raw title
+    }
+  }
+  return rawTitle;
 }
 
 export async function scanItems(root: string): Promise<IndexItem[]> {
@@ -58,20 +74,19 @@ export async function scanItems(root: string): Promise<IndexItem[]> {
   return items;
 }
 
-export async function statusCommand(
-  options: StatusOptions,
+export async function listCommand(
+  options: ListOptions,
   logger: Logger
 ): Promise<void> {
   const root = findRepoRoot(options.cwd ?? process.cwd());
-  const items = await scanItems(root);
+  const allItems = await scanItems(root);
+
+  const items = options.state
+    ? allItems.filter((i) => i.state === options.state)
+    : allItems;
 
   if (options.json) {
-    const index: Index = {
-      schema_version: 1,
-      items,
-      generated_at: new Date().toISOString(),
-    };
-    logger.json(index);
+    console.log(JSON.stringify(items, null, 2));
     return;
   }
 
@@ -81,11 +96,25 @@ export async function statusCommand(
   }
 
   const idWidth = Math.max(2, ...items.map((i) => i.id.length));
-  const header = `${"ID".padEnd(idWidth)}  STATE`;
+  const stateWidth = Math.max(5, ...items.map((i) => i.state.length));
+  
+  // Extract clean titles and calculate max width (truncate at 50 chars for display)
+  const cleanItems = items.map((i) => ({
+    ...i,
+    cleanTitle: extractTitle(i.title),
+  }));
+  
+  const header = `${"ID".padEnd(idWidth)}  ${"STATE".padEnd(stateWidth)}  TITLE`;
   console.log(header);
 
-  for (const item of items) {
-    const line = `${item.id.padEnd(idWidth)}  ${item.state}`;
+  for (const item of cleanItems) {
+    const displayTitle = item.cleanTitle.length > 50 
+      ? item.cleanTitle.substring(0, 47) + "..."
+      : item.cleanTitle;
+    const line = `${item.id.padEnd(idWidth)}  ${item.state.padEnd(stateWidth)}  ${displayTitle}`;
     console.log(line);
   }
+
+  console.log("");
+  console.log(`Total: ${items.length} item(s)`);
 }

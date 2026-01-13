@@ -1,4 +1,4 @@
-import { describe, expect, it, beforeEach, afterEach, mock, spyOn, vi } from "bun:test";
+import { describe, expect, it, beforeEach, afterEach, mock, spyOn, vi, setSystemTime } from "bun:test";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import * as os from "node:os";
@@ -116,9 +116,12 @@ describe("statusCommand", () => {
 
   it("shows 'No items found' for empty .wreckit", async () => {
     const logger = createMockLogger();
+    const consoleSpy = spyOn(console, "log");
+    
     await statusCommand({}, logger);
 
-    expect(logger.info).toHaveBeenCalledWith("No items found");
+    expect(consoleSpy).toHaveBeenCalledWith("No items found");
+    consoleSpy.mockRestore();
   });
 
   it("shows multiple items with correct states", async () => {
@@ -127,12 +130,16 @@ describe("statusCommand", () => {
     await createItem(tempDir, "features", "001-auth", "planned");
 
     const logger = createMockLogger();
+    const consoleSpy = spyOn(console, "log");
+    
     await statusCommand({}, logger);
 
-    const calls = logger.info.mock.calls.map((c) => c[0]);
-    expect(calls.some((c) => c.includes("foundation/001-core-types") && c.includes("raw"))).toBe(true);
-    expect(calls.some((c) => c.includes("foundation/002-api-layer") && c.includes("researched"))).toBe(true);
-    expect(calls.some((c) => c.includes("features/001-auth") && c.includes("planned"))).toBe(true);
+    const calls = consoleSpy.mock.calls.map((c) => c[0]);
+    expect(calls.some((c) => String(c).includes("foundation/001-core-types") && String(c).includes("raw"))).toBe(true);
+    expect(calls.some((c) => String(c).includes("foundation/002-api-layer") && String(c).includes("researched"))).toBe(true);
+    expect(calls.some((c) => String(c).includes("features/001-auth") && String(c).includes("planned"))).toBe(true);
+    
+    consoleSpy.mockRestore();
   });
 
   it("outputs valid Index JSON with --json", async () => {

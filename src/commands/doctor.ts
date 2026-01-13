@@ -39,7 +39,7 @@ export async function doctorCommand(
   const { diagnostics, fixes } = result;
 
   if (diagnostics.length === 0) {
-    logger.info("✓ No issues found");
+    console.log("✓ No issues found");
     return;
   }
 
@@ -50,47 +50,47 @@ export async function doctorCommand(
   };
 
   if (grouped.error.length > 0) {
-    logger.error(`Errors (${grouped.error.length}):`);
+    console.log(`Errors (${grouped.error.length}):`);
     for (const d of grouped.error) {
-      logger.error(`  ✗ ${formatDiagnostic(d)}`);
+      console.log(`  ✗ ${formatDiagnostic(d)}`);
     }
   }
 
   if (grouped.warning.length > 0) {
-    logger.warn(`Warnings (${grouped.warning.length}):`);
+    console.log(`Warnings (${grouped.warning.length}):`);
     for (const d of grouped.warning) {
-      logger.warn(`  ⚠ ${formatDiagnostic(d)}`);
+      console.log(`  ⚠ ${formatDiagnostic(d)}`);
     }
   }
 
   if (grouped.info.length > 0) {
-    logger.info(`Info (${grouped.info.length}):`);
+    console.log(`Info (${grouped.info.length}):`);
     for (const d of grouped.info) {
-      logger.info(`  ℹ ${formatDiagnostic(d)}`);
+      console.log(`  ℹ ${formatDiagnostic(d)}`);
     }
   }
 
   if (fixes && fixes.length > 0) {
-    logger.info("");
-    logger.info("Fixes applied:");
+    console.log("");
+    console.log("Fixes applied:");
     for (const fix of fixes) {
       const status = fix.fixed ? "✓" : "✗";
       const itemPrefix = fix.diagnostic.itemId
         ? `[${fix.diagnostic.itemId}] `
         : "";
-      logger.info(`  ${status} ${itemPrefix}${fix.message}`);
+      console.log(`  ${status} ${itemPrefix}${fix.message}`);
     }
 
     const fixedCount = fixes.filter((f) => f.fixed).length;
     const failedCount = fixes.length - fixedCount;
-    logger.info("");
-    logger.info(`Fixed ${fixedCount} issue(s), ${failedCount} failed`);
+    console.log("");
+    console.log(`Fixed ${fixedCount} issue(s), ${failedCount} failed`);
   } else if (
     diagnostics.some((d) => d.fixable) &&
     !options.fix
   ) {
-    logger.info("");
-    logger.info("Run with --fix to auto-fix recoverable issues");
+    console.log("");
+    console.log("Run with --fix to auto-fix recoverable issues");
   }
 
   const remainingErrors = options.fix

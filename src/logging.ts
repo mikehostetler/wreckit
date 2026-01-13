@@ -1,4 +1,5 @@
 import pino from "pino";
+import pretty from "pino-pretty";
 
 export type LogLevel = "debug" | "info" | "warn" | "error";
 
@@ -20,8 +21,20 @@ export interface LoggerOptions {
 function createPinoLogger(options?: LoggerOptions): pino.Logger {
   const { verbose = false, quiet = false, debug = false } = options ?? {};
 
-  const level = quiet ? "error" : verbose ? "debug" : "info";
+  // Default to silent unless --verbose or --debug is set
+  let level: string;
+  if (debug) {
+    level = "debug";
+  } else if (verbose) {
+    level = "debug";
+  } else if (quiet) {
+    level = "error";
+  } else {
+    // Default: suppress all logging
+    level = "silent";
+  }
 
+  // Use raw JSON for debug mode, pretty-printed for everything else
   if (debug) {
     return pino({
       level,
@@ -29,26 +42,20 @@ function createPinoLogger(options?: LoggerOptions): pino.Logger {
     });
   }
 
-  return pino({
-    level,
-    transport: {
-      target: "pino-pretty",
-      options: {
-        colorize: !(options?.noColor ?? false),
-        ignore: "pid,hostname",
-        translateTime: false,
-        messageFormat: "{msg}",
-        customPrettifiers: {
-          level: () => "",
-        },
-      },
-    },
+  const stream = pretty({
+    colorize: !(options?.noColor ?? false),
+    ignore: "pid,hostname,time",
+    messageFormat: "{msg}",
+    singleLine: true,
   });
+
+  return pino({ level }, stream);
 }
 
 function createFallbackLogger(options?: LoggerOptions): pino.Logger {
   const { verbose = false, quiet = false } = options ?? {};
-  const level = quiet ? "error" : verbose ? "debug" : "info";
+  // Default to silent unless --verbose or --quiet is set
+  const level = quiet ? "error" : verbose ? "debug" : "silent";
 
   return pino({
     level,

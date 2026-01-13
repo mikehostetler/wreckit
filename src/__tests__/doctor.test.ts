@@ -412,14 +412,16 @@ describe("doctorCommand", () => {
       "{ invalid json }"
     );
 
+    const consoleSpy = spyOn(console, "log");
+
     try {
       await doctorCommand({}, mockLogger);
     } catch {
       // process.exit throws
     }
 
-    expect(mockLogger.error).toHaveBeenCalled();
-    expect(mockLogger.warn).toHaveBeenCalled();
+    expect(consoleSpy).toHaveBeenCalled();
+    consoleSpy.mockRestore();
   });
 
   it("without --fix, does not modify files", async () => {
@@ -485,8 +487,11 @@ describe("doctorCommand", () => {
     );
     await fs.mkdir(path.join(tempDir, ".wreckit", "prompts"));
 
+    const consoleSpy = spyOn(console, "log");
+
     await doctorCommand({}, mockLogger);
 
-    expect(mockLogger.info).toHaveBeenCalledWith("✓ No issues found");
+    expect(consoleSpy).toHaveBeenCalledWith("✓ No issues found");
+    consoleSpy.mockRestore();
   });
 });

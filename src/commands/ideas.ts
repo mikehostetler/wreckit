@@ -1,5 +1,6 @@
 import * as fs from "node:fs/promises";
 import * as readline from "node:readline";
+import { text, isCancel } from "@clack/prompts";
 import type { Logger } from "../logging";
 import { findRepoRoot } from "../fs/paths";
 import { ingestIdeas, parseIdeasFromText, determineSection, generateSlug } from "../domain/ideas";
@@ -7,6 +8,7 @@ import { FileNotFoundError } from "../errors";
 
 export interface IdeasOptions {
   file?: string;
+  interactive?: boolean;
   dryRun?: boolean;
   cwd?: string;
 }
@@ -57,6 +59,33 @@ export async function ideasCommand(
     input = inputOverride;
   } else if (options.file) {
     input = await readFile(options.file);
+  } else if (options.interactive) {
+    // Prompt for idea interactively
+    const title = await text({
+      message: "Give your idea a short title",
+      placeholder: "e.g., Add dark mode support",
+      validate: (v) => (!v?.trim() ? "Title is required" : undefined),
+    });
+
+    if (isCancel(title)) {
+      logger.info("Cancelled.");
+      return;
+    }
+
+    const description = await text({
+      message: "Optional: describe what you want to accomplish",
+      placeholder: "Press Enter to skip",
+    });
+
+    if (isCancel(description)) {
+      logger.info("Cancelled.");
+      return;
+    }
+
+    const titleStr = String(title).trim();
+    const descStr = description ? String(description).trim() : "";
+
+    input = descStr ? `# ${titleStr}\n\n${descStr}\n` : `# ${titleStr}\n`;
   } else {
     input = await readStdin();
   }
