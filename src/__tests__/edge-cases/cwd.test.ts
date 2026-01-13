@@ -1,13 +1,14 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, mock, spyOn, vi } from "bun:test";
 import * as fs from "node:fs/promises";
 import * as fsSync from "node:fs";
 import * as path from "node:path";
 import * as os from "node:os";
 import { findRepoRoot } from "../../fs";
 import { RepoNotFoundError } from "../../errors";
-import { isGitRepo } from "../../git";
 import { runOnboardingIfNeeded } from "../../onboarding";
 import type { Logger } from "../../logging";
+
+const { isGitRepo } = await import("../../git");
 
 function createMockLogger(): Logger & { messages: string[] } {
   const messages: string[] = [];

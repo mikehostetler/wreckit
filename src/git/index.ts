@@ -52,10 +52,22 @@ async function runCommand(
   logger.debug(`Running: ${command} ${args.join(" ")}`);
 
   return new Promise((resolve) => {
-    const proc = spawn(command, args, {
-      cwd,
-      stdio: ["pipe", "pipe", "pipe"],
-    });
+    let proc: ReturnType<typeof spawn> | undefined;
+
+    try {
+      proc = spawn(command, args, {
+        cwd,
+        stdio: ["pipe", "pipe", "pipe"],
+      });
+    } catch {
+      resolve({ stdout: "", exitCode: 1 });
+      return;
+    }
+
+    if (!proc || typeof proc.on !== "function") {
+      resolve({ stdout: "", exitCode: 1 });
+      return;
+    }
 
     let stdout = "";
     let stderr = "";
@@ -84,10 +96,22 @@ async function runCommand(
 
 export async function isGitRepo(cwd: string): Promise<boolean> {
   return new Promise((resolve) => {
-    const proc = spawn("git", ["rev-parse", "--git-dir"], {
-      cwd,
-      stdio: ["pipe", "pipe", "pipe"],
-    });
+    let proc: ReturnType<typeof spawn> | undefined;
+
+    try {
+      proc = spawn("git", ["rev-parse", "--git-dir"], {
+        cwd,
+        stdio: ["pipe", "pipe", "pipe"],
+      });
+    } catch {
+      resolve(false);
+      return;
+    }
+
+    if (!proc || typeof proc.on !== "function") {
+      resolve(false);
+      return;
+    }
 
     proc.on("close", (code) => {
       resolve(code === 0);
@@ -144,8 +168,14 @@ export async function ensureBranch(
   }
 
   logger.info(`Creating branch ${branchName} from ${baseBranch}`);
-  await runGitCommand(["checkout", baseBranch], options);
-  await runGitCommand(["checkout", "-b", branchName], options);
+  const checkoutBase = await runGitCommand(["checkout", baseBranch], options);
+  if (checkoutBase.exitCode !== 0) {
+    throw new Error(`Failed to checkout base branch ${baseBranch}`);
+  }
+  const createBranch = await runGitCommand(["checkout", "-b", branchName], options);
+  if (createBranch.exitCode !== 0) {
+    throw new Error(`Failed to create branch ${branchName}`);
+  }
 
   return { branchName, created: true };
 }

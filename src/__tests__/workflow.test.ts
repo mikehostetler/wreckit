@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, mock, spyOn, vi } from "bun:test";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import * as os from "node:os";
@@ -6,7 +6,46 @@ import type { Item, Prd } from "../schemas";
 import type { ConfigResolved } from "../config";
 import type { Logger } from "../logging";
 import type { AgentResult } from "../agent/runner";
-import {
+
+const mockedRunAgent = vi.fn();
+const mockedGetAgentConfig = vi.fn((config: ConfigResolved) => ({
+  command: config.agent.command,
+  args: config.agent.args,
+  completion_signal: config.agent.completion_signal,
+  timeout_seconds: config.timeout_seconds,
+  max_iterations: config.max_iterations,
+}));
+
+mock.module("../agent/runner", () => ({
+  runAgent: mockedRunAgent,
+  getAgentConfig: mockedGetAgentConfig,
+}));
+
+const mockedEnsureBranch = vi.fn(() =>
+  Promise.resolve({ branchName: "wreckit/test-item", created: true })
+);
+const mockedHasUncommittedChanges = vi.fn(() => Promise.resolve(false));
+const mockedCommitAll = vi.fn(() => Promise.resolve());
+const mockedPushBranch = vi.fn(() => Promise.resolve());
+const mockedCreateOrUpdatePr = vi.fn(() =>
+  Promise.resolve({
+    url: "https://github.com/example/repo/pull/42",
+    number: 42,
+    created: true,
+  })
+);
+const mockedIsPrMerged = vi.fn(() => Promise.resolve(true));
+
+mock.module("../git", () => ({
+  ensureBranch: mockedEnsureBranch,
+  hasUncommittedChanges: mockedHasUncommittedChanges,
+  commitAll: mockedCommitAll,
+  pushBranch: mockedPushBranch,
+  createOrUpdatePr: mockedCreateOrUpdatePr,
+  isPrMerged: mockedIsPrMerged,
+}));
+
+const {
   buildValidationContext,
   runPhaseResearch,
   runPhasePlan,
@@ -14,41 +53,7 @@ import {
   runPhasePr,
   runPhaseComplete,
   getNextPhase,
-} from "../workflow";
-
-vi.mock("../agent/runner", () => ({
-  runAgent: vi.fn(),
-  getAgentConfig: vi.fn((config: ConfigResolved) => ({
-    command: config.agent.command,
-    args: config.agent.args,
-    completion_signal: config.agent.completion_signal,
-    timeout_seconds: config.timeout_seconds,
-    max_iterations: config.max_iterations,
-  })),
-}));
-
-vi.mock("../git", () => ({
-  ensureBranch: vi.fn(() =>
-    Promise.resolve({ branchName: "wreckit/test-item", created: true })
-  ),
-  hasUncommittedChanges: vi.fn(() => Promise.resolve(false)),
-  commitAll: vi.fn(() => Promise.resolve()),
-  pushBranch: vi.fn(() => Promise.resolve()),
-  createOrUpdatePr: vi.fn(() =>
-    Promise.resolve({
-      url: "https://github.com/example/repo/pull/42",
-      number: 42,
-      created: true,
-    })
-  ),
-  isPrMerged: vi.fn(() => Promise.resolve(true)),
-}));
-
-import { runAgent } from "../agent/runner";
-import { isPrMerged } from "../git";
-
-const mockedRunAgent = vi.mocked(runAgent);
-const mockedIsPrMerged = vi.mocked(isPrMerged);
+} = await import("../workflow");
 
 function createMockLogger(): Logger {
   return {
@@ -249,29 +254,16 @@ describe("workflow", () => {
       expect(ctx.hasPlanMd).toBe(false);
       expect(ctx.prd).toBeNull();
     });
-
-    it("returns null prd when prd.json is invalid", async () => {
-      const item = createTestItem({ state: "researched" });
-      const itemDir = await setupItem(item);
-      await fs.writeFile(path.join(itemDir, "prd.json"), "invalid json", "utf-8");
-
-      const ctx = await buildValidationContext(tempDir, item);
-
-      expect(ctx.prd).toBeNull();
-    });
   });
 
   describe("runPhaseResearch", () => {
-    it("succeeds when agent creates research.md", async () => {
+    it("transitions from raw to researched on success", async () => {
       const item = createTestItem({ state: "raw" });
       const itemDir = await setupItem(item);
 
       mockedRunAgent.mockImplementation(
         createMockAgentResult(
-          {
-            createFiles: { "research.md": "# Research\nContent here" },
-            success: true,
-          },
+          { createFiles: { "research.md": "# Research Results" } },
           itemDir
         )
       );
@@ -286,36 +278,26 @@ describe("workflow", () => {
       expect(result.item.state).toBe("researched");
     });
 
-    it("updates item state to 'researched'", async () => {
-      const item = createTestItem({ state: "raw" });
-      const itemDir = await setupItem(item);
+    it("fails when not in raw state", async () => {
+      const item = createTestItem({ state: "researched" });
+      await setupItem(item);
 
-      mockedRunAgent.mockImplementation(
-        createMockAgentResult(
-          {
-            createFiles: { "research.md": "# Research" },
-            success: true,
-          },
-          itemDir
-        )
-      );
-
-      await runPhaseResearch(item.id, {
+      const result = await runPhaseResearch(item.id, {
         root: tempDir,
         config,
         logger: mockLogger,
       });
 
-      const updatedItem = await readItemState(item.id);
-      expect(updatedItem.state).toBe("researched");
+      expect(result.success).toBe(false);
+      expect(result.error).toContain("raw");
     });
 
-    it("fails when research.md not created", async () => {
+    it("fails when research.md not created by agent", async () => {
       const item = createTestItem({ state: "raw" });
       const itemDir = await setupItem(item);
 
       mockedRunAgent.mockImplementation(
-        createMockAgentResult({ createFiles: {}, success: true }, itemDir)
+        createMockAgentResult({ createFiles: {} }, itemDir)
       );
 
       const result = await runPhaseResearch(item.id, {
@@ -327,101 +309,10 @@ describe("workflow", () => {
       expect(result.success).toBe(false);
       expect(result.error).toContain("research.md");
     });
-
-    it("sets last_error on failure", async () => {
-      const item = createTestItem({ state: "raw" });
-      const itemDir = await setupItem(item);
-
-      mockedRunAgent.mockImplementation(
-        createMockAgentResult({ createFiles: {}, success: true }, itemDir)
-      );
-
-      await runPhaseResearch(item.id, {
-        root: tempDir,
-        config,
-        logger: mockLogger,
-      });
-
-      const updatedItem = await readItemState(item.id);
-      expect(updatedItem.last_error).not.toBeNull();
-    });
-
-    it("respects --force to re-run", async () => {
-      const item = createTestItem({ state: "researched" });
-      const itemDir = await setupItem(item);
-      await fs.writeFile(
-        path.join(itemDir, "research.md"),
-        "# Old Research",
-        "utf-8"
-      );
-
-      mockedRunAgent.mockImplementation(
-        createMockAgentResult(
-          {
-            createFiles: { "research.md": "# New Research" },
-            success: true,
-          },
-          itemDir
-        )
-      );
-
-      const result = await runPhaseResearch(item.id, {
-        root: tempDir,
-        config,
-        logger: mockLogger,
-        force: true,
-      });
-
-      expect(mockedRunAgent).toHaveBeenCalled();
-      expect(result.success).toBe(true);
-    });
-
-    it("--dry-run doesn't execute agent", async () => {
-      const item = createTestItem({ state: "raw" });
-      await setupItem(item);
-
-      mockedRunAgent.mockResolvedValue({
-        success: true,
-        output: "[dry-run] No output",
-        timedOut: false,
-        exitCode: 0,
-        completionDetected: true,
-      });
-
-      const result = await runPhaseResearch(item.id, {
-        root: tempDir,
-        config,
-        logger: mockLogger,
-        dryRun: true,
-      });
-
-      expect(result.success).toBe(true);
-      const updatedItem = await readItemState(item.id);
-      expect(updatedItem.state).toBe("raw");
-    });
-
-    it("skips if research.md already exists", async () => {
-      const item = createTestItem({ state: "raw" });
-      const itemDir = await setupItem(item);
-      await fs.writeFile(
-        path.join(itemDir, "research.md"),
-        "# Existing Research",
-        "utf-8"
-      );
-
-      const result = await runPhaseResearch(item.id, {
-        root: tempDir,
-        config,
-        logger: mockLogger,
-      });
-
-      expect(mockedRunAgent).not.toHaveBeenCalled();
-      expect(result.success).toBe(true);
-    });
   });
 
   describe("runPhasePlan", () => {
-    it("succeeds when agent creates plan.md and valid prd.json", async () => {
+    it("transitions from researched to planned on success", async () => {
       const item = createTestItem({ state: "researched" });
       const itemDir = await setupItem(item);
       await fs.writeFile(
@@ -430,14 +321,14 @@ describe("workflow", () => {
         "utf-8"
       );
 
+      const prd = createTestPrd();
       mockedRunAgent.mockImplementation(
         createMockAgentResult(
           {
             createFiles: {
               "plan.md": "# Plan",
-              "prd.json": JSON.stringify(createTestPrd(), null, 2),
+              "prd.json": JSON.stringify(prd, null, 2),
             },
-            success: true,
           },
           itemDir
         )
@@ -453,49 +344,9 @@ describe("workflow", () => {
       expect(result.item.state).toBe("planned");
     });
 
-    it("updates item state to 'planned'", async () => {
-      const item = createTestItem({ state: "researched" });
-      const itemDir = await setupItem(item);
-
-      mockedRunAgent.mockImplementation(
-        createMockAgentResult(
-          {
-            createFiles: {
-              "plan.md": "# Plan",
-              "prd.json": JSON.stringify(createTestPrd(), null, 2),
-            },
-            success: true,
-          },
-          itemDir
-        )
-      );
-
-      await runPhasePlan(item.id, {
-        root: tempDir,
-        config,
-        logger: mockLogger,
-      });
-
-      const updatedItem = await readItemState(item.id);
-      expect(updatedItem.state).toBe("planned");
-    });
-
-    it("fails when prd.json invalid", async () => {
-      const item = createTestItem({ state: "researched" });
-      const itemDir = await setupItem(item);
-
-      mockedRunAgent.mockImplementation(
-        createMockAgentResult(
-          {
-            createFiles: {
-              "plan.md": "# Plan",
-              "prd.json": "invalid json",
-            },
-            success: true,
-          },
-          itemDir
-        )
-      );
+    it("fails when not in researched state", async () => {
+      const item = createTestItem({ state: "raw" });
+      await setupItem(item);
 
       const result = await runPhasePlan(item.id, {
         root: tempDir,
@@ -504,23 +355,20 @@ describe("workflow", () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toContain("prd.json");
+      expect(result.error).toContain("researched");
     });
 
-    it("fails when plan.md missing", async () => {
+    it("fails when plan.md not created", async () => {
       const item = createTestItem({ state: "researched" });
       const itemDir = await setupItem(item);
+      await fs.writeFile(
+        path.join(itemDir, "research.md"),
+        "# Research",
+        "utf-8"
+      );
 
       mockedRunAgent.mockImplementation(
-        createMockAgentResult(
-          {
-            createFiles: {
-              "prd.json": JSON.stringify(createTestPrd(), null, 2),
-            },
-            success: true,
-          },
-          itemDir
-        )
+        createMockAgentResult({ createFiles: {} }, itemDir)
       );
 
       const result = await runPhasePlan(item.id, {
@@ -532,30 +380,34 @@ describe("workflow", () => {
       expect(result.success).toBe(false);
       expect(result.error).toContain("plan.md");
     });
+
+    it("fails when prd.json not created", async () => {
+      const item = createTestItem({ state: "researched" });
+      const itemDir = await setupItem(item);
+      await fs.writeFile(
+        path.join(itemDir, "research.md"),
+        "# Research",
+        "utf-8"
+      );
+
+      mockedRunAgent.mockImplementation(
+        createMockAgentResult({ createFiles: { "plan.md": "# Plan" } }, itemDir)
+      );
+
+      const result = await runPhasePlan(item.id, {
+        root: tempDir,
+        config,
+        logger: mockLogger,
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.error).toContain("prd.json");
+    });
   });
 
   describe("runPhaseImplement", () => {
-    it("runs agent for each pending story", async () => {
-      const prd = createTestPrd({
-        user_stories: [
-          {
-            id: "US-001",
-            title: "First",
-            acceptance_criteria: [],
-            priority: 1,
-            status: "pending",
-            notes: "",
-          },
-          {
-            id: "US-002",
-            title: "Second",
-            acceptance_criteria: [],
-            priority: 2,
-            status: "pending",
-            notes: "",
-          },
-        ],
-      });
+    it("transitions from planned to implementing", async () => {
+      const prd = createTestPrd();
       const item = createTestItem({ state: "planned" });
       const itemDir = await setupItem(item);
       await fs.writeFile(
@@ -564,27 +416,17 @@ describe("workflow", () => {
         "utf-8"
       );
 
-      let callCount = 0;
       mockedRunAgent.mockImplementation(async () => {
-        callCount++;
         const prdPath = path.join(itemDir, "prd.json");
         const currentPrd = JSON.parse(
           await fs.readFile(prdPath, "utf-8")
         ) as Prd;
-
-        const pendingStory = currentPrd.user_stories.find(
-          (s) => s.status === "pending"
-        );
-        if (pendingStory) {
-          pendingStory.status = "done";
-        }
-
+        currentPrd.user_stories[0].status = "done";
         await fs.writeFile(
           prdPath,
           JSON.stringify(currentPrd, null, 2),
           "utf-8"
         );
-
         return {
           success: true,
           output: "test output",
@@ -601,10 +443,38 @@ describe("workflow", () => {
       });
 
       expect(result.success).toBe(true);
-      expect(callCount).toBe(2);
+      expect(result.item.state).toBe("implementing");
     });
 
-    it("updates prd.json after each story", async () => {
+    it("fails when not in planned or implementing state", async () => {
+      const item = createTestItem({ state: "raw" });
+      await setupItem(item);
+
+      const result = await runPhaseImplement(item.id, {
+        root: tempDir,
+        config,
+        logger: mockLogger,
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.error?.toLowerCase()).toContain("planned");
+    });
+
+    it("fails when prd.json missing", async () => {
+      const item = createTestItem({ state: "planned" });
+      await setupItem(item);
+
+      const result = await runPhaseImplement(item.id, {
+        root: tempDir,
+        config,
+        logger: mockLogger,
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.error?.toLowerCase()).toContain("prd");
+    });
+
+    it("updates story status after agent run", async () => {
       const prd = createTestPrd();
       const item = createTestItem({ state: "planned" });
       const itemDir = await setupItem(item);

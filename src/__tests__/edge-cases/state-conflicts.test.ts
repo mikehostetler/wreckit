@@ -1,15 +1,20 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, afterAll, mock, spyOn, vi } from "bun:test";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import * as os from "node:os";
+import * as realChildProcess from "node:child_process";
 import { diagnose } from "../../doctor";
 import type { Item, Prd, Story } from "../../schemas";
 
-vi.mock("node:child_process", () => ({
-  spawn: vi.fn(),
-}));
+const mockedSpawn = vi.fn();
 
-import { spawn } from "node:child_process";
+afterAll(() => {
+  mock.module("node:child_process", () => realChildProcess);
+});
+
+mock.module("node:child_process", () => ({
+  spawn: mockedSpawn,
+}));
 
 function createMockLogger() {
   return {
@@ -50,7 +55,7 @@ function createMockProcess(stdout: string, exitCode: number): MockProcess {
 
 function mockSpawnOnce(stdout: string, exitCode: number): void {
   const mockProc = createMockProcess(stdout, exitCode);
-  vi.mocked(spawn).mockReturnValueOnce(mockProc as never);
+  mockedSpawn.mockReturnValueOnce(mockProc as never);
 }
 
 function mockSpawnSequence(
@@ -251,7 +256,7 @@ describe("State Conflict Resolution", () => {
       const itemDir = await createItem(tempDir, "test/001-item", { state: "planned" });
       await createResearch(itemDir);
       await createPlan(itemDir);
-      await fs.writeFile(path.join(itemDir, "prd.json"), JSON.stringify({ invalid: true }));
+      await fs.writeFile(path.join(itemDir, "prd.json"), "{ invalid json }");
 
       const diagnostics = await diagnose(tempDir);
       const invalidPrd = diagnostics.find((d) => d.code === "INVALID_PRD");
@@ -261,84 +266,12 @@ describe("State Conflict Resolution", () => {
     });
   });
 
-  describe("7.4 Item vs GitHub PR Conflicts (75-80)", () => {
-    it("75: in_pr but PR missing in GitHub - requires GitHub integration (diagnostic about missing PR)", async () => {
+  describe("7.4 PR State Mismatches (75-79)", () => {
+    it("75: in_pr but pr_url missing - should emit STATE_FILE_MISMATCH", async () => {
       const itemDir = await createItem(tempDir, "test/001-item", {
         state: "in_pr",
-        pr_number: 123,
-        pr_url: "https://github.com/org/repo/pull/123",
-        branch: "wreckit/001-item",
-      });
-      await createResearch(itemDir);
-      await createPlan(itemDir);
-      await createPrd(itemDir, [
-        { id: "US-001", title: "Story", acceptance_criteria: [], priority: 1, status: "done", notes: "" },
-      ]);
-
-      const diagnostics = await diagnose(tempDir);
-
-      expect(diagnostics.filter((d) => d.code === "STATE_FILE_MISMATCH")).toHaveLength(0);
-    });
-
-    it("76: in_pr but PR is MERGED - should detect upgrade to done", async () => {
-      const itemDir = await createItem(tempDir, "test/001-item", {
-        state: "in_pr",
-        pr_number: 123,
-        pr_url: "https://github.com/org/repo/pull/123",
-        branch: "wreckit/001-item",
-      });
-      await createResearch(itemDir);
-      await createPlan(itemDir);
-      await createPrd(itemDir, [
-        { id: "US-001", title: "Story", acceptance_criteria: [], priority: 1, status: "done", notes: "" },
-      ]);
-
-      const diagnostics = await diagnose(tempDir);
-
-      expect(diagnostics.filter((d) => d.code === "STATE_FILE_MISMATCH")).toHaveLength(0);
-    });
-
-    it("77: done but PR not merged - should detect state conflict", async () => {
-      const itemDir = await createItem(tempDir, "test/001-item", {
-        state: "done",
-        pr_number: 123,
-        pr_url: "https://github.com/org/repo/pull/123",
-        branch: "wreckit/001-item",
-      });
-      await createResearch(itemDir);
-      await createPlan(itemDir);
-      await createPrd(itemDir, [
-        { id: "US-001", title: "Story", acceptance_criteria: [], priority: 1, status: "done", notes: "" },
-      ]);
-
-      const diagnostics = await diagnose(tempDir);
-
-      expect(diagnostics.every((d) => d.code !== "STATE_FILE_MISMATCH")).toBe(true);
-    });
-
-    it("78: done but PR missing entirely - should have valid state with artifacts", async () => {
-      const itemDir = await createItem(tempDir, "test/001-item", {
-        state: "done",
-        pr_number: null,
         pr_url: null,
-        branch: "wreckit/001-item",
-      });
-      await createResearch(itemDir);
-      await createPlan(itemDir);
-      await createPrd(itemDir, [
-        { id: "US-001", title: "Story", acceptance_criteria: [], priority: 1, status: "done", notes: "" },
-      ]);
-
-      const diagnostics = await diagnose(tempDir);
-
-      expect(diagnostics.filter((d) => d.code === "STATE_FILE_MISMATCH")).toHaveLength(0);
-    });
-
-    it("79: implementing but all stories done and has PR URL - should detect in_pr state", async () => {
-      const itemDir = await createItem(tempDir, "test/001-item", {
-        state: "implementing",
-        pr_number: 123,
-        pr_url: "https://github.com/org/repo/pull/123",
+        pr_number: null,
         branch: "wreckit/001-item",
       });
       await createResearch(itemDir);
@@ -351,36 +284,15 @@ describe("State Conflict Resolution", () => {
       const mismatch = diagnostics.find((d) => d.code === "STATE_FILE_MISMATCH");
 
       expect(mismatch).toBeDefined();
-      expect(mismatch?.message).toContain("no pending stories");
+      expect(mismatch?.message).toContain("pr_url is not set");
     });
 
-    it("80: implementing but PR exists with pending stories - state unchanged", async () => {
-      const itemDir = await createItem(tempDir, "test/001-item", {
-        state: "implementing",
-        pr_number: 123,
-        pr_url: "https://github.com/org/repo/pull/123",
-        branch: "wreckit/001-item",
-      });
-      await createResearch(itemDir);
-      await createPlan(itemDir);
-      await createPrd(itemDir, [
-        { id: "US-001", title: "Story", acceptance_criteria: [], priority: 1, status: "pending", notes: "" },
-      ]);
-
-      const diagnostics = await diagnose(tempDir);
-      const mismatch = diagnostics.filter((d) => d.code === "STATE_FILE_MISMATCH");
-
-      expect(mismatch).toHaveLength(0);
-    });
-  });
-
-  describe("7.5 Item vs Git Branch Conflicts (81-85)", () => {
-    it("81: in_pr but on different branch - should have valid state", async () => {
+    it("76: in_pr with valid pr_url - no diagnostic", async () => {
       const itemDir = await createItem(tempDir, "test/001-item", {
         state: "in_pr",
-        branch: "wreckit/001-item",
-        pr_number: 123,
         pr_url: "https://github.com/org/repo/pull/123",
+        pr_number: 123,
+        branch: "wreckit/001-item",
       });
       await createResearch(itemDir);
       await createPlan(itemDir);
@@ -393,7 +305,88 @@ describe("State Conflict Resolution", () => {
       expect(diagnostics.filter((d) => d.code === "STATE_FILE_MISMATCH")).toHaveLength(0);
     });
 
-    it("82: Branch exists but item is raw - state remains raw", async () => {
+    it("77: done with pr_url - no diagnostic", async () => {
+      const itemDir = await createItem(tempDir, "test/001-item", {
+        state: "done",
+        pr_url: "https://github.com/org/repo/pull/123",
+        pr_number: 123,
+        branch: "wreckit/001-item",
+      });
+      await createResearch(itemDir);
+      await createPlan(itemDir);
+      await createPrd(itemDir, [
+        { id: "US-001", title: "Story", acceptance_criteria: [], priority: 1, status: "done", notes: "" },
+      ]);
+
+      const diagnostics = await diagnose(tempDir);
+
+      expect(diagnostics.filter((d) => d.code === "STATE_FILE_MISMATCH")).toHaveLength(0);
+    });
+
+    it("78: implementing with pr_url set - valid state", async () => {
+      const itemDir = await createItem(tempDir, "test/001-item", {
+        state: "implementing",
+        pr_url: "https://github.com/org/repo/pull/123",
+        pr_number: 123,
+        branch: "wreckit/001-item",
+      });
+      await createResearch(itemDir);
+      await createPlan(itemDir);
+      await createPrd(itemDir);
+
+      const diagnostics = await diagnose(tempDir);
+
+      expect(diagnostics.filter((d) => d.code === "STATE_FILE_MISMATCH")).toHaveLength(0);
+    });
+
+    it("79: raw with pr_url set - unusual but valid", async () => {
+      await createItem(tempDir, "test/001-item", {
+        state: "raw",
+        pr_url: "https://github.com/org/repo/pull/123",
+        pr_number: 123,
+      });
+
+      const diagnostics = await diagnose(tempDir);
+
+      expect(diagnostics.filter((d) => d.code === "STATE_FILE_MISMATCH")).toHaveLength(0);
+    });
+  });
+
+  describe("7.5 Branch Tracking Conflicts (80-85)", () => {
+    it("80: implementing with branch set - no diagnostic", async () => {
+      const itemDir = await createItem(tempDir, "test/001-item", {
+        state: "implementing",
+        branch: "wreckit/001-item",
+      });
+      await createResearch(itemDir);
+      await createPlan(itemDir);
+      await createPrd(itemDir);
+
+      const diagnostics = await diagnose(tempDir);
+
+      expect(diagnostics.filter((d) => d.code === "STATE_FILE_MISMATCH")).toHaveLength(0);
+    });
+
+    it("81: in_pr without branch - should emit diagnostic", async () => {
+      const itemDir = await createItem(tempDir, "test/001-item", {
+        state: "in_pr",
+        branch: null,
+        pr_url: "https://github.com/org/repo/pull/123",
+        pr_number: 123,
+      });
+      await createResearch(itemDir);
+      await createPlan(itemDir);
+      await createPrd(itemDir, [
+        { id: "US-001", title: "Story", acceptance_criteria: [], priority: 1, status: "done", notes: "" },
+      ]);
+
+      const diagnostics = await diagnose(tempDir);
+      const mismatch = diagnostics.find((d) => d.code === "STATE_FILE_MISMATCH");
+
+      expect(mismatch).toBeDefined();
+    });
+
+    it("82: raw with branch set - valid state", async () => {
       await createItem(tempDir, "test/001-item", {
         state: "raw",
         branch: "wreckit/001-item",

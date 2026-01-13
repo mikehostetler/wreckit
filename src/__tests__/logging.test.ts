@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, mock, spyOn, beforeEach, afterEach, vi } from "bun:test";
 import { createLogger, initLogger, setLogger, logger, type Logger } from '../logging';
 import {
   WreckitError,

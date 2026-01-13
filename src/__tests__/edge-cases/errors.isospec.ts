@@ -1,15 +1,11 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, afterAll, vi } from "bun:test";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import * as os from "node:os";
 import type { Logger } from "../../logging";
 import { RepoNotFoundError } from "../../errors";
 
-vi.mock("node:child_process", () => ({
-  spawn: vi.fn(),
-}));
-
-import { spawn } from "node:child_process";
+import * as childProcess from "node:child_process";
 import {
   runAgent,
   type AgentConfig,
@@ -21,6 +17,8 @@ import {
   type GitOptions,
 } from "../../git";
 import { findRepoRoot } from "../../fs";
+
+const spawn = vi.spyOn(childProcess, "spawn");
 
 function createMockLogger(): Logger {
   return {
@@ -85,12 +83,12 @@ function createMockProcessWithError(error: Error): MockProcess {
 
 function mockSpawnOnce(stdout: string, exitCode: number): void {
   const mockProc = createMockProcess(stdout, exitCode);
-  vi.mocked(spawn).mockReturnValueOnce(mockProc as never);
+  spawn.mockReturnValueOnce(mockProc as any);
 }
 
 function mockSpawnError(error: Error): MockProcess {
   const mockProc = createMockProcessWithError(error);
-  vi.mocked(spawn).mockReturnValueOnce(mockProc as never);
+  spawn.mockReturnValueOnce(mockProc as any);
   return mockProc;
 }
 
@@ -100,12 +98,17 @@ describe("Edge Case Tests 59-65: Error Conditions", () => {
 
   beforeEach(async () => {
     vi.clearAllMocks();
+    spawn.mockReset();
     tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "wreckit-error-test-"));
     mockLogger = createMockLogger();
   });
 
   afterEach(async () => {
     await fs.rm(tempDir, { recursive: true, force: true });
+  });
+
+  afterAll(() => {
+    spawn.mockRestore();
   });
 
   describe("Test 59: Agent spawn failure - config points to non-existent binary", () => {
@@ -178,7 +181,7 @@ describe("Edge Case Tests 59-65: Error Conditions", () => {
         }
       });
 
-      vi.mocked(spawn).mockReturnValueOnce(mockProc as never);
+      spawn.mockReturnValueOnce(mockProc as any);
 
       const config: AgentConfig = {
         command: "sleep",
@@ -230,7 +233,7 @@ describe("Edge Case Tests 59-65: Error Conditions", () => {
         }
       });
 
-      vi.mocked(spawn).mockReturnValueOnce(mockProc as never);
+      spawn.mockReturnValueOnce(mockProc as any);
 
       const config: AgentConfig = {
         command: "long-running-agent",

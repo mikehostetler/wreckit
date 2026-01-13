@@ -1,15 +1,15 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, mock, spyOn, beforeEach, afterEach, vi } from "bun:test";
 import { executeCommand, handleError, CommandOptions } from '../cli-utils';
 import { WreckitError, InterruptedError, ConfigError } from '../errors';
 import { Logger } from '../logging';
 
 function createMockLogger(): Logger {
   return {
-    debug: vi.fn(),
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
-    json: vi.fn(),
+    debug: mock(() => {}),
+    info: mock(() => {}),
+    warn: mock(() => {}),
+    error: mock(() => {}),
+    json: mock(() => {}),
   };
 }
 

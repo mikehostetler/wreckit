@@ -1,17 +1,23 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterAll, mock, vi } from "bun:test";
+import * as realChildProcess from "node:child_process";
 import type { Logger } from "../../logging";
 import type { GitOptions } from "../../git";
 
-vi.mock("node:child_process", () => ({
-  spawn: vi.fn(),
+const mockedSpawn = vi.fn();
+
+afterAll(() => {
+  mock.module("node:child_process", () => realChildProcess);
+});
+
+mock.module("node:child_process", () => ({
+  spawn: mockedSpawn,
 }));
 
-import { spawn } from "node:child_process";
-import {
+const {
   getCurrentBranch,
   branchExists,
   ensureBranch,
-} from "../../git";
+} = await import("../../git");
 
 function createMockLogger(): Logger {
   return {
@@ -51,7 +57,7 @@ function createMockProcess(stdout: string, exitCode: number): MockProcess {
 
 function mockSpawnOnce(stdout: string, exitCode: number): void {
   const mockProc = createMockProcess(stdout, exitCode);
-  vi.mocked(spawn).mockReturnValueOnce(mockProc as never);
+  mockedSpawn.mockReturnValueOnce(mockProc as never);
 }
 
 function mockSpawnSequence(
@@ -70,6 +76,7 @@ function mockSpawnSequence(
 describe("Branch Operations Edge Cases", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockedSpawn.mockReset();
   });
 
   /**
@@ -98,20 +105,20 @@ describe("Branch Operations Edge Cases", () => {
       );
       
       // Verify the git commands called
-      expect(spawn).toHaveBeenCalledTimes(3);
-      expect(spawn).toHaveBeenNthCalledWith(
+      expect(mockedSpawn).toHaveBeenCalledTimes(3);
+      expect(mockedSpawn).toHaveBeenNthCalledWith(
         1,
         "git",
         ["show-ref", "--verify", "--quiet", "refs/heads/wreckit/item-1"],
         expect.any(Object)
       );
-      expect(spawn).toHaveBeenNthCalledWith(
+      expect(mockedSpawn).toHaveBeenNthCalledWith(
         2,
         "git",
         ["checkout", "main"],
         expect.any(Object)
       );
-      expect(spawn).toHaveBeenNthCalledWith(
+      expect(mockedSpawn).toHaveBeenNthCalledWith(
         3,
         "git",
         ["checkout", "-b", "wreckit/item-1"],
@@ -158,13 +165,13 @@ describe("Branch Operations Edge Cases", () => {
       expect(result.created).toBe(true);
       
       // Verify it first checked out base branch (main) before creating
-      expect(spawn).toHaveBeenNthCalledWith(
+      expect(mockedSpawn).toHaveBeenNthCalledWith(
         2,
         "git",
         ["checkout", "main"],
         expect.any(Object)
       );
-      expect(spawn).toHaveBeenNthCalledWith(
+      expect(mockedSpawn).toHaveBeenNthCalledWith(
         3,
         "git",
         ["checkout", "-b", "wreckit/raw-1"],
@@ -187,7 +194,7 @@ describe("Branch Operations Edge Cases", () => {
       expect(result.created).toBe(true);
       
       // Should checkout master as base branch
-      expect(spawn).toHaveBeenNthCalledWith(
+      expect(mockedSpawn).toHaveBeenNthCalledWith(
         2,
         "git",
         ["checkout", "master"],
@@ -293,8 +300,8 @@ describe("Branch Operations Edge Cases", () => {
       await ensureBranch("main", "wreckit/", "existing-branch", options);
 
       // Only 2 spawn calls: branchExists + checkout (no checkout -b)
-      expect(spawn).toHaveBeenCalledTimes(2);
-      expect(spawn).not.toHaveBeenCalledWith(
+      expect(mockedSpawn).toHaveBeenCalledTimes(2);
+      expect(mockedSpawn).not.toHaveBeenCalledWith(
         "git",
         ["checkout", "-b", expect.any(String)],
         expect.any(Object)
@@ -320,7 +327,7 @@ describe("Branch Operations Edge Cases", () => {
       const result = await branchExists("nonexistent-branch", options);
 
       expect(result).toBe(false);
-      expect(spawn).toHaveBeenCalledWith(
+      expect(mockedSpawn).toHaveBeenCalledWith(
         "git",
         ["show-ref", "--verify", "--quiet", "refs/heads/nonexistent-branch"],
         expect.any(Object)
@@ -369,8 +376,7 @@ describe("Branch Operations Edge Cases", () => {
       expect(result).toBe(false);
     });
 
-    it("ensureBranch logs error details when branch creation fails after existence check", async () => {
-      const mockStderr = vi.fn();
+    it("ensureBranch throws when branch creation fails after existence check", async () => {
       const createMockProcessWithStderr = (
         stdout: string,
         stderr: string,
@@ -384,7 +390,6 @@ describe("Branch Operations Edge Cases", () => {
         const stderrOn = vi.fn((event: string, cb: (data: Buffer) => void) => {
           if (event === "data" && stderr) {
             setTimeout(() => cb(Buffer.from(stderr)), 0);
-            mockStderr(stderr);
           }
         });
         const onFn = vi.fn((event: string, cb: (code: number | null) => void) => {
@@ -406,18 +411,15 @@ describe("Branch Operations Edge Cases", () => {
       mockSpawnOnce("", 0);
       // checkout -b fails (could fail for various reasons)
       const failProc = createMockProcessWithStderr("", "fatal: branch already exists", 128);
-      vi.mocked(spawn).mockReturnValueOnce(failProc as never);
+      mockedSpawn.mockReturnValueOnce(failProc as never);
 
       const logger = createMockLogger();
       const options: GitOptions = { cwd: "/repo", logger };
 
-      // ensureBranch should still complete (runGitCommand doesn't throw on non-zero exit)
-      const result = await ensureBranch("main", "wreckit/", "problem-branch", options);
-
-      // Branch was "created" from ensureBranch's perspective
-      // (the function doesn't check if checkout -b succeeded)
-      expect(result.branchName).toBe("wreckit/problem-branch");
-      expect(result.created).toBe(true);
+      // ensureBranch should throw when branch creation fails
+      await expect(
+        ensureBranch("main", "wreckit/", "problem-branch", options)
+      ).rejects.toThrow("Failed to create branch wreckit/problem-branch");
     });
   });
 
@@ -477,7 +479,7 @@ describe("Branch Operations Edge Cases", () => {
 
       expect(result.branchName).toBe("wreckit/dry-run-item");
       expect(result.created).toBe(true);
-      expect(spawn).not.toHaveBeenCalled();
+      expect(mockedSpawn).not.toHaveBeenCalled();
       expect(logger.info).toHaveBeenCalledWith(
         expect.stringContaining("[dry-run]")
       );

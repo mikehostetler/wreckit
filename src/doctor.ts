@@ -237,6 +237,16 @@ async function diagnoseItem(
     });
   }
 
+  if (item.state === "in_pr" && !item.branch) {
+    diagnostics.push({
+      itemId,
+      severity: "warning",
+      code: "STATE_FILE_MISMATCH",
+      message: `State is 'in_pr' but branch is not set`,
+      fixable: false,
+    });
+  }
+
   return diagnostics;
 }
 

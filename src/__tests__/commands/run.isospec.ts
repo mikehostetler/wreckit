@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi, mock } from "bun:test";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import * as os from "node:os";
@@ -6,32 +6,24 @@ import type { Item } from "../../schemas";
 import type { Logger } from "../../logging";
 import type { PhaseResult } from "../../workflow";
 
-vi.mock("../../workflow", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../../workflow")>();
-  return {
-    ...actual,
-    runPhaseResearch: vi.fn(),
-    runPhasePlan: vi.fn(),
-    runPhaseImplement: vi.fn(),
-    runPhasePr: vi.fn(),
-    runPhaseComplete: vi.fn(),
-  };
-});
+const mockedRunPhaseResearch = vi.fn();
+const mockedRunPhasePlan = vi.fn();
+const mockedRunPhaseImplement = vi.fn();
+const mockedRunPhasePr = vi.fn();
+const mockedRunPhaseComplete = vi.fn();
 
-import {
-  runPhaseResearch,
-  runPhasePlan,
-  runPhaseImplement,
-  runPhasePr,
-  runPhaseComplete,
-} from "../../workflow";
-import { runCommand } from "../../commands/run";
+const originalGetNextPhase = (await import("../../workflow")).getNextPhase;
 
-const mockedRunPhaseResearch = vi.mocked(runPhaseResearch);
-const mockedRunPhasePlan = vi.mocked(runPhasePlan);
-const mockedRunPhaseImplement = vi.mocked(runPhaseImplement);
-const mockedRunPhasePr = vi.mocked(runPhasePr);
-const mockedRunPhaseComplete = vi.mocked(runPhaseComplete);
+mock.module("../../workflow", () => ({
+  runPhaseResearch: mockedRunPhaseResearch,
+  runPhasePlan: mockedRunPhasePlan,
+  runPhaseImplement: mockedRunPhaseImplement,
+  runPhasePr: mockedRunPhasePr,
+  runPhaseComplete: mockedRunPhaseComplete,
+  getNextPhase: originalGetNextPhase,
+}));
+
+const { runCommand } = await import("../../commands/run");
 
 function createMockLogger(): Logger {
   return {

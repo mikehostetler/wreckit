@@ -19,7 +19,11 @@ import {
   getProgressLogPath,
 } from "../fs/paths";
 import { readItem, writeItem, readPrd, writePrd } from "../fs/json";
-import { loadPromptTemplate, renderPrompt, type PromptVariables } from "../prompts";
+import {
+  loadPromptTemplate,
+  renderPrompt,
+  type PromptVariables,
+} from "../prompts";
 import { runAgent, getAgentConfig } from "../agent/runner";
 import {
   ensureBranch,
@@ -140,7 +144,15 @@ export async function runPhaseResearch(
   itemId: string,
   options: WorkflowOptions
 ): Promise<PhaseResult> {
-  const { root, config, logger, force = false, dryRun = false, mockAgent = false, onAgentOutput } = options;
+  const {
+    root,
+    config,
+    logger,
+    force = false,
+    dryRun = false,
+    mockAgent = false,
+    onAgentOutput,
+  } = options;
 
   let item = await loadItem(root, itemId);
   const researchPath = getResearchPath(root, item.id);
@@ -155,7 +167,7 @@ export async function runPhaseResearch(
   }
 
   const targetState: WorkflowState = "researched";
-  
+
   if (item.state !== "raw" && !force) {
     return {
       success: false,
@@ -232,7 +244,15 @@ export async function runPhasePlan(
   itemId: string,
   options: WorkflowOptions
 ): Promise<PhaseResult> {
-  const { root, config, logger, force = false, dryRun = false, mockAgent = false, onAgentOutput } = options;
+  const {
+    root,
+    config,
+    logger,
+    force = false,
+    dryRun = false,
+    mockAgent = false,
+    onAgentOutput,
+  } = options;
 
   let item = await loadItem(root, itemId);
   const planPath = getPlanPath(root, item.id);
@@ -337,7 +357,15 @@ export async function runPhaseImplement(
   itemId: string,
   options: WorkflowOptions
 ): Promise<PhaseResult> {
-  const { root, config, logger, force = false, dryRun = false, mockAgent = false, onAgentOutput } = options;
+  const {
+    root,
+    config,
+    logger,
+    force = false,
+    dryRun = false,
+    mockAgent = false,
+    onAgentOutput,
+  } = options;
 
   let item = await loadItem(root, itemId);
   const itemDir = getItemDir(root, item.id);
@@ -353,7 +381,7 @@ export async function runPhaseImplement(
   if (mockAgent) {
     item = { ...item, state: "implementing", last_error: null };
     await saveItem(root, item);
-    
+
     const template = await loadPromptTemplate(root, "implement");
     const variables = await buildPromptVariables(root, item, config);
     const prompt = renderPrompt(template, variables);
@@ -506,7 +534,7 @@ export async function runPhasePr(
   await pushBranch(branchResult.branchName, gitOptions);
 
   const prTitle = `[${item.section}] ${item.title}`;
-  const prBody = `## Overview\n\n${item.overview}\n\n---\n\n*Automated PR created by wreckitloop*`;
+  const prBody = `## Overview\n\n${item.overview}\n\n---\n\n*Automated PR created by wreckit*`;
 
   const prResult = await createOrUpdatePr(
     config.base_branch,
@@ -527,7 +555,9 @@ export async function runPhasePr(
   await saveItem(root, item);
 
   logger.info(
-    `${prResult.created ? "Created" : "Updated"} PR for ${itemId}: ${prResult.url}`
+    `${prResult.created ? "Created" : "Updated"} PR for ${itemId}: ${
+      prResult.url
+    }`
   );
 
   return { success: true, item };

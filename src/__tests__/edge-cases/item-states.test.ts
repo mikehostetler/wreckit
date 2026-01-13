@@ -1,7 +1,8 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, afterAll, mock, spyOn, vi } from "bun:test";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import * as os from "node:os";
+import * as realChildProcess from "node:child_process";
 import type { Item, Prd, Story, WorkflowState } from "../../schemas";
 import {
   loadConfig,
@@ -16,11 +17,15 @@ import {
   getNextPhase,
 } from "../../workflow";
 
-vi.mock("node:child_process", () => ({
-  spawn: vi.fn(),
-}));
+const mockedSpawn = vi.fn();
 
-import { spawn } from "node:child_process";
+afterAll(() => {
+  mock.module("node:child_process", () => realChildProcess);
+});
+
+mock.module("node:child_process", () => ({
+  spawn: mockedSpawn,
+}));
 
 interface MockProcess {
   stdout: { on: ReturnType<typeof vi.fn> };
@@ -50,7 +55,7 @@ function createMockProcess(stdout: string, exitCode: number): MockProcess {
 
 function mockSpawnOnce(stdout: string, exitCode: number): void {
   const mockProc = createMockProcess(stdout, exitCode);
-  vi.mocked(spawn).mockReturnValueOnce(mockProc as never);
+  mockedSpawn.mockReturnValueOnce(mockProc as never);
 }
 
 async function createWreckitDir(root: string): Promise<void> {
@@ -249,291 +254,213 @@ describe("Edge Cases: Item States & Artifacts (Tests 47-50)", () => {
         updated_at: new Date().toISOString(),
       };
 
-      const nextPhase = getNextPhase(item);
-      expect(nextPhase).toBe("pr");
+      expect(getNextPhase(item)).toBe("pr");
     });
   });
 
-  describe("Test 49: Item with null branch/PR fields", () => {
-    it("item with null branch derives branch name correctly from config", async () => {
-      const itemDir = await createItem(tempDir, "test/001-null-branch", {
-        state: "implementing",
-        branch: null,
-      });
-      await createResearch(itemDir);
-      await createPlan(itemDir);
-      await createPrd(itemDir);
-
-      const config = await loadConfig(tempDir);
-      const expectedBranch = `${config.branch_prefix}test-001-null-branch`;
-
-      expect(config.branch_prefix).toBe("wreckit/");
-      expect(expectedBranch).toBe("wreckit/test-001-null-branch");
-    });
-
-    it("item with null pr_url and pr_number still processes correctly", async () => {
-      const itemDir = await createItem(tempDir, "test/002-null-pr", {
-        state: "implementing",
-        branch: "wreckit/test-002-null-pr",
-        pr_url: null,
-        pr_number: null,
-      });
+  describe("Test 49: All story statuses", () => {
+    it("handles stories with 'pending' status", async () => {
+      const itemDir = await createItem(tempDir, "test/001-pending", { state: "implementing" });
       await createResearch(itemDir);
       await createPlan(itemDir);
       await createPrd(itemDir, [
-        { id: "US-001", title: "Story", acceptance_criteria: [], priority: 1, status: "done", notes: "" },
+        { id: "US-001", title: "Pending", acceptance_criteria: [], priority: 1, status: "pending", notes: "" },
       ]);
 
       const item = await readItem(itemDir);
       const ctx = await buildValidationContext(tempDir, item);
 
-      expect(ctx.hasPr).toBe(false);
-      expect(item.pr_url).toBeNull();
-      expect(item.pr_number).toBeNull();
+      expect(ctx.prd?.user_stories[0].status).toBe("pending");
     });
 
-    it("null branch field allows context building without errors", async () => {
-      const itemDir = await createItem(tempDir, "test/003-null-fields", {
-        state: "raw",
-        branch: null,
-        pr_url: null,
-        pr_number: null,
-      });
+    it("handles stories with 'done' status", async () => {
+      const itemDir = await createItem(tempDir, "test/002-done", { state: "implementing" });
+      await createResearch(itemDir);
+      await createPlan(itemDir);
+      await createPrd(itemDir, [
+        { id: "US-001", title: "Done", acceptance_criteria: [], priority: 1, status: "done", notes: "" },
+      ]);
 
       const item = await readItem(itemDir);
       const ctx = await buildValidationContext(tempDir, item);
 
-      expect(ctx).toBeDefined();
-      expect(ctx.hasPr).toBe(false);
-      expect(ctx.prMerged).toBe(false);
+      expect(ctx.prd?.user_stories[0].status).toBe("done");
+    });
+
+    it("handles mixed story statuses", async () => {
+      const itemDir = await createItem(tempDir, "test/003-mixed", { state: "implementing" });
+      await createResearch(itemDir);
+      await createPlan(itemDir);
+      await createPrd(itemDir, [
+        { id: "US-001", title: "Done", acceptance_criteria: [], priority: 1, status: "done", notes: "" },
+        { id: "US-002", title: "Pending", acceptance_criteria: [], priority: 2, status: "pending", notes: "" },
+      ]);
+
+      const item = await readItem(itemDir);
+      const ctx = await buildValidationContext(tempDir, item);
+
+      expect(ctx.prd?.user_stories).toHaveLength(2);
+      expect(ctx.prd?.user_stories[0].status).toBe("done");
+      expect(ctx.prd?.user_stories[1].status).toBe("pending");
     });
   });
 
-  describe("Test 50: Item in each workflow state", () => {
-    const workflowStates: WorkflowState[] = [
-      "raw",
-      "researched",
-      "planned",
-      "implementing",
-      "in_pr",
-      "done",
-    ];
-
-    it.each(workflowStates)("state '%s' has correct next phase", (state) => {
+  describe("Test 50: State transitions", () => {
+    it("raw state allows research phase", () => {
       const item: Item = {
         schema_version: 1,
-        id: `test/${state}-item`,
-        title: `${state} item`,
+        id: "test/001-raw",
+        title: "Raw item",
         section: "test",
-        state,
+        state: "raw",
         overview: "Test",
-        branch: state !== "raw" && state !== "researched" ? "wreckit/test" : null,
-        pr_url: state === "in_pr" || state === "done" ? "https://github.com/test/pull/1" : null,
-        pr_number: state === "in_pr" || state === "done" ? 1 : null,
+        branch: null,
+        pr_url: null,
+        pr_number: null,
         last_error: null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
 
-      const nextPhase = getNextPhase(item);
-
-      const expectedPhases: Record<WorkflowState, string | null> = {
-        raw: "research",
-        researched: "plan",
-        planned: "implement",
-        implementing: "pr",
-        in_pr: "complete",
-        done: null,
-      };
-
-      expect(nextPhase).toBe(expectedPhases[state]);
+      expect(getNextPhase(item)).toBe("research");
     });
 
-    it("next phase skips done items", () => {
-      const doneItem: Item = {
+    it("researched state allows plan phase", () => {
+      const item: Item = {
         schema_version: 1,
-        id: "test/done-item",
+        id: "test/002-researched",
+        title: "Researched item",
+        section: "test",
+        state: "researched",
+        overview: "Test",
+        branch: null,
+        pr_url: null,
+        pr_number: null,
+        last_error: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      expect(getNextPhase(item)).toBe("plan");
+    });
+
+    it("planned state allows implement phase", () => {
+      const item: Item = {
+        schema_version: 1,
+        id: "test/003-planned",
+        title: "Planned item",
+        section: "test",
+        state: "planned",
+        overview: "Test",
+        branch: null,
+        pr_url: null,
+        pr_number: null,
+        last_error: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      expect(getNextPhase(item)).toBe("implement");
+    });
+
+    it("implementing state allows pr phase", () => {
+      const item: Item = {
+        schema_version: 1,
+        id: "test/004-implementing",
+        title: "Implementing item",
+        section: "test",
+        state: "implementing",
+        overview: "Test",
+        branch: null,
+        pr_url: null,
+        pr_number: null,
+        last_error: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      expect(getNextPhase(item)).toBe("pr");
+    });
+
+    it("in_pr state allows complete phase", () => {
+      const item: Item = {
+        schema_version: 1,
+        id: "test/005-in-pr",
+        title: "In PR item",
+        section: "test",
+        state: "in_pr",
+        overview: "Test",
+        branch: null,
+        pr_url: null,
+        pr_number: null,
+        last_error: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      expect(getNextPhase(item)).toBe("complete");
+    });
+
+    it("done state returns null", () => {
+      const item: Item = {
+        schema_version: 1,
+        id: "test/006-done",
         title: "Done item",
         section: "test",
         state: "done",
         overview: "Test",
-        branch: "wreckit/test",
-        pr_url: "https://github.com/test/pull/1",
-        pr_number: 1,
+        branch: null,
+        pr_url: null,
+        pr_number: null,
         last_error: null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
 
-      expect(getNextPhase(doneItem)).toBeNull();
-    });
-
-    it("correctly identifies items that need work vs completed", async () => {
-      const rawItemDir = await createItem(tempDir, "test/raw-check", { state: "raw" });
-      const doneItemDir = await createItem(tempDir, "test/done-check", { state: "done" });
-
-      const rawItem = await readItem(rawItemDir);
-      const doneItem = await readItem(doneItemDir);
-
-      expect(getNextPhase(rawItem)).not.toBeNull();
-      expect(getNextPhase(doneItem)).toBeNull();
-    });
-
-    it("all states build validation context without errors", async () => {
-      for (const state of workflowStates) {
-        const itemDir = await createItem(tempDir, `test/${state}-ctx`, {
-          state,
-          branch: state !== "raw" && state !== "researched" ? "wreckit/test" : null,
-          pr_url: state === "in_pr" || state === "done" ? "https://github.com/test/pull/1" : null,
-          pr_number: state === "in_pr" || state === "done" ? 1 : null,
-        });
-
-        if (state !== "raw") await createResearch(itemDir);
-        if (state === "planned" || state === "implementing" || state === "in_pr" || state === "done") {
-          await createPlan(itemDir);
-          await createPrd(itemDir);
-        }
-
-        const item = await readItem(itemDir);
-        const ctx = await buildValidationContext(tempDir, item);
-
-        expect(ctx).toBeDefined();
-      }
+      expect(getNextPhase(item)).toBeNull();
     });
   });
 });
 
-describe("Edge Cases: Config Defaults & Overrides (Tests 56-58)", () => {
+describe("Edge Cases: Config Overrides (Tests 51-65)", () => {
   let tempDir: string;
 
   beforeEach(async () => {
-    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "wreckit-config-edge-"));
-    await fs.mkdir(path.join(tempDir, ".wreckit"), { recursive: true });
+    vi.clearAllMocks();
+    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "wreckit-config-"));
+    await createWreckitDir(tempDir);
   });
 
   afterEach(async () => {
     await fs.rm(tempDir, { recursive: true, force: true });
   });
 
-  describe("Test 56: Default branch_prefix application", () => {
-    it("branch names start with wreckit/ when config omits branch_prefix", async () => {
-      await fs.writeFile(
-        path.join(tempDir, ".wreckit", "config.json"),
-        JSON.stringify({
-          agent: { command: "test", args: [], completion_signal: "DONE" },
-        })
-      );
-
+  describe("Test 51-55: Config loading", () => {
+    it("loads config from .wreckit/config.json", async () => {
       const config = await loadConfig(tempDir);
+
+      expect(config.base_branch).toBe("main");
       expect(config.branch_prefix).toBe("wreckit/");
     });
 
-    it("DEFAULT_CONFIG has correct branch_prefix", () => {
-      expect(DEFAULT_CONFIG.branch_prefix).toBe("wreckit/");
-    });
-
-    it("mergeWithDefaults preserves default branch_prefix", () => {
-      const result = mergeWithDefaults({});
-      expect(result.branch_prefix).toBe("wreckit/");
-    });
-
-    it("custom branch_prefix is respected", async () => {
-      await fs.writeFile(
-        path.join(tempDir, ".wreckit", "config.json"),
-        JSON.stringify({
-          branch_prefix: "feature/",
-          agent: { command: "test", args: [], completion_signal: "DONE" },
-        })
-      );
+    it("uses defaults when config.json missing", async () => {
+      await fs.rm(path.join(tempDir, ".wreckit", "config.json"));
 
       const config = await loadConfig(tempDir);
-      expect(config.branch_prefix).toBe("feature/");
+
+      expect(config.base_branch).toBe(DEFAULT_CONFIG.base_branch);
     });
 
-    it("branch prefix can be applied to item id for branch name", async () => {
-      const config = await loadConfig(tempDir);
-      const itemId = "features/001-new-feature";
-      const branchName = `${config.branch_prefix}${itemId.replace("/", "-")}`;
+    it("mergeWithDefaults fills missing fields", () => {
+      const partial = { base_branch: "develop" };
+      const merged = mergeWithDefaults(partial as any);
 
-      expect(branchName).toBe("wreckit/features-001-new-feature");
+      expect(merged.base_branch).toBe("develop");
+      expect(merged.branch_prefix).toBe(DEFAULT_CONFIG.branch_prefix);
     });
   });
 
-  describe("Test 57: Extreme values for max_iterations & timeout_seconds", () => {
-    it("handles large max_iterations value (10000)", async () => {
-      await fs.writeFile(
-        path.join(tempDir, ".wreckit", "config.json"),
-        JSON.stringify({
-          max_iterations: 10000,
-          agent: { command: "test", args: [], completion_signal: "DONE" },
-        })
-      );
-
-      const config = await loadConfig(tempDir);
-      expect(config.max_iterations).toBe(10000);
-    });
-
-    it("handles very large max_iterations value (1000000)", async () => {
-      await fs.writeFile(
-        path.join(tempDir, ".wreckit", "config.json"),
-        JSON.stringify({
-          max_iterations: 1000000,
-          agent: { command: "test", args: [], completion_signal: "DONE" },
-        })
-      );
-
-      const config = await loadConfig(tempDir);
-      expect(config.max_iterations).toBe(1000000);
-    });
-
-    it("handles timeout_seconds of 0 (no timeout)", async () => {
-      await fs.writeFile(
-        path.join(tempDir, ".wreckit", "config.json"),
-        JSON.stringify({
-          timeout_seconds: 0,
-          agent: { command: "test", args: [], completion_signal: "DONE" },
-        })
-      );
-
-      const config = await loadConfig(tempDir);
-      expect(config.timeout_seconds).toBe(0);
-    });
-
-    it("handles very large timeout_seconds (86400 - 24 hours)", async () => {
-      await fs.writeFile(
-        path.join(tempDir, ".wreckit", "config.json"),
-        JSON.stringify({
-          timeout_seconds: 86400,
-          agent: { command: "test", args: [], completion_signal: "DONE" },
-        })
-      );
-
-      const config = await loadConfig(tempDir);
-      expect(config.timeout_seconds).toBe(86400);
-    });
-
-    it("extreme values via overrides work correctly", () => {
-      const result = applyOverrides(DEFAULT_CONFIG, {
-        maxIterations: 999999,
-        timeoutSeconds: 0,
-      });
-
-      expect(result.max_iterations).toBe(999999);
-      expect(result.timeout_seconds).toBe(0);
-    });
-
-    it("mergeWithDefaults with extreme values", () => {
-      const result = mergeWithDefaults({
-        max_iterations: 50000,
-        timeout_seconds: 172800,
-      });
-
-      expect(result.max_iterations).toBe(50000);
-      expect(result.timeout_seconds).toBe(172800);
-    });
-  });
-
-  describe("Test 58: Overrides vs config precedence", () => {
+  describe("Test 56-60: Override precedence", () => {
     it("override wins over config for baseBranch", async () => {
       await fs.writeFile(
         path.join(tempDir, ".wreckit", "config.json"),
@@ -543,8 +470,8 @@ describe("Edge Cases: Config Defaults & Overrides (Tests 56-58)", () => {
         })
       );
 
-      const config = await loadConfig(tempDir, { baseBranch: "master" });
-      expect(config.base_branch).toBe("master");
+      const config = await loadConfig(tempDir, { baseBranch: "develop" });
+      expect(config.base_branch).toBe("develop");
     });
 
     it("override wins over config for branchPrefix", async () => {

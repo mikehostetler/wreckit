@@ -1,13 +1,19 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterAll, mock, spyOn, vi } from "bun:test";
 import type { Logger } from "../logging";
 import type { GitOptions } from "../git";
+import * as realChildProcess from "node:child_process";
 
-vi.mock("node:child_process", () => ({
-  spawn: vi.fn(),
+const mockedSpawn = vi.fn();
+
+mock.module("node:child_process", () => ({
+  spawn: mockedSpawn,
 }));
 
-import { spawn } from "node:child_process";
-import {
+afterAll(() => {
+  mock.module("node:child_process", () => realChildProcess);
+});
+
+const {
   isGitRepo,
   getCurrentBranch,
   branchExists,
@@ -20,7 +26,7 @@ import {
   getPrByBranch,
   runGitCommand,
   runGhCommand,
-} from "../git";
+} = await import("../git");
 
 function createMockLogger(): Logger {
   return {
@@ -60,7 +66,7 @@ function createMockProcess(stdout: string, exitCode: number): MockProcess {
 
 function mockSpawnOnce(stdout: string, exitCode: number): void {
   const mockProc = createMockProcess(stdout, exitCode);
-  vi.mocked(spawn).mockReturnValueOnce(mockProc as never);
+  mockedSpawn.mockReturnValueOnce(mockProc as never);
 }
 
 function mockSpawnSequence(
@@ -82,7 +88,7 @@ describe("isGitRepo", () => {
     const result = await isGitRepo("/some/path");
 
     expect(result).toBe(true);
-    expect(spawn).toHaveBeenCalledWith(
+    expect(mockedSpawn).toHaveBeenCalledWith(
       "git",
       ["rev-parse", "--git-dir"],
       expect.objectContaining({ cwd: "/some/path" })
@@ -113,7 +119,7 @@ describe("getCurrentBranch", () => {
     const result = await getCurrentBranch(options);
 
     expect(result).toBe("main");
-    expect(spawn).toHaveBeenCalledWith(
+    expect(mockedSpawn).toHaveBeenCalledWith(
       "git",
       ["rev-parse", "--abbrev-ref", "HEAD"],
       expect.objectContaining({ cwd: "/repo" })
@@ -148,7 +154,7 @@ describe("branchExists", () => {
     const result = await branchExists("feature-branch", options);
 
     expect(result).toBe(true);
-    expect(spawn).toHaveBeenCalledWith(
+    expect(mockedSpawn).toHaveBeenCalledWith(
       "git",
       ["show-ref", "--verify", "--quiet", "refs/heads/feature-branch"],
       expect.objectContaining({ cwd: "/repo" })
@@ -216,7 +222,7 @@ describe("ensureBranch", () => {
 
     expect(result.branchName).toBe("wreckit/item-1");
     expect(result.created).toBe(true);
-    expect(spawn).not.toHaveBeenCalled();
+    expect(mockedSpawn).not.toHaveBeenCalled();
     expect(logger.info).toHaveBeenCalledWith(
       expect.stringContaining("[dry-run]")
     );
@@ -252,26 +258,23 @@ describe("commitAll", () => {
     vi.clearAllMocks();
   });
 
-  it("adds and commits all changes", async () => {
+  it("adds and commits changes", async () => {
     mockSpawnSequence([
       { stdout: "", exitCode: 0 },
       { stdout: "", exitCode: 0 },
     ]);
     const options: GitOptions = { cwd: "/repo", logger: createMockLogger() };
 
-    await commitAll("feat: test commit", options);
+    await commitAll("Test commit message", options);
 
-    expect(spawn).toHaveBeenCalledTimes(2);
-    expect(spawn).toHaveBeenNthCalledWith(
-      1,
+    expect(mockedSpawn).toHaveBeenCalledWith(
       "git",
       ["add", "-A"],
       expect.any(Object)
     );
-    expect(spawn).toHaveBeenNthCalledWith(
-      2,
+    expect(mockedSpawn).toHaveBeenCalledWith(
       "git",
-      ["commit", "-m", "feat: test commit"],
+      ["commit", "-m", "Test commit message"],
       expect.any(Object)
     );
   });
@@ -280,9 +283,9 @@ describe("commitAll", () => {
     const logger = createMockLogger();
     const options: GitOptions = { cwd: "/repo", logger, dryRun: true };
 
-    await commitAll("test message", options);
+    await commitAll("Test commit", options);
 
-    expect(spawn).not.toHaveBeenCalled();
+    expect(mockedSpawn).not.toHaveBeenCalled();
     expect(logger.info).toHaveBeenCalledWith(
       expect.stringContaining("[dry-run]")
     );
@@ -300,7 +303,7 @@ describe("pushBranch", () => {
 
     await pushBranch("feature-branch", options);
 
-    expect(spawn).toHaveBeenCalledWith(
+    expect(mockedSpawn).toHaveBeenCalledWith(
       "git",
       ["push", "-u", "origin", "feature-branch"],
       expect.any(Object)
@@ -313,7 +316,7 @@ describe("pushBranch", () => {
 
     await pushBranch("feature-branch", options);
 
-    expect(spawn).not.toHaveBeenCalled();
+    expect(mockedSpawn).not.toHaveBeenCalled();
     expect(logger.info).toHaveBeenCalledWith(
       expect.stringContaining("[dry-run]")
     );
@@ -388,7 +391,7 @@ describe("createOrUpdatePr", () => {
 
     expect(result.created).toBe(true);
     expect(result.number).toBe(0);
-    expect(spawn).not.toHaveBeenCalled();
+    expect(mockedSpawn).not.toHaveBeenCalled();
     expect(logger.info).toHaveBeenCalledWith(
       expect.stringContaining("[dry-run]")
     );
@@ -407,7 +410,7 @@ describe("isPrMerged", () => {
     const result = await isPrMerged(42, options);
 
     expect(result).toBe(true);
-    expect(spawn).toHaveBeenCalledWith(
+    expect(mockedSpawn).toHaveBeenCalledWith(
       "gh",
       ["pr", "view", "42", "--json", "state"],
       expect.any(Object)
@@ -476,7 +479,7 @@ describe("runGitCommand", () => {
 
     expect(result.stdout).toBe("output");
     expect(result.exitCode).toBe(0);
-    expect(spawn).toHaveBeenCalledWith(
+    expect(mockedSpawn).toHaveBeenCalledWith(
       "git",
       ["status"],
       expect.objectContaining({ cwd: "/repo" })
@@ -491,7 +494,7 @@ describe("runGitCommand", () => {
 
     expect(result.stdout).toBe("");
     expect(result.exitCode).toBe(0);
-    expect(spawn).not.toHaveBeenCalled();
+    expect(mockedSpawn).not.toHaveBeenCalled();
     expect(logger.info).toHaveBeenCalledWith(
       expect.stringContaining("[dry-run]")
     );
@@ -511,7 +514,7 @@ describe("runGhCommand", () => {
 
     expect(result.stdout).toBe("pr output");
     expect(result.exitCode).toBe(0);
-    expect(spawn).toHaveBeenCalledWith(
+    expect(mockedSpawn).toHaveBeenCalledWith(
       "gh",
       ["pr", "list"],
       expect.objectContaining({ cwd: "/repo" })
@@ -526,7 +529,7 @@ describe("runGhCommand", () => {
 
     expect(result.stdout).toBe("");
     expect(result.exitCode).toBe(0);
-    expect(spawn).not.toHaveBeenCalled();
+    expect(mockedSpawn).not.toHaveBeenCalled();
     expect(logger.info).toHaveBeenCalledWith(
       expect.stringContaining("[dry-run]")
     );

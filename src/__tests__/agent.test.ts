@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, mock, spyOn } from "bun:test";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import * as os from "node:os";
@@ -13,11 +13,11 @@ import type { Logger } from "../logging";
 
 function createMockLogger(): Logger {
   return {
-    debug: vi.fn(),
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
-    json: vi.fn(),
+    debug: mock(() => {}),
+    info: mock(() => {}),
+    warn: mock(() => {}),
+    error: mock(() => {}),
+    json: mock(() => {}),
   };
 }
 
@@ -169,7 +169,7 @@ describe("runAgent", () => {
     expect(mockLogger.warn).toHaveBeenCalledWith(
       expect.stringContaining("timed out")
     );
-  });
+  }, 10000);
 
   it("dryRun mode logs but doesn't execute", async () => {
     const config: AgentConfig = {

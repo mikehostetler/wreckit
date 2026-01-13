@@ -1,19 +1,25 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, afterAll, mock, vi } from "bun:test";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import * as os from "node:os";
+import * as realChildProcess from "node:child_process";
 import { runOnboardingIfNeeded } from "../../onboarding";
 import { findRepoRoot } from "../../fs";
 import { RepoNotFoundError } from "../../errors";
 import { loadConfig, DEFAULT_CONFIG } from "../../config";
 import type { Logger } from "../../logging";
 
-vi.mock("node:child_process", () => ({
-  spawn: vi.fn(),
+const mockedSpawn = vi.fn();
+
+afterAll(() => {
+  mock.module("node:child_process", () => realChildProcess);
+});
+
+mock.module("node:child_process", () => ({
+  spawn: mockedSpawn,
 }));
 
-import { spawn } from "node:child_process";
-import { isGitRepo, getCurrentBranch, branchExists, ensureBranch } from "../../git";
+const { isGitRepo, getCurrentBranch, branchExists, ensureBranch } = await import("../../git");
 
 function createMockLogger(): Logger & { messages: string[] } {
   const messages: string[] = [];
@@ -55,7 +61,7 @@ function createMockProcess(stdout: string, exitCode: number): MockProcess {
 
 function mockSpawnOnce(stdout: string, exitCode: number): void {
   const mockProc = createMockProcess(stdout, exitCode);
-  vi.mocked(spawn).mockReturnValueOnce(mockProc as never);
+  mockedSpawn.mockReturnValueOnce(mockProc as any);
 }
 
 function mockSpawnSequence(
@@ -74,10 +80,15 @@ describe("Repo State Detection - Tests 31-41", () => {
     tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "wreckit-repo-state-"));
     mockLogger = createMockLogger();
     vi.clearAllMocks();
+    mockedSpawn.mockReset();
   });
 
   afterEach(async () => {
     await fs.rm(tempDir, { recursive: true, force: true });
+  });
+
+  afterAll(() => {
+    mockedSpawn.mockRestore();
   });
 
   describe("2.1 Git repo detection", () => {
@@ -139,7 +150,7 @@ describe("Repo State Detection - Tests 31-41", () => {
             }
           }),
         };
-        vi.mocked(spawn).mockReturnValueOnce(mockProc as never);
+        mockedSpawn.mockReturnValueOnce(mockProc as never);
 
         mockProc.on.mockImplementation((event: string, cb: (arg: unknown) => void) => {
           if (event === "error") {
@@ -220,7 +231,7 @@ describe("Repo State Detection - Tests 31-41", () => {
         });
 
         expect(result.branchName).toBe("wreckit/item-1");
-        expect(spawn).toHaveBeenCalledWith(
+        expect(mockedSpawn).toHaveBeenCalledWith(
           "git",
           ["checkout", "master"],
           expect.any(Object)
@@ -245,6 +256,7 @@ describe("Repo State Detection - Tests 31-41", () => {
         );
 
         const config = await loadConfig(tempDir);
+
         expect(config.base_branch).toBe("main");
       });
 
@@ -262,7 +274,7 @@ describe("Repo State Detection - Tests 31-41", () => {
         expect(config.base_branch).toBe("master");
       });
 
-      it("uses develop when config specifies develop", async () => {
+      it("supports custom branch names like develop", async () => {
         await fs.writeFile(
           path.join(tempDir, ".wreckit", "config.json"),
           JSON.stringify({

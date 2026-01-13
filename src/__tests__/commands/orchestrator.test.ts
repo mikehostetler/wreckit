@@ -1,26 +1,21 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi, mock } from "bun:test";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import * as os from "node:os";
 import type { Item, ItemState } from "../../schemas";
 import type { Logger } from "../../logging";
 
-vi.mock("../../commands/run", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../../commands/run")>();
-  return {
-    ...actual,
-    runCommand: vi.fn(),
-  };
-});
+const mockedRunCommand = vi.fn();
 
-import { runCommand } from "../../commands/run";
-import {
+mock.module("../../commands/run", () => ({
+  runCommand: mockedRunCommand,
+}));
+
+const {
   orchestrateAll,
   orchestrateNext,
   getNextIncompleteItem,
-} from "../../commands/orchestrator";
-
-const mockedRunCommand = vi.mocked(runCommand);
+} = await import("../../commands/orchestrator");
 
 function createMockLogger(): Logger {
   return {
@@ -114,7 +109,7 @@ describe("orchestrator", () => {
       const result = await orchestrateAll({}, mockLogger);
 
       expect(mockedRunCommand).toHaveBeenCalledTimes(3);
-      const callOrder = mockedRunCommand.mock.calls.map((call) => call[0]);
+      const callOrder = mockedRunCommand.mock.calls.map((call: any[]) => call[0]);
       expect(callOrder).toEqual([
         "bugs/001-first",
         "features/001-first",
@@ -132,7 +127,7 @@ describe("orchestrator", () => {
       await setupItem(createTestItem({ id: "features/002-fail", state: "raw" }));
       await setupItem(createTestItem({ id: "features/003-success", state: "raw" }));
 
-      mockedRunCommand.mockImplementation(async (itemId) => {
+      mockedRunCommand.mockImplementation(async (itemId: string) => {
         if (itemId === "features/002-fail") {
           throw new Error("Phase failed");
         }
@@ -148,7 +143,7 @@ describe("orchestrator", () => {
       await setupItem(createTestItem({ id: "features/001-fail", state: "raw" }));
       await setupItem(createTestItem({ id: "features/002-success", state: "raw" }));
 
-      mockedRunCommand.mockImplementation(async (itemId) => {
+      mockedRunCommand.mockImplementation(async (itemId: string) => {
         if (itemId === "features/001-fail") {
           throw new Error("Phase failed");
         }
