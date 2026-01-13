@@ -33,7 +33,7 @@
   "license": "MIT",
   "devDependencies": {
     "@types/bun": "latest",
-    "@types/node": "^22.10.5",
+    "@types/node": "^25.0.8",
     "@types/pino": "^7.0.4",
     "chalk": "^5.3.0",
     "tsup": "^8.3.5",
