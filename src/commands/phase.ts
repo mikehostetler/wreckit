@@ -168,7 +168,7 @@ export async function runPhaseCommand(
   }
 
   if (!force && phaseConfig.skipIfInTarget && isInTargetState(item.state, phaseConfig.targetState)) {
-    console.log(
+    logger.info(
       `Item ${itemId} is already in state '${item.state}', skipping (use --force to override)`
     );
     return;

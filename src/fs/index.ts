@@ -32,3 +32,8 @@ export {
   pathExists,
   dirExists,
 } from "./util";
+
+export {
+  safeWriteJson,
+  cleanupOrphanedTmpFiles,
+} from "./atomic";

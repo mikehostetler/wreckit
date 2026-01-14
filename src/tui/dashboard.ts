@@ -1,5 +1,20 @@
 import type { IndexItem } from "../schemas";
 
+export interface ToolExecution {
+  toolUseId: string;
+  toolName: string;
+  input: Record<string, unknown>;
+  status: "running" | "completed" | "error";
+  result?: unknown;
+  startedAt: Date;
+  finishedAt?: Date;
+}
+
+export interface AgentActivityForItem {
+  thoughts: string[];
+  tools: ToolExecution[];
+}
+
 export interface TuiState {
   currentItem: string | null;
   currentPhase: string | null;
@@ -17,6 +32,7 @@ export interface TuiState {
   startTime: Date;
   logs: string[];
   showLogs: boolean;
+  activityByItem: Record<string, AgentActivityForItem>;
 }
 
 export function createTuiState(items: IndexItem[]): TuiState {
@@ -37,6 +53,9 @@ export function createTuiState(items: IndexItem[]): TuiState {
     startTime: new Date(),
     logs: [],
     showLogs: false,
+    activityByItem: Object.fromEntries(
+      items.map((item) => [item.id, { thoughts: [], tools: [] }])
+    ),
   };
 }
 

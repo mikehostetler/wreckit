@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Box, useInput, useStdout } from "ink";
-import { Header, ItemsPane, LogsPane, Footer } from "./components";
+import { Header, ItemsPane, LogsPane, Footer, ActiveItemPane, AgentActivityPane } from "./components";
 import type { TuiState } from "./dashboard";
 
 interface InkAppProps {
@@ -136,12 +136,16 @@ export function InkApp({
             borderBottom={false}
             paddingLeft={1}
           >
-            <LogsPane
-              logs={state.logs}
-              width={rightPaneWidth - 2}
-              height={mainHeight}
-              scrollOffset={scrollOffset}
-            />
+            <Box height={4}>
+              <ActiveItemPane state={state} width={rightPaneWidth - 2} />
+            </Box>
+            <Box height={mainHeight - 4}>
+              <AgentActivityPane 
+                state={state} 
+                width={rightPaneWidth - 2} 
+                height={mainHeight - 4} 
+              />
+            </Box>
           </Box>
         </Box>
       )}

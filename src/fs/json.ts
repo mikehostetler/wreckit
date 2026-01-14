@@ -17,6 +17,7 @@ import {
   type Index,
 } from "../schemas";
 import { getConfigPath, getIndexPath } from "./paths";
+import { safeWriteJson } from "./atomic";
 
 export async function readJsonWithSchema<T>(
   filePath: string,
@@ -53,10 +54,7 @@ export async function writeJsonPretty(
   filePath: string,
   data: unknown
 ): Promise<void> {
-  const dir = path.dirname(filePath);
-  await fs.mkdir(dir, { recursive: true });
-  const content = JSON.stringify(data, null, 2) + "\n";
-  await fs.writeFile(filePath, content, "utf-8");
+  await safeWriteJson(filePath, data);
 }
 
 export async function readConfig(root: string): Promise<Config> {

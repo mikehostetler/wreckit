@@ -257,6 +257,7 @@ describe("Typed wrapper tests", () => {
     base_branch: "main",
     branch_prefix: "wreckit/",
     agent: {
+      mode: "process",
       command: "amp",
       args: ["--dangerously-allow-all"],
       completion_signal: "DONE",

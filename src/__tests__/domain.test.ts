@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import type { Prd, Story } from "../schemas";
+import type { Item, Prd, Story } from "../schemas";
 import {
   WORKFLOW_STATES,
   getNextState,
@@ -14,6 +14,7 @@ import {
   validateTransition,
   allStoriesDone,
   hasPendingStories,
+  applyStateTransition,
   type ValidationContext,
 } from "../domain";
 
@@ -295,5 +296,147 @@ describe("helper functions", () => {
       ]);
       expect(hasPendingStories(prd)).toBe(true);
     });
+  });
+});
+
+describe("state machine edge cases", () => {
+  it.each(WORKFLOW_STATES)("same-state transition is invalid: %s → %s", (s) => {
+    const ctx = makeContext();
+    expect(validateTransition(s, s, ctx).valid).toBe(false);
+  });
+
+  it("disallows all non-adjacent transitions", () => {
+    for (const current of WORKFLOW_STATES) {
+      for (const target of WORKFLOW_STATES) {
+        if (target === getNextState(current)) continue;
+        const ctx = makeContext({
+          hasResearchMd: true,
+          hasPlanMd: true,
+          prd: makePrd([makeStory({ status: "done" })]),
+          hasPr: true,
+          prMerged: true,
+        });
+        expect(validateTransition(current, target, ctx).valid).toBe(false);
+      }
+    }
+  });
+
+  it("no transition from done is valid", () => {
+    for (const target of WORKFLOW_STATES) {
+      const ctx = makeContext({
+        hasResearchMd: true,
+        hasPlanMd: true,
+        prd: makePrd([makeStory({ status: "done" })]),
+        hasPr: true,
+        prMerged: true,
+      });
+      expect(validateTransition("done", target, ctx).valid).toBe(false);
+    }
+  });
+});
+
+describe("applyStateTransition", () => {
+  it("returns new item with updated state and updated_at", () => {
+    const item: Item = {
+      schema_version: 1,
+      id: "test/001-test",
+      title: "Test",
+      section: "test",
+      state: "raw",
+      overview: "Test overview",
+      branch: null,
+      pr_url: null,
+      pr_number: null,
+      last_error: null,
+      created_at: "2024-01-01T00:00:00.000Z",
+      updated_at: "2024-01-01T00:00:00.000Z",
+    };
+    const ctx = makeContext({ hasResearchMd: true });
+
+    const result = applyStateTransition(item, ctx);
+
+    expect("nextItem" in result).toBe(true);
+    if ("nextItem" in result) {
+      expect(result.nextItem.state).toBe("researched");
+      expect(result.nextItem.updated_at).not.toBe(item.updated_at);
+      // Original item unchanged
+      expect(item.state).toBe("raw");
+      expect(item.updated_at).toBe("2024-01-01T00:00:00.000Z");
+    }
+  });
+
+  it("returns error for invalid transition", () => {
+    const item: Item = {
+      schema_version: 1,
+      id: "test/001-test",
+      title: "Test",
+      section: "test",
+      state: "raw",
+      overview: "Test overview",
+      branch: null,
+      pr_url: null,
+      pr_number: null,
+      last_error: null,
+      created_at: "2024-01-01T00:00:00.000Z",
+      updated_at: "2024-01-01T00:00:00.000Z",
+    };
+    const ctx = makeContext({ hasResearchMd: false }); // Missing requirement
+
+    const result = applyStateTransition(item, ctx);
+
+    expect("error" in result).toBe(true);
+    if ("error" in result) {
+      expect(result.error).toContain("research.md");
+    }
+  });
+
+  it("returns error for terminal state", () => {
+    const item: Item = {
+      schema_version: 1,
+      id: "test/001-test",
+      title: "Test",
+      section: "test",
+      state: "done",
+      overview: "Test overview",
+      branch: null,
+      pr_url: null,
+      pr_number: null,
+      last_error: null,
+      created_at: "2024-01-01T00:00:00.000Z",
+      updated_at: "2024-01-01T00:00:00.000Z",
+    };
+    const ctx = makeContext();
+
+    const result = applyStateTransition(item, ctx);
+
+    expect("error" in result).toBe(true);
+    if ("error" in result) {
+      expect(result.error).toContain("terminal");
+    }
+  });
+
+  it("never mutates the input item", () => {
+    const item: Item = {
+      schema_version: 1,
+      id: "test/001-test",
+      title: "Test",
+      section: "test",
+      state: "raw",
+      overview: "Test overview",
+      branch: null,
+      pr_url: null,
+      pr_number: null,
+      last_error: null,
+      created_at: "2024-01-01T00:00:00.000Z",
+      updated_at: "2024-01-01T00:00:00.000Z",
+    };
+    const originalState = item.state;
+    const originalUpdatedAt = item.updated_at;
+    const ctx = makeContext({ hasResearchMd: true });
+
+    applyStateTransition(item, ctx);
+
+    expect(item.state).toBe(originalState);
+    expect(item.updated_at).toBe(originalUpdatedAt);
   });
 });

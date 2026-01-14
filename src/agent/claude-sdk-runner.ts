@@ -2,9 +2,10 @@ import { query } from "@anthropic-ai/claude-agent-sdk";
 import type { Logger } from "../logging";
 import type { AgentConfig, AgentResult, RunAgentOptions } from "./runner.js";
 import { registerSdkController, unregisterSdkController } from "./runner.js";
+import type { AgentEvent } from "../tui/agentEvents";
 
-export async function runSdkAgent(options: RunAgentOptions, config: AgentConfig): Promise<AgentResult> {
-  const { cwd, prompt, logger, onStdoutChunk, onStderrChunk } = options;
+export async function runClaudeSdkAgent(options: RunAgentOptions, config: AgentConfig): Promise<AgentResult> {
+  const { cwd, prompt, logger, onStdoutChunk, onStderrChunk, onAgentEvent } = options;
   let output = "";
   let timedOut = false;
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
@@ -46,6 +47,11 @@ export async function runSdkAgent(options: RunAgentOptions, config: AgentConfig)
       // Convert SDK message to output string
       const messageText = formatSdkMessage(message);
       output += messageText;
+
+      // Emit structured agent events if callback is provided
+      if (onAgentEvent) {
+        emitAgentEventsFromSdkMessage(message, onAgentEvent);
+      }
 
       // Route to appropriate callback based on message type
       const isError = message.type === "error" || message.constructor?.name === "ErrorMessage";
@@ -209,4 +215,46 @@ function formatSdkMessage(message: any): string {
   }
 
   return "";
+}
+
+function emitAgentEventsFromSdkMessage(message: any, emit: (event: AgentEvent) => void): void {
+  // Handle assistant messages (Claude's reasoning and tool calls)
+  if (message.type === "assistant" || message.constructor?.name === "AssistantMessage") {
+    if (message.content && Array.isArray(message.content)) {
+      for (const block of message.content) {
+        if (block.type === "text" && block.text) {
+          emit({ type: "assistant_text", text: block.text });
+        }
+        if (block.type === "tool_use") {
+          emit({
+            type: "tool_started",
+            toolUseId: block.id || "",
+            toolName: block.name || "",
+            input: block.input || {},
+          });
+        }
+      }
+    }
+    return;
+  }
+
+  // Handle tool result messages
+  if (message.type === "tool_result" || message.constructor?.name === "ToolResultMessage") {
+    const result = message.result ?? message.content ?? "";
+    const toolUseId = message.tool_use_id || "";
+    emit({ type: "tool_result", toolUseId, result });
+    return;
+  }
+
+  // Handle final result messages
+  if (message.type === "result" || message.constructor?.name === "ResultMessage") {
+    emit({ type: "run_result", subtype: message.subtype });
+    return;
+  }
+
+  // Handle error messages
+  if (message.type === "error" || message.constructor?.name === "ErrorMessage") {
+    emit({ type: "error", message: message.message || String(message) });
+    return;
+  }
 }

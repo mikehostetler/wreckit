@@ -18,3 +18,9 @@ export {
   allStoriesDone,
   hasPendingStories,
 } from "./validation";
+
+export {
+  type TransitionResult,
+  type TransitionError,
+  applyStateTransition,
+} from "./transitions";

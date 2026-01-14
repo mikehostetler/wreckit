@@ -1,5 +1,6 @@
 import * as fs from "node:fs/promises";
 import type { Logger } from "../logging";
+import type { AgentEvent } from "../tui/agentEvents";
 import type { Item } from "../schemas";
 import { findRepoRoot, findRootFromOptions, getItemDir, getResearchPath, getPlanPath, getPrdPath } from "../fs/paths";
 import { pathExists } from "../fs/util";
@@ -22,6 +23,7 @@ export interface RunOptions {
   dryRun?: boolean;
   mockAgent?: boolean;
   onAgentOutput?: (chunk: string) => void;
+  onAgentEvent?: (event: AgentEvent) => void;
   cwd?: string;
 }
 
@@ -52,7 +54,7 @@ export async function runCommand(
   options: RunOptions,
   logger: Logger
 ): Promise<void> {
-  const { force = false, dryRun = false, mockAgent = false, onAgentOutput, cwd } = options;
+  const { force = false, dryRun = false, mockAgent = false, onAgentOutput, onAgentEvent, cwd } = options;
 
   const root = findRootFromOptions(options);
   const config = await loadConfig(root);
@@ -69,7 +71,7 @@ export async function runCommand(
   }
 
   if (item.state === "done") {
-    console.log(`Item ${itemId} is already done`);
+    logger.info(`Item ${itemId} is already done`);
     return;
   }
 
@@ -81,6 +83,7 @@ export async function runCommand(
     dryRun,
     mockAgent,
     onAgentOutput,
+    onAgentEvent,
   };
 
   const phaseRunners = {
@@ -95,18 +98,18 @@ export async function runCommand(
     item = await readItem(itemDir);
 
     if (item.state === "done") {
-      console.log(`Item ${itemId} completed successfully`);
+      logger.info(`Item ${itemId} completed successfully`);
       return;
     }
 
     const nextPhase = getNextPhase(item);
     if (!nextPhase) {
-      console.log(`Item ${itemId} is in state '${item.state}' with no next phase`);
+      logger.info(`Item ${itemId} is in state '${item.state}' with no next phase`);
       return;
     }
 
     if (!force && (await phaseArtifactsExist(nextPhase, root, itemId))) {
-      console.log(`Skipping ${nextPhase} phase (artifacts exist, use --force to regenerate)`);
+      logger.info(`Skipping ${nextPhase} phase (artifacts exist, use --force to regenerate)`);
       const runner = phaseRunners[nextPhase];
       const result = await runner(itemId, { ...workflowOptions, force: false });
       if (!result.success) {
@@ -123,17 +126,18 @@ export async function runCommand(
       return;
     }
 
-    console.log(`Running ${nextPhase} phase on ${itemId}`);
+    logger.info(`Running ${nextPhase} phase on ${itemId}`);
     const runner = phaseRunners[nextPhase];
     const result = await runner(itemId, workflowOptions);
 
     if (!result.success) {
+      logger.error(`Phase ${nextPhase} failed for ${itemId}: ${result.error}`);
       throw new WreckitError(
         result.error ?? `Phase ${nextPhase} failed for ${itemId}`,
         "PHASE_FAILED"
       );
     }
 
-    console.log(`Completed ${nextPhase} phase: ${item.state} → ${result.item.state}`);
+    logger.info(`Completed ${nextPhase} phase: ${item.state} → ${result.item.state}`);
   }
 }

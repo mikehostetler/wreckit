@@ -1,6 +1,7 @@
 import { spawn, type ChildProcess } from "node:child_process";
 import type { ConfigResolved } from "../config";
 import type { Logger } from "../logging";
+import type { AgentEvent } from "../tui/agentEvents";
 
 // Registry for cleanup on exit - tracks both SDK AbortControllers and process ChildProcesses
 const activeSdkControllers = new Set<AbortController>();
@@ -80,6 +81,7 @@ export interface RunAgentOptions {
   mockAgent?: boolean;
   onStdoutChunk?: (chunk: string) => void;
   onStderrChunk?: (chunk: string) => void;
+  onAgentEvent?: (event: AgentEvent) => void;
 }
 
 export function getAgentConfig(config: ConfigResolved): AgentConfig {
@@ -153,8 +155,8 @@ export async function runAgent(options: RunAgentOptions): Promise<AgentResult> {
   // Try SDK mode first
   if (config.mode === "sdk") {
     try {
-      const { runSdkAgent } = await import("./sdk-runner.js");
-      const result = await runSdkAgent(options, config);
+      const { runClaudeSdkAgent } = await import("./claude-sdk-runner.js");
+      const result = await runClaudeSdkAgent(options, config);
 
       // If SDK fails due to auth, fall back to process mode
       if (!result.success && result.output.includes("Authentication Error")) {
@@ -274,4 +276,167 @@ async function runProcessAgent(options: RunAgentOptions): Promise<AgentResult> {
       child.stdin.end();
     }
   });
+}
+
+// ============================================================
+// New Agent Dispatch System (Phase 4 - Discriminated Union)
+// ============================================================
+
+import type { AgentConfigUnion } from "../schemas";
+
+export interface UnionRunAgentOptions {
+  config: AgentConfigUnion;
+  cwd: string;
+  prompt: string;
+  logger: Logger;
+  dryRun?: boolean;
+  mockAgent?: boolean;
+  timeoutSeconds?: number;
+  onStdoutChunk?: (chunk: string) => void;
+  onStderrChunk?: (chunk: string) => void;
+  onAgentEvent?: (event: AgentEvent) => void;
+}
+
+function exhaustiveCheck(x: never): never {
+  throw new Error(`Unhandled agent kind: ${JSON.stringify(x)}`);
+}
+
+/**
+ * Run an agent using the new discriminated union config.
+ * This is the new dispatch system that supports multiple agent backends.
+ */
+export async function runAgentUnion(options: UnionRunAgentOptions): Promise<AgentResult> {
+  const { config, logger, dryRun = false, mockAgent = false } = options;
+
+  if (dryRun) {
+    logger.info(`[dry-run] Would run agent with kind: ${config.kind}`);
+    return {
+      success: true,
+      output: "[dry-run] No output",
+      timedOut: false,
+      exitCode: 0,
+      completionDetected: true,
+    };
+  }
+
+  if (mockAgent) {
+    logger.info(`[mock-agent] Simulating ${config.kind} agent run...`);
+    const mockLines = [
+      `🤖 [mock-agent] Starting simulated ${config.kind} agent run...`,
+      "📋 [mock-agent] Analyzing prompt...",
+      "🔍 [mock-agent] Researching codebase...",
+      "✏️  [mock-agent] Making changes...",
+      "✅ [mock-agent] Changes complete!",
+      "DONE",
+    ];
+    let output = "";
+    for (const line of mockLines) {
+      const chunk = line + "\n";
+      output += chunk;
+      if (options.onStdoutChunk) {
+        options.onStdoutChunk(chunk);
+      }
+    }
+    return {
+      success: true,
+      output,
+      timedOut: false,
+      exitCode: 0,
+      completionDetected: true,
+    };
+  }
+
+  switch (config.kind) {
+    case "process": {
+      // Convert to legacy options for process agent
+      const legacyConfig: AgentConfig = {
+        mode: "process",
+        command: config.command,
+        args: config.args,
+        completion_signal: config.completion_signal,
+        timeout_seconds: options.timeoutSeconds ?? 3600,
+        max_iterations: 100,
+      };
+      const legacyOptions: RunAgentOptions = {
+        config: legacyConfig,
+        cwd: options.cwd,
+        prompt: options.prompt,
+        logger: options.logger,
+        dryRun: options.dryRun,
+        mockAgent: options.mockAgent,
+        onStdoutChunk: options.onStdoutChunk,
+        onStderrChunk: options.onStderrChunk,
+      };
+      return runProcessAgent(legacyOptions);
+    }
+
+    case "claude_sdk": {
+      const { runClaudeSdkAgent } = await import("./claude-sdk-runner.js");
+      // Convert to legacy format for now
+      const legacyConfig: AgentConfig = {
+        mode: "sdk",
+        command: "claude",
+        args: [],
+        completion_signal: "DONE",
+        timeout_seconds: options.timeoutSeconds ?? 3600,
+        max_iterations: 100,
+        sdk_model: config.model,
+        sdk_max_tokens: config.max_tokens,
+        sdk_tools: config.tools,
+      };
+      const legacyOptions: RunAgentOptions = {
+        config: legacyConfig,
+        cwd: options.cwd,
+        prompt: options.prompt,
+        logger: options.logger,
+        dryRun: options.dryRun,
+        mockAgent: options.mockAgent,
+        onStdoutChunk: options.onStdoutChunk,
+        onStderrChunk: options.onStderrChunk,
+      };
+      return runClaudeSdkAgent(legacyOptions, legacyConfig);
+    }
+
+    case "amp_sdk": {
+      const { runAmpSdkAgent } = await import("./amp-sdk-runner.js");
+      return runAmpSdkAgent({
+        config,
+        cwd: options.cwd,
+        prompt: options.prompt,
+        logger: options.logger,
+        dryRun: options.dryRun,
+        onStdoutChunk: options.onStdoutChunk,
+        onStderrChunk: options.onStderrChunk,
+      });
+    }
+
+    case "codex_sdk": {
+      const { runCodexSdkAgent } = await import("./codex-sdk-runner.js");
+      return runCodexSdkAgent({
+        config,
+        cwd: options.cwd,
+        prompt: options.prompt,
+        logger: options.logger,
+        dryRun: options.dryRun,
+        onStdoutChunk: options.onStdoutChunk,
+        onStderrChunk: options.onStderrChunk,
+      });
+    }
+
+    case "opencode_sdk": {
+      const { runOpenCodeSdkAgent } = await import("./opencode-sdk-runner.js");
+      return runOpenCodeSdkAgent({
+        config,
+        cwd: options.cwd,
+        prompt: options.prompt,
+        logger: options.logger,
+        dryRun: options.dryRun,
+        onStdoutChunk: options.onStdoutChunk,
+        onStderrChunk: options.onStderrChunk,
+      });
+    }
+
+    default:
+      return exhaustiveCheck(config);
+  }
 }

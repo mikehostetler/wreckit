@@ -4,6 +4,7 @@ import type { Item, Prd, WorkflowState } from "../schemas";
 import { PrdSchema } from "../schemas";
 import type { ConfigResolved } from "../config";
 import type { Logger } from "../logging";
+import type { AgentEvent } from "../tui/agentEvents";
 import type { ValidationContext } from "../domain/validation";
 import {
   validateTransition,
@@ -43,6 +44,7 @@ export interface WorkflowOptions {
   dryRun?: boolean;
   mockAgent?: boolean;
   onAgentOutput?: (chunk: string) => void;
+  onAgentEvent?: (event: AgentEvent) => void;
 }
 
 export interface PhaseResult {
@@ -145,6 +147,7 @@ export async function runPhaseResearch(
     dryRun = false,
     mockAgent = false,
     onAgentOutput,
+    onAgentEvent,
   } = options;
 
   let item = await loadItem(root, itemId);
@@ -190,6 +193,7 @@ export async function runPhaseResearch(
     mockAgent,
     onStdoutChunk: onAgentOutput,
     onStderrChunk: onAgentOutput,
+    onAgentEvent,
   });
 
   if (dryRun) {
@@ -245,6 +249,7 @@ export async function runPhasePlan(
     dryRun = false,
     mockAgent = false,
     onAgentOutput,
+    onAgentEvent,
   } = options;
 
   let item = await loadItem(root, itemId);
@@ -287,6 +292,7 @@ export async function runPhasePlan(
     mockAgent,
     onStdoutChunk: onAgentOutput,
     onStderrChunk: onAgentOutput,
+    onAgentEvent,
   });
 
   if (dryRun) {
@@ -358,6 +364,7 @@ export async function runPhaseImplement(
     dryRun = false,
     mockAgent = false,
     onAgentOutput,
+    onAgentEvent,
   } = options;
 
   let item = await loadItem(root, itemId);
@@ -388,6 +395,7 @@ export async function runPhaseImplement(
       mockAgent,
       onStdoutChunk: onAgentOutput,
       onStderrChunk: onAgentOutput,
+      onAgentEvent,
     });
     return { success: true, item };
   }
@@ -441,6 +449,7 @@ export async function runPhaseImplement(
       mockAgent,
       onStdoutChunk: onAgentOutput,
       onStderrChunk: onAgentOutput,
+      onAgentEvent,
     });
 
     if (dryRun) {

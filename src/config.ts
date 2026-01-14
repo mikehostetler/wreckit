@@ -82,10 +82,14 @@ export function applyOverrides(
     base_branch: overrides.baseBranch ?? config.base_branch,
     branch_prefix: overrides.branchPrefix ?? config.branch_prefix,
     agent: {
+      mode: config.agent.mode,
       command: overrides.agentCommand ?? config.agent.command,
       args: overrides.agentArgs ?? config.agent.args,
       completion_signal:
         overrides.completionSignal ?? config.agent.completion_signal,
+      sdk_model: config.agent.sdk_model,
+      sdk_max_tokens: config.agent.sdk_max_tokens,
+      sdk_tools: config.agent.sdk_tools,
     },
     max_iterations: overrides.maxIterations ?? config.max_iterations,
     timeout_seconds: overrides.timeoutSeconds ?? config.timeout_seconds,

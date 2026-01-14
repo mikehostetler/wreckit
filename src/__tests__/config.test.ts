@@ -61,6 +61,7 @@ describe("loadConfig", () => {
       base_branch: "production",
       branch_prefix: "custom/",
       agent: {
+        mode: "process",
         command: "my-agent",
         args: ["--verbose"],
         completion_signal: "FINISHED",
@@ -74,7 +75,7 @@ describe("loadConfig", () => {
     );
 
     const result = await loadConfig(tempDir);
-    expect(result).toEqual(fullConfig);
+    expect(result).toMatchObject(fullConfig);
   });
 
   it("throws SchemaValidationError for invalid config.json", async () => {

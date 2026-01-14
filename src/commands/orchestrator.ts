@@ -7,7 +7,9 @@ import { loadConfig } from "../config";
 import { readItem, readPrd } from "../fs/json";
 import { scanItems } from "./status";
 import { runCommand } from "./run";
-import { TuiRunner, createSimpleProgress } from "../tui";
+import { TuiViewAdapter } from "../views";
+import type { AgentEvent } from "../tui/agentEvents";
+import { createSimpleProgress } from "../tui";
 import { formatDryRunSummary, formatDryRunRun, type DryRunItemInfo } from "./dryRunFormatter";
 import { terminateAllAgents } from "../agent/runner";
 
@@ -78,7 +80,7 @@ export async function orchestrateAll(
   }
 
   const useTui = shouldUseTui(noTui);
-  let tuiRunner: TuiRunner | null = null;
+  let view: TuiViewAdapter | null = null;
   const simpleProgress = useTui ? null : createSimpleProgress(logger);
 
   if (useTui) {
@@ -86,11 +88,11 @@ export async function orchestrateAll(
     const cleanup = () => {
       if (cleanupCalled) return;
       cleanupCalled = true;
-      tuiRunner?.stop();
+      view?.stop();
       terminateAllAgents(logger);
     };
 
-    tuiRunner = new TuiRunner(items, {
+    view = new TuiViewAdapter(items, {
       onQuit: () => {
         cleanup();
         process.exit(0);
@@ -98,7 +100,7 @@ export async function orchestrateAll(
       debug: tuiDebug,
       debugLogger: tuiDebug ? logger : undefined,
     });
-    tuiRunner.start();
+    view.start();
 
     process.on("exit", cleanup);
     process.on("SIGINT", () => {
@@ -114,17 +116,14 @@ export async function orchestrateAll(
   for (let i = 0; i < nonDoneItems.length; i++) {
     const item = nonDoneItems[i];
 
-    if (useTui && tuiRunner) {
-      tuiRunner.update({
-        currentItem: item.id,
-        currentPhase: item.state,
-        currentIteration: 0,
-        items: items.map((it) => ({
-          id: it.id,
-          state: it.id === item.id ? "implementing" : it.state,
-          title: it.title,
-        })),
-      });
+    if (useTui && view) {
+      view.onActiveItemChanged(item.id);
+      view.onPhaseChanged(item.state);
+      view.onItemsChanged(items.map((it) => ({
+        id: it.id,
+        state: it.id === item.id ? "implementing" : it.state,
+        title: it.title,
+      })));
     } else {
       simpleProgress?.update(item.id, "starting");
     }
@@ -136,21 +135,19 @@ export async function orchestrateAll(
           force,
           dryRun: false,
           mockAgent,
-          onAgentOutput: tuiRunner ? (chunk) => tuiRunner.appendLog(chunk) : undefined,
+          onAgentOutput: view ? (chunk) => view.onAgentEvent(item.id, { type: "assistant_text", text: chunk }) : undefined,
+          onAgentEvent: view ? (event: AgentEvent) => view.onAgentEvent(item.id, event) : undefined,
         },
         logger
       );
       result.completed.push(item.id);
 
-      if (useTui && tuiRunner) {
-        tuiRunner.update({
-          completedCount: result.completed.length + doneItems.length,
-          items: items.map((it) => ({
-            id: it.id,
-            state: it.id === item.id ? "done" : result.completed.includes(it.id) ? "done" : it.state,
-            title: it.title,
-          })),
-        });
+      if (useTui && view) {
+        view.onItemsChanged(items.map((it) => ({
+          id: it.id,
+          state: it.id === item.id ? "done" : result.completed.includes(it.id) ? "done" : it.state,
+          title: it.title,
+        })));
       } else {
         simpleProgress?.complete(item.id);
       }
@@ -158,18 +155,16 @@ export async function orchestrateAll(
       const errorMessage = error instanceof Error ? error.message : String(error);
       result.failed.push(item.id);
 
-      if (useTui && tuiRunner) {
-        tuiRunner.update({
-          logs: [...(tuiRunner.getState().logs), `Failed ${item.id}: ${errorMessage}`],
-        });
+      if (useTui && view) {
+        view.onAgentEvent(item.id, { type: "error", message: `Failed ${item.id}: ${errorMessage}` });
       } else {
         simpleProgress?.fail(item.id, errorMessage);
       }
     }
   }
 
-  if (tuiRunner) {
-    tuiRunner.stop();
+  if (view) {
+    view.stop();
   }
   terminateAllAgents(logger);
 

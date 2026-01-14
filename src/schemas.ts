@@ -81,3 +81,50 @@ export type Story = z.infer<typeof StorySchema>;
 export type Prd = z.infer<typeof PrdSchema>;
 export type IndexItem = z.infer<typeof IndexItemSchema>;
 export type Index = z.infer<typeof IndexSchema>;
+
+// ============================================================
+// Agent Abstraction - Discriminated Union Schemas (Phase 4)
+// ============================================================
+
+export const ProcessAgentSchema = z.object({
+  kind: z.literal("process"),
+  command: z.string(),
+  args: z.array(z.string()).default([]),
+  completion_signal: z.string(),
+});
+
+export const ClaudeSdkAgentSchema = z.object({
+  kind: z.literal("claude_sdk"),
+  model: z.string().default("claude-sonnet-4-20250514"),
+  max_tokens: z.number().default(4096),
+  tools: z.array(z.string()).optional(),
+});
+
+export const AmpSdkAgentSchema = z.object({
+  kind: z.literal("amp_sdk"),
+  model: z.string().optional(),
+});
+
+export const CodexSdkAgentSchema = z.object({
+  kind: z.literal("codex_sdk"),
+  model: z.string().default("codex-1"),
+});
+
+export const OpenCodeSdkAgentSchema = z.object({
+  kind: z.literal("opencode_sdk"),
+});
+
+export const AgentConfigUnionSchema = z.discriminatedUnion("kind", [
+  ProcessAgentSchema,
+  ClaudeSdkAgentSchema,
+  AmpSdkAgentSchema,
+  CodexSdkAgentSchema,
+  OpenCodeSdkAgentSchema,
+]);
+
+export type ProcessAgentConfig = z.infer<typeof ProcessAgentSchema>;
+export type ClaudeSdkAgentConfig = z.infer<typeof ClaudeSdkAgentSchema>;
+export type AmpSdkAgentConfig = z.infer<typeof AmpSdkAgentSchema>;
+export type CodexSdkAgentConfig = z.infer<typeof CodexSdkAgentSchema>;
+export type OpenCodeSdkAgentConfig = z.infer<typeof OpenCodeSdkAgentSchema>;
+export type AgentConfigUnion = z.infer<typeof AgentConfigUnionSchema>;

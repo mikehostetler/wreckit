@@ -49,7 +49,8 @@ describe("ConfigSchema", () => {
       timeout_seconds: 3600,
     };
     const result = ConfigSchema.parse(config);
-    expect(result).toEqual(config);
+    expect(result).toMatchObject(config);
+    expect(result.agent.mode).toBe("process");
   });
 
   it("applies defaults for optional fields", () => {
