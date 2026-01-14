@@ -9,6 +9,7 @@ import { scanItems } from "./status";
 import { runCommand } from "./run";
 import { TuiRunner, createSimpleProgress } from "../tui";
 import { formatDryRunSummary, formatDryRunRun, type DryRunItemInfo } from "./dryRunFormatter";
+import { terminateAllAgents } from "../agent/runner";
 
 export interface OrchestratorOptions {
   force?: boolean;
@@ -81,9 +82,17 @@ export async function orchestrateAll(
   const simpleProgress = useTui ? null : createSimpleProgress(logger);
 
   if (useTui) {
+    let cleanupCalled = false;
+    const cleanup = () => {
+      if (cleanupCalled) return;
+      cleanupCalled = true;
+      tuiRunner?.stop();
+      terminateAllAgents(logger);
+    };
+
     tuiRunner = new TuiRunner(items, {
       onQuit: () => {
-        tuiRunner?.stop();
+        cleanup();
         process.exit(0);
       },
       debug: tuiDebug,
@@ -91,9 +100,6 @@ export async function orchestrateAll(
     });
     tuiRunner.start();
 
-    const cleanup = () => {
-      tuiRunner?.stop();
-    };
     process.on("exit", cleanup);
     process.on("SIGINT", () => {
       cleanup();
@@ -165,6 +171,7 @@ export async function orchestrateAll(
   if (tuiRunner) {
     tuiRunner.stop();
   }
+  terminateAllAgents(logger);
 
   return result;
 }

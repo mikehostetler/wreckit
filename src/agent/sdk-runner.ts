@@ -1,12 +1,17 @@
 import { query } from "@anthropic-ai/claude-agent-sdk";
 import type { Logger } from "../logging";
 import type { AgentConfig, AgentResult, RunAgentOptions } from "./runner.js";
+import { registerSdkController, unregisterSdkController } from "./runner.js";
 
 export async function runSdkAgent(options: RunAgentOptions, config: AgentConfig): Promise<AgentResult> {
   const { cwd, prompt, logger, onStdoutChunk, onStderrChunk } = options;
   let output = "";
   let timedOut = false;
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  const abortController = new AbortController();
+
+  // Register for cleanup on exit
+  registerSdkController(abortController);
 
   try {
     // Set up timeout
@@ -14,12 +19,14 @@ export async function runSdkAgent(options: RunAgentOptions, config: AgentConfig)
       timeoutId = setTimeout(() => {
         timedOut = true;
         logger.warn(`SDK agent timed out after ${config.timeout_seconds} seconds`);
+        abortController.abort();
       }, config.timeout_seconds * 1000);
     }
 
     // Build SDK options
     const sdkOptions: any = {
       permissionMode: "bypassPermissions", // wreckit runs autonomously
+      abortController, // Enable cancellation on TUI quit/signals
       // Use custom tools if specified, otherwise use default tools
       ...(config.sdk_tools && { allowedTools: config.sdk_tools }),
     };
@@ -92,6 +99,8 @@ export async function runSdkAgent(options: RunAgentOptions, config: AgentConfig)
       exitCode: errorResult.exitCode,
       completionDetected: false,
     };
+  } finally {
+    unregisterSdkController(abortController);
   }
 }
 

@@ -1,7 +1,6 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import type { Item, Index, IndexItem } from "../schemas";
-import { ItemSchema } from "../schemas";
 import {
   getWreckitDir,
   getItemDir,

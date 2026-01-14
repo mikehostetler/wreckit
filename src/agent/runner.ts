@@ -2,6 +2,55 @@ import { spawn, type ChildProcess } from "node:child_process";
 import type { ConfigResolved } from "../config";
 import type { Logger } from "../logging";
 
+// Registry for cleanup on exit - tracks both SDK AbortControllers and process ChildProcesses
+const activeSdkControllers = new Set<AbortController>();
+const activeProcessAgents = new Set<ChildProcess>();
+
+export function registerSdkController(controller: AbortController): void {
+  activeSdkControllers.add(controller);
+}
+
+export function unregisterSdkController(controller: AbortController): void {
+  activeSdkControllers.delete(controller);
+}
+
+export function terminateAllAgents(logger?: Logger): void {
+  // Abort all SDK agents
+  for (const controller of [...activeSdkControllers]) {
+    logger?.debug?.("Aborting SDK agent");
+    try {
+      controller.abort();
+    } catch {
+      // ignore
+    }
+  }
+  activeSdkControllers.clear();
+
+  // Kill all process-based agents (fallback mode)
+  for (const child of [...activeProcessAgents]) {
+    if (child.killed) continue;
+    logger?.debug?.(`Terminating agent process pid=${child.pid}`);
+
+    try {
+      child.kill("SIGTERM");
+    } catch {
+      // ignore
+    }
+
+    setTimeout(() => {
+      if (!child.killed) {
+        logger?.debug?.(`Force-killing agent process pid=${child.pid}`);
+        try {
+          child.kill("SIGKILL");
+        } catch {
+          // ignore
+        }
+      }
+    }, 5000);
+  }
+  activeProcessAgents.clear();
+}
+
 export interface AgentConfig {
   mode: "process" | "sdk";
   command: string;
@@ -141,6 +190,7 @@ async function runProcessAgent(options: RunAgentOptions): Promise<AgentResult> {
         cwd,
         stdio: ["pipe", "pipe", "pipe"],
       });
+      activeProcessAgents.add(child);
     } catch (err) {
       logger.error(`Failed to spawn agent: ${err}`);
       resolve({
@@ -193,6 +243,7 @@ async function runProcessAgent(options: RunAgentOptions): Promise<AgentResult> {
     });
 
     child.on("error", (err) => {
+      activeProcessAgents.delete(child);
       if (timeoutId) clearTimeout(timeoutId);
       logger.error(`Agent process error: ${err}`);
       resolve({
@@ -205,6 +256,7 @@ async function runProcessAgent(options: RunAgentOptions): Promise<AgentResult> {
     });
 
     child.on("close", (code) => {
+      activeProcessAgents.delete(child);
       if (timeoutId) clearTimeout(timeoutId);
       const success = code === 0 && completionDetected;
       logger.debug(`Agent exited with code ${code}, completion detected: ${completionDetected}`);

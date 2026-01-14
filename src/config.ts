@@ -4,7 +4,6 @@ import { getConfigPath, getWreckitDir } from "./fs/paths";
 import {
   InvalidJsonError,
   SchemaValidationError,
-  FileNotFoundError,
 } from "./errors";
 
 export interface ConfigResolved {
