@@ -2,7 +2,7 @@ import { describe, expect, it, beforeEach, afterEach, spyOn } from "bun:test";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import * as os from "node:os";
-import { listCommand, scanItems } from "../../commands/list";
+import { listCommand } from "../../commands/list";
 import type { Logger } from "../../logging";
 import type { Item } from "../../schemas";
 
@@ -146,44 +146,5 @@ describe("listCommand", () => {
     expect(calls.some((c) => /^\s*3\s+raw\s+second/.test(c))).toBe(true);
 
     consoleSpy.mockRestore();
-  });
-});
-
-describe("scanItems", () => {
-  let tempDir: string;
-
-  beforeEach(async () => {
-    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "wreckit-scan-test-"));
-    await fs.mkdir(path.join(tempDir, ".wreckit"), { recursive: true });
-  });
-
-  afterEach(async () => {
-    await fs.rm(tempDir, { recursive: true, force: true });
-  });
-
-  it("returns empty array for empty .wreckit", async () => {
-    const items = await scanItems(tempDir);
-    expect(items).toHaveLength(0);
-  });
-
-  it("returns items sorted by id", async () => {
-    await createItem(tempDir, "features", "002-second");
-    await createItem(tempDir, "bugs", "001-first-bug");
-    await createItem(tempDir, "features", "001-first");
-
-    const items = await scanItems(tempDir);
-    expect(items).toHaveLength(3);
-    expect(items[0].id).toBe("bugs/001-first-bug");
-    expect(items[1].id).toBe("features/001-first");
-    expect(items[2].id).toBe("features/002-second");
-  });
-
-  it("skips prompts directory", async () => {
-    await fs.mkdir(path.join(tempDir, ".wreckit", "prompts"), { recursive: true });
-    await createItem(tempDir, "features", "001-test");
-
-    const items = await scanItems(tempDir);
-    expect(items).toHaveLength(1);
-    expect(items[0].id).toBe("features/001-test");
   });
 });

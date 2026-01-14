@@ -1,5 +1,5 @@
 export { ideasCommand, readStdin, readFile, type IdeasOptions } from "./ideas";
-export { statusCommand, scanItems, type StatusOptions } from "./status";
+export { statusCommand, type StatusOptions } from "./status";
 export { showCommand, loadItemDetails, type ShowOptions, type ItemDetails } from "./show";
 export { runPhaseCommand, type Phase, type PhaseOptions } from "./phase";
 export { runCommand, type RunOptions } from "./run";
