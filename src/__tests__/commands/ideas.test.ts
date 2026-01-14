@@ -71,24 +71,30 @@ describe("ideasCommand", () => {
     const ideasFile = path.join(tempDir, "ideas.md");
     await fs.writeFile(ideasFile, "# Add feature\n# Fix bug");
 
+    const consoleSpy = spyOn(console, "log");
     await ideasCommand({ file: ideasFile, cwd: tempDir }, mockLogger);
 
-    expect(mockLogger.messages).toContain("info: Created 2 items:");
-    expect(mockLogger.messages.some((m) => m.includes("features/001-add-feature"))).toBe(true);
-    expect(mockLogger.messages.some((m) => m.includes("bugs/001-fix-bug"))).toBe(true);
+    const calls = consoleSpy.mock.calls.map((c) => String(c[0]));
+    expect(calls.some((c) => c.includes("Created 2 items:"))).toBe(true);
+    expect(calls.some((c) => c.includes("features/001-add-feature"))).toBe(true);
+    expect(calls.some((c) => c.includes("bugs/001-fix-bug"))).toBe(true);
+    consoleSpy.mockRestore();
   });
 
   it("--dry-run doesn't create files", async () => {
     const ideasFile = path.join(tempDir, "ideas.md");
     await fs.writeFile(ideasFile, "# Add dark mode");
 
+    const consoleSpy = spyOn(console, "log");
     await ideasCommand({ file: ideasFile, dryRun: true, cwd: tempDir }, mockLogger);
 
     const featuresDir = path.join(tempDir, ".wreckit", "features");
     await expect(fs.access(featuresDir)).rejects.toThrow();
 
-    expect(mockLogger.messages).toContain("info: Would create 1 items:");
-    expect(mockLogger.messages.some((m) => m.includes("features/XXX-add-dark-mode"))).toBe(true);
+    const calls = consoleSpy.mock.calls.map((c) => String(c[0]));
+    expect(calls.some((c) => c.includes("Would create 1 items:"))).toBe(true);
+    expect(calls.some((c) => c.includes("features/XXX-add-dark-mode"))).toBe(true);
+    consoleSpy.mockRestore();
   });
 
   it("skips existing items (idempotent)", async () => {
@@ -97,29 +103,36 @@ describe("ideasCommand", () => {
 
     await ideasCommand({ file: ideasFile, cwd: tempDir }, mockLogger);
 
-    mockLogger.messages.length = 0;
-
+    const consoleSpy = spyOn(console, "log");
     await ideasCommand({ file: ideasFile, cwd: tempDir }, mockLogger);
 
-    expect(mockLogger.messages.some((m) => m.includes("Skipped 1 existing items"))).toBe(true);
+    const calls = consoleSpy.mock.calls.map((c) => String(c[0]));
+    expect(calls.some((c) => c.includes("Skipped 1 existing items"))).toBe(true);
+    consoleSpy.mockRestore();
   });
 
   it("handles empty input gracefully", async () => {
     const ideasFile = path.join(tempDir, "ideas.md");
     await fs.writeFile(ideasFile, "");
 
+    const consoleSpy = spyOn(console, "log");
     await ideasCommand({ file: ideasFile, cwd: tempDir }, mockLogger);
 
-    expect(mockLogger.messages).toContain("info: No items created");
+    const calls = consoleSpy.mock.calls.map((c) => String(c[0]));
+    expect(calls.some((c) => c.includes("No items created"))).toBe(true);
+    consoleSpy.mockRestore();
   });
 
   it("handles input with only whitespace", async () => {
     const ideasFile = path.join(tempDir, "ideas.md");
     await fs.writeFile(ideasFile, "   \n\n   \n");
 
+    const consoleSpy = spyOn(console, "log");
     await ideasCommand({ file: ideasFile, cwd: tempDir }, mockLogger);
 
-    expect(mockLogger.messages).toContain("info: No items created");
+    const calls = consoleSpy.mock.calls.map((c) => String(c[0]));
+    expect(calls.some((c) => c.includes("No items created"))).toBe(true);
+    consoleSpy.mockRestore();
   });
 
   it("works with inputOverride parameter", async () => {

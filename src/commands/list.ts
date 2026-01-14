@@ -4,6 +4,7 @@ import type { Logger } from "../logging";
 import type { IndexItem } from "../schemas";
 import { findRepoRoot, getWreckitDir } from "../fs/paths";
 import { readItem } from "../fs/json";
+import { buildIdMap } from "../domain/resolveId";
 
 export interface ListOptions {
   json?: boolean;
@@ -79,14 +80,20 @@ export async function listCommand(
   logger: Logger
 ): Promise<void> {
   const root = findRepoRoot(options.cwd ?? process.cwd());
-  const allItems = await scanItems(root);
+  const allItems = await buildIdMap(root);
 
   const items = options.state
     ? allItems.filter((i) => i.state === options.state)
     : allItems;
 
   if (options.json) {
-    console.log(JSON.stringify(items, null, 2));
+    const jsonItems = items.map((i) => ({
+      id: i.shortId,
+      fullId: i.fullId,
+      state: i.state,
+      title: i.title,
+    }));
+    console.log(JSON.stringify(jsonItems, null, 2));
     return;
   }
 
@@ -95,23 +102,21 @@ export async function listCommand(
     return;
   }
 
-  const idWidth = Math.max(2, ...items.map((i) => i.id.length));
   const stateWidth = Math.max(5, ...items.map((i) => i.state.length));
   
-  // Extract clean titles and calculate max width (truncate at 50 chars for display)
   const cleanItems = items.map((i) => ({
     ...i,
     cleanTitle: extractTitle(i.title),
   }));
   
-  const header = `${"ID".padEnd(idWidth)}  ${"STATE".padEnd(stateWidth)}  TITLE`;
+  const header = `${"#".padStart(3)}  ${"STATE".padEnd(stateWidth)}  TITLE`;
   console.log(header);
 
   for (const item of cleanItems) {
-    const displayTitle = item.cleanTitle.length > 50 
-      ? item.cleanTitle.substring(0, 47) + "..."
+    const displayTitle = item.cleanTitle.length > 60 
+      ? item.cleanTitle.substring(0, 57) + "..."
       : item.cleanTitle;
-    const line = `${item.id.padEnd(idWidth)}  ${item.state.padEnd(stateWidth)}  ${displayTitle}`;
+    const line = `${String(item.shortId).padStart(3)}  ${item.state.padEnd(stateWidth)}  ${displayTitle}`;
     console.log(line);
   }
 

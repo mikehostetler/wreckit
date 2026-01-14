@@ -77,7 +77,7 @@ export async function runCommand(
   }
 
   if (item.state === "done") {
-    logger.info(`Item ${itemId} is already done`);
+    console.log(`Item ${itemId} is already done`);
     return;
   }
 
@@ -103,18 +103,18 @@ export async function runCommand(
     item = await readItem(itemDir);
 
     if (item.state === "done") {
-      logger.info(`Item ${itemId} completed successfully`);
+      console.log(`Item ${itemId} completed successfully`);
       return;
     }
 
     const nextPhase = getNextPhase(item);
     if (!nextPhase) {
-      logger.info(`Item ${itemId} is in state '${item.state}' with no next phase`);
+      console.log(`Item ${itemId} is in state '${item.state}' with no next phase`);
       return;
     }
 
     if (!force && (await phaseArtifactsExist(nextPhase, root, itemId))) {
-      logger.info(`Skipping ${nextPhase} phase (artifacts exist, use --force to regenerate)`);
+      console.log(`Skipping ${nextPhase} phase (artifacts exist, use --force to regenerate)`);
       const runner = phaseRunners[nextPhase];
       const result = await runner(itemId, { ...workflowOptions, force: false });
       if (!result.success) {
@@ -131,7 +131,7 @@ export async function runCommand(
       return;
     }
 
-    logger.info(`Running ${nextPhase} phase on ${itemId}`);
+    console.log(`Running ${nextPhase} phase on ${itemId}`);
     const runner = phaseRunners[nextPhase];
     const result = await runner(itemId, workflowOptions);
 
@@ -142,6 +142,6 @@ export async function runCommand(
       );
     }
 
-    logger.info(`Completed ${nextPhase} phase: ${item.state} → ${result.item.state}`);
+    console.log(`Completed ${nextPhase} phase: ${item.state} → ${result.item.state}`);
   }
 }

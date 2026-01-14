@@ -141,7 +141,7 @@ export async function runPhaseCommand(
   }
 
   if (!force && phaseConfig.skipIfInTarget && isInTargetState(item.state, phaseConfig.targetState)) {
-    logger.info(
+    console.log(
       `Item ${itemId} is already in state '${item.state}', skipping (use --force to override)`
     );
     return;
@@ -177,7 +177,7 @@ export async function runPhaseCommand(
   const result = await phaseConfig.runFn(itemId, workflowOptions);
 
   if (result.success) {
-    logger.info(
+    console.log(
       `Successfully ran ${phase} phase on ${itemId}: ${item.state} → ${result.item.state}`
     );
   } else {

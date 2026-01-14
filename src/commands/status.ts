@@ -4,6 +4,7 @@ import type { Logger } from "../logging";
 import type { Index, IndexItem, Item } from "../schemas";
 import { findRepoRoot, getWreckitDir } from "../fs/paths";
 import { readItem } from "../fs/json";
+import { buildIdMap } from "../domain/resolveId";
 
 export interface StatusOptions {
   json?: boolean;
@@ -63,15 +64,16 @@ export async function statusCommand(
   logger: Logger
 ): Promise<void> {
   const root = findRepoRoot(options.cwd ?? process.cwd());
-  const items = await scanItems(root);
+  const items = await buildIdMap(root);
 
   if (options.json) {
-    const index: Index = {
-      schema_version: 1,
-      items,
-      generated_at: new Date().toISOString(),
-    };
-    logger.json(index);
+    const jsonItems = items.map((i) => ({
+      id: i.shortId,
+      fullId: i.fullId,
+      state: i.state,
+      title: i.title,
+    }));
+    logger.json({ schema_version: 1, items: jsonItems, generated_at: new Date().toISOString() });
     return;
   }
 
@@ -80,12 +82,11 @@ export async function statusCommand(
     return;
   }
 
-  const idWidth = Math.max(2, ...items.map((i) => i.id.length));
-  const header = `${"ID".padEnd(idWidth)}  STATE`;
+  const header = `${"#".padStart(3)}  STATE`;
   console.log(header);
 
   for (const item of items) {
-    const line = `${item.id.padEnd(idWidth)}  ${item.state}`;
+    const line = `${String(item.shortId).padStart(3)}  ${item.state}`;
     console.log(line);
   }
 }

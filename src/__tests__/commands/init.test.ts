@@ -171,12 +171,15 @@ describe("initCommand", () => {
   it("prints success messages", async () => {
     tempDir = await setupTempGitRepo();
 
+    const consoleSpy = spyOn(console, "log");
     await initCommand({ cwd: tempDir }, mockLogger);
 
-    expect(mockLogger.messages).toContain("info: Initialized .wreckit/ directory");
-    expect(mockLogger.messages).toContain("info:   Created config.json");
-    expect(mockLogger.messages).toContain("info:   Created prompts/research.md");
-    expect(mockLogger.messages).toContain("info:   Created prompts/plan.md");
-    expect(mockLogger.messages).toContain("info:   Created prompts/implement.md");
+    const calls = consoleSpy.mock.calls.map((c) => String(c[0]));
+    expect(calls.some((c) => c.includes("Initialized .wreckit/ directory"))).toBe(true);
+    expect(calls.some((c) => c.includes("Created config.json"))).toBe(true);
+    expect(calls.some((c) => c.includes("Created prompts/research.md"))).toBe(true);
+    expect(calls.some((c) => c.includes("Created prompts/plan.md"))).toBe(true);
+    expect(calls.some((c) => c.includes("Created prompts/implement.md"))).toBe(true);
+    consoleSpy.mockRestore();
   });
 });

@@ -156,13 +156,15 @@ describe("showCommand", () => {
     });
 
     const logger = createMockLogger();
+    const consoleSpy = spyOn(console, "log");
     await showCommand("features/001-test", {}, logger);
 
-    const calls = logger.info.mock.calls.map((c) => c[0]);
+    const calls = consoleSpy.mock.calls.map((c) => String(c[0]));
     expect(calls.some((c) => c.includes("ID: features/001-test"))).toBe(true);
     expect(calls.some((c) => c.includes("Title: Test Feature"))).toBe(true);
     expect(calls.some((c) => c.includes("State: raw"))).toBe(true);
     expect(calls.some((c) => c.includes("Overview: A test feature"))).toBe(true);
+    consoleSpy.mockRestore();
   });
 
   it("shows research.md indicator when exists", async () => {
@@ -170,20 +172,24 @@ describe("showCommand", () => {
     await createResearch(tempDir, "features/001-test");
 
     const logger = createMockLogger();
+    const consoleSpy = spyOn(console, "log");
     await showCommand("features/001-test", {}, logger);
 
-    const calls = logger.info.mock.calls.map((c) => c[0]);
+    const calls = consoleSpy.mock.calls.map((c) => String(c[0]));
     expect(calls.some((c) => c.includes("Research: ✓"))).toBe(true);
+    consoleSpy.mockRestore();
   });
 
   it("shows research.md indicator when missing", async () => {
     await createItem(tempDir, "features", "001-test");
 
     const logger = createMockLogger();
+    const consoleSpy = spyOn(console, "log");
     await showCommand("features/001-test", {}, logger);
 
-    const calls = logger.info.mock.calls.map((c) => c[0]);
+    const calls = consoleSpy.mock.calls.map((c) => String(c[0]));
     expect(calls.some((c) => c.includes("Research: ✗"))).toBe(true);
+    consoleSpy.mockRestore();
   });
 
   it("shows plan.md indicator when exists", async () => {
@@ -191,10 +197,12 @@ describe("showCommand", () => {
     await createPlan(tempDir, "features/001-test");
 
     const logger = createMockLogger();
+    const consoleSpy = spyOn(console, "log");
     await showCommand("features/001-test", {}, logger);
 
-    const calls = logger.info.mock.calls.map((c) => c[0]);
+    const calls = consoleSpy.mock.calls.map((c) => String(c[0]));
     expect(calls.some((c) => c.includes("Plan: ✓"))).toBe(true);
+    consoleSpy.mockRestore();
   });
 
   it("shows prd.json story count when exists", async () => {
@@ -206,22 +214,26 @@ describe("showCommand", () => {
     ]);
 
     const logger = createMockLogger();
+    const consoleSpy = spyOn(console, "log");
     await showCommand("features/001-test", {}, logger);
 
-    const calls = logger.info.mock.calls.map((c) => c[0]);
+    const calls = consoleSpy.mock.calls.map((c) => String(c[0]));
     expect(calls.some((c) => c.includes("Stories: 2 pending, 1 done"))).toBe(true);
+    consoleSpy.mockRestore();
   });
 
   it("handles missing optional files", async () => {
     await createItem(tempDir, "features", "001-test");
 
     const logger = createMockLogger();
+    const consoleSpy = spyOn(console, "log");
     await showCommand("features/001-test", {}, logger);
 
-    const calls = logger.info.mock.calls.map((c) => c[0]);
+    const calls = consoleSpy.mock.calls.map((c) => String(c[0]));
     expect(calls.some((c) => c.includes("Research: ✗"))).toBe(true);
     expect(calls.some((c) => c.includes("Plan: ✗"))).toBe(true);
     expect(calls.some((c) => c.includes("Stories: -"))).toBe(true);
+    consoleSpy.mockRestore();
   });
 
   it("outputs full item data with --json", async () => {
@@ -254,10 +266,12 @@ describe("showCommand", () => {
     });
 
     const logger = createMockLogger();
+    const consoleSpy = spyOn(console, "log");
     await showCommand("features/001-test", {}, logger);
 
-    const calls = logger.info.mock.calls.map((c) => c[0]);
+    const calls = consoleSpy.mock.calls.map((c) => String(c[0]));
     expect(calls.some((c) => c.includes("Branch: wreckit/001-test"))).toBe(true);
+    consoleSpy.mockRestore();
   });
 
   it("shows PR info when available", async () => {
@@ -266,9 +280,11 @@ describe("showCommand", () => {
     });
 
     const logger = createMockLogger();
+    const consoleSpy = spyOn(console, "log");
     await showCommand("features/001-test", {}, logger);
 
-    const calls = logger.info.mock.calls.map((c) => c[0]);
+    const calls = consoleSpy.mock.calls.map((c) => String(c[0]));
     expect(calls.some((c) => c.includes("PR: https://github.com/org/repo/pull/123"))).toBe(true);
+    consoleSpy.mockRestore();
   });
 });

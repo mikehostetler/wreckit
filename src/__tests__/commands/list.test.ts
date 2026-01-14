@@ -82,8 +82,8 @@ describe("listCommand", () => {
     await listCommand({}, logger);
 
     const calls = consoleSpy.mock.calls.map((c) => String(c[0]));
-    expect(calls.some((c) => c.includes("bugs/001-crash"))).toBe(true);
-    expect(calls.some((c) => c.includes("features/001-auth"))).toBe(true);
+    expect(calls.some((c) => c.includes("crash"))).toBe(true);
+    expect(calls.some((c) => c.includes("auth"))).toBe(true);
     expect(calls.some((c) => c.includes("planned"))).toBe(true);
     expect(calls.some((c) => c.includes("Total: 3 item(s)"))).toBe(true);
 
@@ -101,7 +101,7 @@ describe("listCommand", () => {
     await listCommand({ state: "raw" }, logger);
 
     const calls = consoleSpy.mock.calls.map((c) => String(c[0]));
-    expect(calls.some((c) => c.includes("features/001-auth"))).toBe(true);
+    expect(calls.some((c) => c.includes("auth"))).toBe(true);
     expect(calls.some((c) => c.includes("researched"))).toBe(false);
     expect(calls.some((c) => c.includes("Total: 1 item(s)"))).toBe(true);
 
@@ -122,13 +122,15 @@ describe("listCommand", () => {
 
     expect(Array.isArray(parsed)).toBe(true);
     expect(parsed).toHaveLength(2);
-    expect(parsed[0].id).toBe("bugs/001-crash");
-    expect(parsed[1].id).toBe("features/001-auth");
+    expect(parsed[0].id).toBe(1);
+    expect(parsed[0].fullId).toBe("bugs/001-crash");
+    expect(parsed[1].id).toBe(2);
+    expect(parsed[1].fullId).toBe("features/001-auth");
 
     consoleSpy.mockRestore();
   });
 
-  it("lists items sorted by id", async () => {
+  it("lists items sorted by id with short numeric IDs", async () => {
     await createItem(tempDir, "features", "002-second", "raw");
     await createItem(tempDir, "bugs", "001-first", "raw");
     await createItem(tempDir, "features", "001-first", "raw");
@@ -139,13 +141,9 @@ describe("listCommand", () => {
     await listCommand({}, logger);
 
     const calls = consoleSpy.mock.calls.map((c) => String(c[0]));
-    const itemLines = calls.filter(
-      (c) => c.includes("bugs/001-first") || c.includes("features/001-first") || c.includes("features/002-second")
-    );
-
-    expect(itemLines[0]).toContain("bugs/001-first");
-    expect(itemLines[1]).toContain("features/001-first");
-    expect(itemLines[2]).toContain("features/002-second");
+    expect(calls.some((c) => /^\s*1\s+raw\s+first/.test(c))).toBe(true);
+    expect(calls.some((c) => /^\s*2\s+raw\s+first/.test(c))).toBe(true);
+    expect(calls.some((c) => /^\s*3\s+raw\s+second/.test(c))).toBe(true);
 
     consoleSpy.mockRestore();
   });

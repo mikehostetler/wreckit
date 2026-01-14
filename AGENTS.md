@@ -6,7 +6,7 @@
 |---------|------|
 | `wreckit` | Run all incomplete items (research → plan → implement → PR) |
 | `wreckit next` | Run next incomplete item |
-| `wreckit run <id>` | Run single item through all phases |
+| `wreckit run <id>` | Run single item through all phases (id: `1`, `2`, or full path) |
 | `wreckit ideas < FILE` | Ingest ideas (create raw items) |
 | `wreckit status` | List all items + state |
 | `wreckit list` | List items (with optional `--state` filtering) |

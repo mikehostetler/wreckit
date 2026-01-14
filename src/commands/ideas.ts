@@ -93,16 +93,16 @@ export async function ideasCommand(
   if (options.dryRun) {
     const ideas = parseIdeasFromText(input);
     if (ideas.length === 0) {
-      logger.info("No items would be created");
+      console.log("No items would be created");
       return;
     }
 
-    logger.info(`Would create ${ideas.length} items:`);
+    console.log(`Would create ${ideas.length} items:`);
     for (const idea of ideas) {
       const section = determineSection(idea);
       const slug = generateSlug(idea.title);
       if (slug) {
-        logger.info(`  ${section}/XXX-${slug}`);
+        console.log(`  ${section}/XXX-${slug}`);
       }
     }
     return;
@@ -111,21 +111,21 @@ export async function ideasCommand(
   const result = await ingestIdeas(root, input);
 
   if (result.created.length === 0 && result.skipped.length === 0) {
-    logger.info("No items created");
+    console.log("No items created");
     return;
   }
 
   if (result.created.length > 0) {
-    logger.info(`Created ${result.created.length} items:`);
+    console.log(`Created ${result.created.length} items:`);
     for (const item of result.created) {
-      logger.info(`  ${item.id}`);
+      console.log(`  ${item.id}`);
     }
   }
 
   if (result.skipped.length > 0) {
-    logger.info(`Skipped ${result.skipped.length} existing items:`);
+    console.log(`Skipped ${result.skipped.length} existing items:`);
     for (const id of result.skipped) {
-      logger.info(`  ${id}`);
+      console.log(`  ${id}`);
     }
   }
 }

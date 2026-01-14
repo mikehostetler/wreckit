@@ -15,6 +15,8 @@ import { orchestrateAll, orchestrateNext } from "./commands/orchestrator";
 import { doctorCommand } from "./commands/doctor";
 import { initCommand } from "./commands/init";
 import { runOnboardingIfNeeded } from "./onboarding";
+import { resolveId } from "./domain/resolveId";
+import { findRepoRoot } from "./fs/paths";
 
 export const program = new Command();
 
@@ -209,9 +211,12 @@ program
     const globalOpts = cmd.optsWithGlobals();
     await executeCommand(
       async () => {
+        const cwd = resolveCwd(globalOpts.cwd);
+        const root = findRepoRoot(cwd);
+        const resolvedId = await resolveId(root, id);
         await showCommand(
-          id,
-          { json: options.json, cwd: resolveCwd(globalOpts.cwd) },
+          resolvedId,
+          { json: options.json, cwd },
           logger
         );
       },
@@ -232,13 +237,16 @@ program
     const globalOpts = cmd.optsWithGlobals();
     await executeCommand(
       async () => {
+        const cwd = resolveCwd(globalOpts.cwd);
+        const root = findRepoRoot(cwd);
+        const resolvedId = await resolveId(root, id);
         await runPhaseCommand(
           "research",
-          id,
+          resolvedId,
           {
             force: options.force,
             dryRun: globalOpts.dryRun,
-            cwd: resolveCwd(globalOpts.cwd),
+            cwd,
           },
           logger
         );
@@ -261,13 +269,16 @@ program
     const globalOpts = cmd.optsWithGlobals();
     await executeCommand(
       async () => {
+        const cwd = resolveCwd(globalOpts.cwd);
+        const root = findRepoRoot(cwd);
+        const resolvedId = await resolveId(root, id);
         await runPhaseCommand(
           "plan",
-          id,
+          resolvedId,
           {
             force: options.force,
             dryRun: globalOpts.dryRun,
-            cwd: resolveCwd(globalOpts.cwd),
+            cwd,
           },
           logger
         );
@@ -290,13 +301,16 @@ program
     const globalOpts = cmd.optsWithGlobals();
     await executeCommand(
       async () => {
+        const cwd = resolveCwd(globalOpts.cwd);
+        const root = findRepoRoot(cwd);
+        const resolvedId = await resolveId(root, id);
         await runPhaseCommand(
           "implement",
-          id,
+          resolvedId,
           {
             force: options.force,
             dryRun: globalOpts.dryRun,
-            cwd: resolveCwd(globalOpts.cwd),
+            cwd,
           },
           logger
         );
@@ -319,13 +333,16 @@ program
     const globalOpts = cmd.optsWithGlobals();
     await executeCommand(
       async () => {
+        const cwd = resolveCwd(globalOpts.cwd);
+        const root = findRepoRoot(cwd);
+        const resolvedId = await resolveId(root, id);
         await runPhaseCommand(
           "pr",
-          id,
+          resolvedId,
           {
             force: options.force,
             dryRun: globalOpts.dryRun,
-            cwd: resolveCwd(globalOpts.cwd),
+            cwd,
           },
           logger
         );
@@ -347,10 +364,13 @@ program
     const globalOpts = cmd.optsWithGlobals();
     await executeCommand(
       async () => {
+        const cwd = resolveCwd(globalOpts.cwd);
+        const root = findRepoRoot(cwd);
+        const resolvedId = await resolveId(root, id);
         await runPhaseCommand(
           "complete",
-          id,
-          { dryRun: globalOpts.dryRun, cwd: resolveCwd(globalOpts.cwd) },
+          resolvedId,
+          { dryRun: globalOpts.dryRun, cwd },
           logger
         );
       },
@@ -372,12 +392,15 @@ program
     const globalOpts = cmd.optsWithGlobals();
     await executeCommand(
       async () => {
+        const cwd = resolveCwd(globalOpts.cwd);
+        const root = findRepoRoot(cwd);
+        const resolvedId = await resolveId(root, id);
         await runCommand(
-          id,
+          resolvedId,
           {
             force: options.force,
             dryRun: globalOpts.dryRun,
-            cwd: resolveCwd(globalOpts.cwd),
+            cwd,
           },
           logger
         );

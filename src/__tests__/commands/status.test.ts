@@ -134,10 +134,10 @@ describe("statusCommand", () => {
     
     await statusCommand({}, logger);
 
-    const calls = consoleSpy.mock.calls.map((c) => c[0]);
-    expect(calls.some((c) => String(c).includes("foundation/001-core-types") && String(c).includes("raw"))).toBe(true);
-    expect(calls.some((c) => String(c).includes("foundation/002-api-layer") && String(c).includes("researched"))).toBe(true);
-    expect(calls.some((c) => String(c).includes("features/001-auth") && String(c).includes("planned"))).toBe(true);
+    const calls = consoleSpy.mock.calls.map((c) => String(c[0]));
+    expect(calls.some((c) => c.includes("raw"))).toBe(true);
+    expect(calls.some((c) => c.includes("researched"))).toBe(true);
+    expect(calls.some((c) => c.includes("planned"))).toBe(true);
     
     consoleSpy.mockRestore();
   });
@@ -150,13 +150,15 @@ describe("statusCommand", () => {
     await statusCommand({ json: true }, logger);
 
     expect(logger.json).toHaveBeenCalledTimes(1);
-    const output = logger.json.mock.calls[0][0] as Index;
+    const output = logger.json.mock.calls[0][0] as { schema_version: number; items: { id: number; fullId: string }[]; generated_at: string };
 
     expect(output.schema_version).toBe(1);
     expect(output.items).toHaveLength(2);
     expect(output.generated_at).toBeDefined();
-    expect(output.items[0].id).toBe("bugs/001-bug");
-    expect(output.items[1].id).toBe("features/001-test");
+    expect(output.items[0].id).toBe(1);
+    expect(output.items[0].fullId).toBe("bugs/001-bug");
+    expect(output.items[1].id).toBe(2);
+    expect(output.items[1].fullId).toBe("features/001-test");
   });
 
   it("items are sorted by section/number", async () => {
@@ -167,9 +169,9 @@ describe("statusCommand", () => {
     const logger = createMockLogger();
     await statusCommand({ json: true }, logger);
 
-    const output = logger.json.mock.calls[0][0] as Index;
-    expect(output.items[0].id).toBe("bugs/001-first");
-    expect(output.items[1].id).toBe("features/001-first");
-    expect(output.items[2].id).toBe("features/002-second");
+    const output = logger.json.mock.calls[0][0] as { items: { id: number; fullId: string }[] };
+    expect(output.items[0].fullId).toBe("bugs/001-first");
+    expect(output.items[1].fullId).toBe("features/001-first");
+    expect(output.items[2].fullId).toBe("features/002-second");
   });
 });

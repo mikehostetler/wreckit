@@ -85,9 +85,9 @@ export async function initCommand(
     await fs.writeFile(promptPath, content, "utf-8");
   }
 
-  logger.info("Initialized .wreckit/ directory");
-  logger.info("  Created config.json");
-  logger.info("  Created prompts/research.md");
-  logger.info("  Created prompts/plan.md");
-  logger.info("  Created prompts/implement.md");
+  console.log("Initialized .wreckit/ directory");
+  console.log("  Created config.json");
+  console.log("  Created prompts/research.md");
+  console.log("  Created prompts/plan.md");
+  console.log("  Created prompts/implement.md");
 }
