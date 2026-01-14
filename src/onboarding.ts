@@ -11,6 +11,7 @@ import {
   note,
 } from "@clack/prompts";
 import type { Logger } from "./logging";
+import { dirExists } from "./fs/util";
 import { initCommand, NotGitRepoError } from "./commands/init";
 import { ideasCommand } from "./commands/ideas";
 import { scanItems } from "./domain/indexing";
@@ -43,15 +44,6 @@ function findGitRoot(startCwd: string): string | null {
   }
 
   return null;
-}
-
-async function dirExists(dir: string): Promise<boolean> {
-  try {
-    const stat = await fs.stat(dir);
-    return stat.isDirectory();
-  } catch {
-    return false;
-  }
 }
 
 async function promptInit(wreckitDir: string): Promise<boolean> {

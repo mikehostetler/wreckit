@@ -8,6 +8,7 @@ import {
   readItem,
   writeIndex,
 } from "../fs";
+import { dirExists } from "../fs/util";
 
 const RESERVED_DIRS = new Set(["prompts"]);
 const ITEM_DIR_PATTERN = /^(\d+)-(.+)$/;
@@ -53,15 +54,6 @@ export function buildIndex(items: Item[]): Index {
   };
 }
 
-async function isDirectory(filePath: string): Promise<boolean> {
-  try {
-    const stat = await fs.stat(filePath);
-    return stat.isDirectory();
-  } catch {
-    return false;
-  }
-}
-
 export async function listSections(root: string): Promise<string[]> {
   const wreckitDir = getWreckitDir(root);
   let entries: string[];
@@ -79,7 +71,7 @@ export async function listSections(root: string): Promise<string[]> {
     if (entry.endsWith(".json")) continue;
 
     const entryPath = path.join(wreckitDir, entry);
-    if (!(await isDirectory(entryPath))) continue;
+    if (!(await dirExists(entryPath))) continue;
 
     const subEntries = await fs.readdir(entryPath);
     const hasItemDirs = subEntries.some((sub) => ITEM_DIR_PATTERN.test(sub));
@@ -108,7 +100,7 @@ export async function scanItems(root: string): Promise<Item[]> {
     if (sectionName.endsWith(".json")) continue;
 
     const sectionPath = path.join(wreckitDir, sectionName);
-    if (!(await isDirectory(sectionPath))) continue;
+    if (!(await dirExists(sectionPath))) continue;
 
     const itemDirs = await fs.readdir(sectionPath);
 
@@ -116,7 +108,7 @@ export async function scanItems(root: string): Promise<Item[]> {
       if (!ITEM_DIR_PATTERN.test(itemDirName)) continue;
 
       const itemDirPath = path.join(sectionPath, itemDirName);
-      if (!(await isDirectory(itemDirPath))) continue;
+      if (!(await dirExists(itemDirPath))) continue;
 
       const itemJsonPath = path.join(itemDirPath, "item.json");
 

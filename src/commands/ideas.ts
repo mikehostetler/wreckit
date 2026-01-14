@@ -2,7 +2,7 @@ import * as fs from "node:fs/promises";
 import * as readline from "node:readline";
 import { text, isCancel } from "@clack/prompts";
 import type { Logger } from "../logging";
-import { findRepoRoot } from "../fs/paths";
+import { findRepoRoot, findRootFromOptions } from "../fs/paths";
 import { ingestIdeas, parseIdeasFromText, determineSection, generateSlug } from "../domain/ideas";
 import { FileNotFoundError } from "../errors";
 
@@ -51,8 +51,7 @@ export async function ideasCommand(
   logger: Logger,
   inputOverride?: string
 ): Promise<void> {
-  const cwd = options.cwd ?? process.cwd();
-  const root = findRepoRoot(cwd);
+  const root = findRootFromOptions(options);
 
   let input: string;
   if (inputOverride !== undefined) {

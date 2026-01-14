@@ -1,5 +1,7 @@
 export {
   findRepoRoot,
+  resolveCwd,
+  findRootFromOptions,
   getWreckitDir,
   getConfigPath,
   getIndexPath,
@@ -25,3 +27,8 @@ export {
   readIndex,
   writeIndex,
 } from "./json";
+
+export {
+  pathExists,
+  dirExists,
+} from "./util";

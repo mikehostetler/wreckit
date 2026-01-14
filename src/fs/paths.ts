@@ -30,6 +30,17 @@ export function findRepoRoot(startCwd: string): string {
   );
 }
 
+export function resolveCwd(cwdOption?: string): string {
+  if (cwdOption) {
+    return path.resolve(cwdOption);
+  }
+  return process.cwd();
+}
+
+export function findRootFromOptions(options: { cwd?: string }): string {
+  return findRepoRoot(resolveCwd(options.cwd));
+}
+
 export function getWreckitDir(root: string): string {
   return path.join(root, ".wreckit");
 }

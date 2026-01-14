@@ -1,7 +1,8 @@
 import * as fs from "node:fs/promises";
 import type { Logger } from "../logging";
 import type { Item } from "../schemas";
-import { findRepoRoot, getItemDir, getResearchPath, getPlanPath, getPrdPath } from "../fs/paths";
+import { findRepoRoot, findRootFromOptions, getItemDir, getResearchPath, getPlanPath, getPrdPath } from "../fs/paths";
+import { pathExists } from "../fs/util";
 import { readItem } from "../fs/json";
 import { loadConfig } from "../config";
 import { FileNotFoundError, WreckitError } from "../errors";
@@ -24,15 +25,6 @@ export interface RunOptions {
   cwd?: string;
 }
 
-async function fileExists(filePath: string): Promise<boolean> {
-  try {
-    await fs.access(filePath);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 async function phaseArtifactsExist(
   phase: string,
   root: string,
@@ -40,10 +32,10 @@ async function phaseArtifactsExist(
 ): Promise<boolean> {
   switch (phase) {
     case "research":
-      return fileExists(getResearchPath(root, itemId));
+      return pathExists(getResearchPath(root, itemId));
     case "plan": {
-      const planExists = await fileExists(getPlanPath(root, itemId));
-      const prdExists = await fileExists(getPrdPath(root, itemId));
+      const planExists = await pathExists(getPlanPath(root, itemId));
+      const prdExists = await pathExists(getPrdPath(root, itemId));
       return planExists && prdExists;
     }
     case "implement":
@@ -62,7 +54,7 @@ export async function runCommand(
 ): Promise<void> {
   const { force = false, dryRun = false, mockAgent = false, onAgentOutput, cwd } = options;
 
-  const root = findRepoRoot(cwd ?? process.cwd());
+  const root = findRootFromOptions(options);
   const config = await loadConfig(root);
 
   const itemDir = getItemDir(root, itemId);

@@ -3,7 +3,8 @@ import * as path from "node:path";
 import type { Logger } from "../logging";
 import type { Item, Prd } from "../schemas";
 import { PrdSchema } from "../schemas";
-import { findRepoRoot, getItemDir, getResearchPath, getPlanPath, getPrdPath } from "../fs/paths";
+import { findRepoRoot, findRootFromOptions, getItemDir, getResearchPath, getPlanPath, getPrdPath } from "../fs/paths";
+import { pathExists } from "../fs/util";
 import { readItem, readJsonWithSchema } from "../fs/json";
 import { FileNotFoundError } from "../errors";
 
@@ -19,21 +20,12 @@ export interface ItemDetails {
   prd: Prd | null;
 }
 
-async function fileExists(filePath: string): Promise<boolean> {
-  try {
-    await fs.access(filePath);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 export async function loadItemDetails(root: string, id: string): Promise<ItemDetails> {
   const itemDir = getItemDir(root, id);
   const item = await readItem(itemDir);
 
-  const hasResearch = await fileExists(getResearchPath(root, id));
-  const hasPlan = await fileExists(getPlanPath(root, id));
+  const hasResearch = await pathExists(getResearchPath(root, id));
+  const hasPlan = await pathExists(getPlanPath(root, id));
 
   let prd: Prd | null = null;
   try {
@@ -50,7 +42,7 @@ export async function showCommand(
   options: ShowOptions,
   logger: Logger
 ): Promise<void> {
-  const root = findRepoRoot(options.cwd ?? process.cwd());
+  const root = findRootFromOptions(options);
 
   let details: ItemDetails;
   try {

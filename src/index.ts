@@ -16,16 +16,9 @@ import { doctorCommand } from "./commands/doctor";
 import { initCommand } from "./commands/init";
 import { runOnboardingIfNeeded } from "./onboarding";
 import { resolveId } from "./domain/resolveId";
-import { findRepoRoot } from "./fs/paths";
+import { findRepoRoot, resolveCwd } from "./fs/paths";
 
 export const program = new Command();
-
-function resolveCwd(cwdOption?: string): string {
-  if (cwdOption) {
-    return path.resolve(cwdOption);
-  }
-  return process.cwd();
-}
 
 program
   .name("wreckit")
@@ -47,7 +40,6 @@ program
 
 program.action(async () => {
   const opts = program.opts();
-  initLogger({ verbose: opts.verbose, quiet: opts.quiet, debug: opts.debug });
   await executeCommand(
     async () => {
       const onboarding = await runOnboardingIfNeeded(logger, {
@@ -420,11 +412,6 @@ program
   .description("Run next incomplete item")
   .action(async (_options, cmd) => {
     const globalOpts = cmd.optsWithGlobals();
-    initLogger({
-      verbose: globalOpts.verbose,
-      quiet: globalOpts.quiet,
-      debug: globalOpts.debug,
-    });
     await executeCommand(
       async () => {
         const onboarding = await runOnboardingIfNeeded(logger, {
@@ -476,11 +463,6 @@ program
   .option("--fix", "Auto-fix recoverable issues")
   .action(async (options, cmd) => {
     const globalOpts = cmd.optsWithGlobals();
-    initLogger({
-      verbose: globalOpts.verbose,
-      quiet: globalOpts.quiet,
-      debug: globalOpts.debug,
-    });
     await executeCommand(
       async () => {
         await doctorCommand(
@@ -503,11 +485,6 @@ program
   .option("--force", "Overwrite existing .wreckit/")
   .action(async (options, cmd) => {
     const globalOpts = cmd.optsWithGlobals();
-    initLogger({
-      verbose: globalOpts.verbose,
-      quiet: globalOpts.quiet,
-      debug: globalOpts.debug,
-    });
     await executeCommand(
       async () => {
         await initCommand(

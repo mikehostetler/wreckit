@@ -16,6 +16,7 @@ import {
   getIndexPath,
   getPromptsDir,
 } from "./fs/paths";
+import { pathExists } from "./fs/util";
 import { scanItems } from "./commands/status";
 import { initPromptTemplates } from "./prompts";
 
@@ -40,15 +41,6 @@ export interface DoctorResult {
   fixes?: FixResult[];
 }
 
-async function fileExists(filePath: string): Promise<boolean> {
-  try {
-    await fs.access(filePath);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 async function readJson(filePath: string): Promise<unknown> {
   const content = await fs.readFile(filePath, "utf-8");
   return JSON.parse(content);
@@ -58,7 +50,7 @@ async function diagnoseConfig(root: string): Promise<Diagnostic[]> {
   const diagnostics: Diagnostic[] = [];
   const configPath = getConfigPath(root);
 
-  if (!(await fileExists(configPath))) {
+  if (!(await pathExists(configPath))) {
     diagnostics.push({
       itemId: null,
       severity: "warning",
@@ -103,7 +95,7 @@ async function diagnoseItem(
   const itemDir = path.join(sectionDir, itemDirName);
   const itemJsonPath = path.join(itemDir, "item.json");
 
-  if (!(await fileExists(itemJsonPath))) {
+  if (!(await pathExists(itemJsonPath))) {
     const section = path.basename(sectionDir);
     diagnostics.push({
       itemId: `${section}/${itemDirName}`,
@@ -146,9 +138,9 @@ async function diagnoseItem(
   const planPath = path.join(itemDir, "plan.md");
   const prdPath = path.join(itemDir, "prd.json");
 
-  const hasResearch = await fileExists(researchPath);
-  const hasPlan = await fileExists(planPath);
-  const hasPrd = await fileExists(prdPath);
+  const hasResearch = await pathExists(researchPath);
+  const hasPlan = await pathExists(planPath);
+  const hasPrd = await pathExists(prdPath);
 
   if (item.state === "researched" && !hasResearch) {
     diagnostics.push({
@@ -254,7 +246,7 @@ async function diagnoseIndex(root: string): Promise<Diagnostic[]> {
   const diagnostics: Diagnostic[] = [];
   const indexPath = getIndexPath(root);
 
-  if (!(await fileExists(indexPath))) {
+  if (!(await pathExists(indexPath))) {
     return diagnostics;
   }
 
@@ -325,7 +317,7 @@ async function diagnosePrompts(root: string): Promise<Diagnostic[]> {
   const diagnostics: Diagnostic[] = [];
   const promptsDir = getPromptsDir(root);
 
-  if (!(await fileExists(promptsDir))) {
+  if (!(await pathExists(promptsDir))) {
     diagnostics.push({
       itemId: null,
       severity: "info",
@@ -342,7 +334,7 @@ export async function diagnose(root: string): Promise<Diagnostic[]> {
   const diagnostics: Diagnostic[] = [];
   const wreckitDir = getWreckitDir(root);
 
-  if (!(await fileExists(wreckitDir))) {
+  if (!(await pathExists(wreckitDir))) {
     return diagnostics;
   }
 
@@ -435,11 +427,11 @@ export async function applyFixes(
             const data = await readJson(itemJsonPath);
             const item = ItemSchema.parse(data);
 
-            const hasResearch = await fileExists(
+            const hasResearch = await pathExists(
               path.join(itemDir, "research.md")
             );
-            const hasPlan = await fileExists(path.join(itemDir, "plan.md"));
-            const hasPrd = await fileExists(path.join(itemDir, "prd.json"));
+            const hasPlan = await pathExists(path.join(itemDir, "plan.md"));
+            const hasPrd = await pathExists(path.join(itemDir, "prd.json"));
 
             let newState = item.state;
             if (item.state === "researched" && !hasResearch) {

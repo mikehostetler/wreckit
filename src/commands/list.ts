@@ -1,5 +1,5 @@
 import type { Logger } from "../logging";
-import { findRepoRoot } from "../fs/paths";
+import { findRepoRoot, findRootFromOptions } from "../fs/paths";
 import { buildIdMap } from "../domain/resolveId";
 
 export interface ListOptions {
@@ -27,7 +27,7 @@ export async function listCommand(
   options: ListOptions,
   logger: Logger
 ): Promise<void> {
-  const root = findRepoRoot(options.cwd ?? process.cwd());
+  const root = findRootFromOptions(options);
   const allItems = await buildIdMap(root);
 
   const items = options.state

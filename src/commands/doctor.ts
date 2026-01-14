@@ -1,5 +1,5 @@
 import type { Logger } from "../logging";
-import { findRepoRoot } from "../fs/paths";
+import { findRepoRoot, findRootFromOptions } from "../fs/paths";
 import {
   runDoctor,
   type Diagnostic,
@@ -33,7 +33,7 @@ export async function doctorCommand(
   options: DoctorOptions,
   logger: Logger
 ): Promise<void> {
-  const root = findRepoRoot(options.cwd ?? process.cwd());
+  const root = findRootFromOptions(options);
   const result = await runDoctor(root, { fix: options.fix }, logger);
 
   const { diagnostics, fixes } = result;

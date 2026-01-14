@@ -1,22 +1,14 @@
 import * as fs from "node:fs/promises";
 import type { Logger } from "../logging";
 import type { Prd } from "../schemas";
-import { findRepoRoot, getItemDir, getResearchPath, getPlanPath, getPrdPath } from "../fs/paths";
+import { findRepoRoot, findRootFromOptions, getItemDir, getResearchPath, getPlanPath, getPrdPath } from "../fs/paths";
+import { pathExists } from "../fs/util";
 import { loadConfig } from "../config";
 import { readItem, readPrd } from "../fs/json";
 import { scanItems } from "./status";
 import { runCommand } from "./run";
 import { TuiRunner, createSimpleProgress } from "../tui";
 import { formatDryRunSummary, formatDryRunRun, type DryRunItemInfo } from "./dryRunFormatter";
-
-async function fileExists(filePath: string): Promise<boolean> {
-  try {
-    await fs.access(filePath);
-    return true;
-  } catch {
-    return false;
-  }
-}
 
 export interface OrchestratorOptions {
   force?: boolean;
@@ -47,7 +39,7 @@ export async function orchestrateAll(
 ): Promise<OrchestratorResult> {
   const { force = false, dryRun = false, noTui = false, tuiDebug = false, cwd, mockAgent = false } = options;
 
-  const root = findRepoRoot(cwd ?? process.cwd());
+  const root = findRootFromOptions(options);
   const config = await loadConfig(root);
 
   const items = await scanItems(root);
@@ -75,8 +67,8 @@ export async function orchestrateAll(
       } catch {
         // prd doesn't exist
       }
-      const hasResearch = await fileExists(getResearchPath(root, item.id));
-      const hasPlan = await fileExists(getPlanPath(root, item.id));
+      const hasResearch = await pathExists(getResearchPath(root, item.id));
+      const hasPlan = await pathExists(getPlanPath(root, item.id));
       dryRunInfos.push({ item: fullItem, prd, hasResearch, hasPlan, config });
     }
     formatDryRunSummary(dryRunInfos, logger);
@@ -183,7 +175,7 @@ export async function orchestrateNext(
 ): Promise<{ itemId: string | null; success: boolean }> {
   const { force = false, dryRun = false, cwd, mockAgent = false } = options;
 
-  const root = findRepoRoot(cwd ?? process.cwd());
+  const root = findRootFromOptions(options);
   const config = await loadConfig(root);
 
   const nextItemId = await getNextIncompleteItem(root);

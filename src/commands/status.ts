@@ -2,7 +2,7 @@ import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import type { Logger } from "../logging";
 import type { Index, IndexItem, Item } from "../schemas";
-import { findRepoRoot, getWreckitDir } from "../fs/paths";
+import { findRepoRoot, findRootFromOptions, getWreckitDir } from "../fs/paths";
 import { readItem } from "../fs/json";
 import { buildIdMap } from "../domain/resolveId";
 
@@ -63,7 +63,7 @@ export async function statusCommand(
   options: StatusOptions,
   logger: Logger
 ): Promise<void> {
-  const root = findRepoRoot(options.cwd ?? process.cwd());
+  const root = findRootFromOptions(options);
   const items = await buildIdMap(root);
 
   if (options.json) {

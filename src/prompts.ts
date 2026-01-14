@@ -1,7 +1,7 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
-import { getWreckitDir } from "./fs/paths";
+import { getPromptsDir, getWreckitDir } from "./fs/paths";
 
 export type PromptName = "research" | "plan" | "implement";
 
@@ -21,11 +21,7 @@ export interface PromptVariables {
   progress?: string;
 }
 
-function getPromptsDir(root: string): string {
-  return path.join(getWreckitDir(root), "prompts");
-}
-
-function getPromptPath(root: string, name: PromptName): string {
+function getPromptTemplatePath(root: string, name: PromptName): string {
   return path.join(getPromptsDir(root), `${name}.md`);
 }
 
@@ -43,7 +39,7 @@ export async function loadPromptTemplate(
   root: string,
   name: PromptName
 ): Promise<string> {
-  const promptPath = getPromptPath(root, name);
+  const promptPath = getPromptTemplatePath(root, name);
 
   try {
     const content = await fs.readFile(promptPath, "utf-8");
@@ -105,7 +101,7 @@ export async function initPromptTemplates(root: string): Promise<void> {
   const promptNames: PromptName[] = ["research", "plan", "implement"];
 
   for (const name of promptNames) {
-    const filePath = getPromptPath(root, name);
+    const filePath = getPromptTemplatePath(root, name);
     try {
       await fs.access(filePath);
     } catch {
