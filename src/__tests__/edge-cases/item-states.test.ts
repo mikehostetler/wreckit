@@ -80,15 +80,13 @@ async function createItem(
   id: string,
   overrides: Partial<Item> = {}
 ): Promise<string> {
-  const [section, slug] = id.split("/");
-  const itemDir = path.join(root, ".wreckit", section, slug);
+  const itemDir = path.join(root, ".wreckit", "items", id);
   await fs.mkdir(itemDir, { recursive: true });
 
   const item: Item = {
     schema_version: 1,
     id,
     title: `Test item ${id}`,
-    section,
     state: "raw",
     overview: "Test overview",
     branch: null,
@@ -152,7 +150,7 @@ describe("Edge Cases: Item States & Artifacts (Tests 47-50)", () => {
     it("planned state without research.md does not crash during validation", async () => {
       const item: Item = {
         schema_version: 1,
-        id: "test/001-item",
+        id: "001-item",
         title: "Test item",
         section: "test",
         state: "planned",
@@ -174,7 +172,7 @@ describe("Edge Cases: Item States & Artifacts (Tests 47-50)", () => {
     });
 
     it("planned state without plan.md does not crash", async () => {
-      const itemDir = await createItem(tempDir, "test/002-item", { state: "planned" });
+      const itemDir = await createItem(tempDir, "002-item", { state: "planned" });
       await createResearch(itemDir);
 
       const item = await readItem(itemDir);
@@ -186,7 +184,7 @@ describe("Edge Cases: Item States & Artifacts (Tests 47-50)", () => {
     });
 
     it("planned state without prd.json does not crash", async () => {
-      const itemDir = await createItem(tempDir, "test/003-item", { state: "planned" });
+      const itemDir = await createItem(tempDir, "003-item", { state: "planned" });
       await createResearch(itemDir);
       await createPlan(itemDir);
 
@@ -199,7 +197,7 @@ describe("Edge Cases: Item States & Artifacts (Tests 47-50)", () => {
     });
 
     it("implementing state with all artifacts missing still builds context", async () => {
-      const itemDir = await createItem(tempDir, "test/004-item", { state: "implementing" });
+      const itemDir = await createItem(tempDir, "004-item", { state: "implementing" });
 
       const item = await readItem(itemDir);
       const ctx = await buildValidationContext(tempDir, item);
@@ -213,7 +211,7 @@ describe("Edge Cases: Item States & Artifacts (Tests 47-50)", () => {
 
   describe("Test 48: Empty PRD or no stories", () => {
     it("prd.json with empty user_stories array does not cause errors", async () => {
-      const itemDir = await createItem(tempDir, "test/001-empty-prd", { state: "planned" });
+      const itemDir = await createItem(tempDir, "001-empty-prd", { state: "planned" });
       await createResearch(itemDir);
       await createPlan(itemDir);
       await createPrd(itemDir, []);
@@ -226,7 +224,7 @@ describe("Edge Cases: Item States & Artifacts (Tests 47-50)", () => {
     });
 
     it("implementing state with empty stories array works correctly", async () => {
-      const itemDir = await createItem(tempDir, "test/002-empty-stories", { state: "implementing" });
+      const itemDir = await createItem(tempDir, "002-empty-stories", { state: "implementing" });
       await createResearch(itemDir);
       await createPlan(itemDir);
       await createPrd(itemDir, []);
@@ -241,7 +239,7 @@ describe("Edge Cases: Item States & Artifacts (Tests 47-50)", () => {
     it("getNextPhase works with empty PRD", async () => {
       const item: Item = {
         schema_version: 1,
-        id: "test/003-empty",
+        id: "003-empty",
         title: "Empty PRD item",
         section: "test",
         state: "implementing",
@@ -260,7 +258,7 @@ describe("Edge Cases: Item States & Artifacts (Tests 47-50)", () => {
 
   describe("Test 49: All story statuses", () => {
     it("handles stories with 'pending' status", async () => {
-      const itemDir = await createItem(tempDir, "test/001-pending", { state: "implementing" });
+      const itemDir = await createItem(tempDir, "001-pending", { state: "implementing" });
       await createResearch(itemDir);
       await createPlan(itemDir);
       await createPrd(itemDir, [
@@ -274,7 +272,7 @@ describe("Edge Cases: Item States & Artifacts (Tests 47-50)", () => {
     });
 
     it("handles stories with 'done' status", async () => {
-      const itemDir = await createItem(tempDir, "test/002-done", { state: "implementing" });
+      const itemDir = await createItem(tempDir, "002-done", { state: "implementing" });
       await createResearch(itemDir);
       await createPlan(itemDir);
       await createPrd(itemDir, [
@@ -288,7 +286,7 @@ describe("Edge Cases: Item States & Artifacts (Tests 47-50)", () => {
     });
 
     it("handles mixed story statuses", async () => {
-      const itemDir = await createItem(tempDir, "test/003-mixed", { state: "implementing" });
+      const itemDir = await createItem(tempDir, "003-mixed", { state: "implementing" });
       await createResearch(itemDir);
       await createPlan(itemDir);
       await createPrd(itemDir, [
@@ -309,7 +307,7 @@ describe("Edge Cases: Item States & Artifacts (Tests 47-50)", () => {
     it("raw state allows research phase", () => {
       const item: Item = {
         schema_version: 1,
-        id: "test/001-raw",
+        id: "001-raw",
         title: "Raw item",
         section: "test",
         state: "raw",
@@ -328,7 +326,7 @@ describe("Edge Cases: Item States & Artifacts (Tests 47-50)", () => {
     it("researched state allows plan phase", () => {
       const item: Item = {
         schema_version: 1,
-        id: "test/002-researched",
+        id: "002-researched",
         title: "Researched item",
         section: "test",
         state: "researched",
@@ -347,7 +345,7 @@ describe("Edge Cases: Item States & Artifacts (Tests 47-50)", () => {
     it("planned state allows implement phase", () => {
       const item: Item = {
         schema_version: 1,
-        id: "test/003-planned",
+        id: "003-planned",
         title: "Planned item",
         section: "test",
         state: "planned",
@@ -366,7 +364,7 @@ describe("Edge Cases: Item States & Artifacts (Tests 47-50)", () => {
     it("implementing state allows pr phase", () => {
       const item: Item = {
         schema_version: 1,
-        id: "test/004-implementing",
+        id: "004-implementing",
         title: "Implementing item",
         section: "test",
         state: "implementing",
@@ -385,7 +383,7 @@ describe("Edge Cases: Item States & Artifacts (Tests 47-50)", () => {
     it("in_pr state allows complete phase", () => {
       const item: Item = {
         schema_version: 1,
-        id: "test/005-in-pr",
+        id: "005-in-pr",
         title: "In PR item",
         section: "test",
         state: "in_pr",
@@ -404,7 +402,7 @@ describe("Edge Cases: Item States & Artifacts (Tests 47-50)", () => {
     it("done state returns null", () => {
       const item: Item = {
         schema_version: 1,
-        id: "test/006-done",
+        id: "006-done",
         title: "Done item",
         section: "test",
         state: "done",

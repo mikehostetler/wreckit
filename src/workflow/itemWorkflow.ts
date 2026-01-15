@@ -121,7 +121,7 @@ async function buildPromptVariables(
   return {
     id: item.id,
     title: item.title,
-    section: item.section,
+    section: item.section ?? "items",
     overview: item.overview,
     item_path: itemDir,
     branch_name: branchName,
@@ -535,7 +535,7 @@ export async function runPhasePr(
 
   await pushBranch(branchResult.branchName, gitOptions);
 
-  const prTitle = `[${item.section}] ${item.title}`;
+  const prTitle = item.title;
   const prBody = `## Overview\n\n${item.overview}\n\n---\n\n*Automated PR created by wreckit*`;
 
   const prResult = await createOrUpdatePr(

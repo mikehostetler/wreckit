@@ -6,7 +6,7 @@
 |---------|------|
 | `wreckit` | Run all incomplete items (research → plan → implement → PR) |
 | `wreckit next` | Run next incomplete item |
-| `wreckit run <id>` | Run single item through all phases (id: `1`, `2`, or full path) |
+| `wreckit run <id>` | Run single item through all phases (id: `1`, `2`, or `001-slug`) |
 | `wreckit ideas < FILE` | Ingest ideas (create raw items) |
 | `wreckit status` | List all items + state |
 | `wreckit list` | List items (with optional `--state` filtering) |
@@ -51,10 +51,11 @@ bun test src/__tests__/foo.test.ts # Single file
 ## Key Files
 
 - `src/index.ts` — CLI entry, commands
-- `src/domain/` — State machine
+- `src/domain/` — State machine, item indexing
 - `src/commands/` — Phase handlers
 - `src/agent/` — Agent subprocess
 - `src/git/` — Git ops
+- `src/fs/paths.ts` — Path helpers (items stored in `.wreckit/items/`)
 
 ## Config
 

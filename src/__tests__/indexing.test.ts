@@ -10,7 +10,6 @@ import {
   refreshIndex,
   getItem,
   itemExists,
-  listSections,
   parseItemId,
   formatItemId,
 } from "../domain/indexing";
@@ -18,9 +17,8 @@ import {
 function createValidItem(overrides: Partial<Item> = {}): Item {
   return {
     schema_version: 1,
-    id: "features/001-test",
+    id: "001-test",
     title: "Test Feature",
-    section: "features",
     state: "raw",
     overview: "Test overview",
     branch: null,
@@ -37,17 +35,15 @@ async function createTestFixture(
   root: string,
   items: Array<{ id: string; item: Partial<Item> }>
 ): Promise<void> {
-  const wreckitDir = path.join(root, ".wreckit");
-  await fs.mkdir(wreckitDir, { recursive: true });
+  const itemsDir = path.join(root, ".wreckit", "items");
+  await fs.mkdir(itemsDir, { recursive: true });
 
   for (const { id, item } of items) {
-    const [section, slug] = id.split("/");
-    const itemDir = path.join(wreckitDir, section, slug);
+    const itemDir = path.join(itemsDir, id);
     await fs.mkdir(itemDir, { recursive: true });
 
     const fullItem = createValidItem({
       id,
-      section,
       ...item,
     });
 
@@ -60,45 +56,35 @@ async function createTestFixture(
 
 describe("parseItemId", () => {
   it("parses valid ID", () => {
-    const result = parseItemId("features/001-dark-mode");
+    const result = parseItemId("001-dark-mode");
     expect(result).toEqual({
-      section: "features",
       number: "001",
       slug: "dark-mode",
     });
   });
 
   it("parses ID with multi-digit number", () => {
-    const result = parseItemId("bugs/123-fix-issue");
+    const result = parseItemId("123-fix-issue");
     expect(result).toEqual({
-      section: "bugs",
       number: "123",
       slug: "fix-issue",
     });
   });
 
-  it("returns null for invalid ID without slash", () => {
-    expect(parseItemId("invalid")).toBeNull();
-  });
-
-  it("returns null for ID without number prefix", () => {
-    expect(parseItemId("features/no-number")).toBeNull();
-  });
-
-  it("returns null for ID with too many slashes", () => {
-    expect(parseItemId("a/b/c")).toBeNull();
+  it("returns null for invalid ID without number prefix", () => {
+    expect(parseItemId("no-number")).toBeNull();
   });
 });
 
 describe("formatItemId", () => {
   it("formats components into ID", () => {
-    const result = formatItemId("features", "001", "dark-mode");
-    expect(result).toBe("features/001-dark-mode");
+    const result = formatItemId("001", "dark-mode");
+    expect(result).toBe("001-dark-mode");
   });
 
   it("round-trips with parseItemId", () => {
-    const original = { section: "bugs", number: "042", slug: "fix-login" };
-    const id = formatItemId(original.section, original.number, original.slug);
+    const original = { number: "042", slug: "fix-login" };
+    const id = formatItemId(original.number, original.slug);
     const parsed = parseItemId(id);
     expect(parsed).toEqual(original);
   });
@@ -107,7 +93,7 @@ describe("formatItemId", () => {
 describe("toIndexItem", () => {
   it("converts Item to IndexItem", () => {
     const item = createValidItem({
-      id: "features/001-auth",
+      id: "001-auth",
       title: "Auth Feature",
       state: "planned",
     });
@@ -115,7 +101,7 @@ describe("toIndexItem", () => {
     const result = toIndexItem(item);
 
     expect(result).toEqual({
-      id: "features/001-auth",
+      id: "001-auth",
       title: "Auth Feature",
       state: "planned",
     });
@@ -134,15 +120,15 @@ describe("buildIndex", () => {
 
   it("builds index with items", () => {
     const items = [
-      createValidItem({ id: "features/001-a", title: "A", state: "raw" }),
-      createValidItem({ id: "bugs/002-b", title: "B", state: "done" }),
+      createValidItem({ id: "001-a", title: "A", state: "raw" }),
+      createValidItem({ id: "002-b", title: "B", state: "done" }),
     ];
 
     const result = buildIndex(items);
 
     expect(result.items).toHaveLength(2);
-    expect(result.items[0]).toEqual({ id: "features/001-a", title: "A", state: "raw" });
-    expect(result.items[1]).toEqual({ id: "bugs/002-b", title: "B", state: "done" });
+    expect(result.items[0]).toEqual({ id: "001-a", title: "A", state: "raw" });
+    expect(result.items[1]).toEqual({ id: "002-b", title: "B", state: "done" });
   });
 
   it("sets generated_at to current ISO timestamp", () => {
@@ -167,7 +153,7 @@ describe("scanItems", () => {
   });
 
   it("returns empty array for empty .wreckit", async () => {
-    await fs.mkdir(path.join(tempDir, ".wreckit"));
+    await fs.mkdir(path.join(tempDir, ".wreckit", "items"), { recursive: true });
 
     const result = await scanItems(tempDir);
 
@@ -180,43 +166,41 @@ describe("scanItems", () => {
     expect(result).toEqual([]);
   });
 
-  it("returns single item from single section", async () => {
+  it("returns single item", async () => {
     await createTestFixture(tempDir, [
-      { id: "features/001-auth", item: { title: "Auth" } },
+      { id: "001-auth", item: { title: "Auth" } },
     ]);
 
     const result = await scanItems(tempDir);
 
     expect(result).toHaveLength(1);
-    expect(result[0].id).toBe("features/001-auth");
+    expect(result[0].id).toBe("001-auth");
     expect(result[0].title).toBe("Auth");
   });
 
-  it("returns multiple items from multiple sections sorted", async () => {
+  it("returns multiple items sorted by number", async () => {
     await createTestFixture(tempDir, [
-      { id: "bugs/002-fix", item: { title: "Fix" } },
-      { id: "features/001-auth", item: { title: "Auth" } },
-      { id: "features/002-profile", item: { title: "Profile" } },
-      { id: "bugs/001-crash", item: { title: "Crash" } },
+      { id: "002-fix", item: { title: "Fix" } },
+      { id: "001-auth", item: { title: "Auth" } },
+      { id: "003-profile", item: { title: "Profile" } },
     ]);
 
     const result = await scanItems(tempDir);
 
-    expect(result).toHaveLength(4);
+    expect(result).toHaveLength(3);
     expect(result.map((i) => i.id)).toEqual([
-      "bugs/001-crash",
-      "bugs/002-fix",
-      "features/001-auth",
-      "features/002-profile",
+      "001-auth",
+      "002-fix",
+      "003-profile",
     ]);
   });
 
   it("skips invalid item.json files with warning", async () => {
     await createTestFixture(tempDir, [
-      { id: "features/001-valid", item: { title: "Valid" } },
+      { id: "001-valid", item: { title: "Valid" } },
     ]);
 
-    const invalidDir = path.join(tempDir, ".wreckit", "features", "002-invalid");
+    const invalidDir = path.join(tempDir, ".wreckit", "items", "002-invalid");
     await fs.mkdir(invalidDir, { recursive: true });
     await fs.writeFile(
       path.join(invalidDir, "item.json"),
@@ -228,7 +212,7 @@ describe("scanItems", () => {
     const result = await scanItems(tempDir);
 
     expect(result).toHaveLength(1);
-    expect(result[0].id).toBe("features/001-valid");
+    expect(result[0].id).toBe("001-valid");
     expect(warnSpy).toHaveBeenCalledWith(
       expect.stringContaining("Skipping invalid item")
     );
@@ -236,42 +220,12 @@ describe("scanItems", () => {
     warnSpy.mockRestore();
   });
 
-  it("ignores prompts directory", async () => {
-    await createTestFixture(tempDir, [
-      { id: "features/001-auth", item: { title: "Auth" } },
-    ]);
-
-    const promptsDir = path.join(tempDir, ".wreckit", "prompts");
-    await fs.mkdir(promptsDir, { recursive: true });
-    await fs.writeFile(path.join(promptsDir, "template.md"), "# Template");
-
-    const result = await scanItems(tempDir);
-
-    expect(result).toHaveLength(1);
-    expect(result[0].id).toBe("features/001-auth");
-  });
-
-  it("ignores JSON files in .wreckit root", async () => {
-    await createTestFixture(tempDir, [
-      { id: "features/001-auth", item: { title: "Auth" } },
-    ]);
-
-    await fs.writeFile(
-      path.join(tempDir, ".wreckit", "config.json"),
-      JSON.stringify({ some: "config" })
-    );
-
-    const result = await scanItems(tempDir);
-
-    expect(result).toHaveLength(1);
-  });
-
   it("ignores directories without number prefix", async () => {
     await createTestFixture(tempDir, [
-      { id: "features/001-auth", item: { title: "Auth" } },
+      { id: "001-auth", item: { title: "Auth" } },
     ]);
 
-    const invalidDir = path.join(tempDir, ".wreckit", "features", "no-number-prefix");
+    const invalidDir = path.join(tempDir, ".wreckit", "items", "no-number-prefix");
     await fs.mkdir(invalidDir, { recursive: true });
     await fs.writeFile(
       path.join(invalidDir, "item.json"),
@@ -281,7 +235,7 @@ describe("scanItems", () => {
     const result = await scanItems(tempDir);
 
     expect(result).toHaveLength(1);
-    expect(result[0].id).toBe("features/001-auth");
+    expect(result[0].id).toBe("001-auth");
   });
 });
 
@@ -299,7 +253,7 @@ describe("refreshIndex", () => {
 
   it("creates index.json if it does not exist", async () => {
     await createTestFixture(tempDir, [
-      { id: "features/001-auth", item: { title: "Auth" } },
+      { id: "001-auth", item: { title: "Auth" } },
     ]);
 
     const result = await refreshIndex(tempDir);
@@ -319,13 +273,13 @@ describe("refreshIndex", () => {
     );
 
     await createTestFixture(tempDir, [
-      { id: "features/001-new", item: { title: "New" } },
+      { id: "001-new", item: { title: "New" } },
     ]);
 
     const result = await refreshIndex(tempDir);
 
     expect(result.items).toHaveLength(1);
-    expect(result.items[0].id).toBe("features/001-new");
+    expect(result.items[0].id).toBe("001-new");
   });
 
   it("returns valid Index object", async () => {
@@ -350,20 +304,20 @@ describe("getItem", () => {
 
   it("returns Item for valid ID", async () => {
     await createTestFixture(tempDir, [
-      { id: "features/001-auth", item: { title: "Auth Feature" } },
+      { id: "001-auth", item: { title: "Auth Feature" } },
     ]);
 
-    const result = await getItem(tempDir, "features/001-auth");
+    const result = await getItem(tempDir, "001-auth");
 
     expect(result).not.toBeNull();
-    expect(result?.id).toBe("features/001-auth");
+    expect(result?.id).toBe("001-auth");
     expect(result?.title).toBe("Auth Feature");
   });
 
   it("returns null for non-existent ID", async () => {
-    await fs.mkdir(path.join(tempDir, ".wreckit"));
+    await fs.mkdir(path.join(tempDir, ".wreckit", "items"), { recursive: true });
 
-    const result = await getItem(tempDir, "features/999-nonexistent");
+    const result = await getItem(tempDir, "999-nonexistent");
 
     expect(result).toBeNull();
   });
@@ -382,99 +336,19 @@ describe("itemExists", () => {
 
   it("returns true when item exists", async () => {
     await createTestFixture(tempDir, [
-      { id: "features/001-auth", item: {} },
+      { id: "001-auth", item: {} },
     ]);
 
-    const result = await itemExists(tempDir, "features/001-auth");
+    const result = await itemExists(tempDir, "001-auth");
 
     expect(result).toBe(true);
   });
 
   it("returns false when item does not exist", async () => {
-    await fs.mkdir(path.join(tempDir, ".wreckit"));
+    await fs.mkdir(path.join(tempDir, ".wreckit", "items"), { recursive: true });
 
-    const result = await itemExists(tempDir, "features/999-missing");
+    const result = await itemExists(tempDir, "999-missing");
 
     expect(result).toBe(false);
-  });
-});
-
-describe("listSections", () => {
-  let tempDir: string;
-
-  beforeEach(async () => {
-    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "wreckit-sections-test-"));
-  });
-
-  afterEach(async () => {
-    await fs.rm(tempDir, { recursive: true, force: true });
-  });
-
-  it("returns empty array when .wreckit does not exist", async () => {
-    const result = await listSections(tempDir);
-
-    expect(result).toEqual([]);
-  });
-
-  it("returns empty array for empty .wreckit", async () => {
-    await fs.mkdir(path.join(tempDir, ".wreckit"));
-
-    const result = await listSections(tempDir);
-
-    expect(result).toEqual([]);
-  });
-
-  it("returns section names for directories with items", async () => {
-    await createTestFixture(tempDir, [
-      { id: "features/001-auth", item: {} },
-      { id: "bugs/001-crash", item: {} },
-    ]);
-
-    const result = await listSections(tempDir);
-
-    expect(result).toEqual(["bugs", "features"]);
-  });
-
-  it("excludes prompts directory", async () => {
-    await createTestFixture(tempDir, [
-      { id: "features/001-auth", item: {} },
-    ]);
-
-    const promptsDir = path.join(tempDir, ".wreckit", "prompts");
-    await fs.mkdir(promptsDir, { recursive: true });
-
-    const result = await listSections(tempDir);
-
-    expect(result).toEqual(["features"]);
-    expect(result).not.toContain("prompts");
-  });
-
-  it("excludes JSON files", async () => {
-    await createTestFixture(tempDir, [
-      { id: "features/001-auth", item: {} },
-    ]);
-
-    await fs.writeFile(
-      path.join(tempDir, ".wreckit", "config.json"),
-      "{}"
-    );
-
-    const result = await listSections(tempDir);
-
-    expect(result).toEqual(["features"]);
-  });
-
-  it("excludes directories without item subdirectories", async () => {
-    await createTestFixture(tempDir, [
-      { id: "features/001-auth", item: {} },
-    ]);
-
-    const emptySection = path.join(tempDir, ".wreckit", "empty-section");
-    await fs.mkdir(emptySection, { recursive: true });
-    await fs.writeFile(path.join(emptySection, "readme.md"), "# Empty");
-
-    const result = await listSections(tempDir);
-
-    expect(result).toEqual(["features"]);
   });
 });

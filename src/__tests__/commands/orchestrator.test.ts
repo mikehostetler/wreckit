@@ -30,9 +30,8 @@ function createMockLogger(): Logger {
 function createTestItem(overrides: Partial<Item> = {}): Item {
   return {
     schema_version: 1,
-    id: "features/001-test-feature",
+    id: "001-test-feature",
     title: "Test Feature",
-    section: "features",
     state: "raw",
     overview: "A test feature",
     branch: null,
@@ -66,8 +65,7 @@ describe("orchestrator", () => {
   });
 
   async function setupItem(item: Item): Promise<string> {
-    const [section, slug] = item.id.split("/");
-    const itemDir = path.join(tempDir, ".wreckit", section, slug);
+    const itemDir = path.join(tempDir, ".wreckit", "items", item.id);
     await fs.mkdir(itemDir, { recursive: true });
     await fs.writeFile(
       path.join(itemDir, "item.json"),
@@ -88,21 +86,21 @@ describe("orchestrator", () => {
     });
 
     it("all items 'done' returns all in skipped", async () => {
-      await setupItem(createTestItem({ id: "features/001-done", state: "done" }));
-      await setupItem(createTestItem({ id: "features/002-done", state: "done" }));
+      await setupItem(createTestItem({ id: "001-done", state: "done" }));
+      await setupItem(createTestItem({ id: "002-done", state: "done" }));
 
       const result = await orchestrateAll({}, mockLogger);
 
-      expect(result.skipped).toEqual(["features/001-done", "features/002-done"]);
+      expect(result.skipped).toEqual(["001-done", "002-done"]);
       expect(result.completed).toEqual([]);
       expect(result.failed).toEqual([]);
       expect(mockedRunCommand).not.toHaveBeenCalled();
     });
 
-    it("runs items in section/number order", async () => {
-      await setupItem(createTestItem({ id: "features/002-second", state: "raw" }));
-      await setupItem(createTestItem({ id: "bugs/001-first", state: "raw" }));
-      await setupItem(createTestItem({ id: "features/001-first", state: "raw" }));
+    it("runs items in number order", async () => {
+      await setupItem(createTestItem({ id: "003-third", state: "raw" }));
+      await setupItem(createTestItem({ id: "001-first", state: "raw" }));
+      await setupItem(createTestItem({ id: "002-second", state: "raw" }));
 
       mockedRunCommand.mockResolvedValue(undefined);
 
@@ -111,40 +109,40 @@ describe("orchestrator", () => {
       expect(mockedRunCommand).toHaveBeenCalledTimes(3);
       const callOrder = mockedRunCommand.mock.calls.map((call: any[]) => call[0]);
       expect(callOrder).toEqual([
-        "bugs/001-first",
-        "features/001-first",
-        "features/002-second",
+        "001-first",
+        "002-second",
+        "003-third",
       ]);
       expect(result.completed).toEqual([
-        "bugs/001-first",
-        "features/001-first",
-        "features/002-second",
+        "001-first",
+        "002-second",
+        "003-third",
       ]);
     });
 
     it("tracks completed and failed separately", async () => {
-      await setupItem(createTestItem({ id: "features/001-success", state: "raw" }));
-      await setupItem(createTestItem({ id: "features/002-fail", state: "raw" }));
-      await setupItem(createTestItem({ id: "features/003-success", state: "raw" }));
+      await setupItem(createTestItem({ id: "001-success", state: "raw" }));
+      await setupItem(createTestItem({ id: "002-fail", state: "raw" }));
+      await setupItem(createTestItem({ id: "003-success", state: "raw" }));
 
       mockedRunCommand.mockImplementation(async (itemId: string) => {
-        if (itemId === "features/002-fail") {
+        if (itemId === "002-fail") {
           throw new Error("Phase failed");
         }
       });
 
       const result = await orchestrateAll({}, mockLogger);
 
-      expect(result.completed).toEqual(["features/001-success", "features/003-success"]);
-      expect(result.failed).toEqual(["features/002-fail"]);
+      expect(result.completed).toEqual(["001-success", "003-success"]);
+      expect(result.failed).toEqual(["002-fail"]);
     });
 
     it("continues after failure (doesn't stop)", async () => {
-      await setupItem(createTestItem({ id: "features/001-fail", state: "raw" }));
-      await setupItem(createTestItem({ id: "features/002-success", state: "raw" }));
+      await setupItem(createTestItem({ id: "001-fail", state: "raw" }));
+      await setupItem(createTestItem({ id: "002-success", state: "raw" }));
 
       mockedRunCommand.mockImplementation(async (itemId: string) => {
-        if (itemId === "features/001-fail") {
+        if (itemId === "001-fail") {
           throw new Error("Phase failed");
         }
       });
@@ -152,17 +150,17 @@ describe("orchestrator", () => {
       const result = await orchestrateAll({}, mockLogger);
 
       expect(mockedRunCommand).toHaveBeenCalledTimes(2);
-      expect(result.completed).toEqual(["features/002-success"]);
-      expect(result.failed).toEqual(["features/001-fail"]);
+      expect(result.completed).toEqual(["002-success"]);
+      expect(result.failed).toEqual(["001-fail"]);
     });
 
     it("--dry-run doesn't run items", async () => {
-      await setupItem(createTestItem({ id: "features/001-test", state: "raw" }));
+      await setupItem(createTestItem({ id: "001-test", state: "raw" }));
 
       const result = await orchestrateAll({ dryRun: true }, mockLogger);
 
       expect(mockedRunCommand).not.toHaveBeenCalled();
-      expect(result.remaining).toEqual(["features/001-test"]);
+      expect(result.remaining).toEqual(["001-test"]);
       expect(mockLogger.info).toHaveBeenCalledWith(
         expect.stringContaining("DRY RUN SUMMARY")
       );
@@ -177,7 +175,7 @@ describe("orchestrator", () => {
 
   describe("orchestrateNext", () => {
     it("returns null if all items done", async () => {
-      await setupItem(createTestItem({ id: "features/001-done", state: "done" }));
+      await setupItem(createTestItem({ id: "001-done", state: "done" }));
 
       const result = await orchestrateNext({}, mockLogger);
 
@@ -187,27 +185,27 @@ describe("orchestrator", () => {
     });
 
     it("returns first non-done item", async () => {
-      await setupItem(createTestItem({ id: "features/001-done", state: "done" }));
-      await setupItem(createTestItem({ id: "features/002-raw", state: "raw" }));
-      await setupItem(createTestItem({ id: "features/003-raw", state: "raw" }));
+      await setupItem(createTestItem({ id: "001-done", state: "done" }));
+      await setupItem(createTestItem({ id: "002-raw", state: "raw" }));
+      await setupItem(createTestItem({ id: "003-raw", state: "raw" }));
 
       mockedRunCommand.mockResolvedValue(undefined);
 
       const result = await orchestrateNext({}, mockLogger);
 
-      expect(result.itemId).toBe("features/002-raw");
+      expect(result.itemId).toBe("002-raw");
       expect(result.success).toBe(true);
       expect(mockedRunCommand).toHaveBeenCalledTimes(1);
       expect(mockedRunCommand).toHaveBeenCalledWith(
-        "features/002-raw",
+        "002-raw",
         expect.objectContaining({ force: false, dryRun: false }),
         mockLogger
       );
     });
 
     it("runs only that one item", async () => {
-      await setupItem(createTestItem({ id: "features/001-raw", state: "raw" }));
-      await setupItem(createTestItem({ id: "features/002-raw", state: "raw" }));
+      await setupItem(createTestItem({ id: "001-raw", state: "raw" }));
+      await setupItem(createTestItem({ id: "002-raw", state: "raw" }));
 
       mockedRunCommand.mockResolvedValue(undefined);
 
@@ -217,13 +215,13 @@ describe("orchestrator", () => {
     });
 
     it("returns success/failure status", async () => {
-      await setupItem(createTestItem({ id: "features/001-fail", state: "raw" }));
+      await setupItem(createTestItem({ id: "001-fail", state: "raw" }));
 
       mockedRunCommand.mockRejectedValue(new Error("Phase failed"));
 
       const result = await orchestrateNext({}, mockLogger);
 
-      expect(result.itemId).toBe("features/001-fail");
+      expect(result.itemId).toBe("001-fail");
       expect(result.success).toBe(false);
     });
   });
@@ -236,8 +234,8 @@ describe("orchestrator", () => {
     });
 
     it("returns null if all 'done'", async () => {
-      await setupItem(createTestItem({ id: "features/001-done", state: "done" }));
-      await setupItem(createTestItem({ id: "features/002-done", state: "done" }));
+      await setupItem(createTestItem({ id: "001-done", state: "done" }));
+      await setupItem(createTestItem({ id: "002-done", state: "done" }));
 
       const result = await getNextIncompleteItem(tempDir);
 
@@ -245,22 +243,22 @@ describe("orchestrator", () => {
     });
 
     it("returns first non-done item (sorted)", async () => {
-      await setupItem(createTestItem({ id: "features/002-second", state: "raw" }));
-      await setupItem(createTestItem({ id: "features/001-first", state: "done" }));
-      await setupItem(createTestItem({ id: "bugs/001-first", state: "planned" }));
+      await setupItem(createTestItem({ id: "002-second", state: "raw" }));
+      await setupItem(createTestItem({ id: "001-first", state: "done" }));
+      await setupItem(createTestItem({ id: "001-first", state: "planned" }));
 
       const result = await getNextIncompleteItem(tempDir);
 
-      expect(result).toBe("bugs/001-first");
+      expect(result).toBe("001-first");
     });
 
-    it("respects section ordering", async () => {
-      await setupItem(createTestItem({ id: "zzz/001-last", state: "raw" }));
-      await setupItem(createTestItem({ id: "aaa/001-first", state: "raw" }));
+    it("respects numeric ordering", async () => {
+      await setupItem(createTestItem({ id: "002-second", state: "raw" }));
+      await setupItem(createTestItem({ id: "001-first", state: "raw" }));
 
       const result = await getNextIncompleteItem(tempDir);
 
-      expect(result).toBe("aaa/001-first");
+      expect(result).toBe("001-first");
     });
   });
 });

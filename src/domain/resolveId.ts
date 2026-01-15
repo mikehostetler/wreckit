@@ -18,13 +18,9 @@ export async function buildIdMap(root: string): Promise<ResolvedItem[]> {
 }
 
 export async function resolveId(root: string, input: string): Promise<string> {
-  if (input.includes("/")) {
-    return input;
-  }
-
   const num = parseInt(input, 10);
   if (isNaN(num) || num < 1) {
-    throw new Error(`Invalid item ID: ${input}. Use a number (e.g., 1, 2, 3) or full ID (e.g., features/001-auth)`);
+    throw new Error(`Invalid item ID: ${input}. Use a number (e.g., 1, 2, 3) or full ID (e.g., 001-auth)`);
   }
 
   const items = await buildIdMap(root);

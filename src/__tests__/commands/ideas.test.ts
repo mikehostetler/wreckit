@@ -44,14 +44,11 @@ describe("ideasCommand", () => {
 
     await ideasCommand({ file: ideasFile, cwd: tempDir }, mockLogger);
 
-    const featuresDir = path.join(tempDir, ".wreckit", "features");
-    const bugsDir = path.join(tempDir, ".wreckit", "bugs");
+    const itemsDir = path.join(tempDir, ".wreckit", "items");
+    const entries = await fs.readdir(itemsDir);
 
-    const featureEntries = await fs.readdir(featuresDir);
-    const bugEntries = await fs.readdir(bugsDir);
-
-    expect(featureEntries).toContain("001-add-dark-mode");
-    expect(bugEntries).toContain("001-fix-bug");
+    expect(entries).toContain("001-add-dark-mode");
+    expect(entries).toContain("002-fix-bug");
   });
 
   it("creates items with correct IDs", async () => {
@@ -60,8 +57,8 @@ describe("ideasCommand", () => {
 
     await ideasCommand({ file: ideasFile, cwd: tempDir }, mockLogger);
 
-    const featuresDir = path.join(tempDir, ".wreckit", "features");
-    const entries = await fs.readdir(featuresDir);
+    const itemsDir = path.join(tempDir, ".wreckit", "items");
+    const entries = await fs.readdir(itemsDir);
 
     expect(entries).toContain("001-first-feature");
     expect(entries).toContain("002-second-feature");
@@ -76,8 +73,8 @@ describe("ideasCommand", () => {
 
     const calls = consoleSpy.mock.calls.map((c) => String(c[0]));
     expect(calls.some((c) => c.includes("Created 2 items:"))).toBe(true);
-    expect(calls.some((c) => c.includes("features/001-add-feature"))).toBe(true);
-    expect(calls.some((c) => c.includes("bugs/001-fix-bug"))).toBe(true);
+    expect(calls.some((c) => c.includes("001-add-feature"))).toBe(true);
+    expect(calls.some((c) => c.includes("002-fix-bug"))).toBe(true);
     consoleSpy.mockRestore();
   });
 
@@ -88,12 +85,12 @@ describe("ideasCommand", () => {
     const consoleSpy = spyOn(console, "log");
     await ideasCommand({ file: ideasFile, dryRun: true, cwd: tempDir }, mockLogger);
 
-    const featuresDir = path.join(tempDir, ".wreckit", "features");
-    await expect(fs.access(featuresDir)).rejects.toThrow();
+    const itemsDir = path.join(tempDir, ".wreckit", "items");
+    await expect(fs.access(itemsDir)).rejects.toThrow();
 
     const calls = consoleSpy.mock.calls.map((c) => String(c[0]));
     expect(calls.some((c) => c.includes("Would create 1 items:"))).toBe(true);
-    expect(calls.some((c) => c.includes("features/XXX-add-dark-mode"))).toBe(true);
+    expect(calls.some((c) => c.includes("XXX-add-dark-mode"))).toBe(true);
     consoleSpy.mockRestore();
   });
 
@@ -138,14 +135,11 @@ describe("ideasCommand", () => {
   it("works with inputOverride parameter", async () => {
     await ideasCommand({ cwd: tempDir }, mockLogger, "# Test feature\n# Fix test bug");
 
-    const featuresDir = path.join(tempDir, ".wreckit", "features");
-    const bugsDir = path.join(tempDir, ".wreckit", "bugs");
+    const itemsDir = path.join(tempDir, ".wreckit", "items");
+    const entries = await fs.readdir(itemsDir);
 
-    const featureEntries = await fs.readdir(featuresDir);
-    const bugEntries = await fs.readdir(bugsDir);
-
-    expect(featureEntries).toContain("001-test-feature");
-    expect(bugEntries).toContain("001-fix-test-bug");
+    expect(entries).toContain("001-test-feature");
+    expect(entries).toContain("002-fix-test-bug");
   });
 });
 

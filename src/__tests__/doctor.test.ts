@@ -27,15 +27,13 @@ async function createItem(
   id: string,
   overrides: Partial<Item> = {}
 ): Promise<void> {
-  const [section, slug] = id.split("/");
-  const itemDir = path.join(root, ".wreckit", section, slug);
+  const itemDir = path.join(root, ".wreckit", "items", id);
   await fs.mkdir(itemDir, { recursive: true });
 
   const item: Item = {
     schema_version: 1,
     id,
     title: `Test item ${id}`,
-    section,
     state: "raw",
     overview: "Test overview",
     branch: null,
@@ -58,13 +56,12 @@ async function createPrd(
   id: string,
   overrides: Partial<Prd> = {}
 ): Promise<void> {
-  const [section, slug] = id.split("/");
-  const itemDir = path.join(root, ".wreckit", section, slug);
+  const itemDir = path.join(root, ".wreckit", "items", id);
 
   const prd: Prd = {
     schema_version: 1,
     id,
-    branch_name: `wreckit/${slug}`,
+    branch_name: `wreckit/${id}`,
     user_stories: [
       {
         id: "US-001",
@@ -154,7 +151,7 @@ describe("diagnose", () => {
   });
 
   it("returns MISSING_ITEM_JSON when item.json is missing", async () => {
-    const itemDir = path.join(tempDir, ".wreckit", "test", "001-item");
+    const itemDir = path.join(tempDir, ".wreckit", "items", "001-item");
     await fs.mkdir(itemDir, { recursive: true });
 
     const diagnostics = await diagnose(tempDir);
@@ -162,11 +159,11 @@ describe("diagnose", () => {
 
     expect(itemDiag).toBeDefined();
     expect(itemDiag?.severity).toBe("error");
-    expect(itemDiag?.itemId).toBe("test/001-item");
+    expect(itemDiag?.itemId).toBe("001-item");
   });
 
   it("detects state/file mismatch for researched without research.md", async () => {
-    await createItem(tempDir, "test/001-item", { state: "researched" });
+    await createItem(tempDir, "001-item", { state: "researched" });
 
     const diagnostics = await diagnose(tempDir);
     const mismatch = diagnostics.find((d) => d.code === "STATE_FILE_MISMATCH");
@@ -178,7 +175,7 @@ describe("diagnose", () => {
   });
 
   it("detects state/file mismatch for planned without plan files", async () => {
-    await createItem(tempDir, "test/001-item", { state: "planned" });
+    await createItem(tempDir, "001-item", { state: "planned" });
 
     const diagnostics = await diagnose(tempDir);
     const mismatch = diagnostics.find((d) => d.code === "STATE_FILE_MISMATCH");
@@ -188,8 +185,8 @@ describe("diagnose", () => {
   });
 
   it("detects invalid prd.json", async () => {
-    await createItem(tempDir, "test/001-item", { state: "planned" });
-    const itemDir = path.join(tempDir, ".wreckit", "test", "001-item");
+    await createItem(tempDir, "001-item", { state: "planned" });
+    const itemDir = path.join(tempDir, ".wreckit", "items", "001-item");
     await fs.writeFile(path.join(itemDir, "plan.md"), "# Plan");
     await fs.writeFile(
       path.join(itemDir, "prd.json"),
@@ -204,7 +201,7 @@ describe("diagnose", () => {
   });
 
   it("detects stale index", async () => {
-    await createItem(tempDir, "test/001-item", { state: "raw" });
+    await createItem(tempDir, "001-item", { state: "raw" });
 
     const staleIndex: Index = {
       schema_version: 1,
@@ -259,7 +256,7 @@ describe("applyFixes", () => {
   });
 
   it("rebuilds stale index", async () => {
-    await createItem(tempDir, "test/001-item", { state: "raw" });
+    await createItem(tempDir, "001-item", { state: "raw" });
 
     const diagnostics = [
       {
@@ -281,7 +278,7 @@ describe("applyFixes", () => {
     const content = await fs.readFile(indexPath, "utf-8");
     const index = JSON.parse(content);
     expect(index.items).toHaveLength(1);
-    expect(index.items[0].id).toBe("test/001-item");
+    expect(index.items[0].id).toBe("001-item");
   });
 
   it("creates missing prompts", async () => {
@@ -306,11 +303,11 @@ describe("applyFixes", () => {
   });
 
   it("resets mismatched state", async () => {
-    await createItem(tempDir, "test/001-item", { state: "researched" });
+    await createItem(tempDir, "001-item", { state: "researched" });
 
     const diagnostics = [
       {
-        itemId: "test/001-item",
+        itemId: "001-item",
         severity: "warning" as const,
         code: "STATE_FILE_MISMATCH",
         message: "State is 'researched' but research.md is missing",
@@ -327,7 +324,7 @@ describe("applyFixes", () => {
     const itemPath = path.join(
       tempDir,
       ".wreckit",
-      "test",
+      "items",
       "001-item",
       "item.json"
     );
@@ -352,7 +349,7 @@ describe("applyFixes", () => {
   });
 
   it("returns fix results for all fixable diagnostics", async () => {
-    await createItem(tempDir, "test/001-item", { state: "researched" });
+    await createItem(tempDir, "001-item", { state: "researched" });
 
     const diagnostics = [
       {
@@ -363,7 +360,7 @@ describe("applyFixes", () => {
         fixable: true,
       },
       {
-        itemId: "test/001-item",
+        itemId: "001-item",
         severity: "warning" as const,
         code: "STATE_FILE_MISMATCH",
         message: "State is 'researched' but research.md is missing",
@@ -406,7 +403,7 @@ describe("doctorCommand", () => {
   });
 
   it("prints diagnostics grouped by severity", async () => {
-    await createItem(tempDir, "test/001-item", { state: "researched" });
+    await createItem(tempDir, "001-item", { state: "researched" });
     await fs.writeFile(
       path.join(tempDir, ".wreckit", "config.json"),
       "{ invalid json }"
@@ -425,14 +422,14 @@ describe("doctorCommand", () => {
   });
 
   it("without --fix, does not modify files", async () => {
-    await createItem(tempDir, "test/001-item", { state: "researched" });
+    await createItem(tempDir, "001-item", { state: "researched" });
 
     await doctorCommand({}, mockLogger);
 
     const itemPath = path.join(
       tempDir,
       ".wreckit",
-      "test",
+      "items",
       "001-item",
       "item.json"
     );
@@ -442,14 +439,14 @@ describe("doctorCommand", () => {
   });
 
   it("with --fix, applies fixes", async () => {
-    await createItem(tempDir, "test/001-item", { state: "researched" });
+    await createItem(tempDir, "001-item", { state: "researched" });
 
     await doctorCommand({ fix: true }, mockLogger);
 
     const itemPath = path.join(
       tempDir,
       ".wreckit",
-      "test",
+      "items",
       "001-item",
       "item.json"
     );

@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "base_branch": "main",
+  "branch_prefix": "wreckit/",
+  "agent": {
+    "command": "claude",
+    "args": [
+      "--dangerously-skip-permissions",
+      "--print"
+    ],
+    "completion_signal": "<promise>COMPLETE</promise>"
+  },
+  "max_iterations": 100,
+  "timeout_seconds": 3600
+}

@@ -3,7 +3,8 @@ import * as readline from "node:readline";
 import { text, isCancel } from "@clack/prompts";
 import type { Logger } from "../logging";
 import { findRepoRoot, findRootFromOptions } from "../fs/paths";
-import { ingestIdeas, parseIdeasFromText, determineSection, generateSlug } from "../domain/ideas";
+import { ingestIdeas, parseIdeasFromText, persistItems, generateSlug } from "../domain/ideas";
+import { parseIdeasWithAgent } from "../domain/ideas-agent";
 import { FileNotFoundError } from "../errors";
 
 export interface IdeasOptions {
@@ -11,6 +12,7 @@ export interface IdeasOptions {
   interactive?: boolean;
   dryRun?: boolean;
   cwd?: string;
+  agent?: boolean;
 }
 
 export async function readStdin(): Promise<string> {
@@ -90,7 +92,13 @@ export async function ideasCommand(
   }
 
   if (options.dryRun) {
-    const ideas = parseIdeasFromText(input);
+    let ideas;
+    if (options.agent) {
+      logger.info("Using agent-based parsing (dry-run)...");
+      ideas = await parseIdeasWithAgent(input, root);
+    } else {
+      ideas = parseIdeasFromText(input);
+    }
     if (ideas.length === 0) {
       console.log("No items would be created");
       return;
@@ -98,16 +106,22 @@ export async function ideasCommand(
 
     console.log(`Would create ${ideas.length} items:`);
     for (const idea of ideas) {
-      const section = determineSection(idea);
       const slug = generateSlug(idea.title);
       if (slug) {
-        console.log(`  ${section}/XXX-${slug}`);
+        console.log(`  XXX-${slug}`);
       }
     }
     return;
   }
 
-  const result = await ingestIdeas(root, input);
+  let result;
+  if (options.agent) {
+    logger.info("Using agent-based parsing for complex document...");
+    const ideas = await parseIdeasWithAgent(input, root);
+    result = await persistItems(root, ideas);
+  } else {
+    result = await ingestIdeas(root, input);
+  }
 
   if (result.created.length === 0 && result.skipped.length === 0) {
     console.log("No items created");

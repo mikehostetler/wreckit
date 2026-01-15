@@ -19,18 +19,16 @@ function createMockLogger() {
 
 async function createItem(
   root: string,
-  section: string,
-  slug: string,
+  id: string,
   overrides: Partial<Item> = {}
 ): Promise<Item> {
-  const itemDir = path.join(root, ".wreckit", section, slug);
+  const itemDir = path.join(root, ".wreckit", "items", id);
   await fs.mkdir(itemDir, { recursive: true });
 
   const item: Item = {
     schema_version: 1,
-    id: `${section}/${slug}`,
-    title: slug.replace(/^\d+-/, "").replace(/-/g, " "),
-    section,
+    id,
+    title: id.replace(/^\d+-/, "").replace(/-/g, " "),
     state: "raw",
     overview: "Test overview",
     branch: null,
@@ -47,25 +45,22 @@ async function createItem(
 }
 
 async function createResearch(root: string, id: string): Promise<void> {
-  const [section, slug] = id.split("/");
-  const researchPath = path.join(root, ".wreckit", section, slug, "research.md");
+  const researchPath = path.join(root, ".wreckit", "items", id, "research.md");
   await fs.writeFile(researchPath, "# Research\n\nSome research content.");
 }
 
 async function createPlan(root: string, id: string): Promise<void> {
-  const [section, slug] = id.split("/");
-  const planPath = path.join(root, ".wreckit", section, slug, "plan.md");
+  const planPath = path.join(root, ".wreckit", "items", id, "plan.md");
   await fs.writeFile(planPath, "# Plan\n\nSome plan content.");
 }
 
 async function createPrd(root: string, id: string, stories: Array<{ status: "pending" | "done" }>): Promise<void> {
-  const [section, slug] = id.split("/");
-  const prdPath = path.join(root, ".wreckit", section, slug, "prd.json");
+  const prdPath = path.join(root, ".wreckit", "items", id, "prd.json");
 
   const prd: Prd = {
     schema_version: 1,
     id,
-    branch_name: `wreckit/${slug}`,
+    branch_name: `wreckit/${id}`,
     user_stories: stories.map((s, i) => ({
       id: `US-${String(i + 1).padStart(3, "0")}`,
       title: `Story ${i + 1}`,
@@ -92,39 +87,39 @@ describe("loadItemDetails", () => {
   });
 
   it("loads item without optional files", async () => {
-    await createItem(tempDir, "features", "001-test");
+    await createItem(tempDir, "001-test");
 
-    const details = await loadItemDetails(tempDir, "features/001-test");
+    const details = await loadItemDetails(tempDir, "001-test");
 
-    expect(details.item.id).toBe("features/001-test");
+    expect(details.item.id).toBe("001-test");
     expect(details.hasResearch).toBe(false);
     expect(details.hasPlan).toBe(false);
     expect(details.prd).toBeNull();
   });
 
   it("detects research.md when exists", async () => {
-    await createItem(tempDir, "features", "001-test");
-    await createResearch(tempDir, "features/001-test");
+    await createItem(tempDir, "001-test");
+    await createResearch(tempDir, "001-test");
 
-    const details = await loadItemDetails(tempDir, "features/001-test");
+    const details = await loadItemDetails(tempDir, "001-test");
 
     expect(details.hasResearch).toBe(true);
   });
 
   it("detects plan.md when exists", async () => {
-    await createItem(tempDir, "features", "001-test");
-    await createPlan(tempDir, "features/001-test");
+    await createItem(tempDir, "001-test");
+    await createPlan(tempDir, "001-test");
 
-    const details = await loadItemDetails(tempDir, "features/001-test");
+    const details = await loadItemDetails(tempDir, "001-test");
 
     expect(details.hasPlan).toBe(true);
   });
 
   it("loads prd.json when exists", async () => {
-    await createItem(tempDir, "features", "001-test");
-    await createPrd(tempDir, "features/001-test", [{ status: "pending" }, { status: "done" }]);
+    await createItem(tempDir, "001-test");
+    await createPrd(tempDir, "001-test", [{ status: "pending" }, { status: "done" }]);
 
-    const details = await loadItemDetails(tempDir, "features/001-test");
+    const details = await loadItemDetails(tempDir, "001-test");
 
     expect(details.prd).not.toBeNull();
     expect(details.prd!.user_stories).toHaveLength(2);
@@ -149,7 +144,7 @@ describe("showCommand", () => {
   });
 
   it("shows item details correctly", async () => {
-    await createItem(tempDir, "features", "001-test", {
+    await createItem(tempDir, "001-test", {
       title: "Test Feature",
       state: "raw",
       overview: "A test feature",
@@ -157,10 +152,10 @@ describe("showCommand", () => {
 
     const logger = createMockLogger();
     const consoleSpy = spyOn(console, "log");
-    await showCommand("features/001-test", {}, logger);
+    await showCommand("001-test", {}, logger);
 
     const calls = consoleSpy.mock.calls.map((c) => String(c[0]));
-    expect(calls.some((c) => c.includes("ID: features/001-test"))).toBe(true);
+    expect(calls.some((c) => c.includes("ID: 001-test"))).toBe(true);
     expect(calls.some((c) => c.includes("Title: Test Feature"))).toBe(true);
     expect(calls.some((c) => c.includes("State: raw"))).toBe(true);
     expect(calls.some((c) => c.includes("Overview: A test feature"))).toBe(true);
@@ -168,12 +163,12 @@ describe("showCommand", () => {
   });
 
   it("shows research.md indicator when exists", async () => {
-    await createItem(tempDir, "features", "001-test");
-    await createResearch(tempDir, "features/001-test");
+    await createItem(tempDir, "001-test");
+    await createResearch(tempDir, "001-test");
 
     const logger = createMockLogger();
     const consoleSpy = spyOn(console, "log");
-    await showCommand("features/001-test", {}, logger);
+    await showCommand("001-test", {}, logger);
 
     const calls = consoleSpy.mock.calls.map((c) => String(c[0]));
     expect(calls.some((c) => c.includes("Research: ✓"))).toBe(true);
@@ -181,11 +176,11 @@ describe("showCommand", () => {
   });
 
   it("shows research.md indicator when missing", async () => {
-    await createItem(tempDir, "features", "001-test");
+    await createItem(tempDir, "001-test");
 
     const logger = createMockLogger();
     const consoleSpy = spyOn(console, "log");
-    await showCommand("features/001-test", {}, logger);
+    await showCommand("001-test", {}, logger);
 
     const calls = consoleSpy.mock.calls.map((c) => String(c[0]));
     expect(calls.some((c) => c.includes("Research: ✗"))).toBe(true);
@@ -193,12 +188,12 @@ describe("showCommand", () => {
   });
 
   it("shows plan.md indicator when exists", async () => {
-    await createItem(tempDir, "features", "001-test");
-    await createPlan(tempDir, "features/001-test");
+    await createItem(tempDir, "001-test");
+    await createPlan(tempDir, "001-test");
 
     const logger = createMockLogger();
     const consoleSpy = spyOn(console, "log");
-    await showCommand("features/001-test", {}, logger);
+    await showCommand("001-test", {}, logger);
 
     const calls = consoleSpy.mock.calls.map((c) => String(c[0]));
     expect(calls.some((c) => c.includes("Plan: ✓"))).toBe(true);
@@ -206,8 +201,8 @@ describe("showCommand", () => {
   });
 
   it("shows prd.json story count when exists", async () => {
-    await createItem(tempDir, "features", "001-test");
-    await createPrd(tempDir, "features/001-test", [
+    await createItem(tempDir, "001-test");
+    await createPrd(tempDir, "001-test", [
       { status: "pending" },
       { status: "pending" },
       { status: "done" },
@@ -215,7 +210,7 @@ describe("showCommand", () => {
 
     const logger = createMockLogger();
     const consoleSpy = spyOn(console, "log");
-    await showCommand("features/001-test", {}, logger);
+    await showCommand("001-test", {}, logger);
 
     const calls = consoleSpy.mock.calls.map((c) => String(c[0]));
     expect(calls.some((c) => c.includes("Stories: 2 pending, 1 done"))).toBe(true);
@@ -223,11 +218,11 @@ describe("showCommand", () => {
   });
 
   it("handles missing optional files", async () => {
-    await createItem(tempDir, "features", "001-test");
+    await createItem(tempDir, "001-test");
 
     const logger = createMockLogger();
     const consoleSpy = spyOn(console, "log");
-    await showCommand("features/001-test", {}, logger);
+    await showCommand("001-test", {}, logger);
 
     const calls = consoleSpy.mock.calls.map((c) => String(c[0]));
     expect(calls.some((c) => c.includes("Research: ✗"))).toBe(true);
@@ -237,17 +232,17 @@ describe("showCommand", () => {
   });
 
   it("outputs full item data with --json", async () => {
-    await createItem(tempDir, "features", "001-test");
-    await createResearch(tempDir, "features/001-test");
-    await createPrd(tempDir, "features/001-test", [{ status: "pending" }]);
+    await createItem(tempDir, "001-test");
+    await createResearch(tempDir, "001-test");
+    await createPrd(tempDir, "001-test", [{ status: "pending" }]);
 
     const logger = createMockLogger();
-    await showCommand("features/001-test", { json: true }, logger);
+    await showCommand("001-test", { json: true }, logger);
 
     expect(logger.json).toHaveBeenCalledTimes(1);
     const output = logger.json.mock.calls[0][0];
 
-    expect(output.id).toBe("features/001-test");
+    expect(output.id).toBe("001-test");
     expect(output.artifacts.research).toBe(true);
     expect(output.artifacts.plan).toBe(false);
     expect(output.artifacts.prd).toBeDefined();
@@ -261,13 +256,13 @@ describe("showCommand", () => {
   });
 
   it("shows branch info when available", async () => {
-    await createItem(tempDir, "features", "001-test", {
+    await createItem(tempDir, "001-test", {
       branch: "wreckit/001-test",
     });
 
     const logger = createMockLogger();
     const consoleSpy = spyOn(console, "log");
-    await showCommand("features/001-test", {}, logger);
+    await showCommand("001-test", {}, logger);
 
     const calls = consoleSpy.mock.calls.map((c) => String(c[0]));
     expect(calls.some((c) => c.includes("Branch: wreckit/001-test"))).toBe(true);
@@ -275,13 +270,13 @@ describe("showCommand", () => {
   });
 
   it("shows PR info when available", async () => {
-    await createItem(tempDir, "features", "001-test", {
+    await createItem(tempDir, "001-test", {
       pr_url: "https://github.com/org/repo/pull/123",
     });
 
     const logger = createMockLogger();
     const consoleSpy = spyOn(console, "log");
-    await showCommand("features/001-test", {}, logger);
+    await showCommand("001-test", {}, logger);
 
     const calls = consoleSpy.mock.calls.map((c) => String(c[0]));
     expect(calls.some((c) => c.includes("PR: https://github.com/org/repo/pull/123"))).toBe(true);

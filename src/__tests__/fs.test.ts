@@ -9,7 +9,7 @@ import {
   getConfigPath,
   getIndexPath,
   getPromptsDir,
-  getSectionDir,
+  getItemsDir,
   getItemDir,
   getItemJsonPath,
   getPrdPath,
@@ -100,51 +100,49 @@ describe("Path utilities", () => {
       expect(getPromptsDir(root)).toBe("/test/repo/.wreckit/prompts");
     });
 
-    it("getSectionDir returns correct path", () => {
-      expect(getSectionDir(root, "features")).toBe(
-        "/test/repo/.wreckit/features"
-      );
+    it("getItemsDir returns correct path", () => {
+      expect(getItemsDir(root)).toBe("/test/repo/.wreckit/items");
     });
 
     it("getItemDir returns correct path", () => {
-      expect(getItemDir(root, "features/001-auth")).toBe(
-        "/test/repo/.wreckit/features/001-auth"
+      expect(getItemDir(root, "001-auth")).toBe(
+        "/test/repo/.wreckit/items/001-auth"
       );
     });
 
     it("getItemJsonPath returns correct path", () => {
-      expect(getItemJsonPath(root, "features/001-auth")).toBe(
-        "/test/repo/.wreckit/features/001-auth/item.json"
+      expect(getItemJsonPath(root, "001-auth")).toBe(
+        "/test/repo/.wreckit/items/001-auth/item.json"
       );
     });
 
     it("getPrdPath returns correct path", () => {
-      expect(getPrdPath(root, "features/001-auth")).toBe(
-        "/test/repo/.wreckit/features/001-auth/prd.json"
+      expect(getPrdPath(root, "001-auth")).toBe(
+        "/test/repo/.wreckit/items/001-auth/prd.json"
       );
     });
 
     it("getResearchPath returns correct path", () => {
-      expect(getResearchPath(root, "features/001-auth")).toBe(
-        "/test/repo/.wreckit/features/001-auth/research.md"
+      expect(getResearchPath(root, "001-auth")).toBe(
+        "/test/repo/.wreckit/items/001-auth/research.md"
       );
     });
 
     it("getPlanPath returns correct path", () => {
-      expect(getPlanPath(root, "features/001-auth")).toBe(
-        "/test/repo/.wreckit/features/001-auth/plan.md"
+      expect(getPlanPath(root, "001-auth")).toBe(
+        "/test/repo/.wreckit/items/001-auth/plan.md"
       );
     });
 
     it("getProgressLogPath returns correct path", () => {
-      expect(getProgressLogPath(root, "features/001-auth")).toBe(
-        "/test/repo/.wreckit/features/001-auth/progress.log"
+      expect(getProgressLogPath(root, "001-auth")).toBe(
+        "/test/repo/.wreckit/items/001-auth/progress.log"
       );
     });
 
     it("getPromptPath returns correct path", () => {
-      expect(getPromptPath(root, "features/001-auth")).toBe(
-        "/test/repo/.wreckit/features/001-auth/prompt.md"
+      expect(getPromptPath(root, "001-auth")).toBe(
+        "/test/repo/.wreckit/items/001-auth/prompt.md"
       );
     });
   });
@@ -268,9 +266,8 @@ describe("Typed wrapper tests", () => {
 
   const validItem: Item = {
     schema_version: 1,
-    id: "features/001-auth",
+    id: "001-auth",
     title: "Auth Feature",
-    section: "features",
     state: "raw",
     overview: "Add authentication",
     branch: null,
@@ -283,7 +280,7 @@ describe("Typed wrapper tests", () => {
 
   const validPrd: Prd = {
     schema_version: 1,
-    id: "features/001-auth",
+    id: "001-auth",
     branch_name: "wreckit/001-auth",
     user_stories: [
       {
@@ -299,7 +296,7 @@ describe("Typed wrapper tests", () => {
 
   const validIndex: Index = {
     schema_version: 1,
-    items: [{ id: "features/001-auth", state: "raw", title: "Auth Feature" }],
+    items: [{ id: "001-auth", state: "raw", title: "Auth Feature" }],
     generated_at: "2025-01-12T00:00:00Z",
   };
 
@@ -326,7 +323,7 @@ describe("Typed wrapper tests", () => {
 
   describe("readItem / writeItem", () => {
     it("writes and reads valid item", async () => {
-      const itemDir = path.join(tempDir, ".wreckit", "features", "001-auth");
+      const itemDir = path.join(tempDir, ".wreckit", "items", "001-auth");
 
       await writeItem(itemDir, validItem);
       const result = await readItem(itemDir);
@@ -335,7 +332,7 @@ describe("Typed wrapper tests", () => {
     });
 
     it("throws on invalid item data", async () => {
-      const itemDir = path.join(tempDir, ".wreckit", "features", "001-auth");
+      const itemDir = path.join(tempDir, ".wreckit", "items", "001-auth");
       await fs.mkdir(itemDir, { recursive: true });
       await fs.writeFile(
         path.join(itemDir, "item.json"),
@@ -348,7 +345,7 @@ describe("Typed wrapper tests", () => {
 
   describe("readPrd / writePrd", () => {
     it("writes and reads valid prd", async () => {
-      const itemDir = path.join(tempDir, ".wreckit", "features", "001-auth");
+      const itemDir = path.join(tempDir, ".wreckit", "items", "001-auth");
 
       await writePrd(itemDir, validPrd);
       const result = await readPrd(itemDir);
@@ -357,7 +354,7 @@ describe("Typed wrapper tests", () => {
     });
 
     it("throws on invalid prd data", async () => {
-      const itemDir = path.join(tempDir, ".wreckit", "features", "001-auth");
+      const itemDir = path.join(tempDir, ".wreckit", "items", "001-auth");
       await fs.mkdir(itemDir, { recursive: true });
       await fs.writeFile(
         path.join(itemDir, "prd.json"),

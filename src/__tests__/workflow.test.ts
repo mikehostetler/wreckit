@@ -83,9 +83,8 @@ function createTestConfig(): ConfigResolved {
 function createTestItem(overrides: Partial<Item> = {}): Item {
   return {
     schema_version: 1,
-    id: "features/001-test-feature",
+    id: "001-test-feature",
     title: "Test Feature",
-    section: "features",
     state: "raw",
     overview: "A test feature",
     branch: null,
@@ -101,8 +100,8 @@ function createTestItem(overrides: Partial<Item> = {}): Item {
 function createTestPrd(overrides: Partial<Prd> = {}): Prd {
   return {
     schema_version: 1,
-    id: "features/001-test-feature",
-    branch_name: "wreckit/features-001-test-feature",
+    id: "001-test-feature",
+    branch_name: "wreckit/001-test-feature",
     user_stories: [
       {
         id: "US-001",
@@ -180,9 +179,8 @@ describe("workflow", () => {
   });
 
   async function setupItem(item: Item): Promise<string> {
-    const wreckitDir = path.join(tempDir, ".wreckit");
-    const [section, slug] = item.id.split("/");
-    const itemDir = path.join(wreckitDir, section, slug);
+    const itemsDir = path.join(tempDir, ".wreckit", "items");
+    const itemDir = path.join(itemsDir, item.id);
     await fs.mkdir(itemDir, { recursive: true });
     await fs.writeFile(
       path.join(itemDir, "item.json"),
@@ -193,9 +191,8 @@ describe("workflow", () => {
   }
 
   async function readItemState(itemId: string): Promise<Item> {
-    const wreckitDir = path.join(tempDir, ".wreckit");
-    const [section, slug] = itemId.split("/");
-    const itemPath = path.join(wreckitDir, section, slug, "item.json");
+    const itemsDir = path.join(tempDir, ".wreckit", "items");
+    const itemPath = path.join(itemsDir, itemId, "item.json");
     const content = await fs.readFile(itemPath, "utf-8");
     return JSON.parse(content) as Item;
   }

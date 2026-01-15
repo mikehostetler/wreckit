@@ -1,7 +1,7 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import type { Item } from "../schemas";
-import { getSectionDir, getItemDir } from "../fs/paths";
+import { getItemsDir, getItemDir } from "../fs/paths";
 import { writeJsonPretty } from "../fs/json";
 
 export interface ParsedIdea {
@@ -68,24 +68,6 @@ export function parseIdeasFromText(text: string): ParsedIdea[] {
   return ideas;
 }
 
-export function determineSection(idea: ParsedIdea): string {
-  const text = `${idea.title} ${idea.overview} ${idea.suggestedSection ?? ""}`.toLowerCase();
-
-  if (/\b(bug|fix)\b/.test(text)) {
-    return "bugs";
-  }
-
-  if (/\b(infra|ci|deploy|config)\b/.test(text)) {
-    return "infra";
-  }
-
-  if (/\b(docs?|readme)\b/.test(text)) {
-    return "docs";
-  }
-
-  return "features";
-}
-
 export function generateSlug(title: string): string {
   return title
     .toLowerCase()
@@ -98,14 +80,13 @@ export function generateSlug(title: string): string {
 
 export async function allocateItemId(
   root: string,
-  section: string,
   slug: string
 ): Promise<{ id: string; dir: string; number: string }> {
-  const sectionDir = getSectionDir(root, section);
+  const itemsDir = getItemsDir(root);
 
   let maxNumber = 0;
   try {
-    const entries = await fs.readdir(sectionDir);
+    const entries = await fs.readdir(itemsDir);
     for (const entry of entries) {
       const match = entry.match(/^(\d{3})-/);
       if (match) {
@@ -122,7 +103,7 @@ export async function allocateItemId(
   }
 
   const nextNumber = (maxNumber + 1).toString().padStart(3, "0");
-  const id = `${section}/${nextNumber}-${slug}`;
+  const id = `${nextNumber}-${slug}`;
   const dir = getItemDir(root, id);
 
   return { id, dir, number: nextNumber };
@@ -130,7 +111,6 @@ export async function allocateItemId(
 
 export function createItemFromIdea(
   id: string,
-  section: string,
   idea: ParsedIdea
 ): Item {
   const now = new Date().toISOString();
@@ -139,7 +119,6 @@ export function createItemFromIdea(
     schema_version: 1,
     id,
     title: idea.title,
-    section,
     state: "raw",
     overview: idea.overview,
     branch: null,
@@ -153,19 +132,18 @@ export function createItemFromIdea(
 
 async function findExistingItemBySlug(
   root: string,
-  section: string,
   slug: string
 ): Promise<string | null> {
-  const sectionDir = getSectionDir(root, section);
+  const itemsDir = getItemsDir(root);
   try {
-    const entries = await fs.readdir(sectionDir);
+    const entries = await fs.readdir(itemsDir);
     for (const entry of entries) {
       if (entry.endsWith(`-${slug}`)) {
-        return `${section}/${entry}`;
+        return entry;
       }
     }
   } catch {
-    // Section doesn't exist
+    // Items dir doesn't exist
   }
   return null;
 }
@@ -178,7 +156,6 @@ export async function persistItems(
   const skipped: string[] = [];
 
   for (const idea of ideas) {
-    const section = determineSection(idea);
     const slug = generateSlug(idea.title);
 
     if (!slug) {
@@ -186,15 +163,15 @@ export async function persistItems(
       continue;
     }
 
-    const existingId = await findExistingItemBySlug(root, section, slug);
+    const existingId = await findExistingItemBySlug(root, slug);
     if (existingId) {
       skipped.push(existingId);
       continue;
     }
 
-    const { id, dir } = await allocateItemId(root, section, slug);
+    const { id, dir } = await allocateItemId(root, slug);
 
-    const item = createItemFromIdea(id, section, idea);
+    const item = createItemFromIdea(id, idea);
     await fs.mkdir(dir, { recursive: true });
     await writeJsonPretty(path.join(dir, "item.json"), item);
 

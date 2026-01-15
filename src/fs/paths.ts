@@ -57,13 +57,12 @@ export function getPromptsDir(root: string): string {
   return path.join(getWreckitDir(root), "prompts");
 }
 
-export function getSectionDir(root: string, section: string): string {
-  return path.join(getWreckitDir(root), section);
+export function getItemsDir(root: string): string {
+  return path.join(getWreckitDir(root), "items");
 }
 
 export function getItemDir(root: string, id: string): string {
-  const [section, slug] = id.split("/");
-  return path.join(getWreckitDir(root), section, slug);
+  return path.join(getItemsDir(root), id);
 }
 
 export function getItemJsonPath(root: string, id: string): string {

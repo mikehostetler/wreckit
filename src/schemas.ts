@@ -34,7 +34,7 @@ export const ItemSchema = z.object({
   schema_version: z.number(),
   id: z.string(),
   title: z.string(),
-  section: z.string(),
+  section: z.string().optional(),
   state: WorkflowStateSchema,
   overview: z.string(),
   branch: z.string().nullable(),

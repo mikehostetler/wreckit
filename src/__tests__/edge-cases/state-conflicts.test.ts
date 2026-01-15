@@ -88,15 +88,13 @@ async function createItem(
   id: string,
   overrides: Partial<Item> = {}
 ): Promise<string> {
-  const [section, slug] = id.split("/");
-  const itemDir = path.join(root, ".wreckit", section, slug);
+  const itemDir = path.join(root, ".wreckit", "items", id);
   await fs.mkdir(itemDir, { recursive: true });
 
   const item: Item = {
     schema_version: 1,
     id,
     title: `Test item ${id}`,
-    section,
     state: "raw",
     overview: "Test overview",
     branch: null,
@@ -165,7 +163,7 @@ describe("State Conflict Resolution", () => {
 
   describe("7.3 Item vs Artifacts Conflicts (69-74)", () => {
     it("69: Researched but research.md missing - should emit STATE_FILE_MISMATCH", async () => {
-      await createItem(tempDir, "test/001-item", { state: "researched" });
+      await createItem(tempDir, "001-item", { state: "researched" });
 
       const diagnostics = await diagnose(tempDir);
       const mismatch = diagnostics.find((d) => d.code === "STATE_FILE_MISMATCH");
@@ -178,7 +176,7 @@ describe("State Conflict Resolution", () => {
     });
 
     it("70: Raw but research.md exists - should detect upgrade opportunity", async () => {
-      const itemDir = await createItem(tempDir, "test/001-item", { state: "raw" });
+      const itemDir = await createItem(tempDir, "001-item", { state: "raw" });
       await createResearch(itemDir);
 
       const diagnostics = await diagnose(tempDir);
@@ -187,7 +185,7 @@ describe("State Conflict Resolution", () => {
     });
 
     it("71: Planned but plan.md missing - should emit STATE_FILE_MISMATCH", async () => {
-      const itemDir = await createItem(tempDir, "test/001-item", { state: "planned" });
+      const itemDir = await createItem(tempDir, "001-item", { state: "planned" });
       await createResearch(itemDir);
       await createPrd(itemDir);
 
@@ -199,7 +197,7 @@ describe("State Conflict Resolution", () => {
     });
 
     it("72: Planned but prd.json missing - should emit STATE_FILE_MISMATCH", async () => {
-      const itemDir = await createItem(tempDir, "test/001-item", { state: "planned" });
+      const itemDir = await createItem(tempDir, "001-item", { state: "planned" });
       await createResearch(itemDir);
       await createPlan(itemDir);
 
@@ -211,7 +209,7 @@ describe("State Conflict Resolution", () => {
     });
 
     it("73: Implementing but no pending stories - should flag as ready for PR", async () => {
-      const itemDir = await createItem(tempDir, "test/001-item", { state: "implementing" });
+      const itemDir = await createItem(tempDir, "001-item", { state: "implementing" });
       await createResearch(itemDir);
       await createPlan(itemDir);
       await createPrd(itemDir, [
@@ -233,7 +231,7 @@ describe("State Conflict Resolution", () => {
     });
 
     it("74: Planned but prd has pending stories - should detect upgrade to implementing", async () => {
-      const itemDir = await createItem(tempDir, "test/001-item", { state: "planned" });
+      const itemDir = await createItem(tempDir, "001-item", { state: "planned" });
       await createResearch(itemDir);
       await createPlan(itemDir);
       await createPrd(itemDir, [
@@ -253,7 +251,7 @@ describe("State Conflict Resolution", () => {
     });
 
     it("72b: Planned but prd.json invalid - should emit INVALID_PRD", async () => {
-      const itemDir = await createItem(tempDir, "test/001-item", { state: "planned" });
+      const itemDir = await createItem(tempDir, "001-item", { state: "planned" });
       await createResearch(itemDir);
       await createPlan(itemDir);
       await fs.writeFile(path.join(itemDir, "prd.json"), "{ invalid json }");
@@ -268,7 +266,7 @@ describe("State Conflict Resolution", () => {
 
   describe("7.4 PR State Mismatches (75-79)", () => {
     it("75: in_pr but pr_url missing - should emit STATE_FILE_MISMATCH", async () => {
-      const itemDir = await createItem(tempDir, "test/001-item", {
+      const itemDir = await createItem(tempDir, "001-item", {
         state: "in_pr",
         pr_url: null,
         pr_number: null,
@@ -288,7 +286,7 @@ describe("State Conflict Resolution", () => {
     });
 
     it("76: in_pr with valid pr_url - no diagnostic", async () => {
-      const itemDir = await createItem(tempDir, "test/001-item", {
+      const itemDir = await createItem(tempDir, "001-item", {
         state: "in_pr",
         pr_url: "https://github.com/org/repo/pull/123",
         pr_number: 123,
@@ -306,7 +304,7 @@ describe("State Conflict Resolution", () => {
     });
 
     it("77: done with pr_url - no diagnostic", async () => {
-      const itemDir = await createItem(tempDir, "test/001-item", {
+      const itemDir = await createItem(tempDir, "001-item", {
         state: "done",
         pr_url: "https://github.com/org/repo/pull/123",
         pr_number: 123,
@@ -324,7 +322,7 @@ describe("State Conflict Resolution", () => {
     });
 
     it("78: implementing with pr_url set - valid state", async () => {
-      const itemDir = await createItem(tempDir, "test/001-item", {
+      const itemDir = await createItem(tempDir, "001-item", {
         state: "implementing",
         pr_url: "https://github.com/org/repo/pull/123",
         pr_number: 123,
@@ -340,7 +338,7 @@ describe("State Conflict Resolution", () => {
     });
 
     it("79: raw with pr_url set - unusual but valid", async () => {
-      await createItem(tempDir, "test/001-item", {
+      await createItem(tempDir, "001-item", {
         state: "raw",
         pr_url: "https://github.com/org/repo/pull/123",
         pr_number: 123,
@@ -354,7 +352,7 @@ describe("State Conflict Resolution", () => {
 
   describe("7.5 Branch Tracking Conflicts (80-85)", () => {
     it("80: implementing with branch set - no diagnostic", async () => {
-      const itemDir = await createItem(tempDir, "test/001-item", {
+      const itemDir = await createItem(tempDir, "001-item", {
         state: "implementing",
         branch: "wreckit/001-item",
       });
@@ -368,7 +366,7 @@ describe("State Conflict Resolution", () => {
     });
 
     it("81: in_pr without branch - should emit diagnostic", async () => {
-      const itemDir = await createItem(tempDir, "test/001-item", {
+      const itemDir = await createItem(tempDir, "001-item", {
         state: "in_pr",
         branch: null,
         pr_url: "https://github.com/org/repo/pull/123",
@@ -387,7 +385,7 @@ describe("State Conflict Resolution", () => {
     });
 
     it("82: raw with branch set - valid state", async () => {
-      await createItem(tempDir, "test/001-item", {
+      await createItem(tempDir, "001-item", {
         state: "raw",
         branch: "wreckit/001-item",
       });
@@ -399,7 +397,7 @@ describe("State Conflict Resolution", () => {
     });
 
     it("83: Implementing but branch missing - should have valid state with artifacts", async () => {
-      const itemDir = await createItem(tempDir, "test/001-item", {
+      const itemDir = await createItem(tempDir, "001-item", {
         state: "implementing",
         branch: null,
       });
@@ -413,7 +411,7 @@ describe("State Conflict Resolution", () => {
     });
 
     it("84: in_pr with all artifacts present - valid state", async () => {
-      const itemDir = await createItem(tempDir, "test/001-item", {
+      const itemDir = await createItem(tempDir, "001-item", {
         state: "in_pr",
         branch: "wreckit/001-item",
         pr_number: 123,
@@ -431,7 +429,7 @@ describe("State Conflict Resolution", () => {
     });
 
     it("85: done with all artifacts - valid state", async () => {
-      const itemDir = await createItem(tempDir, "test/001-item", {
+      const itemDir = await createItem(tempDir, "001-item", {
         state: "done",
         branch: "wreckit/001-item",
         pr_number: 123,
@@ -451,7 +449,7 @@ describe("State Conflict Resolution", () => {
 
   describe("7.6 Metadata Sync Conflicts (86-89)", () => {
     it("86: PR exists but item.pr_url missing - should emit STATE_FILE_MISMATCH for in_pr", async () => {
-      const itemDir = await createItem(tempDir, "test/001-item", {
+      const itemDir = await createItem(tempDir, "001-item", {
         state: "in_pr",
         pr_url: null,
         pr_number: null,
@@ -471,7 +469,7 @@ describe("State Conflict Resolution", () => {
     });
 
     it("87: Branch inferred when missing - implementing state with null branch", async () => {
-      const itemDir = await createItem(tempDir, "test/001-item", {
+      const itemDir = await createItem(tempDir, "001-item", {
         state: "implementing",
         branch: null,
       });
@@ -485,7 +483,7 @@ describe("State Conflict Resolution", () => {
     });
 
     it("88: item.branch set but different from expected - valid state", async () => {
-      const itemDir = await createItem(tempDir, "test/001-item", {
+      const itemDir = await createItem(tempDir, "001-item", {
         state: "implementing",
         branch: "wreckit/old-branch",
       });
@@ -499,7 +497,7 @@ describe("State Conflict Resolution", () => {
     });
 
     it("89: All stories done, implementing, no PR - should emit diagnostic about ready for PR", async () => {
-      const itemDir = await createItem(tempDir, "test/001-item", {
+      const itemDir = await createItem(tempDir, "001-item", {
         state: "implementing",
         branch: "wreckit/001-item",
         pr_url: null,
@@ -521,7 +519,7 @@ describe("State Conflict Resolution", () => {
 
   describe("Edge Cases - Invalid Artifact Combinations", () => {
     it("planned state with only plan.md (no prd.json) - should emit diagnostic", async () => {
-      const itemDir = await createItem(tempDir, "test/001-item", { state: "planned" });
+      const itemDir = await createItem(tempDir, "001-item", { state: "planned" });
       await createPlan(itemDir);
 
       const diagnostics = await diagnose(tempDir);
@@ -532,7 +530,7 @@ describe("State Conflict Resolution", () => {
     });
 
     it("planned state with only prd.json (no plan.md) - should emit diagnostic", async () => {
-      const itemDir = await createItem(tempDir, "test/001-item", { state: "planned" });
+      const itemDir = await createItem(tempDir, "001-item", { state: "planned" });
       await createPrd(itemDir);
 
       const diagnostics = await diagnose(tempDir);
@@ -543,7 +541,7 @@ describe("State Conflict Resolution", () => {
     });
 
     it("implementing state with invalid prd.json - should emit INVALID_PRD", async () => {
-      const itemDir = await createItem(tempDir, "test/001-item", { state: "implementing" });
+      const itemDir = await createItem(tempDir, "001-item", { state: "implementing" });
       await createResearch(itemDir);
       await createPlan(itemDir);
       await fs.writeFile(path.join(itemDir, "prd.json"), "{ invalid json }");
@@ -556,7 +554,7 @@ describe("State Conflict Resolution", () => {
     });
 
     it("researched state with valid research.md - no diagnostic", async () => {
-      const itemDir = await createItem(tempDir, "test/001-item", { state: "researched" });
+      const itemDir = await createItem(tempDir, "001-item", { state: "researched" });
       await createResearch(itemDir);
 
       const diagnostics = await diagnose(tempDir);
@@ -565,7 +563,7 @@ describe("State Conflict Resolution", () => {
     });
 
     it("raw state with no artifacts - no diagnostic", async () => {
-      await createItem(tempDir, "test/001-item", { state: "raw" });
+      await createItem(tempDir, "001-item", { state: "raw" });
 
       const diagnostics = await diagnose(tempDir);
 
@@ -575,42 +573,42 @@ describe("State Conflict Resolution", () => {
 
   describe("Multiple Items with Different States", () => {
     it("handles multiple items with varying artifact completeness", async () => {
-      const item1Dir = await createItem(tempDir, "test/001-raw", { state: "raw" });
+      const item1Dir = await createItem(tempDir, "001-raw", { state: "raw" });
 
-      const item2Dir = await createItem(tempDir, "test/002-researched", { state: "researched" });
+      const item2Dir = await createItem(tempDir, "002-researched", { state: "researched" });
       await createResearch(item2Dir);
 
-      const item3Dir = await createItem(tempDir, "test/003-planned", { state: "planned" });
+      const item3Dir = await createItem(tempDir, "003-planned", { state: "planned" });
       await createResearch(item3Dir);
       await createPlan(item3Dir);
       await createPrd(item3Dir);
 
-      const item4Dir = await createItem(tempDir, "test/004-broken", { state: "researched" });
+      const item4Dir = await createItem(tempDir, "004-broken", { state: "researched" });
 
       const diagnostics = await diagnose(tempDir);
       const mismatches = diagnostics.filter((d) => d.code === "STATE_FILE_MISMATCH");
 
       expect(mismatches).toHaveLength(1);
-      expect(mismatches[0].itemId).toBe("test/004-broken");
+      expect(mismatches[0].itemId).toBe("004-broken");
     });
 
-    it("validates all items in multiple sections", async () => {
-      await createItem(tempDir, "section-a/001-item", { state: "researched" });
+    it("validates all items in items folder", async () => {
+      await createItem(tempDir, "001-broken", { state: "researched" });
 
-      const item2Dir = await createItem(tempDir, "section-b/001-item", { state: "researched" });
+      const item2Dir = await createItem(tempDir, "002-valid", { state: "researched" });
       await createResearch(item2Dir);
 
       const diagnostics = await diagnose(tempDir);
       const mismatches = diagnostics.filter((d) => d.code === "STATE_FILE_MISMATCH");
 
       expect(mismatches).toHaveLength(1);
-      expect(mismatches[0].itemId).toBe("section-a/001-item");
+      expect(mismatches[0].itemId).toBe("001-broken");
     });
   });
 
   describe("PRD Story Status Validation", () => {
     it("implementing with mixed story statuses - no diagnostic", async () => {
-      const itemDir = await createItem(tempDir, "test/001-item", { state: "implementing" });
+      const itemDir = await createItem(tempDir, "001-item", { state: "implementing" });
       await createResearch(itemDir);
       await createPlan(itemDir);
       await createPrd(itemDir, [
@@ -624,7 +622,7 @@ describe("State Conflict Resolution", () => {
     });
 
     it("implementing with empty stories array - should emit diagnostic", async () => {
-      const itemDir = await createItem(tempDir, "test/001-item", { state: "implementing" });
+      const itemDir = await createItem(tempDir, "001-item", { state: "implementing" });
       await createResearch(itemDir);
       await createPlan(itemDir);
       await createPrd(itemDir, []);

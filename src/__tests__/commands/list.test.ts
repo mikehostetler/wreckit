@@ -18,18 +18,16 @@ function createMockLogger() {
 
 async function createItem(
   root: string,
-  section: string,
-  slug: string,
+  id: string,
   state: string = "raw"
 ): Promise<Item> {
-  const itemDir = path.join(root, ".wreckit", section, slug);
+  const itemDir = path.join(root, ".wreckit", "items", id);
   await fs.mkdir(itemDir, { recursive: true });
 
   const item: Item = {
     schema_version: 1,
-    id: `${section}/${slug}`,
-    title: slug.replace(/^\d+-/, "").replace(/-/g, " "),
-    section,
+    id,
+    title: id.replace(/^\d+-/, "").replace(/-/g, " "),
     state: state as Item["state"],
     overview: "",
     branch: null,
@@ -50,7 +48,7 @@ describe("listCommand", () => {
 
   beforeEach(async () => {
     tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "wreckit-list-test-"));
-    await fs.mkdir(path.join(tempDir, ".wreckit"), { recursive: true });
+    await fs.mkdir(path.join(tempDir, ".wreckit", "items"), { recursive: true });
     await fs.mkdir(path.join(tempDir, ".git"), { recursive: true });
     originalCwd = process.cwd();
     process.chdir(tempDir);
@@ -61,7 +59,7 @@ describe("listCommand", () => {
     await fs.rm(tempDir, { recursive: true, force: true });
   });
 
-  it("shows 'No items found' for empty .wreckit", async () => {
+  it("shows 'No items found' for empty items dir", async () => {
     const logger = createMockLogger();
     const consoleSpy = spyOn(console, "log");
 
@@ -72,9 +70,9 @@ describe("listCommand", () => {
   });
 
   it("lists all items with state and title", async () => {
-    await createItem(tempDir, "features", "001-auth", "raw");
-    await createItem(tempDir, "features", "002-api", "researched");
-    await createItem(tempDir, "bugs", "001-crash", "planned");
+    await createItem(tempDir, "001-auth", "raw");
+    await createItem(tempDir, "002-api", "researched");
+    await createItem(tempDir, "003-crash", "planned");
 
     const logger = createMockLogger();
     const consoleSpy = spyOn(console, "log");
@@ -91,9 +89,9 @@ describe("listCommand", () => {
   });
 
   it("filters by state when --state option provided", async () => {
-    await createItem(tempDir, "features", "001-auth", "raw");
-    await createItem(tempDir, "features", "002-api", "researched");
-    await createItem(tempDir, "bugs", "001-crash", "planned");
+    await createItem(tempDir, "001-auth", "raw");
+    await createItem(tempDir, "002-api", "researched");
+    await createItem(tempDir, "003-crash", "planned");
 
     const logger = createMockLogger();
     const consoleSpy = spyOn(console, "log");
@@ -109,8 +107,8 @@ describe("listCommand", () => {
   });
 
   it("outputs JSON when --json option provided", async () => {
-    await createItem(tempDir, "features", "001-auth", "raw");
-    await createItem(tempDir, "bugs", "001-crash", "planned");
+    await createItem(tempDir, "001-auth", "raw");
+    await createItem(tempDir, "002-crash", "planned");
 
     const logger = createMockLogger();
     const consoleSpy = spyOn(console, "log");
@@ -123,17 +121,17 @@ describe("listCommand", () => {
     expect(Array.isArray(parsed)).toBe(true);
     expect(parsed).toHaveLength(2);
     expect(parsed[0].id).toBe(1);
-    expect(parsed[0].fullId).toBe("bugs/001-crash");
+    expect(parsed[0].fullId).toBe("001-auth");
     expect(parsed[1].id).toBe(2);
-    expect(parsed[1].fullId).toBe("features/001-auth");
+    expect(parsed[1].fullId).toBe("002-crash");
 
     consoleSpy.mockRestore();
   });
 
   it("lists items sorted by id with short numeric IDs", async () => {
-    await createItem(tempDir, "features", "002-second", "raw");
-    await createItem(tempDir, "bugs", "001-first", "raw");
-    await createItem(tempDir, "features", "001-first", "raw");
+    await createItem(tempDir, "002-second", "raw");
+    await createItem(tempDir, "001-first", "raw");
+    await createItem(tempDir, "003-third", "raw");
 
     const logger = createMockLogger();
     const consoleSpy = spyOn(console, "log");
@@ -142,8 +140,8 @@ describe("listCommand", () => {
 
     const calls = consoleSpy.mock.calls.map((c) => String(c[0]));
     expect(calls.some((c) => /^\s*1\s+raw\s+first/.test(c))).toBe(true);
-    expect(calls.some((c) => /^\s*2\s+raw\s+first/.test(c))).toBe(true);
-    expect(calls.some((c) => /^\s*3\s+raw\s+second/.test(c))).toBe(true);
+    expect(calls.some((c) => /^\s*2\s+raw\s+second/.test(c))).toBe(true);
+    expect(calls.some((c) => /^\s*3\s+raw\s+third/.test(c))).toBe(true);
 
     consoleSpy.mockRestore();
   });

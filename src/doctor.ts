@@ -15,6 +15,7 @@ import {
   getConfigPath,
   getIndexPath,
   getPromptsDir,
+  getItemsDir,
 } from "./fs/paths";
 import { pathExists } from "./fs/util";
 import { scanItems } from "./commands/status";
@@ -88,17 +89,16 @@ async function diagnoseConfig(root: string): Promise<Diagnostic[]> {
 
 async function diagnoseItem(
   root: string,
-  sectionDir: string,
+  itemsDir: string,
   itemDirName: string
 ): Promise<Diagnostic[]> {
   const diagnostics: Diagnostic[] = [];
-  const itemDir = path.join(sectionDir, itemDirName);
+  const itemDir = path.join(itemsDir, itemDirName);
   const itemJsonPath = path.join(itemDir, "item.json");
 
   if (!(await pathExists(itemJsonPath))) {
-    const section = path.basename(sectionDir);
     diagnostics.push({
-      itemId: `${section}/${itemDirName}`,
+      itemId: itemDirName,
       severity: "error",
       code: "MISSING_ITEM_JSON",
       message: `item.json missing in ${itemDir}`,
@@ -341,34 +341,20 @@ export async function diagnose(root: string): Promise<Diagnostic[]> {
   diagnostics.push(...(await diagnoseConfig(root)));
   diagnostics.push(...(await diagnosePrompts(root)));
 
-  let sections: string[];
+  const itemsDir = getItemsDir(root);
+  let itemDirs: string[];
   try {
-    const entries = await fs.readdir(wreckitDir, { withFileTypes: true });
-    sections = entries
-      .filter(
-        (e) =>
-          e.isDirectory() && !e.name.startsWith(".") && e.name !== "prompts"
-      )
+    const entries = await fs.readdir(itemsDir, { withFileTypes: true });
+    itemDirs = entries
+      .filter((e) => e.isDirectory() && /^\d{3}-/.test(e.name))
       .map((e) => e.name);
   } catch {
+    diagnostics.push(...(await diagnoseIndex(root)));
     return diagnostics;
   }
 
-  for (const section of sections) {
-    const sectionDir = path.join(wreckitDir, section);
-    let itemDirs: string[];
-    try {
-      const entries = await fs.readdir(sectionDir, { withFileTypes: true });
-      itemDirs = entries
-        .filter((e) => e.isDirectory() && /^\d{3}-/.test(e.name))
-        .map((e) => e.name);
-    } catch {
-      continue;
-    }
-
-    for (const itemDir of itemDirs) {
-      diagnostics.push(...(await diagnoseItem(root, sectionDir, itemDir)));
-    }
+  for (const itemDir of itemDirs) {
+    diagnostics.push(...(await diagnoseItem(root, itemsDir, itemDir)));
   }
 
   diagnostics.push(...(await diagnoseIndex(root)));
@@ -421,8 +407,7 @@ export async function applyFixes(
       case "STATE_FILE_MISMATCH": {
         if (diagnostic.itemId) {
           try {
-            const [section, slug] = diagnostic.itemId.split("/");
-            const itemDir = path.join(getWreckitDir(root), section, slug);
+            const itemDir = path.join(getItemsDir(root), diagnostic.itemId);
             const itemJsonPath = path.join(itemDir, "item.json");
             const data = await readJson(itemJsonPath);
             const item = ItemSchema.parse(data);

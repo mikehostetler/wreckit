@@ -6,7 +6,7 @@ export {
   getConfigPath,
   getIndexPath,
   getPromptsDir,
-  getSectionDir,
+  getItemsDir,
   getItemDir,
   getItemJsonPath,
   getPrdPath,

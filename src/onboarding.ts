@@ -104,7 +104,7 @@ async function promptFirstIdea(
     ? `# ${titleStr}\n\n${descStr}\n`
     : `# ${titleStr}\n`;
 
-  await ideasCommand({ dryRun: false }, logger, root, ideaText);
+  await ideasCommand({ dryRun: false, cwd: root }, logger, ideaText);
 
   outro("First idea added! Now running wreckit…");
   return true;

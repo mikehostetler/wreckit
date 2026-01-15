@@ -108,15 +108,14 @@ describe("runOnboardingIfNeeded", () => {
         JSON.stringify({ schema_version: 1 })
       );
 
-      const ideaDir = path.join(tempDir, ".wreckit", "features", "001-test-idea");
+      const ideaDir = path.join(tempDir, ".wreckit", "items", "001-test-idea");
       await fs.mkdir(ideaDir, { recursive: true });
       await fs.writeFile(
         path.join(ideaDir, "item.json"),
         JSON.stringify({
           schema_version: 1,
-          id: "features/001-test-idea",
+          id: "001-test-idea",
           title: "Test idea",
-          section: "features",
           state: "raw",
           overview: "",
           branch: null,

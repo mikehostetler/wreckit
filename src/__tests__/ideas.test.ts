@@ -4,7 +4,6 @@ import * as path from "node:path";
 import * as os from "node:os";
 import {
   parseIdeasFromText,
-  determineSection,
   generateSlug,
   allocateItemId,
   createItemFromIdea,
@@ -80,46 +79,6 @@ The login page times out after 30 seconds
   });
 });
 
-describe("determineSection", () => {
-  it("'Fix login bug' -> 'bugs'", () => {
-    expect(determineSection({ title: "Fix login bug", overview: "" })).toBe("bugs");
-  });
-
-  it("'Add dark mode' -> 'features'", () => {
-    expect(determineSection({ title: "Add dark mode", overview: "" })).toBe("features");
-  });
-
-  it("'Update CI pipeline' -> 'infra'", () => {
-    expect(determineSection({ title: "Update CI pipeline", overview: "" })).toBe("infra");
-  });
-
-  it("'Write API docs' -> 'docs'", () => {
-    expect(determineSection({ title: "Write API docs", overview: "" })).toBe("docs");
-  });
-
-  it("'Update README' -> 'docs'", () => {
-    expect(determineSection({ title: "Update README", overview: "" })).toBe("docs");
-  });
-
-  it("'Deploy to production' -> 'infra'", () => {
-    expect(determineSection({ title: "Deploy to production", overview: "" })).toBe("infra");
-  });
-
-  it("'Update config file' -> 'infra'", () => {
-    expect(determineSection({ title: "Update config file", overview: "" })).toBe("infra");
-  });
-
-  it("default is 'features'", () => {
-    expect(determineSection({ title: "Something random", overview: "" })).toBe("features");
-  });
-
-  it("uses overview for section detection", () => {
-    expect(
-      determineSection({ title: "Important update", overview: "This fixes a critical bug" })
-    ).toBe("bugs");
-  });
-});
-
 describe("generateSlug", () => {
   it("'Add Dark Mode' -> 'add-dark-mode'", () => {
     expect(generateSlug("Add Dark Mode")).toBe("add-dark-mode");
@@ -161,42 +120,42 @@ describe("allocateItemId", () => {
     await fs.rm(tempDir, { recursive: true, force: true });
   });
 
-  it("empty section returns 001", async () => {
-    const result = await allocateItemId(tempDir, "features", "test-item");
+  it("empty items folder returns 001", async () => {
+    const result = await allocateItemId(tempDir, "test-item");
     expect(result.number).toBe("001");
-    expect(result.id).toBe("features/001-test-item");
+    expect(result.id).toBe("001-test-item");
   });
 
   it("existing 001 returns 002", async () => {
-    const sectionDir = path.join(tempDir, ".wreckit", "features");
-    await fs.mkdir(path.join(sectionDir, "001-existing"), { recursive: true });
+    const itemsDir = path.join(tempDir, ".wreckit", "items");
+    await fs.mkdir(path.join(itemsDir, "001-existing"), { recursive: true });
 
-    const result = await allocateItemId(tempDir, "features", "new-item");
+    const result = await allocateItemId(tempDir, "new-item");
     expect(result.number).toBe("002");
-    expect(result.id).toBe("features/002-new-item");
+    expect(result.id).toBe("002-new-item");
   });
 
   it("existing 001, 002 returns 003", async () => {
-    const sectionDir = path.join(tempDir, ".wreckit", "features");
-    await fs.mkdir(path.join(sectionDir, "001-first"), { recursive: true });
-    await fs.mkdir(path.join(sectionDir, "002-second"), { recursive: true });
+    const itemsDir = path.join(tempDir, ".wreckit", "items");
+    await fs.mkdir(path.join(itemsDir, "001-first"), { recursive: true });
+    await fs.mkdir(path.join(itemsDir, "002-second"), { recursive: true });
 
-    const result = await allocateItemId(tempDir, "features", "third");
+    const result = await allocateItemId(tempDir, "third");
     expect(result.number).toBe("003");
   });
 
   it("handles gaps (001, 003 -> 004)", async () => {
-    const sectionDir = path.join(tempDir, ".wreckit", "features");
-    await fs.mkdir(path.join(sectionDir, "001-first"), { recursive: true });
-    await fs.mkdir(path.join(sectionDir, "003-third"), { recursive: true });
+    const itemsDir = path.join(tempDir, ".wreckit", "items");
+    await fs.mkdir(path.join(itemsDir, "001-first"), { recursive: true });
+    await fs.mkdir(path.join(itemsDir, "003-third"), { recursive: true });
 
-    const result = await allocateItemId(tempDir, "features", "fourth");
+    const result = await allocateItemId(tempDir, "fourth");
     expect(result.number).toBe("004");
   });
 
   it("returns correct dir path", async () => {
-    const result = await allocateItemId(tempDir, "features", "test");
-    expect(result.dir).toBe(path.join(tempDir, ".wreckit", "features", "001-test"));
+    const result = await allocateItemId(tempDir, "test");
+    expect(result.dir).toBe(path.join(tempDir, ".wreckit", "items", "001-test"));
   });
 });
 
@@ -207,17 +166,16 @@ describe("createItemFromIdea", () => {
       overview: "Allow users to toggle themes",
     };
 
-    const item = createItemFromIdea("features/001-add-dark-mode", "features", idea);
+    const item = createItemFromIdea("001-add-dark-mode", idea);
 
-    expect(item.id).toBe("features/001-add-dark-mode");
+    expect(item.id).toBe("001-add-dark-mode");
     expect(item.title).toBe("Add dark mode");
-    expect(item.section).toBe("features");
     expect(item.overview).toBe("Allow users to toggle themes");
     expect(item.schema_version).toBe(1);
   });
 
   it("state is 'raw'", () => {
-    const item = createItemFromIdea("features/001-test", "features", {
+    const item = createItemFromIdea("001-test", {
       title: "Test",
       overview: "",
     });
@@ -226,7 +184,7 @@ describe("createItemFromIdea", () => {
 
   it("timestamps are set", () => {
     const before = new Date().toISOString();
-    const item = createItemFromIdea("features/001-test", "features", {
+    const item = createItemFromIdea("001-test", {
       title: "Test",
       overview: "",
     });
@@ -240,7 +198,7 @@ describe("createItemFromIdea", () => {
   });
 
   it("nullable fields are null", () => {
-    const item = createItemFromIdea("features/001-test", "features", {
+    const item = createItemFromIdea("001-test", {
       title: "Test",
       overview: "",
     });
@@ -275,7 +233,7 @@ describe("persistItems", () => {
     const itemPath = path.join(
       tempDir,
       ".wreckit",
-      "features",
+      "items",
       "001-add-dark-mode",
       "item.json"
     );
@@ -283,12 +241,11 @@ describe("persistItems", () => {
     const item = JSON.parse(content);
 
     expect(item.title).toBe("Add dark mode");
-    expect(item.section).toBe("features");
   });
 
   it("skips existing items", async () => {
-    const sectionDir = path.join(tempDir, ".wreckit", "features");
-    await fs.mkdir(path.join(sectionDir, "001-add-dark-mode"), { recursive: true });
+    const itemsDir = path.join(tempDir, ".wreckit", "items");
+    await fs.mkdir(path.join(itemsDir, "001-add-dark-mode"), { recursive: true });
 
     const ideas: ParsedIdea[] = [{ title: "Add dark mode", overview: "" }];
     const result = await persistItems(tempDir, ideas);
@@ -311,7 +268,7 @@ describe("persistItems", () => {
     expect(result.created[1].title).toBe("Second feature");
   });
 
-  it("creates items in correct sections", async () => {
+  it("creates items in items folder", async () => {
     const ideas: ParsedIdea[] = [
       { title: "Add feature", overview: "" },
       { title: "Fix bug", overview: "" },
@@ -322,13 +279,12 @@ describe("persistItems", () => {
 
     expect(result.created).toHaveLength(3);
 
-    const featurePath = path.join(tempDir, ".wreckit", "features", "001-add-feature");
-    const bugPath = path.join(tempDir, ".wreckit", "bugs", "001-fix-bug");
-    const infraPath = path.join(tempDir, ".wreckit", "infra", "001-update-ci");
+    const itemsDir = path.join(tempDir, ".wreckit", "items");
+    const entries = await fs.readdir(itemsDir);
 
-    expect(await fs.access(featurePath).then(() => true).catch(() => false)).toBe(true);
-    expect(await fs.access(bugPath).then(() => true).catch(() => false)).toBe(true);
-    expect(await fs.access(infraPath).then(() => true).catch(() => false)).toBe(true);
+    expect(entries).toContain("001-add-feature");
+    expect(entries).toContain("002-fix-bug");
+    expect(entries).toContain("003-update-ci");
   });
 });
 
@@ -359,10 +315,9 @@ The login page times out after 30 seconds
     expect(result.created).toHaveLength(4);
     expect(result.skipped).toHaveLength(0);
 
-    expect(result.created[0].section).toBe("features");
-    expect(result.created[1].section).toBe("bugs");
-    expect(result.created[2].section).toBe("infra");
-    expect(result.created[3].section).toBe("features");
+    const itemsDir = path.join(tempDir, ".wreckit", "items");
+    const entries = await fs.readdir(itemsDir);
+    expect(entries).toHaveLength(4);
   });
 
   it("idempotent (re-running doesn't duplicate)", async () => {
