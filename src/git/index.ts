@@ -18,6 +18,28 @@ export interface PrResult {
   created: boolean;
 }
 
+export type GitPreflightErrorCode =
+  | 'NOT_GIT_REPO'
+  | 'DETACHED_HEAD'
+  | 'UNCOMMITTED_CHANGES'
+  | 'BRANCH_DIVERGED'
+  | 'NO_REMOTE';
+
+export interface GitPreflightError {
+  code: GitPreflightErrorCode;
+  message: string;
+  recoverySteps: string[];
+}
+
+export interface GitPreflightResult {
+  valid: boolean;
+  errors: GitPreflightError[];
+}
+
+export interface CheckPreflightOptions extends GitOptions {
+  checkRemoteSync?: boolean;
+}
+
 export interface CommandResult {
   stdout: string;
   exitCode: number;
@@ -163,7 +185,10 @@ export async function ensureBranch(
 
   if (exists) {
     logger.info(`Branch ${branchName} exists, switching to it`);
-    await runGitCommand(["checkout", branchName], options);
+    const checkoutResult = await runGitCommand(["checkout", branchName], options);
+    if (checkoutResult.exitCode !== 0) {
+      throw new Error(`Failed to checkout existing branch ${branchName}`);
+    }
     return { branchName, created: false };
   }
 
@@ -185,6 +210,127 @@ export async function hasUncommittedChanges(
 ): Promise<boolean> {
   const result = await runGitCommand(["status", "--porcelain"], options);
   return result.stdout.length > 0;
+}
+
+export async function isDetachedHead(options: GitOptions): Promise<boolean> {
+  const result = await runGitCommand(
+    ["symbolic-ref", "--quiet", "HEAD"],
+    options
+  );
+  return result.exitCode !== 0;
+}
+
+export async function hasRemote(options: GitOptions): Promise<boolean> {
+  const result = await runGitCommand(["remote"], options);
+  return result.exitCode === 0 && result.stdout.length > 0;
+}
+
+export async function getBranchSyncStatus(
+  options: GitOptions
+): Promise<'synced' | 'ahead' | 'behind' | 'diverged' | 'no-upstream'> {
+  const branch = await runGitCommand(
+    ["rev-parse", "--abbrev-ref", "HEAD"],
+    options
+  );
+  if (branch.exitCode !== 0) {
+    return 'no-upstream';
+  }
+
+  await runGitCommand(["fetch", "--quiet"], options);
+
+  const upstream = await runGitCommand(
+    ["rev-parse", "--abbrev-ref", `${branch.stdout}@{upstream}`],
+    options
+  );
+  if (upstream.exitCode !== 0) {
+    return 'no-upstream';
+  }
+
+  const aheadBehind = await runGitCommand(
+    ["rev-list", "--left-right", "--count", `${branch.stdout}...${upstream.stdout}`],
+    options
+  );
+  if (aheadBehind.exitCode !== 0) {
+    return 'no-upstream';
+  }
+
+  const [ahead, behind] = aheadBehind.stdout.split(/\s+/).map(Number);
+  if (ahead > 0 && behind > 0) return 'diverged';
+  if (behind > 0) return 'behind';
+  if (ahead > 0) return 'ahead';
+  return 'synced';
+}
+
+export async function checkGitPreflight(
+  options: CheckPreflightOptions
+): Promise<GitPreflightResult> {
+  const errors: GitPreflightError[] = [];
+
+  const isRepo = await isGitRepo(options.cwd);
+  if (!isRepo) {
+    errors.push({
+      code: 'NOT_GIT_REPO',
+      message: 'Not a git repository',
+      recoverySteps: [
+        'Run `git init` to initialize a new repository',
+        'Or navigate to an existing git repository',
+      ],
+    });
+    return { valid: false, errors };
+  }
+
+  const detached = await isDetachedHead(options);
+  if (detached) {
+    errors.push({
+      code: 'DETACHED_HEAD',
+      message: 'Repository is in detached HEAD state',
+      recoverySteps: [
+        'Run `git checkout <branch-name>` to switch to a branch',
+        'Or run `git checkout -b <new-branch>` to create a new branch from current state',
+      ],
+    });
+  }
+
+  const hasChanges = await hasUncommittedChanges(options);
+  if (hasChanges) {
+    errors.push({
+      code: 'UNCOMMITTED_CHANGES',
+      message: 'There are uncommitted changes in the working directory',
+      recoverySteps: [
+        'Run `git stash` to temporarily save changes',
+        'Or run `git commit -am "message"` to commit changes',
+        'Or run `git checkout -- .` to discard changes (destructive)',
+      ],
+    });
+  }
+
+  if (options.checkRemoteSync) {
+    const hasRemoteConfigured = await hasRemote(options);
+    if (!hasRemoteConfigured) {
+      errors.push({
+        code: 'NO_REMOTE',
+        message: 'No remote repository configured',
+        recoverySteps: [
+          'Run `git remote add origin <url>` to add a remote',
+        ],
+      });
+    } else {
+      const syncStatus = await getBranchSyncStatus(options);
+      if (syncStatus === 'diverged') {
+        errors.push({
+          code: 'BRANCH_DIVERGED',
+          message: 'Local branch has diverged from remote',
+          recoverySteps: [
+            'Run `git pull --rebase` to rebase local changes on top of remote',
+            'Or run `git pull` to merge remote changes',
+            'Resolve any conflicts and commit',
+          ],
+        });
+      }
+    }
+  }
+
+  return { valid: errors.length === 0, errors };
 }
 
 export async function commitAll(
@@ -213,7 +359,13 @@ export async function pushBranch(
     return;
   }
 
-  await runGitCommand(["push", "-u", "origin", branchName], options);
+  const result = await runGitCommand(["push", "-u", "origin", branchName], options);
+  if (result.exitCode !== 0) {
+    throw new Error(
+      `Failed to push branch ${branchName} to origin. ` +
+      `Check that you have push access and the remote is configured correctly.`
+    );
+  }
 }
 
 export async function getPrByBranch(

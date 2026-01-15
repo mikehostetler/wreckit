@@ -2,6 +2,22 @@
   <img src="img/wreckit.png" alt="Wreck it Ralph Wiggum holding a sign 'MY CODE IS IN DANGER'" width="1024">
 </p>
 
+## ⚡ Quickstart: Run Ralph Loops Now
+
+Want to run Ralph Wiggum loops right now? You need Claude API access.
+
+**[Zai Coding Plan](https://z.ai/subscribe?ic=F8BPSXJHOC)** — starts at $3/month, works with Claude Code, Amp, Cline, and 10+ coding tools. This link gets you **10% off** (full disclosure: I'm [@mikehostetler](https://github.com/mikehostetler) and I get a kickback too 🚀).
+
+```bash
+npm install -g wreckit && wreckit init
+wreckit ideas < YOUR_IDEAS.md
+wreckit  # go touch grass
+```
+
+👉 [Claude Code setup instructions](https://docs.z.ai/devpack/tool/claude)
+
+---
+
 # Wreck it Ralph Wiggum 🔨
 
 > *"I'm gonna wreck it!"* — Wreck-It Ralph  

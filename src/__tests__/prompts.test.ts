@@ -40,8 +40,8 @@ describe("loadPromptTemplate", () => {
     expect(result).toBe(defaultTemplate);
   });
 
-  it("works for all four template names", async () => {
-    const names: PromptName[] = ["research", "plan", "implement", "ideas"];
+  it("works for all template names", async () => {
+    const names: PromptName[] = ["research", "plan", "implement", "ideas", "pr"];
 
     for (const name of names) {
       const result = await loadPromptTemplate(tempDir, name);
@@ -148,7 +148,7 @@ describe("initPromptTemplates", () => {
     expect(stat.isDirectory()).toBe(true);
   });
 
-  it("creates all four template files", async () => {
+  it("creates all template files", async () => {
     await initPromptTemplates(tempDir);
 
     const promptsDir = path.join(tempDir, ".wreckit", "prompts");
@@ -158,6 +158,7 @@ describe("initPromptTemplates", () => {
     expect(files).toContain("plan.md");
     expect(files).toContain("implement.md");
     expect(files).toContain("ideas.md");
+    expect(files).toContain("pr.md");
 
     const researchContent = await fs.readFile(path.join(promptsDir, "research.md"), "utf-8");
     const defaultResearch = await getDefaultTemplate("research");
@@ -174,6 +175,10 @@ describe("initPromptTemplates", () => {
     const ideasContent = await fs.readFile(path.join(promptsDir, "ideas.md"), "utf-8");
     const defaultIdeas = await getDefaultTemplate("ideas");
     expect(ideasContent).toBe(defaultIdeas);
+
+    const prContent = await fs.readFile(path.join(promptsDir, "pr.md"), "utf-8");
+    const defaultPr = await getDefaultTemplate("pr");
+    expect(prContent).toBe(defaultPr);
   });
 
   it("doesn't overwrite existing templates", async () => {
@@ -206,5 +211,8 @@ describe("getDefaultTemplate", () => {
 
     const ideas = await getDefaultTemplate("ideas");
     expect(ideas).toContain("# Ideas Parsing");
+
+    const pr = await getDefaultTemplate("pr");
+    expect(pr).toContain("# PR Description Generation");
   });
 });

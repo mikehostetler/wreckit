@@ -3,7 +3,7 @@ import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import { getPromptsDir, getWreckitDir } from "./fs/paths";
 
-export type PromptName = "research" | "plan" | "implement" | "ideas";
+export type PromptName = "research" | "plan" | "implement" | "ideas" | "pr";
 
 export interface PromptVariables {
   id: string;
@@ -98,7 +98,7 @@ export async function initPromptTemplates(root: string): Promise<void> {
   const promptsDir = getPromptsDir(root);
   await fs.mkdir(promptsDir, { recursive: true });
 
-  const promptNames: PromptName[] = ["research", "plan", "implement", "ideas"];
+  const promptNames: PromptName[] = ["research", "plan", "implement", "ideas", "pr"];
 
   for (const name of promptNames) {
     const filePath = getPromptTemplatePath(root, name);

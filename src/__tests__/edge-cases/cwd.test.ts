@@ -3,12 +3,40 @@ import * as fs from "node:fs/promises";
 import * as fsSync from "node:fs";
 import * as path from "node:path";
 import * as os from "node:os";
+import { spawn } from "node:child_process";
 import { findRepoRoot } from "../../fs";
 import { RepoNotFoundError } from "../../errors";
 import { runOnboardingIfNeeded } from "../../onboarding";
 import type { Logger } from "../../logging";
 
-const { isGitRepo } = await import("../../git");
+async function isGitRepoReal(cwd: string): Promise<boolean> {
+  return new Promise((resolve) => {
+    let proc: ReturnType<typeof spawn> | undefined;
+
+    try {
+      proc = spawn("git", ["rev-parse", "--git-dir"], {
+        cwd,
+        stdio: ["pipe", "pipe", "pipe"],
+      });
+    } catch {
+      resolve(false);
+      return;
+    }
+
+    if (!proc || typeof proc.on !== "function") {
+      resolve(false);
+      return;
+    }
+
+    proc.on("close", (code) => {
+      resolve(code === 0);
+    });
+
+    proc.on("error", () => {
+      resolve(false);
+    });
+  });
+}
 
 function createMockLogger(): Logger & { messages: string[] } {
   const messages: string[] = [];
@@ -162,7 +190,7 @@ describe("--cwd Flag Edge Cases", () => {
     });
 
     it("isGitRepo returns false for non-git directory", async () => {
-      const result = await isGitRepo(tempDir);
+      const result = await isGitRepoReal(tempDir);
       expect(result).toBe(false);
     });
 
@@ -240,7 +268,7 @@ describe("--cwd Flag Edge Cases", () => {
       const repoDir = path.join(tempDir, "repo");
       await fs.mkdir(path.join(repoDir, ".git"), { recursive: true });
 
-      const result = await isGitRepo(tempDir);
+      const result = await isGitRepoReal(tempDir);
       expect(result).toBe(false);
     });
 

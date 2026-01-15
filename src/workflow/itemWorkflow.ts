@@ -35,6 +35,10 @@ import {
   pushBranch,
   createOrUpdatePr,
   isPrMerged,
+  checkGitPreflight,
+  isGitRepo,
+  getCurrentBranch,
+  type GitPreflightError,
 } from "../git";
 
 export interface WorkflowOptions {
@@ -531,11 +535,54 @@ export async function runPhaseImplement(
   return { success: true, item };
 }
 
+function formatPreflightErrors(errors: GitPreflightError[]): string {
+  const lines: string[] = ["Git pre-flight check failed:"];
+  for (const err of errors) {
+    lines.push(`\n• ${err.message}`);
+    for (const step of err.recoverySteps) {
+      lines.push(`    ${step}`);
+    }
+  }
+  return lines.join("\n");
+}
+
+function parsePrJson(output: string): { title: string; body: string } | null {
+  const startMarker = "PR_JSON_START";
+  const endMarker = "PR_JSON_END";
+  
+  const startIdx = output.indexOf(startMarker);
+  const endIdx = output.indexOf(endMarker);
+  
+  if (startIdx === -1 || endIdx === -1 || endIdx <= startIdx) {
+    return null;
+  }
+  
+  const jsonStr = output.slice(startIdx + startMarker.length, endIdx).trim();
+  
+  try {
+    const parsed = JSON.parse(jsonStr);
+    if (typeof parsed.title === "string" && typeof parsed.body === "string") {
+      return { title: parsed.title, body: parsed.body };
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export async function runPhasePr(
   itemId: string,
   options: WorkflowOptions
 ): Promise<PhaseResult> {
-  const { root, config, logger, dryRun = false } = options;
+  const {
+    root,
+    config,
+    logger,
+    dryRun = false,
+    mockAgent = false,
+    onAgentOutput,
+    onAgentEvent,
+  } = options;
 
   let item = await loadItem(root, itemId);
   const itemDir = getItemDir(root, item.id);
@@ -559,6 +606,18 @@ export async function runPhasePr(
   const gitOptions = { cwd: root, logger, dryRun };
   const itemSlug = item.id.replace("/", "-");
 
+  // Pre-flight git state checks
+  if (!dryRun) {
+    const preflight = await checkGitPreflight({ ...gitOptions, checkRemoteSync: false });
+    if (!preflight.valid) {
+      const error = formatPreflightErrors(preflight.errors);
+      item = { ...item, last_error: error };
+      await saveItem(root, item);
+      return { success: false, item, error };
+    }
+  }
+
+  // Ensure we're on the correct branch
   const branchResult = await ensureBranch(
     config.base_branch,
     config.branch_prefix,
@@ -566,23 +625,96 @@ export async function runPhasePr(
     gitOptions
   );
 
+  // Verify we're actually on the expected branch
+  if (!dryRun) {
+    try {
+      const currentBranch = await getCurrentBranch(gitOptions);
+      if (currentBranch !== branchResult.branchName) {
+        const error = `Expected to be on branch ${branchResult.branchName}, but currently on ${currentBranch}`;
+        item = { ...item, last_error: error };
+        await saveItem(root, item);
+        return { success: false, item, error };
+      }
+    } catch (err) {
+      const error = `Failed to verify current branch: ${err instanceof Error ? err.message : String(err)}`;
+      item = { ...item, last_error: error };
+      await saveItem(root, item);
+      return { success: false, item, error };
+    }
+  }
+
+  // Check for uncommitted changes and commit them
   if (await hasUncommittedChanges(gitOptions)) {
     const commitMessage = `feat(${itemSlug}): implement ${item.title}`;
     await commitAll(commitMessage, gitOptions);
   }
 
-  await pushBranch(branchResult.branchName, gitOptions);
+  // Push branch with error handling
+  try {
+    await pushBranch(branchResult.branchName, gitOptions);
+  } catch (err) {
+    const error = err instanceof Error ? err.message : String(err);
+    item = { ...item, last_error: error };
+    await saveItem(root, item);
+    return { success: false, item, error };
+  }
 
-  const prTitle = item.title;
-  const prBody = `## Overview\n\n${item.overview}\n\n---\n\n*Automated PR created by wreckit*`;
+  // Generate PR description using Claude
+  let prTitle = item.title;
+  let prBody = `## Overview\n\n${item.overview}\n\n---\n\n*Automated PR created by wreckit*`;
 
-  const prResult = await createOrUpdatePr(
-    config.base_branch,
-    branchResult.branchName,
-    prTitle,
-    prBody,
-    gitOptions
-  );
+  if (!dryRun) {
+    try {
+      const template = await loadPromptTemplate(root, "pr");
+      const variables = await buildPromptVariables(root, item, config);
+      const prompt = renderPrompt(template, variables);
+
+      const agentConfig = getAgentConfig(config);
+      const result = await runAgent({
+        config: agentConfig,
+        cwd: itemDir,
+        prompt,
+        logger,
+        dryRun: false,
+        mockAgent,
+        onStdoutChunk: onAgentOutput,
+        onStderrChunk: onAgentOutput,
+        onAgentEvent,
+      });
+
+      if (result.success) {
+        const parsed = parsePrJson(result.output);
+        if (parsed) {
+          prTitle = parsed.title;
+          prBody = parsed.body;
+          logger.info("Generated PR description using Claude");
+        } else {
+          logger.warn("Could not parse PR JSON from agent output, using default description");
+        }
+      } else {
+        logger.warn("Agent failed to generate PR description, using default");
+      }
+    } catch (err) {
+      logger.warn(`Failed to generate PR description: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  }
+
+  // Create or update PR
+  let prResult;
+  try {
+    prResult = await createOrUpdatePr(
+      config.base_branch,
+      branchResult.branchName,
+      prTitle,
+      prBody,
+      gitOptions
+    );
+  } catch (err) {
+    const error = err instanceof Error ? err.message : String(err);
+    item = { ...item, last_error: error };
+    await saveItem(root, item);
+    return { success: false, item, error };
+  }
 
   item = {
     ...item,

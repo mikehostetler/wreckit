@@ -22,7 +22,7 @@ mock.module("../agent/runner", () => ({
 }));
 
 const mockedEnsureBranch = vi.fn(() =>
-  Promise.resolve({ branchName: "wreckit/test-item", created: true })
+  Promise.resolve({ branchName: "wreckit/001-test-feature", created: true })
 );
 const mockedHasUncommittedChanges = vi.fn(() => Promise.resolve(false));
 const mockedCommitAll = vi.fn(() => Promise.resolve());
@@ -35,6 +35,11 @@ const mockedCreateOrUpdatePr = vi.fn(() =>
   })
 );
 const mockedIsPrMerged = vi.fn(() => Promise.resolve(true));
+const mockedCheckGitPreflight = vi.fn(() =>
+  Promise.resolve({ valid: true, errors: [] })
+);
+const mockedIsGitRepo = vi.fn(() => Promise.resolve(true));
+const mockedGetCurrentBranch = vi.fn(() => Promise.resolve("wreckit/001-test-feature"));
 
 mock.module("../git", () => ({
   ensureBranch: mockedEnsureBranch,
@@ -43,6 +48,9 @@ mock.module("../git", () => ({
   pushBranch: mockedPushBranch,
   createOrUpdatePr: mockedCreateOrUpdatePr,
   isPrMerged: mockedIsPrMerged,
+  checkGitPreflight: mockedCheckGitPreflight,
+  isGitRepo: mockedIsGitRepo,
+  getCurrentBranch: mockedGetCurrentBranch,
 }));
 
 const {
