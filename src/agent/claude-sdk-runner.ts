@@ -125,11 +125,47 @@ function handleSdkError(error: any, output: string, logger: Logger): { success: 
     errorMessage.includes("401") ||
     errorMessage.includes("authentication") ||
     errorMessage.includes("Unauthorized") ||
-    errorMessage.includes("anthropic-api-key")
+    errorMessage.includes("anthropic-api-key") ||
+    errorMessage.includes("Invalid API key") ||
+    errorMessage.includes("/login")
   ) {
+    const authHelp = `
+❌ Authentication Error: ${errorMessage}
+
+The Claude Agent SDK requires explicit API credentials. The 'claude' CLI's OAuth
+login is not automatically available to wreckit.
+
+To fix this, set credentials in one of these locations (in order of precedence):
+
+  1. .wreckit/config.local.json (recommended, gitignored):
+     {
+       "agent": {
+         "env": {
+           "ANTHROPIC_BASE_URL": "https://your-endpoint.example.com",
+           "ANTHROPIC_AUTH_TOKEN": "your-token"
+         }
+       }
+     }
+
+  2. Shell environment:
+     export ANTHROPIC_BASE_URL=https://your-endpoint.example.com
+     export ANTHROPIC_AUTH_TOKEN=your-token
+
+  3. ~/.claude/settings.json:
+     {
+       "env": {
+         "ANTHROPIC_BASE_URL": "https://your-endpoint.example.com",
+         "ANTHROPIC_AUTH_TOKEN": "your-token"
+       }
+     }
+
+  For direct Anthropic API access, use ANTHROPIC_API_KEY instead.
+
+Run 'wreckit sdk-info' to diagnose your current credential configuration.
+`;
     return {
       success: false,
-      output: output + `\n❌ Authentication Error: ${errorMessage}\n\nPlease ensure ANTHROPIC_API_KEY is set or run 'claude' to authenticate.\n`,
+      output: output + authHelp,
       exitCode: 1,
     };
   }

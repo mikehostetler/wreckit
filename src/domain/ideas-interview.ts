@@ -7,6 +7,8 @@ import {
 import { loadPromptTemplate } from "../prompts";
 import type { ParsedIdea } from "./ideas";
 import { createWreckitMcpServer } from "../agent/mcp/wreckitMcpServer";
+import { buildSdkEnv } from "../agent/env";
+import { createLogger } from "../logging";
 
 export interface InterviewOptions {
   verbose?: boolean;
@@ -147,7 +149,8 @@ function isCancelSignal(input: string): boolean {
 async function finishInterview(
   session: unstable_v2_Session,
   sessionId: string,
-  verbose?: boolean
+  verbose?: boolean,
+  sdkEnv?: Record<string, string>
 ): Promise<ParsedIdea[]> {
   const spinner = createSpinner("Finishing...");
   spinner.start();
@@ -204,6 +207,8 @@ async function finishInterview(
         // CRITICAL: Only allow the MCP tool - prevent agent from using Read, Write, Bash, etc.
         // This ensures the agent can ONLY extract structured data, not implement fixes
         allowedTools: ["mcp__wreckit__save_interview_ideas"],
+        // Pass environment for custom credentials
+        env: sdkEnv,
       },
     })) {
       if (verbose && message.type === "assistant") {
@@ -242,6 +247,10 @@ export async function runIdeaInterview(
   options: InterviewOptions = {}
 ): Promise<ParsedIdea[]> {
   const systemPrompt = await loadPromptTemplate(root, "interview");
+  
+  // Build SDK environment to pass custom credentials (ANTHROPIC_AUTH_TOKEN, etc.)
+  const logger = createLogger({ verbose: options.verbose });
+  const sdkEnv = await buildSdkEnv({ cwd: root, logger });
 
   // Create readline interface for user input
   const rl = readline.createInterface({
@@ -270,7 +279,9 @@ export async function runIdeaInterview(
       allowDangerouslySkipPermissions: true,
       // Limit tools since this is just a conversation
       tools: ["AskUserQuestion"],
-    });
+      // Pass environment to use custom credentials (ANTHROPIC_AUTH_TOKEN, ANTHROPIC_BASE_URL)
+      env: sdkEnv,
+    } as any); // Cast to any since env may not be in the type definition yet
 
     // Start the conversation - get user's idea FIRST
     console.log("");
@@ -368,7 +379,7 @@ export async function runIdeaInterview(
           if (!sessionId) {
             console.error(fmt.yellow("Warning: No session ID captured, falling back to JSON extraction"));
           }
-          ideas = await finishInterview(session, sessionId || "", options.verbose);
+          ideas = await finishInterview(session, sessionId || "", options.verbose, sdkEnv);
           isComplete = true;
           break;
         }
@@ -383,7 +394,7 @@ export async function runIdeaInterview(
         if (!sessionId) {
           console.error(fmt.yellow("Warning: No session ID captured, falling back to JSON extraction"));
         }
-        ideas = await finishInterview(session, sessionId || "", options.verbose);
+        ideas = await finishInterview(session, sessionId || "", options.verbose, sdkEnv);
         isComplete = true;
         break;
       }
