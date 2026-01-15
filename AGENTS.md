@@ -65,11 +65,17 @@ bun test src/__tests__/foo.test.ts # Single file
   "schema_version": 1,
   "base_branch": "main",
   "branch_prefix": "wreckit/",
+  "merge_mode": "pr",
   "agent": {"command": "amp", "args": ["--dangerously-allow-all"]},
   "max_iterations": 100,
   "timeout_seconds": 3600
 }
 ```
+
+### Merge Modes
+
+- `"pr"` (default): Creates a PR for each item, waits for merge
+- `"direct"`: YOLO mode - merges directly to base branch without PRs (good for greenfield projects)
 
 ## Exit Codes
 

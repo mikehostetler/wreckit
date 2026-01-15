@@ -10,6 +10,7 @@ export interface ConfigResolved {
   schema_version: number;
   base_branch: string;
   branch_prefix: string;
+  merge_mode: "pr" | "direct";
   agent: {
     mode: "process" | "sdk";
     command: string;
@@ -37,6 +38,7 @@ export const DEFAULT_CONFIG: ConfigResolved = {
   schema_version: 1,
   base_branch: "main",
   branch_prefix: "wreckit/",
+  merge_mode: "pr",
   agent: {
     mode: "sdk",
     command: "claude", // Kept for fallback
@@ -67,6 +69,7 @@ export function mergeWithDefaults(partial: Partial<Config>): ConfigResolved {
     schema_version: partial.schema_version ?? DEFAULT_CONFIG.schema_version,
     base_branch: partial.base_branch ?? DEFAULT_CONFIG.base_branch,
     branch_prefix: partial.branch_prefix ?? DEFAULT_CONFIG.branch_prefix,
+    merge_mode: partial.merge_mode ?? DEFAULT_CONFIG.merge_mode,
     agent,
     max_iterations: partial.max_iterations ?? DEFAULT_CONFIG.max_iterations,
     timeout_seconds: partial.timeout_seconds ?? DEFAULT_CONFIG.timeout_seconds,
@@ -81,6 +84,7 @@ export function applyOverrides(
     schema_version: config.schema_version,
     base_branch: overrides.baseBranch ?? config.base_branch,
     branch_prefix: overrides.branchPrefix ?? config.branch_prefix,
+    merge_mode: config.merge_mode,
     agent: {
       mode: config.agent.mode,
       command: overrides.agentCommand ?? config.agent.command,

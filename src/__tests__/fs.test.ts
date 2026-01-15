@@ -254,6 +254,7 @@ describe("Typed wrapper tests", () => {
     schema_version: 1,
     base_branch: "main",
     branch_prefix: "wreckit/",
+    merge_mode: "pr",
     agent: {
       mode: "process",
       command: "amp",

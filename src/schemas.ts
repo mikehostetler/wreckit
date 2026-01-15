@@ -13,10 +13,13 @@ export const StoryStatusSchema = z.enum(["pending", "done"]);
 
 export const AgentModeSchema = z.enum(["process", "sdk"]);
 
+export const MergeModeSchema = z.enum(["pr", "direct"]);
+
 export const ConfigSchema = z.object({
   schema_version: z.number().default(1),
   base_branch: z.string().default("main"),
   branch_prefix: z.string().default("wreckit/"),
+  merge_mode: MergeModeSchema.default("pr"),
   agent: z.object({
     mode: AgentModeSchema.default("process"),
     command: z.string(),
@@ -87,6 +90,7 @@ export const IndexSchema = z.object({
 
 export type WorkflowState = z.infer<typeof WorkflowStateSchema>;
 export type StoryStatus = z.infer<typeof StoryStatusSchema>;
+export type MergeMode = z.infer<typeof MergeModeSchema>;
 export type Config = z.infer<typeof ConfigSchema>;
 export type Item = z.infer<typeof ItemSchema>;
 export type PriorityHint = z.infer<typeof PriorityHintSchema>;

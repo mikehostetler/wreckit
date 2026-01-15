@@ -443,6 +443,56 @@ export async function createOrUpdatePr(
   return { url: prInfo.url, number: prInfo.number, created: true };
 }
 
+export async function mergeAndPushToBase(
+  baseBranch: string,
+  featureBranch: string,
+  commitMessage: string,
+  options: GitOptions
+): Promise<void> {
+  const { logger, dryRun = false } = options;
+
+  if (dryRun) {
+    logger.info(`[dry-run] Would merge ${featureBranch} into ${baseBranch} and push`);
+    return;
+  }
+
+  // Switch to base branch
+  const checkoutResult = await runGitCommand(["checkout", baseBranch], options);
+  if (checkoutResult.exitCode !== 0) {
+    throw new Error(`Failed to checkout base branch ${baseBranch}`);
+  }
+
+  // Pull latest changes from remote
+  const pullResult = await runGitCommand(["pull", "--ff-only"], options);
+  if (pullResult.exitCode !== 0) {
+    throw new Error(
+      `Failed to pull latest ${baseBranch}. Resolve conflicts manually or try again.`
+    );
+  }
+
+  // Merge feature branch with a merge commit
+  const mergeResult = await runGitCommand(
+    ["merge", featureBranch, "--no-ff", "-m", commitMessage],
+    options
+  );
+  if (mergeResult.exitCode !== 0) {
+    throw new Error(
+      `Failed to merge ${featureBranch} into ${baseBranch}. ` +
+      `There may be merge conflicts that need manual resolution.`
+    );
+  }
+
+  // Push to remote
+  const pushResult = await runGitCommand(["push", "origin", baseBranch], options);
+  if (pushResult.exitCode !== 0) {
+    throw new Error(
+      `Failed to push ${baseBranch} to origin. Check that you have push access.`
+    );
+  }
+
+  logger.info(`Merged ${featureBranch} into ${baseBranch} and pushed to origin`);
+}
+
 export async function isPrMerged(
   prNumber: number,
   options: GitOptions

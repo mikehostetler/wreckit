@@ -38,6 +38,7 @@ import {
   checkGitPreflight,
   isGitRepo,
   getCurrentBranch,
+  mergeAndPushToBase,
   type GitPreflightError,
 } from "../git";
 
@@ -649,7 +650,38 @@ export async function runPhasePr(
     await commitAll(commitMessage, gitOptions);
   }
 
-  // Push branch with error handling
+  // Handle direct merge mode (YOLO mode)
+  if (config.merge_mode === "direct") {
+    const commitMessage = `feat(${itemSlug}): ${item.title}`;
+    try {
+      await mergeAndPushToBase(
+        config.base_branch,
+        branchResult.branchName,
+        commitMessage,
+        gitOptions
+      );
+    } catch (err) {
+      const error = err instanceof Error ? err.message : String(err);
+      item = { ...item, last_error: error };
+      await saveItem(root, item);
+      return { success: false, item, error };
+    }
+
+    item = {
+      ...item,
+      state: "done",
+      branch: branchResult.branchName,
+      pr_url: null,
+      pr_number: null,
+      last_error: null,
+    };
+    await saveItem(root, item);
+
+    logger.info(`Merged ${itemId} directly to ${config.base_branch} (direct mode)`);
+    return { success: true, item };
+  }
+
+  // PR mode: Push branch with error handling
   try {
     await pushBranch(branchResult.branchName, gitOptions);
   } catch (err) {
