@@ -51,6 +51,9 @@ export interface WorkflowOptions {
   mockAgent?: boolean;
   onAgentOutput?: (chunk: string) => void;
   onAgentEvent?: (event: AgentEvent) => void;
+  onIterationChanged?: (iteration: number, maxIterations: number) => void;
+  onStoryChanged?: (story: { id: string; title: string } | null) => void;
+  onPhaseChanged?: (phase: WorkflowState | null) => void;
 }
 
 export interface PhaseResult {
@@ -387,6 +390,9 @@ export async function runPhaseImplement(
     mockAgent = false,
     onAgentOutput,
     onAgentEvent,
+    onIterationChanged,
+    onStoryChanged,
+    onPhaseChanged,
   } = options;
 
   let item = await loadItem(root, itemId);
@@ -438,6 +444,7 @@ export async function runPhaseImplement(
   if (item.state === "planned") {
     item = { ...item, state: "implementing" };
     await saveItem(root, item);
+    onPhaseChanged?.("implementing");
   }
 
   let iteration = 0;
@@ -445,6 +452,7 @@ export async function runPhaseImplement(
 
   while (hasPendingStories(prd) && iteration < maxIterations) {
     iteration++;
+    onIterationChanged?.(iteration, maxIterations);
 
     const pendingStories = prd.user_stories
       .filter((s) => s.status === "pending")
@@ -453,6 +461,7 @@ export async function runPhaseImplement(
     if (pendingStories.length === 0) break;
 
     const currentStory = pendingStories[0];
+    onStoryChanged?.({ id: currentStory.id, title: currentStory.title });
     logger.info(
       `Implementing story ${currentStory.id} (iteration ${iteration}/${maxIterations})`
     );
@@ -529,6 +538,9 @@ export async function runPhaseImplement(
     return { success: false, item, error };
   }
 
+  // Clear story when implementation completes
+  onStoryChanged?.(null);
+  
   item = await loadItem(root, itemId);
   item = { ...item, last_error: null };
   await saveItem(root, item);

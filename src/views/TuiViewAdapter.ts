@@ -1,4 +1,4 @@
-import type { ViewAdapter, ItemSnapshot } from "./ViewAdapter";
+import type { ViewAdapter, ItemSnapshot, StorySnapshot } from "./ViewAdapter";
 import type { AgentEvent } from "../tui/agentEvents";
 import type { WorkflowState } from "../schemas";
 import { TuiRunner, type TuiOptions } from "../tui/runner";
@@ -38,6 +38,10 @@ export class TuiViewAdapter implements ViewAdapter {
 
   onIterationChanged(iteration: number, maxIterations: number): void {
     this.runner.update({ currentIteration: iteration, maxIterations });
+  }
+
+  onStoryChanged(story: StorySnapshot | null): void {
+    this.runner.update({ currentStory: story });
   }
 
   onAgentEvent(itemId: string, event: AgentEvent): void {

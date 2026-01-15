@@ -1,11 +1,17 @@
 import type { AgentEvent } from "../tui/agentEvents";
 import type { WorkflowState } from "../schemas";
 
+export interface StorySnapshot {
+  id: string;
+  title: string;
+}
+
 export interface ViewAdapter {
   onItemsChanged(items: ItemSnapshot[]): void;
   onActiveItemChanged(itemId: string | null): void;
   onPhaseChanged(phase: WorkflowState | null): void;
   onIterationChanged(iteration: number, maxIterations: number): void;
+  onStoryChanged(story: StorySnapshot | null): void;
   onAgentEvent(itemId: string, event: AgentEvent): void;
   onRunComplete(itemId: string, success: boolean, error?: string): void;
   start(): void;

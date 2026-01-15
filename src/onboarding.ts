@@ -5,7 +5,6 @@ import {
   intro,
   outro,
   confirm,
-  text,
   isCancel,
   cancel,
   note,
@@ -13,8 +12,9 @@ import {
 import type { Logger } from "./logging";
 import { dirExists } from "./fs/util";
 import { initCommand, NotGitRepoError } from "./commands/init";
-import { ideasCommand } from "./commands/ideas";
 import { scanItems } from "./domain/indexing";
+import { runIdeaInterview, runSimpleInterview } from "./domain/ideas-interview";
+import { persistItems } from "./domain/ideas";
 
 export interface OnboardingResult {
   proceed: boolean;
@@ -76,38 +76,32 @@ async function promptFirstIdea(
     "Getting started"
   );
 
-  const title = await text({
-    message: "Give your idea a short title",
-    placeholder: "e.g., Add dark mode support",
-    validate: (v) => (!v?.trim() ? "Title is required" : undefined),
-  });
+  // Use the agent-powered interview flow (with simple fallback)
+  let ideas: Awaited<ReturnType<typeof runIdeaInterview>> = [];
+  
+  try {
+    ideas = await runIdeaInterview(root, { verbose: false });
+  } catch (error) {
+    // Fall back to simple interview if SDK fails
+    logger.debug?.(`SDK interview failed: ${error}`);
+    ideas = await runSimpleInterview();
+  }
 
-  if (isCancel(title)) {
+  if (ideas.length === 0) {
     cancel("No idea created. Add one later with `wreckit ideas`.");
     return false;
   }
 
-  const description = await text({
-    message: "Optional: describe what you want to accomplish",
-    placeholder: "Press Enter to skip",
-  });
-
-  if (isCancel(description)) {
-    cancel("No idea created. Add one later with `wreckit ideas`.");
-    return false;
+  // Persist the ideas
+  const result = await persistItems(root, ideas);
+  
+  if (result.created.length > 0) {
+    outro(`First idea added! Created ${result.created.length} item(s). Now running wreckit…`);
+    return true;
   }
 
-  const titleStr = String(title).trim();
-  const descStr = description ? String(description).trim() : "";
-
-  const ideaText = descStr
-    ? `# ${titleStr}\n\n${descStr}\n`
-    : `# ${titleStr}\n`;
-
-  await ideasCommand({ dryRun: false, cwd: root }, logger, ideaText);
-
-  outro("First idea added! Now running wreckit…");
-  return true;
+  cancel("No idea created. Add one later with `wreckit ideas`.");
+  return false;
 }
 
 export async function runOnboardingIfNeeded(

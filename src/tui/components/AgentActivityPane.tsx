@@ -40,8 +40,13 @@ export function AgentActivityPane({ state, width, height }: AgentActivityPanePro
     <Box flexDirection="column" width={width} height={height}>
       <Text dimColor>{"─".repeat(10)} Agent Activity {"─".repeat(Math.max(0, innerWidth - 28))}</Text>
 
-      {recentTools.map((tool) => (
-        <ToolCallItem key={tool.toolUseId} tool={tool} width={innerWidth} />
+      {recentTools.map((tool, idx) => (
+        <ToolCallItem 
+          key={tool.toolUseId} 
+          tool={tool} 
+          width={innerWidth}
+          showResult={idx === recentTools.length - 1 && tool.status === "completed"}
+        />
       ))}
 
       {recentThoughts.length > 0 && (

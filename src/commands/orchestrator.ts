@@ -137,6 +137,9 @@ export async function orchestrateAll(
           mockAgent,
           onAgentOutput: view ? (chunk) => view.onAgentEvent(item.id, { type: "assistant_text", text: chunk }) : undefined,
           onAgentEvent: view ? (event: AgentEvent) => view.onAgentEvent(item.id, event) : undefined,
+          onIterationChanged: view ? (iteration, maxIterations) => view.onIterationChanged(iteration, maxIterations) : undefined,
+          onStoryChanged: view ? (story) => view.onStoryChanged(story) : undefined,
+          onPhaseChanged: view ? (phase) => view.onPhaseChanged(phase as any) : undefined,
         },
         logger
       );

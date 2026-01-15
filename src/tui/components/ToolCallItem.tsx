@@ -6,9 +6,10 @@ import { getToolColor, formatToolInput, formatToolResult } from "../colors";
 interface ToolCallItemProps {
   tool: ToolExecution;
   width: number;
+  showResult?: boolean;
 }
 
-export function ToolCallItem({ tool, width }: ToolCallItemProps): React.ReactElement {
+export function ToolCallItem({ tool, width, showResult = false }: ToolCallItemProps): React.ReactElement {
   const color = getToolColor(tool.toolName);
   const statusIcon = tool.status === "running" ? "▶" : tool.status === "completed" ? "✓" : "✗";
   const inputSummary = formatToolInput(tool.input);
@@ -18,10 +19,22 @@ export function ToolCallItem({ tool, width }: ToolCallItemProps): React.ReactEle
     const shortInput = inputSummary.length > maxInputLen 
       ? inputSummary.slice(0, maxInputLen - 1) + "…" 
       : inputSummary;
+    
+    const resultSummary = showResult && tool.result 
+      ? formatToolResult(tool.toolName, tool.result, Math.max(20, width - 4))
+      : null;
+    
     return (
-      <Box width={width}>
-        <Text color={color}>[{statusIcon}] {tool.toolName}</Text>
-        <Text dimColor> {shortInput}</Text>
+      <Box flexDirection="column" width={width}>
+        <Box>
+          <Text color={tool.status === "error" ? "red" : color}>[{statusIcon}] {tool.toolName}</Text>
+          <Text dimColor> {shortInput}</Text>
+        </Box>
+        {resultSummary && (
+          <Box paddingLeft={2}>
+            <Text dimColor>→ {resultSummary}</Text>
+          </Box>
+        )}
       </Box>
     );
   }

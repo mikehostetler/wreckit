@@ -24,6 +24,9 @@ export interface RunOptions {
   mockAgent?: boolean;
   onAgentOutput?: (chunk: string) => void;
   onAgentEvent?: (event: AgentEvent) => void;
+  onIterationChanged?: (iteration: number, maxIterations: number) => void;
+  onStoryChanged?: (story: { id: string; title: string } | null) => void;
+  onPhaseChanged?: (phase: string | null) => void;
   cwd?: string;
 }
 
@@ -54,7 +57,7 @@ export async function runCommand(
   options: RunOptions,
   logger: Logger
 ): Promise<void> {
-  const { force = false, dryRun = false, mockAgent = false, onAgentOutput, onAgentEvent, cwd } = options;
+  const { force = false, dryRun = false, mockAgent = false, onAgentOutput, onAgentEvent, onIterationChanged, onStoryChanged, onPhaseChanged, cwd } = options;
 
   const root = findRootFromOptions(options);
   const config = await loadConfig(root);
@@ -84,6 +87,9 @@ export async function runCommand(
     mockAgent,
     onAgentOutput,
     onAgentEvent,
+    onIterationChanged,
+    onStoryChanged,
+    onPhaseChanged,
   };
 
   const phaseRunners = {
@@ -127,6 +133,17 @@ export async function runCommand(
     }
 
     logger.info(`Running ${nextPhase} phase on ${itemId}`);
+    
+    // Map phase names to workflow states for TUI display
+    const phaseToState: Record<string, string> = {
+      research: "researched",
+      plan: "planned", 
+      implement: "implementing",
+      pr: "in_pr",
+      complete: "done",
+    };
+    onPhaseChanged?.(phaseToState[nextPhase] ?? nextPhase);
+    
     const runner = phaseRunners[nextPhase];
     const result = await runner(itemId, workflowOptions);
 
