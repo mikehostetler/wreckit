@@ -3,7 +3,7 @@ import * as readline from "node:readline";
 import { text, isCancel } from "@clack/prompts";
 import type { Logger } from "../logging";
 import { findRepoRoot, findRootFromOptions } from "../fs/paths";
-import { ingestIdeas, parseIdeasFromText, persistItems, generateSlug } from "../domain/ideas";
+import { persistItems, generateSlug } from "../domain/ideas";
 import { parseIdeasWithAgent } from "../domain/ideas-agent";
 import { FileNotFoundError } from "../errors";
 
@@ -12,7 +12,6 @@ export interface IdeasOptions {
   interactive?: boolean;
   dryRun?: boolean;
   cwd?: string;
-  agent?: boolean;
 }
 
 export async function readStdin(): Promise<string> {
@@ -92,13 +91,8 @@ export async function ideasCommand(
   }
 
   if (options.dryRun) {
-    let ideas;
-    if (options.agent) {
-      logger.info("Using agent-based parsing (dry-run)...");
-      ideas = await parseIdeasWithAgent(input, root);
-    } else {
-      ideas = parseIdeasFromText(input);
-    }
+    logger.info("Parsing ideas with agent...");
+    const ideas = await parseIdeasWithAgent(input, root);
     if (ideas.length === 0) {
       console.log("No items would be created");
       return;
@@ -114,14 +108,9 @@ export async function ideasCommand(
     return;
   }
 
-  let result;
-  if (options.agent) {
-    logger.info("Using agent-based parsing for complex document...");
-    const ideas = await parseIdeasWithAgent(input, root);
-    result = await persistItems(root, ideas);
-  } else {
-    result = await ingestIdeas(root, input);
-  }
+  logger.info("Parsing ideas with agent...");
+  const ideas = await parseIdeasWithAgent(input, root);
+  const result = await persistItems(root, ideas);
 
   if (result.created.length === 0 && result.skipped.length === 0) {
     console.log("No items created");

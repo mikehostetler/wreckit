@@ -95,7 +95,6 @@ program
    .command("ideas")
    .description("Ingest ideas from stdin or file")
    .option("-f, --file <path>", "Read ideas from file instead of stdin")
-   .option("--agent", "Use AI agent to parse complex documents")
    .action(async (options, cmd) => {
      const globalOpts = cmd.optsWithGlobals();
      await executeCommand(
@@ -105,7 +104,6 @@ program
              file: options.file,
              dryRun: globalOpts.dryRun,
              cwd: resolveCwd(globalOpts.cwd),
-             agent: options.agent,
            },
            logger
          );

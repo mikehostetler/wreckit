@@ -2,9 +2,17 @@ import { describe, expect, it, beforeEach, afterEach, mock, spyOn, vi } from "bu
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import * as os from "node:os";
-import { ideasCommand, readFile } from "../../commands/ideas";
 import type { Logger } from "../../logging";
 import { FileNotFoundError } from "../../errors";
+import type { AgentParsedIdea } from "../../domain/ideas-agent";
+
+const mockedParseIdeasWithAgent = vi.fn<(text: string, root: string) => Promise<AgentParsedIdea[]>>();
+
+mock.module("../../domain/ideas-agent", () => ({
+  parseIdeasWithAgent: mockedParseIdeasWithAgent,
+}));
+
+const { ideasCommand, readFile } = await import("../../commands/ideas");
 
 function createMockLogger(): Logger & { messages: string[] } {
   const messages: string[] = [];
@@ -32,6 +40,7 @@ describe("ideasCommand", () => {
   beforeEach(async () => {
     tempDir = await setupTempRepo();
     mockLogger = createMockLogger();
+    mockedParseIdeasWithAgent.mockReset();
   });
 
   afterEach(async () => {
@@ -41,6 +50,11 @@ describe("ideasCommand", () => {
   it("creates items from file input", async () => {
     const ideasFile = path.join(tempDir, "ideas.md");
     await fs.writeFile(ideasFile, "# Add dark mode\nTheme support\n\n# Fix bug\nBroken login");
+
+    mockedParseIdeasWithAgent.mockResolvedValue([
+      { title: "Add dark mode", overview: "Theme support" },
+      { title: "Fix bug", overview: "Broken login" },
+    ]);
 
     await ideasCommand({ file: ideasFile, cwd: tempDir }, mockLogger);
 
@@ -55,6 +69,11 @@ describe("ideasCommand", () => {
     const ideasFile = path.join(tempDir, "ideas.md");
     await fs.writeFile(ideasFile, "# First feature\n\n# Second feature");
 
+    mockedParseIdeasWithAgent.mockResolvedValue([
+      { title: "First feature", overview: "" },
+      { title: "Second feature", overview: "" },
+    ]);
+
     await ideasCommand({ file: ideasFile, cwd: tempDir }, mockLogger);
 
     const itemsDir = path.join(tempDir, ".wreckit", "items");
@@ -67,6 +86,11 @@ describe("ideasCommand", () => {
   it("prints created items", async () => {
     const ideasFile = path.join(tempDir, "ideas.md");
     await fs.writeFile(ideasFile, "# Add feature\n# Fix bug");
+
+    mockedParseIdeasWithAgent.mockResolvedValue([
+      { title: "Add feature", overview: "" },
+      { title: "Fix bug", overview: "" },
+    ]);
 
     const consoleSpy = spyOn(console, "log");
     await ideasCommand({ file: ideasFile, cwd: tempDir }, mockLogger);
@@ -81,6 +105,10 @@ describe("ideasCommand", () => {
   it("--dry-run doesn't create files", async () => {
     const ideasFile = path.join(tempDir, "ideas.md");
     await fs.writeFile(ideasFile, "# Add dark mode");
+
+    mockedParseIdeasWithAgent.mockResolvedValue([
+      { title: "Add dark mode", overview: "" },
+    ]);
 
     const consoleSpy = spyOn(console, "log");
     await ideasCommand({ file: ideasFile, dryRun: true, cwd: tempDir }, mockLogger);
@@ -98,6 +126,10 @@ describe("ideasCommand", () => {
     const ideasFile = path.join(tempDir, "ideas.md");
     await fs.writeFile(ideasFile, "# Add dark mode");
 
+    mockedParseIdeasWithAgent.mockResolvedValue([
+      { title: "Add dark mode", overview: "" },
+    ]);
+
     await ideasCommand({ file: ideasFile, cwd: tempDir }, mockLogger);
 
     const consoleSpy = spyOn(console, "log");
@@ -112,6 +144,8 @@ describe("ideasCommand", () => {
     const ideasFile = path.join(tempDir, "ideas.md");
     await fs.writeFile(ideasFile, "");
 
+    mockedParseIdeasWithAgent.mockResolvedValue([]);
+
     const consoleSpy = spyOn(console, "log");
     await ideasCommand({ file: ideasFile, cwd: tempDir }, mockLogger);
 
@@ -124,6 +158,8 @@ describe("ideasCommand", () => {
     const ideasFile = path.join(tempDir, "ideas.md");
     await fs.writeFile(ideasFile, "   \n\n   \n");
 
+    mockedParseIdeasWithAgent.mockResolvedValue([]);
+
     const consoleSpy = spyOn(console, "log");
     await ideasCommand({ file: ideasFile, cwd: tempDir }, mockLogger);
 
@@ -133,6 +169,11 @@ describe("ideasCommand", () => {
   });
 
   it("works with inputOverride parameter", async () => {
+    mockedParseIdeasWithAgent.mockResolvedValue([
+      { title: "Test feature", overview: "" },
+      { title: "Fix test bug", overview: "" },
+    ]);
+
     await ideasCommand({ cwd: tempDir }, mockLogger, "# Test feature\n# Fix test bug");
 
     const itemsDir = path.join(tempDir, ".wreckit", "items");
