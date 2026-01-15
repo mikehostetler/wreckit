@@ -46,9 +46,6 @@ describe("getAgentConfig", () => {
       completion_signal: "<promise>COMPLETE</promise>",
       timeout_seconds: 3600,
       max_iterations: 100,
-      sdk_model: undefined,
-      sdk_max_tokens: undefined,
-      sdk_tools: undefined,
     });
   });
 
@@ -61,7 +58,6 @@ describe("getAgentConfig", () => {
     expect(result.completion_signal).toBe("<promise>COMPLETE</promise>");
     expect(result.timeout_seconds).toBe(3600);
     expect(result.max_iterations).toBe(100);
-    expect(result.sdk_model).toBe("claude-sonnet-4-20250514");
   });
 
   it("extracts custom agent configuration", () => {
@@ -371,7 +367,7 @@ describe("runAgent", () => {
 });
 
 describe("runAgent - SDK mode config", () => {
-  it("SDK mode with custom model configuration", () => {
+  it("SDK mode configuration", () => {
     const config: ConfigResolved = {
       schema_version: 1,
       base_branch: "main",
@@ -381,9 +377,6 @@ describe("runAgent - SDK mode config", () => {
         command: "claude",
         args: [],
         completion_signal: "<promise>COMPLETE</promise>",
-        sdk_model: "claude-sonnet-4-20250514",
-        sdk_max_tokens: 8192,
-        sdk_tools: ["Read", "Edit", "Bash"],
       },
       max_iterations: 100,
       timeout_seconds: 3600,
@@ -392,8 +385,7 @@ describe("runAgent - SDK mode config", () => {
     const result = getAgentConfig(config);
 
     expect(result.mode).toBe("sdk");
-    expect(result.sdk_model).toBe("claude-sonnet-4-20250514");
-    expect(result.sdk_max_tokens).toBe(8192);
-    expect(result.sdk_tools).toEqual(["Read", "Edit", "Bash"]);
+    expect(result.command).toBe("claude");
+    expect(result.timeout_seconds).toBe(3600);
   });
 });

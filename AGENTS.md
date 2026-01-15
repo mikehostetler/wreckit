@@ -72,6 +72,29 @@ bun test src/__tests__/foo.test.ts # Single file
 }
 ```
 
+### Environment Variable Resolution
+
+When using `agent.mode: "sdk"`, environment variables are merged from multiple sources with this precedence (highest first):
+
+1. `.wreckit/config.local.json` `agent.env` (project-specific, gitignored)
+2. `.wreckit/config.json` `agent.env` (project defaults)
+3. `process.env` (shell environment)
+4. `~/.claude/settings.json` `env` (Claude user settings)
+
+Example `.wreckit/config.local.json` for custom API routing:
+```json
+{
+  "agent": {
+    "env": {
+      "ANTHROPIC_BASE_URL": "https://api.z.ai/api/anthropic",
+      "ANTHROPIC_AUTH_TOKEN": "your-token-here"
+    }
+  }
+}
+```
+
+When `ANTHROPIC_BASE_URL` and `ANTHROPIC_AUTH_TOKEN` are set, `ANTHROPIC_API_KEY` is automatically blanked to prevent credential fallback.
+
 ### Merge Modes
 
 - `"pr"` (default): Creates a PR for each item, waits for merge

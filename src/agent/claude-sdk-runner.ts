@@ -3,6 +3,7 @@ import type { Logger } from "../logging";
 import type { AgentConfig, AgentResult, RunAgentOptions } from "./runner.js";
 import { registerSdkController, unregisterSdkController } from "./runner.js";
 import type { AgentEvent } from "../tui/agentEvents";
+import { buildSdkEnv } from "./env.js";
 
 export async function runClaudeSdkAgent(options: RunAgentOptions, config: AgentConfig): Promise<AgentResult> {
   const { cwd, prompt, logger, onStdoutChunk, onStderrChunk, onAgentEvent } = options;
@@ -24,25 +25,19 @@ export async function runClaudeSdkAgent(options: RunAgentOptions, config: AgentC
       }, config.timeout_seconds * 1000);
     }
 
+    // Build environment from ~/.claude/settings.json, process.env, and .wreckit/config*.json
+    const sdkEnv = await buildSdkEnv({ cwd, logger });
+
     // Build SDK options
     const sdkOptions: any = {
       cwd, // Working directory
       permissionMode: "bypassPermissions", // wreckit runs autonomously
       allowDangerouslySkipPermissions: true, // Required for bypassPermissions
       abortController, // Enable cancellation on TUI quit/signals
-      // Use custom tools if specified, otherwise use default tools
-      ...(config.sdk_tools && { allowedTools: config.sdk_tools }),
+      env: sdkEnv, // Pass environment to ensure custom endpoints are honored
       // Pass MCP servers if provided
       ...(options.mcpServers && { mcpServers: options.mcpServers }),
     };
-
-    // Add optional SDK configuration
-    if (config.sdk_model) {
-      sdkOptions.model = config.sdk_model;
-    }
-    if (config.sdk_max_tokens) {
-      sdkOptions.maxTokens = config.sdk_max_tokens;
-    }
 
     // Run the agent via SDK
     for await (const message of query({ prompt, options: sdkOptions })) {

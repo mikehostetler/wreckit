@@ -33,8 +33,7 @@ cat > .wreckit/config.json << EOF
 {
   "schema_version": 1,
   "agent": {
-    "mode": "sdk",
-    "sdk_model": "claude-sonnet-4-20250514"
+    "mode": "sdk"
   }
 }
 EOF

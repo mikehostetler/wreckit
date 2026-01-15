@@ -14,6 +14,7 @@ import { runCommand } from "./commands/run";
 import { orchestrateAll, orchestrateNext } from "./commands/orchestrator";
 import { doctorCommand } from "./commands/doctor";
 import { initCommand } from "./commands/init";
+import { sdkInfoCommand } from "./commands/sdk-info";
 import { runOnboardingIfNeeded } from "./onboarding";
 import { resolveId } from "./domain/resolveId";
 import { findRepoRoot, resolveCwd } from "./fs/paths";
@@ -498,6 +499,23 @@ program
         verbose: globalOpts.verbose,
         quiet: globalOpts.quiet,
         cwd: resolveCwd(globalOpts.cwd),
+      }
+    );
+  });
+
+program
+  .command("sdk-info")
+  .description("Display Claude SDK configuration and account info")
+  .action(async (_options, cmd) => {
+    const globalOpts = cmd.optsWithGlobals();
+    await executeCommand(
+      async () => {
+        await sdkInfoCommand({}, logger);
+      },
+      logger,
+      {
+        verbose: globalOpts.verbose,
+        quiet: globalOpts.quiet,
       }
     );
   });

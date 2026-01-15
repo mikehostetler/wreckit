@@ -59,9 +59,6 @@ export interface AgentConfig {
   completion_signal: string;
   timeout_seconds: number;
   max_iterations: number;
-  sdk_model?: string;
-  sdk_max_tokens?: number;
-  sdk_tools?: string[];
 }
 
 export interface AgentResult {
@@ -93,9 +90,6 @@ export function getAgentConfig(config: ConfigResolved): AgentConfig {
     completion_signal: config.agent.completion_signal,
     timeout_seconds: config.timeout_seconds,
     max_iterations: config.max_iterations,
-    sdk_model: config.agent.sdk_model,
-    sdk_max_tokens: config.agent.sdk_max_tokens,
-    sdk_tools: config.agent.sdk_tools,
   };
 }
 
@@ -381,9 +375,6 @@ export async function runAgentUnion(options: UnionRunAgentOptions): Promise<Agen
         completion_signal: "DONE",
         timeout_seconds: options.timeoutSeconds ?? 3600,
         max_iterations: 100,
-        sdk_model: config.model,
-        sdk_max_tokens: config.max_tokens,
-        sdk_tools: config.tools,
       };
       const legacyOptions: RunAgentOptions = {
         config: legacyConfig,

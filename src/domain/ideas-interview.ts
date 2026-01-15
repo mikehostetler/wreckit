@@ -194,12 +194,16 @@ async function finishInterview(
         "Based on our interview conversation, extract and structure the ideas discussed. " +
         "Call the save_interview_ideas tool with the properly structured ideas array. " +
         "Include all fields that were discussed: title, description, problem statement, " +
-        "success criteria, constraints, scope, etc.",
+        "success criteria, constraints, scope, etc. " +
+        "DO NOT implement any fixes or make any code changes - only extract structured data.",
       options: {
         resume: sessionId,
         permissionMode: "bypassPermissions",
         allowDangerouslySkipPermissions: true,
         mcpServers: { wreckit: wreckitServer },
+        // CRITICAL: Only allow the MCP tool - prevent agent from using Read, Write, Bash, etc.
+        // This ensures the agent can ONLY extract structured data, not implement fixes
+        allowedTools: ["mcp__wreckit__save_interview_ideas"],
       },
     })) {
       if (verbose && message.type === "assistant") {

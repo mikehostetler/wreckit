@@ -85,9 +85,32 @@ export async function initCommand(
     await fs.writeFile(promptPath, content, "utf-8");
   }
 
+  // Append config.local.json to .gitignore if not already present
+  const gitignorePath = path.join(cwd, ".gitignore");
+  const localConfigPattern = ".wreckit/config.local.json";
+  try {
+    let gitignoreContent = "";
+    try {
+      gitignoreContent = await fs.readFile(gitignorePath, "utf-8");
+    } catch {
+      // .gitignore doesn't exist yet
+    }
+    if (!gitignoreContent.includes(localConfigPattern)) {
+      const addition = gitignoreContent.endsWith("\n") || gitignoreContent === ""
+        ? `\n# Wreckit local config (may contain secrets)\n${localConfigPattern}\n`
+        : `\n\n# Wreckit local config (may contain secrets)\n${localConfigPattern}\n`;
+      await fs.appendFile(gitignorePath, addition);
+      logger.info("Added .wreckit/config.local.json to .gitignore");
+    }
+  } catch (e) {
+    logger.debug(`Could not update .gitignore: ${e}`);
+  }
+
   console.log("Initialized .wreckit/ directory");
   console.log("  Created config.json");
   console.log("  Created prompts/research.md");
   console.log("  Created prompts/plan.md");
   console.log("  Created prompts/implement.md");
+  console.log("");
+  console.log("Tip: Create .wreckit/config.local.json for project-specific env overrides (gitignored)");
 }
