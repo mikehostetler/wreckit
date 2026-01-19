@@ -39,7 +39,12 @@ import {
   isGitRepo,
   getCurrentBranch,
   mergeAndPushToBase,
+  getGitStatus,
+  compareGitStatus,
+  formatViolations,
   type GitPreflightError,
+  type GitFileChange,
+  type StatusCompareOptions,
 } from "../git";
 
 export interface WorkflowOptions {
@@ -193,6 +198,11 @@ export async function runPhaseResearch(
   const itemDir = getItemDir(root, item.id);
   const agentConfig = getAgentConfig(config);
 
+  // Capture git status before running agent for read-only enforcement
+  const beforeStatus: GitFileChange[] = dryRun || mockAgent
+    ? []
+    : await getGitStatus({ cwd: root, logger });
+
   const result = await runAgent({
     config: agentConfig,
     cwd: itemDir,
@@ -226,6 +236,23 @@ export async function runPhaseResearch(
 
   if (!(await pathExists(researchPath))) {
     const error = "Agent did not create research.md";
+    item = { ...item, last_error: error };
+    await saveItem(root, item);
+    return { success: false, item, error };
+  }
+
+  // Enforce read-only behavior: check for unauthorized file modifications
+  const allowedResearchPath = `.wreckit/items/${item.id}/research.md`;
+  const compareOptions: StatusCompareOptions = {
+    cwd: root,
+    logger,
+    allowedPaths: [allowedResearchPath],
+  };
+
+  const comparison = await compareGitStatus(beforeStatus, compareOptions);
+  if (!comparison.valid) {
+    const error = formatViolations(comparison);
+    logger.error(error);
     item = { ...item, last_error: error };
     await saveItem(root, item);
     return { success: false, item, error };
