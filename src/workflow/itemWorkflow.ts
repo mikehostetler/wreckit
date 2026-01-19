@@ -752,18 +752,7 @@ export async function runPhasePr(
   const gitOptions = { cwd: root, logger, dryRun };
   const itemSlug = item.id.replace("/", "-");
 
-  // Pre-flight git state checks
-  if (!dryRun) {
-    const preflight = await checkGitPreflight({ ...gitOptions, checkRemoteSync: false });
-    if (!preflight.valid) {
-      const error = formatPreflightErrors(preflight.errors);
-      item = { ...item, last_error: error };
-      await saveItem(root, item);
-      return { success: false, item, error };
-    }
-  }
-
-  // Ensure we're on the correct branch
+  // Ensure we're on the correct branch first
   const branchResult = await ensureBranch(
     config.base_branch,
     config.branch_prefix,
@@ -789,10 +778,25 @@ export async function runPhasePr(
     }
   }
 
-  // Check for uncommitted changes and commit them
+  // Auto-commit any uncommitted changes before preflight check
+  // This fixes Gap 1: preflight/commit ordering bug
+  // Previously preflight ran first and rejected uncommitted changes,
+  // but auto-commit ran after preflight, so it never executed
   if (await hasUncommittedChanges(gitOptions)) {
     const commitMessage = `feat(${itemSlug}): implement ${item.title}`;
     await commitAll(commitMessage, gitOptions);
+  }
+
+  // Pre-flight git state checks (now that changes are committed)
+  // Only check for issues that would prevent push/PR operations
+  if (!dryRun) {
+    const preflight = await checkGitPreflight({ ...gitOptions, checkRemoteSync: false });
+    if (!preflight.valid) {
+      const error = formatPreflightErrors(preflight.errors);
+      item = { ...item, last_error: error };
+      await saveItem(root, item);
+      return { success: false, item, error };
+    }
   }
 
   // Handle direct merge mode (YOLO mode)

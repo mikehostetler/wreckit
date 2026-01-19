@@ -1267,6 +1267,135 @@ None.
       expect(result.item.state).toBe("in_pr");
       expect(result.item.pr_url).not.toBeNull();
     });
+
+    describe("preflight/commit ordering bug (Gap 1)", () => {
+      it("auto-commits uncommitted changes before preflight check", async () => {
+        const prd = createTestPrd({
+          user_stories: [
+            {
+              id: "US-001",
+              title: "Done Story",
+              acceptance_criteria: [],
+              priority: 1,
+              status: "done",
+              notes: "",
+            },
+          ],
+        });
+        const item = createTestItem({ state: "implementing" });
+        const itemDir = await setupItem(item);
+        await fs.writeFile(
+          path.join(itemDir, "prd.json"),
+          JSON.stringify(prd, null, 2),
+          "utf-8"
+        );
+
+        // Track the call count to simulate behavior changes after commit
+        let callCount = 0;
+        mockedHasUncommittedChanges.mockImplementation(async () => {
+          callCount++;
+          // After commit is called, hasUncommittedChanges should return false
+          // The first call is before commit (returns true), subsequent calls return false
+          return callCount === 1;
+        });
+
+        // Preflight passes because it runs AFTER commit now
+        mockedCheckGitPreflight.mockReturnValue(Promise.resolve({ valid: true, errors: [] }));
+
+        const result = await runPhasePr(item.id, {
+          root: tempDir,
+          config,
+          logger: mockLogger,
+        });
+
+        // After the fix: should succeed because auto-commit runs before preflight
+        expect(result.success).toBe(true);
+        expect(result.item.state).toBe("in_pr");
+
+        // Verify that commit was called (auto-commit happened)
+        expect(mockedCommitAll).toHaveBeenCalledWith(
+          `feat(001-test-feature): implement ${item.title}`,
+          expect.any(Object)
+        );
+      });
+
+      it("skips auto-commit when there are no uncommitted changes", async () => {
+        const prd = createTestPrd({
+          user_stories: [
+            {
+              id: "US-001",
+              title: "Done Story",
+              acceptance_criteria: [],
+              priority: 1,
+              status: "done",
+              notes: "",
+            },
+          ],
+        });
+        const item = createTestItem({ state: "implementing" });
+        const itemDir = await setupItem(item);
+        await fs.writeFile(
+          path.join(itemDir, "prd.json"),
+          JSON.stringify(prd, null, 2),
+          "utf-8"
+        );
+
+        // No uncommitted changes
+        mockedHasUncommittedChanges.mockReturnValue(Promise.resolve(false));
+
+        const result = await runPhasePr(item.id, {
+          root: tempDir,
+          config,
+          logger: mockLogger,
+        });
+
+        expect(result.success).toBe(true);
+        expect(result.item.state).toBe("in_pr");
+
+        // Verify that commit was NOT called (no uncommitted changes)
+        expect(mockedCommitAll).not.toHaveBeenCalled();
+      });
+
+      it("commits changes even when preflight would fail due to uncommitted changes", async () => {
+        const prd = createTestPrd({
+          user_stories: [
+            {
+              id: "US-001",
+              title: "Done Story",
+              acceptance_criteria: [],
+              priority: 1,
+              status: "done",
+              notes: "",
+            },
+          ],
+        });
+        const item = createTestItem({ state: "implementing" });
+        const itemDir = await setupItem(item);
+        await fs.writeFile(
+          path.join(itemDir, "prd.json"),
+          JSON.stringify(prd, null, 2),
+          "utf-8"
+        );
+
+        // Simulate uncommitted changes
+        mockedHasUncommittedChanges.mockReturnValue(Promise.resolve(true));
+
+        // Preflight should be called AFTER auto-commit, so it should pass
+        // (since after commit there are no uncommitted changes)
+        mockedCheckGitPreflight.mockReturnValue(Promise.resolve({ valid: true, errors: [] }));
+
+        const result = await runPhasePr(item.id, {
+          root: tempDir,
+          config,
+          logger: mockLogger,
+        });
+
+        // Should succeed - commit happened, then preflight passed
+        expect(result.success).toBe(true);
+        expect(mockedCommitAll).toHaveBeenCalled();
+        expect(mockedCheckGitPreflight).toHaveBeenCalled();
+      });
+    });
   });
 
   describe("runPhaseComplete", () => {
