@@ -10,6 +10,7 @@ import { createWreckitMcpServer } from "../agent/mcp/wreckitMcpServer";
 import { buildSdkEnv } from "../agent/env";
 import { createLogger } from "../logging";
 import { hasUncommittedChanges, isGitRepo } from "../git";
+import { assertPayloadLimits } from "./validation";
 
 export interface InterviewOptions {
   verbose?: boolean;
@@ -231,6 +232,15 @@ async function finishInterview(
   extractSpinner.stop();
 
   if (capturedIdeas.length > 0) {
+    // Validate payload limits
+    try {
+      assertPayloadLimits(capturedIdeas);
+    } catch (error) {
+      const err = error as Error;
+      console.error(fmt.yellow(`Warning: ${err.message}`));
+      console.error(fmt.yellow("Some ideas may not have been captured correctly."));
+      return [];
+    }
     console.log(fmt.green(`✓ Captured ${capturedIdeas.length} idea(s)`));
     return capturedIdeas;
   }

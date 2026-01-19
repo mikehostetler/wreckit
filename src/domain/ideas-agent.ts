@@ -5,6 +5,7 @@ import { loadPromptTemplate } from "../prompts";
 import type { AgentEvent } from "../tui/agentEvents";
 import type { ParsedIdea } from "./ideas";
 import { createWreckitMcpServer } from "../agent/mcp/wreckitMcpServer";
+import { assertPayloadLimits } from "./validation";
 
 export interface ParseIdeasOptions {
   verbose?: boolean;
@@ -80,6 +81,8 @@ export async function parseIdeasWithAgent(
 
   // If MCP tool was called successfully, return those ideas
   if (capturedIdeas.length > 0) {
+    // Validate payload limits before returning
+    assertPayloadLimits(capturedIdeas);
     return capturedIdeas;
   }
 
@@ -105,7 +108,11 @@ export async function parseIdeasWithAgent(
   if (arrayEnd === -1) {
     throw new Error("Agent did not return valid JSON array - unclosed bracket");
   }
-  
+
   const jsonStr = result.output.slice(arrayStart, arrayEnd + 1);
-  return JSON.parse(jsonStr) as ParsedIdea[];
+  const parsedIdeas = JSON.parse(jsonStr) as ParsedIdea[];
+
+  // Validate payload limits for fallback path as well
+  assertPayloadLimits(parsedIdeas);
+  return parsedIdeas;
 }

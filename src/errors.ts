@@ -102,6 +102,13 @@ export function wrapError(error: unknown, context: string): WreckitError {
   return new WreckitError(`${context}: ${String(error)}`, "WRAPPED_ERROR");
 }
 
+export class PayloadValidationError extends WreckitError {
+  constructor(message: string) {
+    super(message, "PAYLOAD_VALIDATION");
+    this.name = "PayloadValidationError";
+  }
+}
+
 export function isWreckitError(error: unknown): error is WreckitError {
   return error instanceof WreckitError;
 }
