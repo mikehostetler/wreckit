@@ -9,6 +9,7 @@ import type { ParsedIdea } from "./ideas";
 import { createWreckitMcpServer } from "../agent/mcp/wreckitMcpServer";
 import { buildSdkEnv } from "../agent/env";
 import { createLogger } from "../logging";
+import { hasUncommittedChanges, isGitRepo } from "../git";
 
 export interface InterviewOptions {
   verbose?: boolean;
@@ -247,10 +248,24 @@ export async function runIdeaInterview(
   options: InterviewOptions = {}
 ): Promise<ParsedIdea[]> {
   const systemPrompt = await loadPromptTemplate(root, "interview");
-  
+
   // Build SDK environment to pass custom credentials (ANTHROPIC_AUTH_TOKEN, etc.)
   const logger = createLogger({ verbose: options.verbose });
   const sdkEnv = await buildSdkEnv({ cwd: root, logger });
+
+  // Warn if user has uncommitted changes before starting interview
+  const inGitRepo = await isGitRepo(root);
+  if (inGitRepo) {
+    const hasChanges = await hasUncommittedChanges({ cwd: root, logger });
+    if (hasChanges) {
+      console.log("");
+      console.log("⚠️  You have uncommitted changes.");
+      console.log("  The idea phase is for planning and exploration only.");
+      console.log("  The agent is configured to read-only and cannot make code changes.");
+      console.log("  You may want to commit or stash your work first for a clean slate.");
+      console.log("");
+    }
+  }
 
   // Create readline interface for user input
   const rl = readline.createInterface({

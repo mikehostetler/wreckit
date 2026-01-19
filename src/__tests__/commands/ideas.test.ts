@@ -9,6 +9,8 @@ import type { ParsedIdea } from "../../domain/ideas";
 const mockedParseIdeasWithAgent = vi.fn<(text: string, root: string) => Promise<ParsedIdea[]>>();
 const mockedRunIdeaInterview = vi.fn<(root: string) => Promise<ParsedIdea[]>>();
 const mockedRunSimpleInterview = vi.fn<() => Promise<ParsedIdea[]>>();
+const mockedHasUncommittedChanges = vi.fn<() => Promise<boolean>>();
+const mockedIsGitRepo = vi.fn<() => Promise<boolean>>();
 
 mock.module("../../domain/ideas-agent", () => ({
   parseIdeasWithAgent: mockedParseIdeasWithAgent,
@@ -17,6 +19,11 @@ mock.module("../../domain/ideas-agent", () => ({
 mock.module("../../domain/ideas-interview", () => ({
   runIdeaInterview: mockedRunIdeaInterview,
   runSimpleInterview: mockedRunSimpleInterview,
+}));
+
+mock.module("../../git", () => ({
+  hasUncommittedChanges: mockedHasUncommittedChanges,
+  isGitRepo: mockedIsGitRepo,
 }));
 
 const { ideasCommand, readFile } = await import("../../commands/ideas");
@@ -48,6 +55,11 @@ describe("ideasCommand", () => {
     tempDir = await setupTempRepo();
     mockLogger = createMockLogger();
     mockedParseIdeasWithAgent.mockReset();
+    mockedHasUncommittedChanges.mockReset();
+    mockedIsGitRepo.mockReset();
+    // Default: in a git repo with no uncommitted changes
+    mockedIsGitRepo.mockResolvedValue(true);
+    mockedHasUncommittedChanges.mockResolvedValue(false);
   });
 
   afterEach(async () => {
@@ -221,5 +233,83 @@ describe("readFile", () => {
     const filePath = path.join(tempDir, "nonexistent.txt");
 
     await expect(readFile(filePath)).rejects.toThrow(`File not found: ${filePath}`);
+  });
+});
+
+describe("ideasCommand - git warnings", () => {
+  let tempDir: string;
+  let mockLogger: Logger & { messages: string[] };
+
+  beforeEach(async () => {
+    tempDir = await setupTempRepo();
+    mockLogger = createMockLogger();
+    mockedParseIdeasWithAgent.mockReset();
+    mockedHasUncommittedChanges.mockReset();
+    mockedIsGitRepo.mockReset();
+    // Default: in a git repo with no uncommitted changes
+    mockedIsGitRepo.mockResolvedValue(true);
+    mockedHasUncommittedChanges.mockResolvedValue(false);
+    mockedParseIdeasWithAgent.mockResolvedValue([{ title: "Test idea", description: "" }]);
+  });
+
+  afterEach(async () => {
+    await fs.rm(tempDir, { recursive: true, force: true });
+  });
+
+  it("warns when uncommitted changes exist", async () => {
+    // Set up: uncommitted changes exist
+    mockedHasUncommittedChanges.mockResolvedValue(true);
+
+    const ideasFile = path.join(tempDir, "ideas.md");
+    await fs.writeFile(ideasFile, "# Test idea");
+
+    await ideasCommand({ file: ideasFile, cwd: tempDir }, mockLogger);
+
+    // Should have warning message
+    const warningMessages = mockLogger.messages.filter((m) => m.startsWith("warn:"));
+    expect(warningMessages.length).toBeGreaterThan(0);
+    expect(warningMessages.some((m) => m.includes("uncommitted changes"))).toBe(true);
+  });
+
+  it("does not warn when repo is clean", async () => {
+    // Set up: no uncommitted changes (default from beforeEach)
+    mockedHasUncommittedChanges.mockResolvedValue(false);
+
+    const ideasFile = path.join(tempDir, "ideas.md");
+    await fs.writeFile(ideasFile, "# Test idea");
+
+    await ideasCommand({ file: ideasFile, cwd: tempDir }, mockLogger);
+
+    // Should not have warning message
+    const warningMessages = mockLogger.messages.filter((m) => m.startsWith("warn:"));
+    expect(warningMessages.some((m) => m.includes("uncommitted changes"))).toBe(false);
+  });
+
+  it("does not warn in dry-run mode even with changes", async () => {
+    // Set up: uncommitted changes exist
+    mockedHasUncommittedChanges.mockResolvedValue(true);
+
+    const ideasFile = path.join(tempDir, "ideas.md");
+    await fs.writeFile(ideasFile, "# Test idea");
+
+    await ideasCommand({ file: ideasFile, cwd: tempDir, dryRun: true }, mockLogger);
+
+    // Should not have warning message in dry-run
+    const warningMessages = mockLogger.messages.filter((m) => m.startsWith("warn:"));
+    expect(warningMessages.some((m) => m.includes("uncommitted changes"))).toBe(false);
+  });
+
+  it("does not warn outside git repo", async () => {
+    // Set up: not in a git repo
+    mockedIsGitRepo.mockResolvedValue(false);
+
+    const ideasFile = path.join(tempDir, "ideas.md");
+    await fs.writeFile(ideasFile, "# Test idea");
+
+    await ideasCommand({ file: ideasFile, cwd: tempDir }, mockLogger);
+
+    // Should not have warning message (and should not error)
+    const warningMessages = mockLogger.messages.filter((m) => m.startsWith("warn:"));
+    expect(warningMessages.some((m) => m.includes("uncommitted changes"))).toBe(false);
   });
 });

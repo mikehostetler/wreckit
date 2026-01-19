@@ -6,6 +6,7 @@ import { persistItems, generateSlug } from "../domain/ideas";
 import { parseIdeasWithAgent } from "../domain/ideas-agent";
 import { runIdeaInterview, runSimpleInterview } from "../domain/ideas-interview";
 import { FileNotFoundError } from "../errors";
+import { hasUncommittedChanges, isGitRepo } from "../git";
 
 export interface IdeasOptions {
   file?: string;
@@ -54,12 +55,45 @@ function hasStdinInput(): boolean {
   return !process.stdin.isTTY;
 }
 
+/**
+ * Check for uncommitted git changes and warn user if found.
+ * Non-blocking - allows execution to continue.
+ */
+async function warnIfUncommittedChanges(
+  root: string,
+  logger: Logger,
+  dryRun?: boolean
+): Promise<void> {
+  // Skip check in dryRun mode or if not in a git repo
+  if (dryRun) {
+    return;
+  }
+
+  const inGitRepo = await isGitRepo(root);
+  if (!inGitRepo) {
+    return;
+  }
+
+  const hasChanges = await hasUncommittedChanges({ cwd: root, logger });
+  if (hasChanges) {
+    logger.warn(
+      "⚠️  You have uncommitted changes. " +
+        "The idea phase is for planning and exploration only. " +
+        "The agent is configured to read-only and cannot make code changes, " +
+        "but you may want to commit your work first."
+    );
+  }
+}
+
 export async function ideasCommand(
   options: IdeasOptions,
   logger: Logger,
   inputOverride?: string
 ): Promise<void> {
   const root = findRootFromOptions(options);
+
+  // Warn if user has uncommitted changes before ideation
+  await warnIfUncommittedChanges(root, logger, options.dryRun);
 
   let ideas: Awaited<ReturnType<typeof parseIdeasWithAgent>> = [];
   
