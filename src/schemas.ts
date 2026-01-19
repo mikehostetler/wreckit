@@ -15,6 +15,12 @@ export const AgentModeSchema = z.enum(["process", "sdk"]);
 
 export const MergeModeSchema = z.enum(["pr", "direct"]);
 
+export const PrChecksSchema = z.object({
+  commands: z.array(z.string()).default([]),
+  secret_scan: z.boolean().default(false),
+  require_all_stories_done: z.boolean().default(true),
+});
+
 export const ConfigSchema = z.object({
   schema_version: z.number().default(1),
   base_branch: z.string().default("main"),
@@ -28,6 +34,7 @@ export const ConfigSchema = z.object({
   }),
   max_iterations: z.number().default(100),
   timeout_seconds: z.number().default(3600),
+  pr_checks: PrChecksSchema.optional(),
 });
 
 export const PriorityHintSchema = z.enum(["low", "medium", "high", "critical"]);

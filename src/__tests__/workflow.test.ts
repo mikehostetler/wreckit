@@ -53,11 +53,16 @@ mock.module("../git", () => ({
   checkGitPreflight: mockedCheckGitPreflight,
   isGitRepo: mockedIsGitRepo,
   getCurrentBranch: mockedGetCurrentBranch,
-  // Pass through real implementations for functions used by git-status-comparison.test.ts
+  // Pass through real implementations for functions used by git-status-comparison.test.ts and quality.test.ts
   compareGitStatus: gitModule.compareGitStatus,
   getGitStatus: gitModule.getGitStatus,
   parseGitStatusPorcelain: gitModule.parseGitStatusPorcelain,
   formatViolations: gitModule.formatViolations,
+  // Pass through quality module for quality.test.ts - these will pass with default empty config
+  runPrePushQualityGates: gitModule.runPrePushQualityGates,
+  runQualityChecks: gitModule.runQualityChecks,
+  runSecretScan: gitModule.runSecretScan,
+  scanForSecrets: gitModule.scanForSecrets,
   // Also pass through other functions that might be imported
   runGitCommand: gitModule.runGitCommand,
   runGhCommand: gitModule.runGhCommand,
@@ -98,9 +103,16 @@ function createTestConfig(): ConfigResolved {
       command: "test-agent",
       args: [],
       completion_signal: "<promise>COMPLETE</promise>",
+      mode: "sdk",
     },
     max_iterations: 10,
     timeout_seconds: 60,
+    merge_mode: "pr",
+    pr_checks: {
+      commands: [],
+      secret_scan: false,
+      require_all_stories_done: true,
+    },
   };
 }
 

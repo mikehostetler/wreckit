@@ -1,5 +1,8 @@
 import { spawn } from "node:child_process";
 import type { Logger } from "../logging";
+export type { PrChecksResolved } from "../config";
+export type { QualityCheckOptions, QualityCheckResult, SecretScanResult } from "./quality";
+export { runPrePushQualityGates, runQualityChecks, runSecretScan, scanForSecrets } from "./quality";
 
 export interface GitOptions {
   cwd: string;

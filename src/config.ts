@@ -1,10 +1,16 @@
 import * as fs from "node:fs/promises";
-import { ConfigSchema, type Config } from "./schemas";
+import { ConfigSchema, PrChecksSchema, type Config } from "./schemas";
 import { getConfigPath, getWreckitDir } from "./fs/paths";
 import {
   InvalidJsonError,
   SchemaValidationError,
 } from "./errors";
+
+export interface PrChecksResolved {
+  commands: string[];
+  secret_scan: boolean;
+  require_all_stories_done: boolean;
+}
 
 export interface ConfigResolved {
   schema_version: number;
@@ -19,6 +25,7 @@ export interface ConfigResolved {
   };
   max_iterations: number;
   timeout_seconds: number;
+  pr_checks: PrChecksResolved;
 }
 
 export interface ConfigOverrides {
@@ -44,6 +51,11 @@ export const DEFAULT_CONFIG: ConfigResolved = {
   },
   max_iterations: 100,
   timeout_seconds: 3600,
+  pr_checks: {
+    commands: [],
+    secret_scan: false,
+    require_all_stories_done: true,
+  },
 };
 
 export function mergeWithDefaults(partial: Partial<Config>): ConfigResolved {
@@ -58,6 +70,14 @@ export function mergeWithDefaults(partial: Partial<Config>): ConfigResolved {
       }
     : { ...DEFAULT_CONFIG.agent };
 
+  const prChecks = partial.pr_checks
+    ? {
+        commands: partial.pr_checks.commands ?? DEFAULT_CONFIG.pr_checks.commands,
+        secret_scan: partial.pr_checks.secret_scan ?? DEFAULT_CONFIG.pr_checks.secret_scan,
+        require_all_stories_done: partial.pr_checks.require_all_stories_done ?? DEFAULT_CONFIG.pr_checks.require_all_stories_done,
+      }
+    : { ...DEFAULT_CONFIG.pr_checks };
+
   return {
     schema_version: partial.schema_version ?? DEFAULT_CONFIG.schema_version,
     base_branch: partial.base_branch ?? DEFAULT_CONFIG.base_branch,
@@ -66,6 +86,7 @@ export function mergeWithDefaults(partial: Partial<Config>): ConfigResolved {
     agent,
     max_iterations: partial.max_iterations ?? DEFAULT_CONFIG.max_iterations,
     timeout_seconds: partial.timeout_seconds ?? DEFAULT_CONFIG.timeout_seconds,
+    pr_checks: prChecks,
   };
 }
 
@@ -87,6 +108,7 @@ export function applyOverrides(
     },
     max_iterations: overrides.maxIterations ?? config.max_iterations,
     timeout_seconds: overrides.timeoutSeconds ?? config.timeout_seconds,
+    pr_checks: config.pr_checks,
   };
 }
 

@@ -45,9 +45,11 @@ import {
   getGitStatus,
   compareGitStatus,
   formatViolations,
+  runPrePushQualityGates,
   type GitPreflightError,
   type GitFileChange,
   type StatusCompareOptions,
+  type QualityCheckResult,
 } from "../git";
 
 export interface WorkflowOptions {
@@ -796,6 +798,39 @@ export async function runPhasePr(
       item = { ...item, last_error: error };
       await saveItem(root, item);
       return { success: false, item, error };
+    }
+  }
+
+  // Run quality gates before push/merge (Gap 2: Quality Gate Before Push)
+  // This ensures tests/lint/typecheck pass before code is pushed or merged
+  if (!dryRun) {
+    const qualityResult = await runPrePushQualityGates({
+      cwd: root,
+      logger,
+      dryRun,
+      checks: config.pr_checks,
+    });
+
+    if (!qualityResult.success) {
+      const errorLines = [
+        "Quality gate failed. The following checks must pass before pushing:",
+        ...qualityResult.errors.map((e) => `  • ${e}`),
+      ];
+      if (qualityResult.skipped.length > 0) {
+        errorLines.push("");
+        errorLines.push("Skipped checks:");
+        errorLines.push(...qualityResult.skipped.map((s) => `  • ${s}`));
+      }
+      const error = errorLines.join("\n");
+      item = { ...item, last_error: error };
+      await saveItem(root, item);
+      return { success: false, item, error };
+    }
+
+    if (qualityResult.skipped.length > 0) {
+      for (const skipped of qualityResult.skipped) {
+        logger.info(`Skipped: ${skipped}`);
+      }
     }
   }
 
