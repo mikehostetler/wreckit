@@ -12,6 +12,7 @@ import {
   hasPendingStories,
   validateResearchQuality,
   validatePlanQuality,
+  validateStoryQuality,
 } from "../domain/validation";
 import { getNextState } from "../domain/states";
 import {
@@ -427,6 +428,21 @@ export async function runPhasePlan(
     await saveItem(root, item);
     return { success: false, item, error };
   }
+
+  // Validate story quality (Gap 3: Story Quality Validation)
+  const storyQualityResult = validateStoryQuality(prd);
+  if (!storyQualityResult.valid) {
+    const error = `Story quality validation failed:\n${storyQualityResult.errors.join("\n")}`;
+    logger.error(error);
+    item = { ...item, last_error: error };
+    await saveItem(root, item);
+    return { success: false, item, error };
+  }
+
+  logger.info(
+    `Story quality validation passed: ${storyQualityResult.storyCount} story/stories, ` +
+    `${storyQualityResult.failedStoryCount} failed`
+  );
 
   // Enforce design-only behavior: check for unauthorized file modifications (Gap 1)
   const allowedPlanPaths = [

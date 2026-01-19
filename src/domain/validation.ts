@@ -607,3 +607,185 @@ export function validatePlanQuality(
     errors,
   };
 }
+
+/**
+ * Options for story quality validation as specified in 003-plan-phase.md
+ */
+export interface StoryQualityOptions {
+  /** Minimum number of acceptance criteria per story (default: 2) */
+  minAcceptanceCriteria: number;
+  /** Minimum number of stories required (default: 1) */
+  minStories: number;
+  /** Maximum number of stories allowed (default: 15) */
+  maxStories: number;
+  /** Minimum priority value (default: 1) */
+  minPriority: number;
+  /** Maximum priority value (default: 4) */
+  maxPriority: number;
+  /** Whether to enforce story ID format (default: true) */
+  enforceStoryIdFormat: boolean;
+}
+
+/**
+ * Result of story quality validation
+ */
+export interface StoryQualityResult {
+  /** Whether the PRD passes story quality checks */
+  valid: boolean;
+  /** Number of stories validated */
+  storyCount: number;
+  /** Number of stories that failed validation */
+  failedStoryCount: number;
+  /** Details about individual story validation failures */
+  storyErrors: Array<{
+    storyId: string;
+    storyTitle: string;
+    errors: string[];
+  }>;
+  /** Array of validation error messages */
+  errors: string[];
+}
+
+/**
+ * Default options for story quality validation.
+ * Based on 003-plan-phase.md quality requirements.
+ */
+export const DEFAULT_STORY_QUALITY_OPTIONS: StoryQualityOptions = {
+  minAcceptanceCriteria: 2,
+  minStories: 1,
+  maxStories: 15,
+  minPriority: 1,
+  maxPriority: 4,
+  enforceStoryIdFormat: true,
+};
+
+/**
+ * Story ID format pattern: US-### where ### is one or more digits
+ */
+const STORY_ID_PATTERN = /^US-\d+$/;
+
+/**
+ * Check if a story ID matches the expected format.
+ *
+ * @param storyId - Story ID to validate
+ * @returns true if the ID matches the US-### pattern
+ */
+function isValidStoryId(storyId: string): boolean {
+  return STORY_ID_PATTERN.test(storyId);
+}
+
+/**
+ * Validate a single story's quality.
+ *
+ * @param story - Story to validate
+ * @param options - Validation options
+ * @returns Array of error messages (empty if valid)
+ */
+function validateSingleStory(
+  story: { id: string; title: string; acceptance_criteria: string[]; priority: number },
+  options: StoryQualityOptions
+): string[] {
+  const errors: string[] = [];
+
+  // Check story ID format
+  if (options.enforceStoryIdFormat && !isValidStoryId(story.id)) {
+    errors.push(`Story ID "${story.id}" does not match format US-###`);
+  }
+
+  // Check for non-empty title
+  if (!story.title || story.title.trim().length === 0) {
+    errors.push("Story title is empty");
+  }
+
+  // Check acceptance criteria count
+  if (story.acceptance_criteria.length < options.minAcceptanceCriteria) {
+    errors.push(
+      `Insufficient acceptance criteria: ${story.acceptance_criteria.length}, ` +
+      `required at least ${options.minAcceptanceCriteria}`
+    );
+  }
+
+  // Check for non-empty acceptance criteria
+  const emptyCriteria = story.acceptance_criteria.filter((c) => !c || c.trim().length === 0);
+  if (emptyCriteria.length > 0) {
+    errors.push(`Contains ${emptyCriteria.length} empty acceptance criteria`);
+  }
+
+  // Check priority range
+  if (story.priority < options.minPriority || story.priority > options.maxPriority) {
+    errors.push(
+      `Priority ${story.priority} outside valid range [${options.minPriority}, ${options.maxPriority}]`
+    );
+  }
+
+  return errors;
+}
+
+/**
+ * Validate PRD story quality according to 003-plan-phase.md requirements.
+ *
+ * This function checks:
+ * 1. Story count is reasonable (at least 1, not more than ~15)
+ * 2. Each story has sufficient acceptance criteria (2+)
+ * 3. Story IDs follow the US-### format
+ * 4. Priority values are within range (1-4)
+ *
+ * Per the spec:
+ * - "At least 1 story, not more than ~15"
+ * - "Each story has 2+ criteria"
+ * - "Story ID format: Follows US-### convention"
+ * - "Priority range: Values within expected range (1-4)"
+ *
+ * @param prd - PRD object to validate
+ * @param options - Validation options (uses defaults if not provided)
+ * @returns Validation result with details
+ */
+export function validateStoryQuality(
+  prd: { user_stories: Array<{ id: string; title: string; acceptance_criteria: string[]; priority: number }> },
+  options: Partial<StoryQualityOptions> = {}
+): StoryQualityResult {
+  const opts: StoryQualityOptions = {
+    ...DEFAULT_STORY_QUALITY_OPTIONS,
+    ...options,
+  };
+
+  const errors: string[] = [];
+  const storyErrors: StoryQualityResult["storyErrors"] = [];
+
+  // Validate story count
+  const storyCount = prd.user_stories.length;
+  if (storyCount < opts.minStories) {
+    errors.push(`Insufficient stories: ${storyCount}, required at least ${opts.minStories}`);
+  }
+  if (storyCount > opts.maxStories) {
+    errors.push(`Too many stories: ${storyCount}, maximum ${opts.maxStories} allowed`);
+  }
+
+  // Validate each story
+  for (const story of prd.user_stories) {
+    const storyValidationErrors = validateSingleStory(story, opts);
+    if (storyValidationErrors.length > 0) {
+      storyErrors.push({
+        storyId: story.id,
+        storyTitle: story.title,
+        errors: storyValidationErrors,
+      });
+    }
+  }
+
+  // Add story-specific errors to main errors array
+  for (const storyError of storyErrors) {
+    errors.push(
+      `Story "${storyError.storyId}" (${storyError.storyTitle}): ` +
+      storyError.errors.join("; ")
+    );
+  }
+
+  return {
+    valid: errors.length === 0,
+    storyCount,
+    failedStoryCount: storyErrors.length,
+    storyErrors,
+    errors,
+  };
+}

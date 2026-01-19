@@ -130,7 +130,7 @@ function createTestPrd(overrides: Partial<Prd> = {}): Prd {
       {
         id: "US-001",
         title: "First story",
-        acceptance_criteria: ["Criterion 1"],
+        acceptance_criteria: ["Criterion 1", "Criterion 2"],
         priority: 1,
         status: "pending",
         notes: "",
