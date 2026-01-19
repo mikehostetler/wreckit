@@ -37,6 +37,8 @@ export async function runClaudeSdkAgent(options: RunAgentOptions, config: AgentC
       env: sdkEnv, // Pass environment to ensure custom endpoints are honored
       // Pass MCP servers if provided
       ...(options.mcpServers && { mcpServers: options.mcpServers }),
+      // Restrict tools if allowedTools is specified (guardrail to prevent unwanted actions)
+      ...(options.allowedTools && { tools: options.allowedTools }),
     };
 
     // Run the agent via SDK

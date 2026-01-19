@@ -46,6 +46,15 @@ Optional fields (include when the information is present or can be safely inferr
 - If the text contains generic commentary that does not describe a concrete idea, ignore it.
 - After calling the tool, respond with a brief confirmation message.
 
+## Stage Boundaries
+
+You are in the IDEA PREPARATION stage ONLY.
+- DO NOT read any files from the codebase
+- DO NOT write any code or make any changes
+- DO NOT execute any commands
+- Your ONLY task is to extract structured ideas from the provided text
+- Your ONLY action should be calling the `save_parsed_ideas` tool
+
 ## Document to parse:
 
 ---

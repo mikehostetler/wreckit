@@ -80,6 +80,8 @@ export interface RunAgentOptions {
   onStderrChunk?: (chunk: string) => void;
   onAgentEvent?: (event: AgentEvent) => void;
   mcpServers?: Record<string, unknown>;
+  /** Restrict agent to only specific tools (e.g., MCP tools). Prevents use of Read, Write, Bash, etc. */
+  allowedTools?: string[];
 }
 
 export function getAgentConfig(config: ConfigResolved): AgentConfig {

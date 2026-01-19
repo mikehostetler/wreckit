@@ -49,12 +49,15 @@ export async function parseIdeasWithAgent(
     },
   });
 
+  // CRITICAL: Only allow the MCP tool - prevent agent from using Read, Write, Bash, etc.
+  // This ensures the agent can ONLY extract structured ideas, not implement fixes
   const result = await runAgent({
     cwd: root,
     prompt,
     config,
     logger,
     mcpServers: { wreckit: wreckitServer },
+    allowedTools: ["mcp__wreckit__save_parsed_ideas"],
     onStdoutChunk: (chunk: string) => {
       if (options.verbose) {
         process.stdout.write(chunk);
