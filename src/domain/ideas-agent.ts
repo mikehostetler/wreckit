@@ -6,9 +6,11 @@ import type { AgentEvent } from "../tui/agentEvents";
 import type { ParsedIdea } from "./ideas";
 import { createIdeasMcpServer } from "../agent/mcp/ideasMcpServer";
 import { assertPayloadLimits } from "./validation";
+import { McpToolNotCalledError } from "../errors";
 
 export interface ParseIdeasOptions {
   verbose?: boolean;
+  mockAgent?: boolean;
 }
 
 function formatAgentEvent(event: AgentEvent): string {
@@ -62,6 +64,7 @@ export async function parseIdeasWithAgent(
     logger,
     mcpServers: { wreckit: ideasServer },
     allowedTools: ["mcp__wreckit__save_parsed_ideas"],
+    mockAgent: options.mockAgent,
     onStdoutChunk: (chunk: string) => {
       if (options.verbose) {
         process.stdout.write(chunk);
@@ -82,40 +85,22 @@ export async function parseIdeasWithAgent(
     },
   });
 
-  // If MCP tool was called successfully, return those ideas
-  if (capturedIdeas.length > 0) {
-    // Validate payload limits before returning
-    assertPayloadLimits(capturedIdeas);
-    return capturedIdeas;
+  // SECURITY: MCP tool call is REQUIRED - no JSON fallback (Gap 1 mitigation)
+  //
+  // Per spec 001-ideas-ingestion.md, Gap 1: "JSON Fallback Bypasses Tool Requirement"
+  // The agent MUST call the MCP tool to save ideas. Parsing JSON from text output
+  // weakens security by allowing arbitrary content extraction outside the controlled
+  // tool channel. This is a fail-closed design - if the tool isn't called, the
+  // operation fails rather than falling back to an insecure extraction method.
+  if (capturedIdeas.length === 0) {
+    throw new McpToolNotCalledError(
+      "Agent did not call the required MCP tool (save_parsed_ideas). " +
+        "The agent must use the structured tool call to save ideas. " +
+        "JSON fallback has been removed for security reasons."
+    );
   }
 
-  // Fallback: Parse JSON from output for backwards compatibility
-  const arrayStart = result.output.indexOf('[');
-  if (arrayStart === -1) {
-    throw new Error("Agent did not return valid JSON array");
-  }
-  
-  // Find the matching closing bracket by counting bracket depth
-  let depth = 0;
-  let arrayEnd = -1;
-  for (let i = arrayStart; i < result.output.length; i++) {
-    const char = result.output[i];
-    if (char === '[') depth++;
-    if (char === ']') depth--;
-    if (depth === 0) {
-      arrayEnd = i;
-      break;
-    }
-  }
-  
-  if (arrayEnd === -1) {
-    throw new Error("Agent did not return valid JSON array - unclosed bracket");
-  }
-
-  const jsonStr = result.output.slice(arrayStart, arrayEnd + 1);
-  const parsedIdeas = JSON.parse(jsonStr) as ParsedIdea[];
-
-  // Validate payload limits for fallback path as well
-  assertPayloadLimits(parsedIdeas);
-  return parsedIdeas;
+  // Validate payload limits before returning
+  assertPayloadLimits(capturedIdeas);
+  return capturedIdeas;
 }

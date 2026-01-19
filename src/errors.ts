@@ -109,6 +109,13 @@ export class PayloadValidationError extends WreckitError {
   }
 }
 
+export class McpToolNotCalledError extends WreckitError {
+  constructor(message: string) {
+    super(message, "MCP_TOOL_NOT_CALLED");
+    this.name = "McpToolNotCalledError";
+  }
+}
+
 export function isWreckitError(error: unknown): error is WreckitError {
   return error instanceof WreckitError;
 }

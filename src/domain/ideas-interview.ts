@@ -11,6 +11,7 @@ import { buildSdkEnv } from "../agent/env";
 import { createLogger } from "../logging";
 import { hasUncommittedChanges, isGitRepo } from "../git";
 import { assertPayloadLimits } from "./validation";
+import { McpToolNotCalledError } from "../errors";
 
 export interface InterviewOptions {
   verbose?: boolean;
@@ -226,29 +227,46 @@ async function finishInterview(
     }
   } catch (error) {
     extractSpinner.stop();
-    console.error(fmt.yellow("Failed to extract via MCP, falling back to JSON parsing"));
-    // Fallback to JSON parsing from the original session
-    return extractJsonFromResponse(assistantResponse) || [];
+    console.error(fmt.red("Failed to extract ideas via MCP tool"));
+    console.error(fmt.yellow("The agent must call the save_interview_ideas tool to capture ideas."));
+    console.error(fmt.yellow("JSON fallback has been removed for security reasons."));
+    throw new McpToolNotCalledError(
+      "Agent did not call the required MCP tool (save_interview_ideas). " +
+        "The agent must use the structured tool call to save ideas from interviews. " +
+        "JSON fallback has been removed for security reasons."
+    );
   }
 
   extractSpinner.stop();
 
-  if (capturedIdeas.length > 0) {
-    // Validate payload limits
-    try {
-      assertPayloadLimits(capturedIdeas);
-    } catch (error) {
-      const err = error as Error;
-      console.error(fmt.yellow(`Warning: ${err.message}`));
-      console.error(fmt.yellow("Some ideas may not have been captured correctly."));
-      return [];
-    }
-    console.log(fmt.green(`✓ Captured ${capturedIdeas.length} idea(s)`));
-    return capturedIdeas;
+  // SECURITY: MCP tool call is REQUIRED - no JSON fallback (Gap 1 mitigation)
+  //
+  // Per spec 001-ideas-ingestion.md, Gap 1: "JSON Fallback Bypasses Tool Requirement"
+  // The agent MUST call the MCP tool to save ideas. Parsing JSON from text output
+  // weakens security by allowing arbitrary content extraction outside the controlled
+  // tool channel. This is a fail-closed design - if the tool isn't called, the
+  // operation fails rather than falling back to an insecure extraction method.
+  if (capturedIdeas.length === 0) {
+    console.error(fmt.red("Failed to extract ideas - MCP tool was not called"));
+    console.error(fmt.yellow("The agent must call the save_interview_ideas tool to capture ideas."));
+    throw new McpToolNotCalledError(
+      "Agent did not call the required MCP tool (save_interview_ideas). " +
+        "The agent must use the structured tool call to save ideas from interviews. " +
+        "JSON fallback has been removed for security reasons."
+    );
   }
 
-  // Fallback if MCP didn't capture anything
-  return extractJsonFromResponse(assistantResponse) || [];
+  // Validate payload limits before returning
+  try {
+    assertPayloadLimits(capturedIdeas);
+  } catch (error) {
+    const err = error as Error;
+    console.error(fmt.yellow(`Warning: ${err.message}`));
+    console.error(fmt.yellow("Some ideas may not have been captured correctly."));
+    return [];
+  }
+  console.log(fmt.green(`✓ Captured ${capturedIdeas.length} idea(s)`));
+  return capturedIdeas;
 }
 
 /**
