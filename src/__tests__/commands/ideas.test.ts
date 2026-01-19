@@ -5,6 +5,8 @@ import * as os from "node:os";
 import type { Logger } from "../../logging";
 import { FileNotFoundError } from "../../errors";
 import type { ParsedIdea } from "../../domain/ideas";
+// Import real git module for passthrough in mock
+import * as gitModule from "../../git";
 
 const mockedParseIdeasWithAgent = vi.fn<(text: string, root: string) => Promise<ParsedIdea[]>>();
 const mockedRunIdeaInterview = vi.fn<(root: string) => Promise<ParsedIdea[]>>();
@@ -24,6 +26,27 @@ mock.module("../../domain/ideas-interview", () => ({
 mock.module("../../git", () => ({
   hasUncommittedChanges: mockedHasUncommittedChanges,
   isGitRepo: mockedIsGitRepo,
+  // Pass through real implementations for functions used by git-status-comparison.test.ts
+  compareGitStatus: gitModule.compareGitStatus,
+  getGitStatus: gitModule.getGitStatus,
+  parseGitStatusPorcelain: gitModule.parseGitStatusPorcelain,
+  formatViolations: gitModule.formatViolations,
+  // Also pass through other functions that might be imported
+  runGitCommand: gitModule.runGitCommand,
+  runGhCommand: gitModule.runGhCommand,
+  branchExists: gitModule.branchExists,
+  ensureBranch: gitModule.ensureBranch,
+  getCurrentBranch: gitModule.getCurrentBranch,
+  commitAll: gitModule.commitAll,
+  pushBranch: gitModule.pushBranch,
+  createOrUpdatePr: gitModule.createOrUpdatePr,
+  getPrByBranch: gitModule.getPrByBranch,
+  isPrMerged: gitModule.isPrMerged,
+  checkGitPreflight: gitModule.checkGitPreflight,
+  isDetachedHead: gitModule.isDetachedHead,
+  hasRemote: gitModule.hasRemote,
+  getBranchSyncStatus: gitModule.getBranchSyncStatus,
+  mergeAndPushToBase: gitModule.mergeAndPushToBase,
 }));
 
 const { ideasCommand, readFile } = await import("../../commands/ideas");

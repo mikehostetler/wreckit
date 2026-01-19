@@ -29,7 +29,7 @@ export function terminateAllAgents(logger?: Logger): void {
 
   // Kill all process-based agents (fallback mode)
   for (const child of [...activeProcessAgents]) {
-    if (child.killed) continue;
+    if (!child || child.killed) continue;
     logger?.debug?.(`Terminating agent process pid=${child.pid}`);
 
     try {
@@ -39,7 +39,7 @@ export function terminateAllAgents(logger?: Logger): void {
     }
 
     setTimeout(() => {
-      if (!child.killed) {
+      if (child && !child.killed) {
         logger?.debug?.(`Force-killing agent process pid=${child.pid}`);
         try {
           child.kill("SIGKILL");
@@ -189,6 +189,9 @@ async function runProcessAgent(options: RunAgentOptions): Promise<AgentResult> {
         cwd,
         stdio: ["pipe", "pipe", "pipe"],
       });
+      if (!child) {
+        throw new Error("spawn returned undefined");
+      }
       activeProcessAgents.add(child);
     } catch (err) {
       logger.error(`Failed to spawn agent: ${err}`);
@@ -206,10 +209,18 @@ async function runProcessAgent(options: RunAgentOptions): Promise<AgentResult> {
       timeoutId = setTimeout(() => {
         timedOut = true;
         logger.warn(`Agent timed out after ${config.timeout_seconds} seconds`);
-        child.kill("SIGTERM");
+        try {
+          child.kill("SIGTERM");
+        } catch {
+          // ignore
+        }
         setTimeout(() => {
           if (!child.killed) {
-            child.kill("SIGKILL");
+            try {
+              child.kill("SIGKILL");
+            } catch {
+              // ignore
+            }
           }
         }, 5000);
       }, config.timeout_seconds * 1000);

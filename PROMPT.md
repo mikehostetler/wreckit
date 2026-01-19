@@ -1,6 +1,6 @@
 study specs/README.md
 
-study 002-research-phase.md, read the current implementation and understand the gaps
+study 004-implement-phase.md, read the current implementation and understand the gaps
 
 pick the most important gap and implement it
 
