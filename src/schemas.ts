@@ -19,6 +19,7 @@ export const PrChecksSchema = z.object({
   commands: z.array(z.string()).default([]),
   secret_scan: z.boolean().default(false),
   require_all_stories_done: z.boolean().default(true),
+  allow_unsafe_direct_merge: z.boolean().default(false),
 });
 
 export const ConfigSchema = z.object({
@@ -62,6 +63,9 @@ export const ItemSchema = z.object({
   scope_out_of_scope: z.array(z.string()).optional(),
   priority_hint: PriorityHintSchema.optional(),
   urgency_hint: z.string().optional(),
+
+  // Rollback anchor for direct merge mode (Gap 4)
+  rollback_sha: z.string().nullable().optional(),
 });
 
 export const StorySchema = z.object({

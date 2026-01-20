@@ -159,6 +159,24 @@ export async function getCurrentBranch(options: GitOptions): Promise<string> {
   return result.stdout;
 }
 
+/**
+ * Get the current SHA of a branch or HEAD
+ *
+ * @param branch - Branch name or "HEAD" for current commit
+ * @param options - Git options
+ * @returns The commit SHA
+ */
+export async function getBranchSha(
+  branch: string,
+  options: GitOptions
+): Promise<string> {
+  const result = await runGitCommand(["rev-parse", branch], options);
+  if (result.exitCode !== 0) {
+    throw new Error(`Failed to get SHA for ${branch}`);
+  }
+  return result.stdout;
+}
+
 export async function branchExists(
   branchName: string,
   options: GitOptions

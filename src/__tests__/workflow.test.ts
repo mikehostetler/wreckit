@@ -42,6 +42,8 @@ const mockedCheckGitPreflight = vi.fn(() =>
 );
 const mockedIsGitRepo = vi.fn(() => Promise.resolve(true));
 const mockedGetCurrentBranch = vi.fn(() => Promise.resolve("wreckit/001-test-feature"));
+const mockedGetBranchSha = vi.fn(() => Promise.resolve("abc123"));
+const mockedMergeAndPushToBase = vi.fn(() => Promise.resolve());
 
 mock.module("../git", () => ({
   ensureBranch: mockedEnsureBranch,
@@ -53,6 +55,8 @@ mock.module("../git", () => ({
   checkGitPreflight: mockedCheckGitPreflight,
   isGitRepo: mockedIsGitRepo,
   getCurrentBranch: mockedGetCurrentBranch,
+  getBranchSha: mockedGetBranchSha,
+  mergeAndPushToBase: mockedMergeAndPushToBase,
   // Pass through real implementations for functions used by git-status-comparison.test.ts and quality.test.ts
   compareGitStatus: gitModule.compareGitStatus,
   getGitStatus: gitModule.getGitStatus,
@@ -71,7 +75,6 @@ mock.module("../git", () => ({
   isDetachedHead: gitModule.isDetachedHead,
   hasRemote: gitModule.hasRemote,
   getBranchSyncStatus: gitModule.getBranchSyncStatus,
-  mergeAndPushToBase: gitModule.mergeAndPushToBase,
 }));
 
 const {
@@ -112,6 +115,7 @@ function createTestConfig(): ConfigResolved {
       commands: [],
       secret_scan: false,
       require_all_stories_done: true,
+      allow_unsafe_direct_merge: false,
     },
   };
 }
@@ -129,6 +133,7 @@ function createTestItem(overrides: Partial<Item> = {}): Item {
     last_error: null,
     created_at: "2025-01-12T00:00:00Z",
     updated_at: "2025-01-12T00:00:00Z",
+    rollback_sha: null,
     ...overrides,
   };
 }
@@ -1473,6 +1478,155 @@ None.
     it("done -> null", () => {
       const item = createTestItem({ state: "done" });
       expect(getNextPhase(item)).toBeNull();
+    });
+  });
+
+  describe("runPhasePr - direct mode safeguards (Gap 4)", () => {
+    it("fails when direct mode enabled without explicit opt-in", async () => {
+      const prd = createTestPrd({
+        user_stories: [
+          {
+            id: "US-001",
+            title: "Done Story",
+            acceptance_criteria: [],
+            priority: 1,
+            status: "done",
+            notes: "",
+          },
+        ],
+      });
+      const item = createTestItem({ state: "implementing" });
+      const itemDir = await setupItem(item);
+      await fs.writeFile(
+        path.join(itemDir, "prd.json"),
+        JSON.stringify(prd, null, 2),
+        "utf-8"
+      );
+
+      // Config with direct mode but WITHOUT allow_unsafe_direct_merge
+      const directConfig = { ...config, merge_mode: "direct" as const, pr_checks: { ...config.pr_checks, allow_unsafe_direct_merge: false } };
+
+      const result = await runPhasePr(item.id, {
+        root: tempDir,
+        config: directConfig,
+        logger: mockLogger,
+      });
+
+      // Should fail because allow_unsafe_direct_merge is false
+      expect(result.success).toBe(false);
+      expect(result.error).toContain("allow_unsafe_direct_merge");
+      expect(result.error).toContain("explicit opt-in");
+    });
+
+    it("succeeds when direct mode enabled with explicit opt-in", async () => {
+      const prd = createTestPrd({
+        user_stories: [
+          {
+            id: "US-001",
+            title: "Done Story",
+            acceptance_criteria: [],
+            priority: 1,
+            status: "done",
+            notes: "",
+          },
+        ],
+      });
+      const item = createTestItem({ state: "implementing" });
+      const itemDir = await setupItem(item);
+      await fs.writeFile(
+        path.join(itemDir, "prd.json"),
+        JSON.stringify(prd, null, 2),
+        "utf-8"
+      );
+
+      // Config with direct mode AND allow_unsafe_direct_merge
+      const directConfig = { ...config, merge_mode: "direct" as const, pr_checks: { ...config.pr_checks, allow_unsafe_direct_merge: true } };
+
+      const result = await runPhasePr(item.id, {
+        root: tempDir,
+        config: directConfig,
+        logger: mockLogger,
+      });
+
+      // Should succeed because allow_unsafe_direct_merge is true
+      expect(result.success).toBe(true);
+      expect(result.item.state).toBe("done");
+      expect(result.item.rollback_sha).toBe("abc123");
+    });
+
+    it("logs warning when direct mode is enabled with opt-in", async () => {
+      const prd = createTestPrd({
+        user_stories: [
+          {
+            id: "US-001",
+            title: "Done Story",
+            acceptance_criteria: [],
+            priority: 1,
+            status: "done",
+            notes: "",
+          },
+        ],
+      });
+      const item = createTestItem({ state: "implementing" });
+      const itemDir = await setupItem(item);
+      await fs.writeFile(
+        path.join(itemDir, "prd.json"),
+        JSON.stringify(prd, null, 2),
+        "utf-8"
+      );
+
+      // Config with direct mode AND allow_unsafe_direct_merge
+      const directConfig = { ...config, merge_mode: "direct" as const, pr_checks: { ...config.pr_checks, allow_unsafe_direct_merge: true } };
+
+      await runPhasePr(item.id, {
+        root: tempDir,
+        config: directConfig,
+        logger: mockLogger,
+      });
+
+      // Should log a warning about direct mode risks
+      const warnCalls = mockLogger.warn.mock.calls;
+      const warnEntry = warnCalls.find((call: string[]) => call[0]?.includes("DIRECT MERGE MODE"));
+      expect(warnEntry).toBeDefined();
+      expect(warnEntry[0]).toContain("bypasses PR review");
+    });
+
+    it("creates rollback anchor before direct merge", async () => {
+      const prd = createTestPrd({
+        user_stories: [
+          {
+            id: "US-001",
+            title: "Done Story",
+            acceptance_criteria: [],
+            priority: 1,
+            status: "done",
+            notes: "",
+          },
+        ],
+      });
+      const item = createTestItem({ state: "implementing" });
+      const itemDir = await setupItem(item);
+      await fs.writeFile(
+        path.join(itemDir, "prd.json"),
+        JSON.stringify(prd, null, 2),
+        "utf-8"
+      );
+
+      // Config with direct mode AND allow_unsafe_direct_merge
+      const directConfig = { ...config, merge_mode: "direct" as const, pr_checks: { ...config.pr_checks, allow_unsafe_direct_merge: true } };
+
+      await runPhasePr(item.id, {
+        root: tempDir,
+        config: directConfig,
+        logger: mockLogger,
+      });
+
+      // Verify that getBranchSha was called to capture rollback anchor
+      expect(mockedGetBranchSha).toHaveBeenCalledWith("main", expect.any(Object));
+
+      // Verify rollback SHA is saved to item
+      const updatedItem = await readItemState(item.id);
+      expect(updatedItem.rollback_sha).toBe("abc123");
     });
   });
 });

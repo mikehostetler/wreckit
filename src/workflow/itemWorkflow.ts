@@ -41,6 +41,7 @@ import {
   checkGitPreflight,
   isGitRepo,
   getCurrentBranch,
+  getBranchSha,
   mergeAndPushToBase,
   getGitStatus,
   compareGitStatus,
@@ -836,8 +837,52 @@ export async function runPhasePr(
     }
   }
 
-  // Handle direct merge mode (YOLO mode)
+  // Handle direct merge mode (Gap 4: Direct Mode Safeguards)
   if (config.merge_mode === "direct") {
+    // Check for explicit opt-in to unsafe direct merge
+    if (!config.pr_checks.allow_unsafe_direct_merge) {
+      const error = [
+        "Direct merge mode is enabled but requires explicit opt-in.",
+        "Direct mode bypasses PR review, CI checks, and branch protections.",
+        "",
+        "To enable direct merge mode, add to your .wreckit/config.json:",
+        '  {',
+        '    "pr_checks": {',
+        '      "allow_unsafe_direct_merge": true',
+        '    }',
+        '  }',
+        "",
+        "Direct mode should only be used for:",
+        "  - Greenfield projects with no production risk",
+        "  - Personal projects with no collaborators",
+        "  - Temporary development environments",
+      ].join("\n");
+      item = { ...item, last_error: error };
+      await saveItem(root, item);
+      return { success: false, item, error };
+    }
+
+    // Warn about direct mode risks
+    logger.warn(
+      "DIRECT MERGE MODE ENABLED: This bypasses PR review, CI checks, " +
+      "and branch protections. Only use for greenfield projects with no production risk."
+    );
+
+    // Create rollback anchor before merge (Gap 4: Rollback Anchors)
+    let rollbackSha: string | null = null;
+    if (!dryRun) {
+      try {
+        rollbackSha = await getBranchSha(config.base_branch, gitOptions);
+        logger.info(`Rollback anchor: ${config.base_branch} is at ${rollbackSha}`);
+        logger.info(`To rollback: git reset --hard ${rollbackSha} && git push --force origin ${config.base_branch}`);
+      } catch (err) {
+        const error = `Failed to capture rollback SHA: ${err instanceof Error ? err.message : String(err)}`;
+        item = { ...item, last_error: error };
+        await saveItem(root, item);
+        return { success: false, item, error };
+      }
+    }
+
     const commitMessage = `feat(${itemSlug}): ${item.title}`;
     try {
       await mergeAndPushToBase(
@@ -860,10 +905,14 @@ export async function runPhasePr(
       pr_url: null,
       pr_number: null,
       last_error: null,
+      rollback_sha: rollbackSha,
     };
     await saveItem(root, item);
 
-    logger.info(`Merged ${itemId} directly to ${config.base_branch} (direct mode)`);
+    logger.info(
+      `Merged ${itemId} directly to ${config.base_branch} (direct mode)` +
+      (rollbackSha ? ` - Rollback SHA: ${rollbackSha}` : "")
+    );
     return { success: true, item };
   }
 
