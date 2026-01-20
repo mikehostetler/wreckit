@@ -38,6 +38,7 @@ import {
   pushBranch,
   createOrUpdatePr,
   isPrMerged,
+  getPrDetails,
   checkGitPreflight,
   isGitRepo,
   getCurrentBranch,
@@ -56,6 +57,7 @@ import {
   type StatusCompareOptions,
   type QualityCheckResult,
   type RemoteValidationResult,
+  type PrDetails,
 } from "../git";
 
 export interface WorkflowOptions {
@@ -1088,7 +1090,7 @@ export async function runPhaseComplete(
   itemId: string,
   options: WorkflowOptions
 ): Promise<PhaseResult> {
-  const { root, logger, dryRun = false } = options;
+  const { root, config, logger, dryRun = false } = options;
 
   let item = await loadItem(root, itemId);
 
@@ -1114,9 +1116,22 @@ export async function runPhaseComplete(
   }
 
   const gitOptions = { cwd: root, logger, dryRun };
-  const prMerged = await isPrMerged(item.pr_number, gitOptions);
 
-  if (!prMerged) {
+  // Enhanced PR merge validation (Spec 006 Gap 1: Minimal Merge Validation)
+  const prDetails: PrDetails = await getPrDetails(item.pr_number, gitOptions);
+
+  // Check if gh command succeeded (Gap 3: Silent gh Failures)
+  if (!prDetails.querySucceeded) {
+    const errorMsg = prDetails.error ?? "gh command failed";
+    return {
+      success: false,
+      item,
+      error: `Failed to query PR status: ${errorMsg}. Check that gh is installed and authenticated.`,
+    };
+  }
+
+  // Check if PR is merged
+  if (!prDetails.merged) {
     return {
       success: false,
       item,
@@ -1124,8 +1139,60 @@ export async function runPhaseComplete(
     };
   }
 
-  item = { ...item, state: "done", last_error: null };
+  // Validate PR merged to correct branch
+  if (prDetails.baseRefName !== config.base_branch) {
+    return {
+      success: false,
+      item,
+      error: `PR merged to ${prDetails.baseRefName}, expected ${config.base_branch}. This may indicate incorrect merge target.`,
+    };
+  }
+
+  // Validate head branch matches expected item branch
+  const expectedBranch = `${config.branch_prefix}${item.id.replace("/", "-")}`;
+  if (prDetails.headRefName !== expectedBranch) {
+    logger.warn(
+      `PR head branch ${prDetails.headRefName} differs from expected ${expectedBranch}. ` +
+      `This may indicate the wrong PR was merged.`
+    );
+  }
+
+  // Log completion metadata for audit trail (Spec 006 Gap 5: Audit Trail)
+  logger.info(
+    `PR #${item.pr_number} merged at ${prDetails.mergedAt}` +
+    (prDetails.mergeCommitOid ? ` (commit: ${prDetails.mergeCommitOid})` : "") +
+    (prDetails.checksPassed !== null ? ` - CI checks: ${prDetails.checksPassed ? "PASSED" : "FAILED/UNKNOWN"}` : "")
+  );
+
+  // Warn if CI checks didn't pass
+  if (prDetails.checksPassed === false) {
+    logger.warn(
+      `PR #${item.pr_number} was merged but CI checks did not pass. ` +
+      `This may indicate force-merge or bypassed review.`
+    );
+  }
+
+  // Record completion metadata in item (Spec 006 Gap 5: Audit Trail)
+  const completedAt = new Date().toISOString();
+  item = {
+    ...item,
+    state: "done",
+    last_error: null,
+    completed_at: completedAt,
+    merged_at: prDetails.mergedAt,
+    merge_commit_sha: prDetails.mergeCommitOid,
+    checks_passed: prDetails.checksPassed,
+  };
   await saveItem(root, item);
+
+  // Log completion to progress.log (Spec 006 Gap 5: Audit Trail)
+  const progressPath = getProgressLogPath(root, item.id);
+  const logEntry = `[${completedAt}] Completed: PR #${item.pr_number} merged to ${prDetails.baseRefName} at ${prDetails.mergedAt}\n`;
+  if (prDetails.mergeCommitOid) {
+    await fs.appendFile(progressPath, `${logEntry}Merge commit: ${prDetails.mergeCommitOid}\n`, "utf-8");
+  } else {
+    await fs.appendFile(progressPath, logEntry, "utf-8");
+  }
 
   logger.info(`Completed ${itemId}`);
 

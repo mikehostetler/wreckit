@@ -37,6 +37,17 @@ const mockedCreateOrUpdatePr = vi.fn(() =>
   })
 );
 const mockedIsPrMerged = vi.fn(() => Promise.resolve(true));
+const mockedGetPrDetails = vi.fn(() =>
+  Promise.resolve({
+    merged: true,
+    querySucceeded: true,
+    baseRefName: "main",
+    headRefName: "wreckit/001-test-feature",
+    mergeCommitOid: "abc123def456",
+    mergedAt: "2024-01-15T10:30:00Z",
+    checksPassed: true,
+  })
+);
 const mockedCheckGitPreflight = vi.fn(() =>
   Promise.resolve({ valid: true, errors: [] })
 );
@@ -56,6 +67,7 @@ mock.module("../git", () => ({
   pushBranch: mockedPushBranch,
   createOrUpdatePr: mockedCreateOrUpdatePr,
   isPrMerged: mockedIsPrMerged,
+  getPrDetails: mockedGetPrDetails,
   checkGitPreflight: mockedCheckGitPreflight,
   isGitRepo: mockedIsGitRepo,
   getCurrentBranch: mockedGetCurrentBranch,
@@ -1453,6 +1465,152 @@ None.
 
       expect(result.success).toBe(false);
       expect(result.error).toContain("in_pr");
+    });
+
+    it("records completion metadata (Spec 006 Gap 5: Audit Trail)", async () => {
+      const item = createTestItem({
+        state: "in_pr",
+        pr_url: "https://github.com/example/repo/pull/42",
+        pr_number: 42,
+      });
+      await setupItem(item);
+
+      const result = await runPhaseComplete(item.id, {
+        root: tempDir,
+        config,
+        logger: mockLogger,
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.item.completed_at).not.toBe(null);
+      expect(result.item.merged_at).toBe("2024-01-15T10:30:00Z");
+      expect(result.item.merge_commit_sha).toBe("abc123def456");
+      expect(result.item.checks_passed).toBe(true);
+    });
+
+    it("fails when PR merged to wrong branch (Spec 006 Gap 1)", async () => {
+      const item = createTestItem({
+        state: "in_pr",
+        pr_url: "https://github.com/example/repo/pull/42",
+        pr_number: 42,
+      });
+      await setupItem(item);
+
+      // Mock getPrDetails to return wrong branch
+      mockedGetPrDetails.mockResolvedValue({
+        merged: true,
+        querySucceeded: true,
+        baseRefName: "develop", // Wrong branch
+        headRefName: "wreckit/001-test-feature",
+        mergeCommitOid: "abc123",
+        mergedAt: "2024-01-15T10:30:00Z",
+        checksPassed: true,
+      });
+
+      const result = await runPhaseComplete(item.id, {
+        root: tempDir,
+        config,
+        logger: mockLogger,
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.error).toContain("merged to develop");
+      expect(result.error).toContain("expected main");
+    });
+
+    it("fails with distinct error for gh command failure (Spec 006 Gap 3)", async () => {
+      const item = createTestItem({
+        state: "in_pr",
+        pr_url: "https://github.com/example/repo/pull/42",
+        pr_number: 42,
+      });
+      await setupItem(item);
+
+      // Mock getPrDetails to simulate gh auth failure
+      mockedGetPrDetails.mockResolvedValue({
+        merged: false,
+        querySucceeded: false, // gh command failed
+        baseRefName: null,
+        headRefName: null,
+        mergeCommitOid: null,
+        mergedAt: null,
+        checksPassed: null,
+        error: "gh: authentication failed",
+      });
+
+      const result = await runPhaseComplete(item.id, {
+        root: tempDir,
+        config,
+        logger: mockLogger,
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.error).toContain("Failed to query PR status");
+      expect(result.error).toContain("authentication failed");
+      expect(result.error).toContain("Check that gh is installed");
+    });
+
+    it("warns when PR head branch differs from expected", async () => {
+      const item = createTestItem({
+        state: "in_pr",
+        pr_url: "https://github.com/example/repo/pull/42",
+        pr_number: 42,
+      });
+      await setupItem(item);
+
+      // Mock getPrDetails with different head branch
+      mockedGetPrDetails.mockResolvedValue({
+        merged: true,
+        querySucceeded: true,
+        baseRefName: "main",
+        headRefName: "some-other-branch", // Different from expected
+        mergeCommitOid: "abc123",
+        mergedAt: "2024-01-15T10:30:00Z",
+        checksPassed: true,
+      });
+
+      const result = await runPhaseComplete(item.id, {
+        root: tempDir,
+        config,
+        logger: mockLogger,
+      });
+
+      expect(result.success).toBe(true);
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        expect.stringContaining("PR head branch some-other-branch differs from expected")
+      );
+    });
+
+    it("warns when CI checks did not pass", async () => {
+      const item = createTestItem({
+        state: "in_pr",
+        pr_url: "https://github.com/example/repo/pull/42",
+        pr_number: 42,
+      });
+      await setupItem(item);
+
+      // Mock getPrDetails with failed CI checks
+      mockedGetPrDetails.mockResolvedValue({
+        merged: true,
+        querySucceeded: true,
+        baseRefName: "main",
+        headRefName: "wreckit/001-test-feature",
+        mergeCommitOid: "abc123",
+        mergedAt: "2024-01-15T10:30:00Z",
+        checksPassed: false, // CI failed
+      });
+
+      const result = await runPhaseComplete(item.id, {
+        root: tempDir,
+        config,
+        logger: mockLogger,
+      });
+
+      expect(result.success).toBe(true); // Still succeeds
+      expect(result.item.checks_passed).toBe(false);
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        expect.stringContaining("CI checks did not pass")
+      );
     });
   });
 

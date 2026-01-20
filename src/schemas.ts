@@ -67,6 +67,12 @@ export const ItemSchema = z.object({
 
   // Rollback anchor for direct merge mode (Gap 4)
   rollback_sha: z.string().nullable().optional(),
+
+  // Completion metadata for PR mode (Spec 006 Gap 1: Audit Trail)
+  completed_at: z.string().nullable().optional(),
+  merged_at: z.string().nullable().optional(),
+  merge_commit_sha: z.string().nullable().optional(),
+  checks_passed: z.boolean().nullable().optional(),
 });
 
 export const StorySchema = z.object({

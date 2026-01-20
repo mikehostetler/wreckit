@@ -3,7 +3,7 @@ import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import * as os from "node:os";
 import type { Logger } from "../../logging";
-import { checkPrMergeability, checkMergeConflicts } from "../../git/index";
+import { checkPrMergeability, checkMergeConflicts, getPrDetails, type PrDetails } from "../../git";
 
 function createMockLogger(): Logger {
   return {
@@ -167,6 +167,189 @@ describe("git/index", () => {
           expect(typeof result.error).toBe("string");
         }
       }
+    });
+  });
+
+  describe("getPrDetails", () => {
+    it("returns merged PR details with all fields", async () => {
+      const mergedAt = "2024-01-15T10:30:00Z";
+      const mergeCommitOid = "abc123def456";
+
+      runGhCommandSpy.mockResolvedValue({
+        stdout: JSON.stringify({
+          state: "MERGED",
+          baseRefName: "main",
+          headRefName: "wreckit/001-test-feature",
+          mergeCommit: { oid: mergeCommitOid },
+          mergedAt: mergedAt,
+          statusCheckRollup: [
+            { status: "COMPLETED", conclusion: "SUCCESS" },
+            { status: "COMPLETED", conclusion: "SUCCESS" },
+          ],
+        }),
+        exitCode: 0,
+      });
+
+      const result = await getPrDetails(42, {
+        cwd: tempDir,
+        logger: mockLogger,
+        dryRun: false,
+      });
+
+      expect(result.merged).toBe(true);
+      expect(result.querySucceeded).toBe(true);
+      expect(result.baseRefName).toBe("main");
+      expect(result.headRefName).toBe("wreckit/001-test-feature");
+      expect(result.mergeCommitOid).toBe(mergeCommitOid);
+      expect(result.mergedAt).toBe(mergedAt);
+      expect(result.checksPassed).toBe(true);
+    });
+
+    it("returns not merged when PR state is not MERGED", async () => {
+      runGhCommandSpy.mockResolvedValue({
+        stdout: JSON.stringify({
+          state: "OPEN",
+          baseRefName: "main",
+          headRefName: "wreckit/001-test-feature",
+          mergeCommit: null,
+          mergedAt: null,
+          statusCheckRollup: [],
+        }),
+        exitCode: 0,
+      });
+
+      const result = await getPrDetails(42, {
+        cwd: tempDir,
+        logger: mockLogger,
+        dryRun: false,
+      });
+
+      expect(result.merged).toBe(false);
+      expect(result.querySucceeded).toBe(true);
+    });
+
+    it("returns checksPassed=false when some checks failed", async () => {
+      runGhCommandSpy.mockResolvedValue({
+        stdout: JSON.stringify({
+          state: "MERGED",
+          baseRefName: "main",
+          headRefName: "wreckit/001-test-feature",
+          mergeCommit: { oid: "abc123" },
+          mergedAt: "2024-01-15T10:30:00Z",
+          statusCheckRollup: [
+            { status: "COMPLETED", conclusion: "SUCCESS" },
+            { status: "COMPLETED", conclusion: "FAILURE" },
+          ],
+        }),
+        exitCode: 0,
+      });
+
+      const result = await getPrDetails(42, {
+        cwd: tempDir,
+        logger: mockLogger,
+        dryRun: false,
+      });
+
+      expect(result.checksPassed).toBe(false);
+    });
+
+    it("returns checksPassed=null when no checks present", async () => {
+      runGhCommandSpy.mockResolvedValue({
+        stdout: JSON.stringify({
+          state: "MERGED",
+          baseRefName: "main",
+          headRefName: "wreckit/001-test-feature",
+          mergeCommit: { oid: "abc123" },
+          mergedAt: "2024-01-15T10:30:00Z",
+          statusCheckRollup: [],
+        }),
+        exitCode: 0,
+      });
+
+      const result = await getPrDetails(42, {
+        cwd: tempDir,
+        logger: mockLogger,
+        dryRun: false,
+      });
+
+      expect(result.checksPassed).toBe(null);
+    });
+
+    it("distinguishes PR not found from gh command failure (Gap 3)", async () => {
+      // Simulate PR not found
+      runGhCommandSpy.mockResolvedValue({
+        stdout: "",
+        stderr: "Could not resolve to a PullRequest",
+        exitCode: 1,
+      });
+
+      const result = await getPrDetails(999, {
+        cwd: tempDir,
+        logger: mockLogger,
+        dryRun: false,
+      });
+
+      expect(result.merged).toBe(false);
+      expect(result.querySucceeded).toBe(true); // Query succeeded, PR just doesn't exist
+      expect(result.error).toBe("PR not found");
+    });
+
+    it("detects gh command failures (auth issues)", async () => {
+      // Simulate gh auth failure
+      runGhCommandSpy.mockResolvedValue({
+        stdout: "",
+        stderr: "gh: authentication failed",
+        exitCode: 1,
+      });
+
+      const result = await getPrDetails(42, {
+        cwd: tempDir,
+        logger: mockLogger,
+        dryRun: false,
+      });
+
+      expect(result.merged).toBe(false);
+      expect(result.querySucceeded).toBe(false); // gh command itself failed
+      expect(result.error).toContain("gh command failed");
+    });
+
+    it("returns dry-run stub data", async () => {
+      const result = await getPrDetails(42, {
+        cwd: tempDir,
+        logger: mockLogger,
+        dryRun: true,
+      });
+
+      expect(result.merged).toBe(true);
+      expect(result.querySucceeded).toBe(true);
+      expect(result.baseRefName).toBe("main");
+      expect(result.headRefName).toBe("feature-branch");
+      expect(result.mergeCommitOid).toBe("abc123");
+      expect(mockLogger.info).toHaveBeenCalledWith(expect.stringContaining("[dry-run]"));
+    });
+
+    it("validates PR merged to correct branch (Gap 1)", async () => {
+      // PR merged to wrong branch (develop instead of main)
+      runGhCommandSpy.mockClear().mockResolvedValue({
+        stdout: JSON.stringify({
+          state: "MERGED",
+          baseRefName: "develop", // Wrong branch
+          headRefName: "wreckit/001-test-feature",
+          mergeCommit: { oid: "abc123" },
+          mergedAt: "2024-01-15T10:30:00Z",
+          statusCheckRollup: [],
+        }),
+        exitCode: 0,
+      });
+
+      const result = await getPrDetails(42, {
+        cwd: tempDir,
+        logger: mockLogger,
+        dryRun: false,
+      });
+
+      expect(result.merged).toBe(true);
+      expect(result.baseRefName).toBe("develop"); // Caller should validate against config.base_branch
     });
   });
 });

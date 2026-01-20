@@ -754,6 +754,137 @@ export async function mergeAndPushToBase(
   logger.info(`Merged ${featureBranch} into ${baseBranch} and pushed to origin`);
 }
 
+/**
+ * Detailed PR information for merge validation
+ */
+export interface PrDetails {
+  /** Whether the PR is merged */
+  merged: boolean;
+  /** Whether the query succeeded (vs gh command failing) */
+  querySucceeded: boolean;
+  /** The base branch the PR targets */
+  baseRefName: string | null;
+  /** The head branch of the PR */
+  headRefName: string | null;
+  /** The merge commit SHA */
+  mergeCommitOid: string | null;
+  /** When the PR was merged */
+  mergedAt: string | null;
+  /** Whether all CI checks passed */
+  checksPassed: boolean | null;
+  /** Error message if query failed */
+  error?: string;
+}
+
+/**
+ * Get detailed PR information for merge validation
+ *
+ * This fetches comprehensive PR data including branch, commit, and check status
+ * to support verified delivery in the complete phase (Spec 006 Gap 1).
+ *
+ * @param prNumber - The PR number to query
+ * @param options - Git options
+ * @returns Detailed PR information
+ */
+export async function getPrDetails(
+  prNumber: number,
+  options: GitOptions
+): Promise<PrDetails> {
+  const { logger, dryRun = false } = options;
+
+  if (dryRun) {
+    logger.info(`[dry-run] Would get PR details for #${prNumber}`);
+    return {
+      merged: true,
+      querySucceeded: true,
+      baseRefName: "main",
+      headRefName: "feature-branch",
+      mergeCommitOid: "abc123",
+      mergedAt: new Date().toISOString(),
+      checksPassed: true,
+    };
+  }
+
+  // Query all relevant PR fields in a single gh call
+  const result = await runGhCommand(
+    [
+      "pr",
+      "view",
+      String(prNumber),
+      "--json",
+      "state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup"
+    ],
+    options
+  );
+
+  if (result.exitCode !== 0) {
+    // Distinguish between "PR not found" and "gh command failed"
+    const stderr = result.stderr || result.stdout;
+    if (stderr.includes("not found") || stderr.includes("Could not resolve")) {
+      return {
+        merged: false,
+        querySucceeded: true,
+        baseRefName: null,
+        headRefName: null,
+        mergeCommitOid: null,
+        mergedAt: null,
+        checksPassed: null,
+        error: "PR not found",
+      };
+    }
+    // gh command failed (auth, network, etc.)
+    return {
+      merged: false,
+      querySucceeded: false,
+      baseRefName: null,
+      headRefName: null,
+      mergeCommitOid: null,
+      mergedAt: null,
+      checksPassed: null,
+      error: `gh command failed: ${stderr}`,
+    };
+  }
+
+  try {
+    const data = JSON.parse(result.stdout);
+
+    // Determine if CI checks passed
+    // statusCheckRollup is an array of check statuses
+    let checksPassed: boolean | null = null;
+    if (Array.isArray(data.statusCheckRollup) && data.statusCheckRollup.length > 0) {
+      // Checks passed if all are SUCCESS or completed successfully
+      checksPassed = data.statusCheckRollup.every(
+        (check: any) => check.status === "COMPLETED" && check.conclusion === "SUCCESS"
+      );
+    }
+
+    return {
+      merged: data.state === "MERGED",
+      querySucceeded: true,
+      baseRefName: data.baseRefName ?? null,
+      headRefName: data.headRefName ?? null,
+      mergeCommitOid: data.mergeCommit?.oid ?? null,
+      mergedAt: data.mergedAt ?? null,
+      checksPassed,
+    };
+  } catch (err) {
+    return {
+      merged: false,
+      querySucceeded: false,
+      baseRefName: null,
+      headRefName: null,
+      mergeCommitOid: null,
+      mergedAt: null,
+      checksPassed: null,
+      error: `Failed to parse PR details: ${err instanceof Error ? err.message : String(err)}`,
+    };
+  }
+}
+
+/**
+ * Legacy function - use getPrDetails for full validation
+ * @deprecated Use getPrDetails instead for comprehensive merge validation
+ */
 export async function isPrMerged(
   prNumber: number,
   options: GitOptions
