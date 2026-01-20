@@ -1,6 +1,6 @@
 {
   "name": "wreckit",
-  "version": "0.9.6",
+  "version": "1.0.0",
   "description": "A CLI tool for turning ideas into automated PRs through an autonomous agent loop",
   "type": "module",
   "main": "./dist/index.js",
