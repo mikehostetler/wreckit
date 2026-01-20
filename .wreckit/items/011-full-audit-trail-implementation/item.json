@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "id": "011-full-audit-trail-implementation",
+  "title": "Full Audit Trail Implementation",
+  "section": "backend",
+  "state": "idea",
+  "overview": "Audit trail is only partially implemented, leaving gaps in tracking what happened to items over time.\n\n**Motivation:** Visibility and debugging - comprehensive history of item state changes and operations.\n\n**Signals:** priority: medium",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-20T03:47:12.564Z",
+  "updated_at": "2026-01-20T03:47:12.564Z",
+  "problem_statement": "Audit trail is only partially implemented, leaving gaps in tracking what happened to items over time.",
+  "motivation": "Visibility and debugging - comprehensive history of item state changes and operations.",
+  "priority_hint": "medium"
+}

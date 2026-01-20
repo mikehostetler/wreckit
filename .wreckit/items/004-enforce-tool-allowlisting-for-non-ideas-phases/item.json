@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "id": "004-enforce-tool-allowlisting-for-non-ideas-phases",
+  "title": "Enforce Tool Allowlisting for Non-Ideas Phases",
+  "section": "backend",
+  "state": "idea",
+  "overview": "No enforcement of tool allowlisting exists for non-ideas phases, creating a security risk where agents could access tools they shouldn't.\n\n**Motivation:** Security risk mitigation - critical for preventing unauthorized operations during research, plan, implement, PR, and complete phases.\n\n**Signals:** priority: critical, urgency: Top priority gap - security risk",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-20T03:47:12.560Z",
+  "updated_at": "2026-01-20T03:47:12.560Z",
+  "problem_statement": "No enforcement of tool allowlisting exists for non-ideas phases, creating a security risk where agents could access tools they shouldn't.",
+  "motivation": "Security risk mitigation - critical for preventing unauthorized operations during research, plan, implement, PR, and complete phases.",
+  "priority_hint": "critical",
+  "urgency_hint": "Top priority gap - security risk"
+}

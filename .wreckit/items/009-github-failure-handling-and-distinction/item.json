@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "id": "009-github-failure-handling-and-distinction",
+  "title": "GitHub Failure Handling and Distinction",
+  "section": "backend",
+  "state": "idea",
+  "overview": "GitHub failures are not properly distinguished or handled, making debugging and error recovery difficult.\n\n**Motivation:** Developer experience - better error messages and debugging capabilities when GitHub operations fail.\n\n**Signals:** priority: medium",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-20T03:47:12.563Z",
+  "updated_at": "2026-01-20T03:47:12.563Z",
+  "problem_statement": "GitHub failures are not properly distinguished or handled, making debugging and error recovery difficult.",
+  "motivation": "Developer experience - better error messages and debugging capabilities when GitHub operations fail.",
+  "priority_hint": "medium"
+}

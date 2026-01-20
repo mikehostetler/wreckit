@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "id": "007-enable-parallel-execution-for-cli-operations",
+  "title": "Enable Parallel Execution for CLI Operations",
+  "section": "cli",
+  "state": "idea",
+  "overview": "CLI operations currently run sequentially even when they could be parallelized, resulting in slower overall execution times.\n\n**Motivation:** Performance improvement - reduces total execution time for workflows that can run operations in parallel.\n\n**Signals:** priority: high, urgency: Top priority gap - performance",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-20T03:47:12.562Z",
+  "updated_at": "2026-01-20T03:47:12.562Z",
+  "problem_statement": "CLI operations currently run sequentially even when they could be parallelized, resulting in slower overall execution times.",
+  "motivation": "Performance improvement - reduces total execution time for workflows that can run operations in parallel.",
+  "priority_hint": "high",
+  "urgency_hint": "Top priority gap - performance"
+}

@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "id": "010-automatic-branch-cleanup",
+  "title": "Automatic Branch Cleanup",
+  "section": "infra",
+  "state": "idea",
+  "overview": "Feature branches are not automatically cleaned up after merge, leading to branch accumulation over time.\n\n**Motivation:** Repository hygiene - keeps the branch list clean and manageable.\n\n**Signals:** priority: medium",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-20T03:47:12.564Z",
+  "updated_at": "2026-01-20T03:47:12.564Z",
+  "problem_statement": "Feature branches are not automatically cleaned up after merge, leading to branch accumulation over time.",
+  "motivation": "Repository hygiene - keeps the branch list clean and manageable.",
+  "priority_hint": "medium"
+}

@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "id": "005-add-concurrency-protection-to-item-store",
+  "title": "Add Concurrency Protection to Item Store",
+  "section": "backend",
+  "state": "idea",
+  "overview": "No concurrency protection exists in the item store, leading to potential race conditions and data corruption.\n\n**Motivation:** Data integrity - ensures multiple simultaneous operations don't corrupt item state or cause lost updates.\n\n**Signals:** priority: high, urgency: Top priority gap - data integrity",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-20T03:47:12.561Z",
+  "updated_at": "2026-01-20T03:47:12.561Z",
+  "problem_statement": "No concurrency protection exists in the item store, leading to potential race conditions and data corruption.",
+  "motivation": "Data integrity - ensures multiple simultaneous operations don't corrupt item state or cause lost updates.",
+  "priority_hint": "high",
+  "urgency_hint": "Top priority gap - data integrity"
+}

@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "id": "006-implement-deep-prd-validation-in-doctor",
+  "title": "Implement Deep PRD Validation in Doctor",
+  "section": "tooling",
+  "state": "idea",
+  "overview": "Doctor currently lacks deep PRD validation, limiting its ability to catch quality issues in requirements and design documents.\n\n**Motivation:** Quality assurance - ensures PRDs are well-formed, complete, and consistent before implementation begins.\n\n**Signals:** priority: high, urgency: Top priority gap - quality assurance",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-20T03:47:12.562Z",
+  "updated_at": "2026-01-20T03:47:12.562Z",
+  "problem_statement": "Doctor currently lacks deep PRD validation, limiting its ability to catch quality issues in requirements and design documents.",
+  "motivation": "Quality assurance - ensures PRDs are well-formed, complete, and consistent before implementation begins.",
+  "priority_hint": "high",
+  "urgency_hint": "Top priority gap - quality assurance"
+}

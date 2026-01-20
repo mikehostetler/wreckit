@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "id": "008-direct-mode-verification",
+  "title": "Direct Mode Verification",
+  "section": "backend",
+  "state": "idea",
+  "overview": "No verification exists for direct mode operations, making it unclear whether they succeeded or failed.\n\n**Motivation:** Reliability - ensures direct mode operations can be trusted to complete correctly.\n\n**Signals:** priority: medium",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-20T03:47:12.563Z",
+  "updated_at": "2026-01-20T03:47:12.563Z",
+  "problem_statement": "No verification exists for direct mode operations, making it unclear whether they succeeded or failed.",
+  "motivation": "Reliability - ensures direct mode operations can be trusted to complete correctly.",
+  "priority_hint": "medium"
+}
