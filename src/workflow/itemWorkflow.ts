@@ -46,6 +46,8 @@ import {
   compareGitStatus,
   formatViolations,
   runPrePushQualityGates,
+  checkPrMergeability,
+  type PrMergeabilityResult,
   type GitPreflightError,
   type GitFileChange,
   type StatusCompareOptions,
@@ -930,6 +932,34 @@ export async function runPhasePr(
     item = { ...item, last_error: error };
     await saveItem(root, item);
     return { success: false, item, error };
+  }
+
+  // Check PR mergeability after creation (Gap 7: Mergeability Check After PR Creation)
+  // This helps detect merge conflicts early so users can resolve them before review
+  if (!dryRun && prResult.created) {
+    const mergeability: PrMergeabilityResult = await checkPrMergeability(
+      prResult.number,
+      gitOptions
+    );
+
+    if (mergeability.determined) {
+      if (mergeability.mergeable) {
+        logger.info(`PR #${prResult.number} is mergeable (no conflicts)`);
+      } else {
+        // PR has merge conflicts - warn but don't fail
+        // The user can resolve conflicts in the PR
+        logger.warn(
+          `PR #${prResult.number} has merge conflicts and may not be mergeable. ` +
+          `Please resolve conflicts in the PR or rebase.`
+        );
+      }
+    } else {
+      // GitHub hasn't calculated mergeability yet
+      logger.info(
+        `PR #${prResult.number} created. Mergeability status not yet available ` +
+        `from GitHub (may take a moment).`
+      );
+    }
   }
 
   item = {

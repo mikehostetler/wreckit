@@ -518,6 +518,65 @@ export async function isPrMerged(
 }
 
 /**
+ * Result of PR mergeability check
+ */
+export interface PrMergeabilityResult {
+  /** Whether the PR can be merged (no conflicts) */
+  mergeable: boolean;
+  /** Whether the check was able to determine mergeability */
+  determined: boolean;
+}
+
+/**
+ * Check if a PR is mergeable (has no merge conflicts)
+ *
+ * This is called after PR creation to detect if the PR has conflicts.
+ * GitHub may take a moment to calculate mergeability, so this may return
+ * undetermined immediately after PR creation.
+ *
+ * @param prNumber - The PR number to check
+ * @param options - Git options
+ * @returns Mergeability result
+ */
+export async function checkPrMergeability(
+  prNumber: number,
+  options: GitOptions
+): Promise<PrMergeabilityResult> {
+  const { logger, dryRun = false } = options;
+
+  if (dryRun) {
+    logger.info(`[dry-run] Would check mergeability for PR #${prNumber}`);
+    return { mergeable: true, determined: true };
+  }
+
+  const result = await runGhCommand(
+    ["pr", "view", String(prNumber), "--json", "mergeable"],
+    options
+  );
+
+  if (result.exitCode !== 0) {
+    logger.warn(`Failed to check mergeability for PR #${prNumber}`);
+    return { mergeable: false, determined: false };
+  }
+
+  try {
+    const data = JSON.parse(result.stdout);
+    const mergeable = data.mergeable;
+
+    // GitHub returns null for mergeable when it's still calculating
+    if (mergeable === null) {
+      logger.debug(`PR #${prNumber} mergeability not yet determined by GitHub`);
+      return { mergeable: false, determined: false };
+    }
+
+    return { mergeable: Boolean(mergeable), determined: true };
+  } catch (err) {
+    logger.warn(`Failed to parse mergeability response for PR #${prNumber}`);
+    return { mergeable: false, determined: false };
+  }
+}
+
+/**
  * Represents a single file change in git status
  */
 export interface GitFileChange {
