@@ -1269,3 +1269,42 @@ function getStatusDescription(statusCode: string): string {
 
   return descriptions[statusCode] || `Unknown (${statusCode})`;
 }
+
+/**
+ * Get the repository slug (owner/repo) from the git remote URL.
+ *
+ * @param cwd - Directory to run git command in
+ * @returns Repository slug in format "owner/repo", or null if not a GitHub repo
+ */
+export async function getRepoSlug(cwd: string): Promise<string | null> {
+  try {
+    const noopLogger: Logger = {
+      debug: () => {},
+      info: () => {},
+      warn: () => {},
+      error: () => {},
+      json: () => {},
+    };
+    const result = await runGitCommand(["remote", "get-url", "origin"], {
+      cwd,
+      logger: noopLogger,
+    });
+
+    if (result.exitCode !== 0 || !result.stdout) {
+      return null;
+    }
+
+    const url = result.stdout.trim();
+
+    // Parse GitHub URL formats:
+    // https://github.com/owner/repo.git
+    // git@github.com:owner/repo.git
+    const match = url.match(/github\.com[/:]([\w.-]+)\/([\w.-]+?)(\.git)?$/);
+    if (match) {
+      return `${match[1]}/${match[2]}`;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}

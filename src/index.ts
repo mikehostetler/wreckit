@@ -15,6 +15,7 @@ import { orchestrateAll, orchestrateNext } from "./commands/orchestrator";
 import { doctorCommand } from "./commands/doctor";
 import { initCommand } from "./commands/init";
 import { rollbackCommand } from "./commands/rollback";
+import { createSpriteCommand } from "./commands/sprite";
 // import { sdkInfoCommand } from "./commands/sdk-info";
 import { runOnboardingIfNeeded } from "./onboarding";
 import { resolveId } from "./domain/resolveId";
@@ -528,6 +529,8 @@ program
 //       }
 //     );
 //   });
+
+program.addCommand(createSpriteCommand(logger, resolveCwd));
 
 async function main(): Promise<void> {
   setupInterruptHandler(logger);

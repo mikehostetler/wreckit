@@ -351,4 +351,104 @@ describe("git/index", () => {
       expect(result.baseRefName).toBe("develop"); // Caller should validate against config.base_branch
     });
   });
+
+  describe("getRepoSlug", () => {
+    let runGitCommandSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+      runGitCommandSpy = vi.spyOn(gitModule, "runGitCommand");
+    });
+
+    afterEach(() => {
+      runGitCommandSpy.mockRestore();
+    });
+
+    it("parses HTTPS URL", async () => {
+      runGitCommandSpy.mockResolvedValue({
+        stdout: "https://github.com/mikehostetler/wreckit.git",
+        exitCode: 0,
+      });
+
+      const result = await gitModule.getRepoSlug(tempDir);
+
+      expect(result).toBe("mikehostetler/wreckit");
+    });
+
+    it("parses HTTPS URL without .git suffix", async () => {
+      runGitCommandSpy.mockResolvedValue({
+        stdout: "https://github.com/owner/repo",
+        exitCode: 0,
+      });
+
+      const result = await gitModule.getRepoSlug(tempDir);
+
+      expect(result).toBe("owner/repo");
+    });
+
+    it("parses SSH URL", async () => {
+      runGitCommandSpy.mockResolvedValue({
+        stdout: "git@github.com:mikehostetler/wreckit.git",
+        exitCode: 0,
+      });
+
+      const result = await gitModule.getRepoSlug(tempDir);
+
+      expect(result).toBe("mikehostetler/wreckit");
+    });
+
+    it("parses SSH URL without .git suffix", async () => {
+      runGitCommandSpy.mockResolvedValue({
+        stdout: "git@github.com:owner/repo",
+        exitCode: 0,
+      });
+
+      const result = await gitModule.getRepoSlug(tempDir);
+
+      expect(result).toBe("owner/repo");
+    });
+
+    it("handles repos with dots and dashes in names", async () => {
+      runGitCommandSpy.mockResolvedValue({
+        stdout: "https://github.com/my-org/my.repo-name.git",
+        exitCode: 0,
+      });
+
+      const result = await gitModule.getRepoSlug(tempDir);
+
+      expect(result).toBe("my-org/my.repo-name");
+    });
+
+    it("returns null for non-GitHub remotes", async () => {
+      runGitCommandSpy.mockResolvedValue({
+        stdout: "https://gitlab.com/owner/repo.git",
+        exitCode: 0,
+      });
+
+      const result = await gitModule.getRepoSlug(tempDir);
+
+      expect(result).toBeNull();
+    });
+
+    it("returns null when git command fails", async () => {
+      runGitCommandSpy.mockResolvedValue({
+        stdout: "",
+        exitCode: 1,
+      });
+
+      const result = await gitModule.getRepoSlug(tempDir);
+
+      expect(result).toBeNull();
+    });
+
+    it("returns null when remote URL is empty", async () => {
+      runGitCommandSpy.mockResolvedValue({
+        stdout: "",
+        exitCode: 0,
+      });
+
+      const result = await gitModule.getRepoSlug(tempDir);
+
+      expect(result).toBeNull();
+    });
+  });
 });

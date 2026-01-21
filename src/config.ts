@@ -1,5 +1,5 @@
 import * as fs from "node:fs/promises";
-import { ConfigSchema, PrChecksSchema, BranchCleanupSchema, type Config } from "./schemas";
+import { ConfigSchema, PrChecksSchema, BranchCleanupSchema, ComputeConfigSchema, LimitsConfigSchema, SpritesConfigSchema, type Config } from "./schemas";
 import { getConfigPath, getWreckitDir } from "./fs/paths";
 import { safeWriteJson } from "./fs/atomic";
 import {
@@ -20,6 +20,41 @@ export interface BranchCleanupResolved {
   delete_remote: boolean;
 }
 
+export interface SpritesGithubResolved {
+  use_token_for_clone: boolean;
+  git_user_name: string;
+  git_user_email: string;
+}
+
+export interface SpritesSyncResolved {
+  upload_paths: string[];
+  download_paths: string[];
+}
+
+export interface SpritesConfigResolved {
+  enabled: boolean;
+  name_prefix: string;
+  auto_delete: boolean;
+  resume: boolean;
+  workdir: string;
+  env_file: string;
+  copy_claude_credentials: boolean;
+  github: SpritesGithubResolved;
+  sync: SpritesSyncResolved;
+}
+
+export interface ComputeConfigResolved {
+  backend: "local" | "sprites";
+  sprites?: SpritesConfigResolved;
+}
+
+export interface LimitsConfigResolved {
+  max_iterations: number;
+  max_duration_hours: number;
+  max_budget_usd: number;
+  no_progress_threshold: number;
+}
+
 export interface ConfigResolved {
   schema_version: number;
   base_branch: string;
@@ -35,6 +70,8 @@ export interface ConfigResolved {
   timeout_seconds: number;
   pr_checks: PrChecksResolved;
   branch_cleanup: BranchCleanupResolved;
+  compute: ComputeConfigResolved;
+  limits: LimitsConfigResolved;
 }
 
 export interface ConfigOverrides {
@@ -71,6 +108,15 @@ export const DEFAULT_CONFIG: ConfigResolved = {
     enabled: true,
     delete_remote: true,
   },
+  compute: {
+    backend: "local",
+  },
+  limits: {
+    max_iterations: 100,
+    max_duration_hours: 4,
+    max_budget_usd: 20,
+    no_progress_threshold: 3,
+  },
 };
 
 export function mergeWithDefaults(partial: Partial<Config>): ConfigResolved {
@@ -102,6 +148,39 @@ export function mergeWithDefaults(partial: Partial<Config>): ConfigResolved {
       }
     : { ...DEFAULT_CONFIG.branch_cleanup };
 
+  const compute: ComputeConfigResolved = partial.compute
+    ? {
+        backend: partial.compute.backend ?? DEFAULT_CONFIG.compute.backend,
+        sprites: partial.compute.sprites
+          ? {
+              enabled: partial.compute.sprites.enabled ?? false,
+              name_prefix: partial.compute.sprites.name_prefix ?? "wreckit",
+              auto_delete: partial.compute.sprites.auto_delete ?? true,
+              resume: partial.compute.sprites.resume ?? true,
+              workdir: partial.compute.sprites.workdir ?? "/var/local/wreckit",
+              env_file: partial.compute.sprites.env_file ?? ".wreckit/.sprite.env",
+              copy_claude_credentials: partial.compute.sprites.copy_claude_credentials ?? false,
+              github: {
+                use_token_for_clone: partial.compute.sprites.github?.use_token_for_clone ?? true,
+                git_user_name: partial.compute.sprites.github?.git_user_name ?? "wreckit",
+                git_user_email: partial.compute.sprites.github?.git_user_email ?? "wreckit@users.noreply.github.com",
+              },
+              sync: {
+                upload_paths: partial.compute.sprites.sync?.upload_paths ?? [".wreckit/config.json", ".wreckit/items"],
+                download_paths: partial.compute.sprites.sync?.download_paths ?? [".wreckit/items", ".wreckit/logs"],
+              },
+            }
+          : undefined,
+      }
+    : { ...DEFAULT_CONFIG.compute };
+
+  const limits: LimitsConfigResolved = {
+    max_iterations: partial.limits?.max_iterations ?? partial.max_iterations ?? DEFAULT_CONFIG.limits.max_iterations,
+    max_duration_hours: partial.limits?.max_duration_hours ?? DEFAULT_CONFIG.limits.max_duration_hours,
+    max_budget_usd: partial.limits?.max_budget_usd ?? DEFAULT_CONFIG.limits.max_budget_usd,
+    no_progress_threshold: partial.limits?.no_progress_threshold ?? DEFAULT_CONFIG.limits.no_progress_threshold,
+  };
+
   return {
     schema_version: partial.schema_version ?? DEFAULT_CONFIG.schema_version,
     base_branch: partial.base_branch ?? DEFAULT_CONFIG.base_branch,
@@ -112,6 +191,8 @@ export function mergeWithDefaults(partial: Partial<Config>): ConfigResolved {
     timeout_seconds: partial.timeout_seconds ?? DEFAULT_CONFIG.timeout_seconds,
     pr_checks: prChecks,
     branch_cleanup: branchCleanup,
+    compute,
+    limits,
   };
 }
 
@@ -135,6 +216,8 @@ export function applyOverrides(
     timeout_seconds: overrides.timeoutSeconds ?? config.timeout_seconds,
     pr_checks: config.pr_checks,
     branch_cleanup: config.branch_cleanup,
+    compute: config.compute,
+    limits: config.limits,
   };
 }
 
