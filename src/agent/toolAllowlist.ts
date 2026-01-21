@@ -60,9 +60,10 @@ export const PHASE_TOOL_ALLOWLISTS: Record<string, ToolName[] | undefined> = {
     AVAILABLE_TOOLS.wreckit_save_interview_ideas,
   ],
 
-  // Research phase: Read-only tools for codebase exploration
+  // Research phase: Read-only tools for codebase exploration + Write for research.md
   research: [
     AVAILABLE_TOOLS.Read,
+    AVAILABLE_TOOLS.Write,
     AVAILABLE_TOOLS.Glob,
     AVAILABLE_TOOLS.Grep,
   ],

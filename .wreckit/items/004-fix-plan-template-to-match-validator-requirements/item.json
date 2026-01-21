@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "id": "004-fix-plan-template-to-match-validator-requirements",
+  "title": "Fix plan template to match validator requirements",
+  "section": "Bug Fixes",
+  "state": "in_pr",
+  "overview": "The plan phase prompt template (src/prompts/plan.md) instructs agents to create plan.md files with section headers that do not match what the validator (validatePlanQuality) expects, causing plans to fail validation even when following the template exactly.\n\n**Motivation:** Plans created by following the prompt template currently fail with errors like 'Missing required sections: Implementation Plan Title, Current State, Phases' and 'Insufficient implementation phases: found 0, required at least 1'. Users must either manually edit generated plan.md files or override the local template as a workaround.\n\n**Success criteria:**\n- Plans generated using the updated template pass validation without errors\n- Template includes all required section headers: Header, Implementation Plan Title, Overview, Current State, Desired End State, What We're NOT Doing, Implementation Approach, Phases, Testing Strategy\n- Phases are properly wrapped in a '## Phases' container section with '### Phase X:' subsections\n- Section headers match exactly (no extra words that cause regex matching to fail)\n\n**Technical constraints:**\n- Must update src/prompts/plan.md template file\n- Validator requires exact section header matches using regex pattern: ^#+\\s*${section.toLowerCase()}\\s*$\n- Validator counts phases by extracting content between '## Phases' and '## Testing Strategy' sections\n- Required sections are defined in src/domain/validation.ts DEFAULT_PLAN_QUALITY_OPTIONS.requiredSections\n\n**In scope:**\n- Update src/prompts/plan.md to use exact section headers required by validator\n- Add missing '## Implementation Plan Title' section\n- Change '## Current State Analysis' to '## Current State'\n- Wrap phase subsections under a '## Phases' container section\n**Out of scope:**\n- Modifying validator logic or regex patterns\n- Changes to src/domain/validation.ts\n- Adding new features or capabilities beyond fixing the template mismatch\n\n**Signals:** priority: high, urgency: Users are currently blocked by this bug and must use workarounds to proceed",
+  "branch": "wreckit/004-fix-plan-template-to-match-validator-requirements",
+  "pr_url": "https://github.com/mikehostetler/wreckit/pull/15",
+  "pr_number": 15,
+  "last_error": null,
+  "created_at": "2026-01-21T18:43:39.634Z",
+  "updated_at": "2026-01-21T19:25:43.479Z",
+  "problem_statement": "The plan phase prompt template (src/prompts/plan.md) instructs agents to create plan.md files with section headers that do not match what the validator (validatePlanQuality) expects, causing plans to fail validation even when following the template exactly.",
+  "motivation": "Plans created by following the prompt template currently fail with errors like 'Missing required sections: Implementation Plan Title, Current State, Phases' and 'Insufficient implementation phases: found 0, required at least 1'. Users must either manually edit generated plan.md files or override the local template as a workaround.",
+  "success_criteria": [
+    "Plans generated using the updated template pass validation without errors",
+    "Template includes all required section headers: Header, Implementation Plan Title, Overview, Current State, Desired End State, What We're NOT Doing, Implementation Approach, Phases, Testing Strategy",
+    "Phases are properly wrapped in a '## Phases' container section with '### Phase X:' subsections",
+    "Section headers match exactly (no extra words that cause regex matching to fail)"
+  ],
+  "technical_constraints": [
+    "Must update src/prompts/plan.md template file",
+    "Validator requires exact section header matches using regex pattern: ^#+\\s*${section.toLowerCase()}\\s*$",
+    "Validator counts phases by extracting content between '## Phases' and '## Testing Strategy' sections",
+    "Required sections are defined in src/domain/validation.ts DEFAULT_PLAN_QUALITY_OPTIONS.requiredSections"
+  ],
+  "scope_in_scope": [
+    "Update src/prompts/plan.md to use exact section headers required by validator",
+    "Add missing '## Implementation Plan Title' section",
+    "Change '## Current State Analysis' to '## Current State'",
+    "Wrap phase subsections under a '## Phases' container section"
+  ],
+  "scope_out_of_scope": [
+    "Modifying validator logic or regex patterns",
+    "Changes to src/domain/validation.ts",
+    "Adding new features or capabilities beyond fixing the template mismatch"
+  ],
+  "priority_hint": "high",
+  "urgency_hint": "Users are currently blocked by this bug and must use workarounds to proceed"
+}

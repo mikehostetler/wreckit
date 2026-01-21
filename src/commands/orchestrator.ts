@@ -4,7 +4,7 @@ import type { Prd } from "../schemas";
 import { findRepoRoot, findRootFromOptions, getItemDir, getResearchPath, getPlanPath, getPrdPath } from "../fs/paths";
 import { pathExists } from "../fs/util";
 import { loadConfig } from "../config";
-import { readItem, readPrd } from "../fs/json";
+import { readItem, readPrd, writeItem } from "../fs/json";
 import { scanItems } from "./status";
 import { runCommand } from "./run";
 import { TuiViewAdapter } from "../views";
@@ -165,6 +165,15 @@ export async function orchestrateAll(
         const errorMessage = error instanceof Error ? error.message : String(error);
         result.failed.push(item.id);
 
+        // Persist error to item.json
+        try {
+          const itemDir = getItemDir(root, item.id);
+          const currentItem = await readItem(itemDir);
+          await writeItem(itemDir, { ...currentItem, last_error: errorMessage });
+        } catch {
+          // Best effort - don't fail if we can't persist the error
+        }
+
         if (useTui && view) {
           view.onAgentEvent(item.id, { type: "error", message: `Failed ${item.id}: ${errorMessage}` });
         } else {
@@ -241,6 +250,16 @@ async function processItemsParallel(
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       result.failed.push(item.id);
+
+      // Persist error to item.json
+      try {
+        const itemDir = getItemDir(root, item.id);
+        const currentItem = await readItem(itemDir);
+        await writeItem(itemDir, { ...currentItem, last_error: errorMessage });
+      } catch {
+        // Best effort - don't fail if we can't persist the error
+      }
+
       simpleProgress?.fail(item.id, errorMessage);
       logger.error(`✗ Failed ${item.id}: ${errorMessage}`);
     }
@@ -294,6 +313,16 @@ export async function orchestrateNext(
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     logger.error(`Failed ${nextItemId}: ${errorMessage}`);
+
+    // Persist error to item.json
+    try {
+      const itemDir = getItemDir(root, nextItemId);
+      const currentItem = await readItem(itemDir);
+      await writeItem(itemDir, { ...currentItem, last_error: errorMessage });
+    } catch {
+      // Best effort - don't fail if we can't persist the error
+    }
+
     return { itemId: nextItemId, success: false };
   }
 }

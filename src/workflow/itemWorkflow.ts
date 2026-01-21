@@ -1065,6 +1065,12 @@ export async function runPhasePr(
       if (cleanupResult.error) {
         logger.warn(`Branch cleanup warning: ${cleanupResult.error}`);
       }
+    } else if (!dryRun) {
+      // Switch back to base branch even if cleanup is disabled
+      const checkoutResult = await runGitCommand(["checkout", config.base_branch], gitOptions);
+      if (checkoutResult.exitCode !== 0) {
+        logger.warn(`Failed to switch back to ${config.base_branch}: ${checkoutResult.stdout}`);
+      }
     }
 
     return { success: true, item };
@@ -1182,6 +1188,14 @@ export async function runPhasePr(
       prResult.url
     }`
   );
+
+  // Switch back to base branch after PR creation
+  if (!dryRun) {
+    const checkoutResult = await runGitCommand(["checkout", config.base_branch], gitOptions);
+    if (checkoutResult.exitCode !== 0) {
+      logger.warn(`Failed to switch back to ${config.base_branch}: ${checkoutResult.stdout}`);
+    }
+  }
 
   return { success: true, item };
 }
@@ -1308,6 +1322,12 @@ export async function runPhaseComplete(
     );
     if (cleanupResult.error) {
       logger.warn(`Branch cleanup warning: ${cleanupResult.error}`);
+    }
+  } else if (!dryRun) {
+    // Switch back to base branch even if cleanup is disabled
+    const checkoutResult = await runGitCommand(["checkout", config.base_branch], gitOptions);
+    if (checkoutResult.exitCode !== 0) {
+      logger.warn(`Failed to switch back to ${config.base_branch}: ${checkoutResult.stdout}`);
     }
   }
 
