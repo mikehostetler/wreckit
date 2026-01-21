@@ -56,10 +56,13 @@ Create TWO files at `{{item_path}}`:
 ```markdown
 # {{title}} Implementation Plan
 
+## Implementation Plan Title
+[Brief, descriptive title for this implementation plan]
+
 ## Overview
 [Brief description of what we're implementing and why]
 
-## Current State Analysis
+## Current State
 [What exists now, what's missing, key constraints discovered]
 
 ## Desired End State
@@ -78,14 +81,16 @@ Create TWO files at `{{item_path}}`:
 
 ---
 
-## Phase 1: [Descriptive Name]
+## Phases
 
-### Overview
+### Phase 1: [Descriptive Name]
+
+#### Overview
 [What this phase accomplishes]
 
-### Changes Required:
+#### Changes Required:
 
-#### 1. [Component/File Group]
+##### 1. [Component/File Group]
 **File**: `path/to/file.ext`
 **Changes**: [Summary of changes]
 
@@ -93,15 +98,15 @@ Create TWO files at `{{item_path}}`:
 // Specific code to add/modify
 ```
 
-### Success Criteria:
+#### Success Criteria:
 
-#### Automated Verification:
+##### Automated Verification:
 - [ ] Tests pass: `npm test` or relevant command
 - [ ] Type checking passes: `npm run typecheck`
 - [ ] Linting passes: `npm run lint`
 - [ ] Build succeeds: `npm run build`
 
-#### Manual Verification:
+##### Manual Verification:
 - [ ] Feature works as expected when tested
 - [ ] No regressions in related features
 - [ ] Edge cases handled correctly
@@ -110,7 +115,7 @@ Create TWO files at `{{item_path}}`:
 
 ---
 
-## Phase 2: [Descriptive Name]
+### Phase 2: [Descriptive Name]
 [Similar structure...]
 
 ---
