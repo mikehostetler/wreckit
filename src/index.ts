@@ -41,6 +41,8 @@ program
     "Simulate agent responses without calling the real agent"
   )
   .option("--parallel <n>", "Process N items in parallel (default: 1)", "1")
+  .option("--no-resume", "Start fresh batch run, ignoring saved progress")
+  .option("--retry-failed", "Include previously failed items when resuming")
   .option("--cwd <path>", "Override the working directory");
 
 program.action(async () => {
@@ -67,6 +69,8 @@ program.action(async () => {
           cwd: resolveCwd(opts.cwd),
           mockAgent: opts.mockAgent,
           parallel: parseInt(opts.parallel, 10) || 1,
+          noResume: opts.noResume,
+          retryFailed: opts.retryFailed,
         },
         logger
       );
