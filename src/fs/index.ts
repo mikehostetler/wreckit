@@ -5,6 +5,7 @@ export {
   getWreckitDir,
   getConfigPath,
   getIndexPath,
+  getBatchProgressPath,
   getPromptsDir,
   getItemsDir,
   getItemDir,
@@ -26,6 +27,9 @@ export {
   writePrd,
   readIndex,
   writeIndex,
+  readBatchProgress,
+  writeBatchProgress,
+  clearBatchProgress,
 } from "./json";
 
 export {
