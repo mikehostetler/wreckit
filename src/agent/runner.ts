@@ -303,6 +303,8 @@ export interface UnionRunAgentOptions {
   onStdoutChunk?: (chunk: string) => void;
   onStderrChunk?: (chunk: string) => void;
   onAgentEvent?: (event: AgentEvent) => void;
+  /** MCP servers to make available to the agent (e.g., wreckit server for PRD capture) */
+  mcpServers?: Record<string, unknown>;
   /** Restrict agent to only specific tools (e.g., MCP tools). Prevents use of Read, Write, Bash, etc. */
   allowedTools?: string[];
 }
@@ -376,6 +378,8 @@ export async function runAgentUnion(options: UnionRunAgentOptions): Promise<Agen
         mockAgent: options.mockAgent,
         onStdoutChunk: options.onStdoutChunk,
         onStderrChunk: options.onStderrChunk,
+        onAgentEvent: options.onAgentEvent,
+        mcpServers: options.mcpServers,
         allowedTools: options.allowedTools,
       };
       return runProcessAgent(legacyOptions);
@@ -401,6 +405,8 @@ export async function runAgentUnion(options: UnionRunAgentOptions): Promise<Agen
         mockAgent: options.mockAgent,
         onStdoutChunk: options.onStdoutChunk,
         onStderrChunk: options.onStderrChunk,
+        onAgentEvent: options.onAgentEvent,
+        mcpServers: options.mcpServers,
         allowedTools: options.allowedTools,
       };
       return runClaudeSdkAgent(legacyOptions, legacyConfig);
@@ -416,6 +422,8 @@ export async function runAgentUnion(options: UnionRunAgentOptions): Promise<Agen
         dryRun: options.dryRun,
         onStdoutChunk: options.onStdoutChunk,
         onStderrChunk: options.onStderrChunk,
+        onAgentEvent: options.onAgentEvent,
+        mcpServers: options.mcpServers,
         allowedTools: options.allowedTools,
       });
     }
@@ -430,6 +438,8 @@ export async function runAgentUnion(options: UnionRunAgentOptions): Promise<Agen
         dryRun: options.dryRun,
         onStdoutChunk: options.onStdoutChunk,
         onStderrChunk: options.onStderrChunk,
+        onAgentEvent: options.onAgentEvent,
+        mcpServers: options.mcpServers,
         allowedTools: options.allowedTools,
       });
     }
@@ -444,6 +454,8 @@ export async function runAgentUnion(options: UnionRunAgentOptions): Promise<Agen
         dryRun: options.dryRun,
         onStdoutChunk: options.onStdoutChunk,
         onStderrChunk: options.onStderrChunk,
+        onAgentEvent: options.onAgentEvent,
+        mcpServers: options.mcpServers,
         allowedTools: options.allowedTools,
       });
     }

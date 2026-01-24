@@ -13,6 +13,8 @@ export interface CodexRunAgentOptions {
   onStdoutChunk?: (chunk: string) => void;
   onStderrChunk?: (chunk: string) => void;
   onAgentEvent?: (event: AgentEvent) => void;
+  /** MCP servers to make available to the agent (e.g., wreckit server for PRD capture) */
+  mcpServers?: Record<string, unknown>;
   /** Restrict agent to only specific tools (e.g., MCP tools). Prevents use of Read, Write, Bash, etc. */
   allowedTools?: string[];
   /** Current workflow phase for tool allowlist enforcement (Spec 008 Gap 1) */
