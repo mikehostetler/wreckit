@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "id": "019-improve-ambiguous-id-resolution-to-warnerror-on-mu",
+  "title": "Improve ambiguous ID resolution to warn/error on multiple matches (spec 009 Gap 3)",
+  "section": "roadmap",
+  "state": "idea",
+  "overview": "From milestone [M3] Robust Error Handling and Recovery\n\n**Motivation:** Strategic milestone: Robust Error Handling and Recovery",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-24T07:23:01.571Z",
+  "updated_at": "2026-01-24T07:23:01.571Z",
+  "motivation": "Strategic milestone: Robust Error Handling and Recovery"
+}

@@ -1,0 +1,129 @@
+{
+  "schema_version": 1,
+  "id": "022-implement-item-dependencies-and-campaign-grouping",
+  "branch_name": "wreckit/022-implement-item-dependencies-and-campaign-grouping",
+  "user_stories": [
+    {
+      "id": "US-001",
+      "title": "Add depends_on and campaign fields to ItemSchema",
+      "acceptance_criteria": [
+        "ItemSchema includes 'depends_on' field as z.array(z.string()).optional()",
+        "ItemSchema includes 'campaign' field as z.string().optional()",
+        "IndexItemSchema includes 'depends_on' field for efficient dependency checking",
+        "Schema tests verify new fields are accepted when present",
+        "Schema tests verify backwards compatibility (items without new fields still parse)",
+        "Type definitions (Item, IndexItem) include new fields",
+        "bun run typecheck passes with no errors"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Foundation for all other stories. Fields must be optional for backwards compatibility. IndexItemSchema needs depends_on to avoid loading full items during orchestration."
+    },
+    {
+      "id": "US-002",
+      "title": "Update Ideas domain to handle dependency and campaign fields",
+      "acceptance_criteria": [
+        "ParsedIdea interface includes 'dependsOn?: string[]' field",
+        "ParsedIdea interface includes 'campaign?: string' field",
+        "createItemFromIdea() maps dependsOn -> depends_on in created Item",
+        "createItemFromIdea() maps campaign field to Item",
+        "toIndexItem() includes depends_on field from Item",
+        "scanItems() in status.ts returns IndexItem with depends_on",
+        "Unit tests verify field mapping works correctly"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Depends on US-001. This enables the data layer to pass dependency info through the system."
+    },
+    {
+      "id": "US-003",
+      "title": "Implement orchestrator dependency checking for sequential execution",
+      "acceptance_criteria": [
+        "areDependenciesSatisfied() helper returns true when item has no depends_on",
+        "areDependenciesSatisfied() returns true when all dependencies are in done state",
+        "areDependenciesSatisfied() returns false when any dependency is not done",
+        "orchestrateAll() skips items with unsatisfied dependencies in sequential mode",
+        "orchestrateAll() logs warning when items are blocked by dependencies",
+        "getNextIncompleteItem() returns null when all non-done items have unsatisfied dependencies",
+        "getNextIncompleteItem() returns first runnable item respecting dependencies",
+        "Dry-run output shows dependency status for blocked items"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Depends on US-002. Core functionality to prevent race conditions. Sequential mode is the primary use case."
+    },
+    {
+      "id": "US-004",
+      "title": "Implement orchestrator dependency checking for parallel execution",
+      "acceptance_criteria": [
+        "processItemsParallel() checks dependencies before processing each item",
+        "Worker pool skips items whose dependencies are not yet complete",
+        "Workers continue polling queue until runnable items are found or queue is empty",
+        "Completed items update shared done set for other workers to see",
+        "Parallel execution correctly handles items becoming runnable as deps complete",
+        "No race conditions when multiple workers check dependencies simultaneously"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Depends on US-003. Extends dependency checking to parallel mode. More complex due to concurrency."
+    },
+    {
+      "id": "US-005",
+      "title": "Execute-roadmap sets campaign from milestone ID",
+      "acceptance_criteria": [
+        "Items created from ROADMAP.md have campaign field set to milestone ID (e.g., 'M1')",
+        "Campaign field persists in item.json after creation",
+        "Dry-run output shows campaign assignment",
+        "Items from different milestones have different campaign values",
+        "Campaign value matches the [MX] pattern from milestone header"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Depends on US-002. Enables grouping items by milestone for reporting and filtering."
+    },
+    {
+      "id": "US-006",
+      "title": "Execute-roadmap infers linear dependencies within milestones",
+      "acceptance_criteria": [
+        "Within a milestone, second objective depends on first, third on second, etc.",
+        "extractPendingObjectives() returns index field for position within milestone",
+        "Dependencies are set using full item IDs (e.g., '001-setup', not just slugs)",
+        "First objective in each milestone has no dependencies (within milestone)",
+        "Cross-milestone objectives do not automatically get dependencies",
+        "Dry-run output shows inferred dependencies"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Depends on US-005. Ensures items within a milestone execute in document order. Key for preventing race conditions in roadmap-driven execution."
+    },
+    {
+      "id": "US-007",
+      "title": "Doctor validates circular dependencies",
+      "acceptance_criteria": [
+        "doctor diagnoses circular dependencies (A->B->A) as errors",
+        "Cycle detection works for longer cycles (A->B->C->A)",
+        "Error message includes the full cycle path",
+        "Valid DAG (no cycles) passes validation",
+        "Self-referential dependency (A->A) is detected as cycle",
+        "Multiple separate cycles are all reported"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "Depends on US-001. Helps users identify and fix configuration errors."
+    },
+    {
+      "id": "US-008",
+      "title": "Doctor warns about missing dependency references",
+      "acceptance_criteria": [
+        "doctor warns when depends_on references non-existent item ID",
+        "Warning includes both the item with bad reference and the missing ID",
+        "Valid dependency references pass without warning",
+        "Multiple missing references on same item are all reported",
+        "Severity is 'warning' not 'error' (item might be created later)"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "Depends on US-001. Catches typos and stale references in depends_on arrays."
+    }
+  ]
+}
