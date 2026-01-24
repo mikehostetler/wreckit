@@ -9,11 +9,16 @@ import type { AgentResult } from "../agent/runner";
 // Import real git module for passthrough in mock
 import * as gitModule from "../git";
 
+const mockedRunAgentUnion = vi.fn();
+const mockedGetAgentConfigUnion = vi.fn((config: ConfigResolved) => config.agent);
+
+// Legacy mocks for any remaining legacy code
 const mockedRunAgent = vi.fn();
 const mockedGetAgentConfig = vi.fn((config: ConfigResolved) => ({
-  command: config.agent.command,
-  args: config.agent.args,
-  completion_signal: config.agent.completion_signal,
+  mode: "sdk",
+  command: "claude",
+  args: [],
+  completion_signal: "<promise>COMPLETE</promise>",
   timeout_seconds: config.timeout_seconds,
   max_iterations: config.max_iterations,
 }));
@@ -21,6 +26,8 @@ const mockedGetAgentConfig = vi.fn((config: ConfigResolved) => ({
 mock.module("../agent/runner", () => ({
   runAgent: mockedRunAgent,
   getAgentConfig: mockedGetAgentConfig,
+  runAgentUnion: mockedRunAgentUnion,
+  getAgentConfigUnion: mockedGetAgentConfigUnion,
 }));
 
 const mockedEnsureBranch = vi.fn(() =>
@@ -138,10 +145,9 @@ function createTestConfig(): ConfigResolved {
     base_branch: "main",
     branch_prefix: "wreckit/",
     agent: {
-      command: "test-agent",
-      args: [],
-      completion_signal: "<promise>COMPLETE</promise>",
-      mode: "sdk",
+      kind: "claude_sdk",
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 4096,
     },
     max_iterations: 10,
     timeout_seconds: 60,
@@ -458,7 +464,7 @@ The project uses:
 - Should we add tests for the new service immediately?
 `;
 
-      mockedRunAgent.mockImplementation(
+      mockedRunAgentUnion.mockImplementation(
         createMockAgentResult(
           { createFiles: { "research.md": validResearchContent } },
           itemDir
@@ -493,7 +499,7 @@ The project uses:
       const item = createTestItem({ state: "idea" });
       const itemDir = await setupItem(item);
 
-      mockedRunAgent.mockImplementation(
+      mockedRunAgentUnion.mockImplementation(
         createMockAgentResult({ createFiles: {} }, itemDir)
       );
 
@@ -540,7 +546,7 @@ Write code.
 None.
 `;
 
-      mockedRunAgent.mockImplementation(
+      mockedRunAgentUnion.mockImplementation(
         createMockAgentResult(
           { createFiles: { "research.md": poorResearchContent } },
           itemDir
@@ -571,7 +577,7 @@ None.
       );
 
       const prd = createTestPrd();
-      mockedRunAgent.mockImplementation(
+      mockedRunAgentUnion.mockImplementation(
         createMockAgentResult(
           {
             createFiles: {
@@ -616,7 +622,7 @@ None.
         "utf-8"
       );
 
-      mockedRunAgent.mockImplementation(
+      mockedRunAgentUnion.mockImplementation(
         createMockAgentResult({ createFiles: {} }, itemDir)
       );
 
@@ -639,7 +645,7 @@ None.
         "utf-8"
       );
 
-      mockedRunAgent.mockImplementation(
+      mockedRunAgentUnion.mockImplementation(
         createMockAgentResult({ createFiles: { "plan.md": createTestPlanContent() } }, itemDir)
       );
 
@@ -674,7 +680,7 @@ None.
         const prd = createTestPrd();
         const wreckitPath = `.wreckit/items/${item.id}`;
 
-        mockedRunAgent.mockImplementation(async () => {
+        mockedRunAgentUnion.mockImplementation(async () => {
           // Create allowed files in item directory
           await fs.mkdir(path.join(tempDir, wreckitPath), { recursive: true });
           await fs.writeFile(path.join(tempDir, wreckitPath, "plan.md"), createTestPlanContent(), "utf-8");
@@ -723,7 +729,7 @@ None.
         const prd = createTestPrd();
         const wreckitPath = `.wreckit/items/${item.id}`;
 
-        mockedRunAgent.mockImplementation(async () => {
+        mockedRunAgentUnion.mockImplementation(async () => {
           // Create allowed files in item directory
           await fs.mkdir(path.join(tempDir, wreckitPath), { recursive: true });
           await fs.writeFile(path.join(tempDir, wreckitPath, "plan.md"), createTestPlanContent(), "utf-8");
@@ -769,7 +775,7 @@ None.
         spawnSync("git", ["commit", "-m", "initial"], { cwd: tempDir, stdio: "ignore" });
 
         const prd = createTestPrd();
-        mockedRunAgent.mockImplementation(
+        mockedRunAgentUnion.mockImplementation(
           createMockAgentResult(
             {
               createFiles: {
@@ -844,7 +850,7 @@ None.
         "utf-8"
       );
 
-      mockedRunAgent.mockImplementation(async () => {
+      mockedRunAgentUnion.mockImplementation(async () => {
         const prdPath = path.join(itemDir, "prd.json");
         const currentPrd = JSON.parse(
           await fs.readFile(prdPath, "utf-8")
@@ -912,7 +918,7 @@ None.
         "utf-8"
       );
 
-      mockedRunAgent.mockImplementation(async () => {
+      mockedRunAgentUnion.mockImplementation(async () => {
         const prdPath = path.join(itemDir, "prd.json");
         const currentPrd = JSON.parse(
           await fs.readFile(prdPath, "utf-8")
@@ -955,7 +961,7 @@ None.
         "utf-8"
       );
 
-      mockedRunAgent.mockImplementation(async () => {
+      mockedRunAgentUnion.mockImplementation(async () => {
         const prdPath = path.join(itemDir, "prd.json");
         const currentPrd = JSON.parse(
           await fs.readFile(prdPath, "utf-8")
@@ -1008,7 +1014,7 @@ None.
       const limitedConfig = { ...config, max_iterations: 3 };
       let callCount = 0;
 
-      mockedRunAgent.mockImplementation(async () => {
+      mockedRunAgentUnion.mockImplementation(async () => {
         callCount++;
         return {
           success: true,
@@ -1040,7 +1046,7 @@ None.
         "utf-8"
       );
 
-      mockedRunAgent.mockResolvedValue({
+      mockedRunAgentUnion.mockResolvedValue({
         success: false,
         output: "",
         timedOut: true,
@@ -1077,7 +1083,7 @@ None.
         spawnSync("git", ["add", "."], { cwd: tempDir, stdio: "ignore" });
         spawnSync("git", ["commit", "-m", "initial"], { cwd: tempDir, stdio: "ignore" });
 
-        mockedRunAgent.mockImplementation(async () => {
+        mockedRunAgentUnion.mockImplementation(async () => {
           // Create source file changes
           await fs.mkdir(path.join(tempDir, "src"), { recursive: true });
           await fs.writeFile(path.join(tempDir, "src", "feature.ts"), "export const feature = true;", "utf-8");
@@ -1128,7 +1134,7 @@ None.
         spawnSync("git", ["add", "."], { cwd: tempDir, stdio: "ignore" });
         spawnSync("git", ["commit", "-m", "initial"], { cwd: tempDir, stdio: "ignore" });
 
-        mockedRunAgent.mockImplementation(async () => {
+        mockedRunAgentUnion.mockImplementation(async () => {
           // Modify wreckit system file (config.json at root level)
           await fs.writeFile(path.join(tempDir, ".wreckit", "config.json"), '{ "modified": true }', "utf-8");
           // Update PRD to mark story as done
@@ -1178,7 +1184,7 @@ None.
         spawnSync("git", ["add", "."], { cwd: tempDir, stdio: "ignore" });
         spawnSync("git", ["commit", "-m", "initial"], { cwd: tempDir, stdio: "ignore" });
 
-        mockedRunAgent.mockImplementation(async () => {
+        mockedRunAgentUnion.mockImplementation(async () => {
           // Create file within item directory (allowed)
           await fs.writeFile(path.join(itemDir, "notes.md"), "# Story notes", "utf-8");
           // Update PRD to mark story as done
@@ -1227,7 +1233,7 @@ None.
         spawnSync("git", ["commit", "-m", "initial"], { cwd: tempDir, stdio: "ignore" });
 
         // Mock agent to do nothing (simulating mockAgent mode behavior)
-        mockedRunAgent.mockResolvedValue({
+        mockedRunAgentUnion.mockResolvedValue({
           success: true,
           output: "test output",
           timedOut: false,
@@ -1268,7 +1274,7 @@ None.
         spawnSync("git", ["commit", "-m", "initial"], { cwd: tempDir, stdio: "ignore" });
 
         // Mock agent to do nothing
-        mockedRunAgent.mockResolvedValue({
+        mockedRunAgentUnion.mockResolvedValue({
           success: true,
           output: "test output",
           timedOut: false,

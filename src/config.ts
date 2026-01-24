@@ -1,5 +1,5 @@
 import * as fs from "node:fs/promises";
-import { ConfigSchema, PrChecksSchema, BranchCleanupSchema, type Config } from "./schemas";
+import { ConfigSchema, PrChecksSchema, BranchCleanupSchema, type Config, type AgentConfigUnion } from "./schemas";
 import { getConfigPath, getWreckitDir } from "./fs/paths";
 import { safeWriteJson } from "./fs/atomic";
 import {
@@ -25,12 +25,7 @@ export interface ConfigResolved {
   base_branch: string;
   branch_prefix: string;
   merge_mode: "pr" | "direct";
-  agent: {
-    mode: "process" | "sdk";
-    command: string;
-    args: string[];
-    completion_signal: string;
-  };
+  agent: AgentConfigUnion;
   max_iterations: number;
   timeout_seconds: number;
   pr_checks: PrChecksResolved;
@@ -53,10 +48,9 @@ export const DEFAULT_CONFIG: ConfigResolved = {
   branch_prefix: "wreckit/",
   merge_mode: "pr",
   agent: {
-    mode: "sdk",
-    command: "claude", // Kept for fallback
-    args: ["--dangerously-skip-permissions", "--print"], // Kept for fallback
-    completion_signal: "<promise>COMPLETE</promise>", // Kept for fallback
+    kind: "claude_sdk",
+    model: "claude-sonnet-4-20250514",
+    max_tokens: 4096,
   },
   max_iterations: 100,
   timeout_seconds: 3600,
@@ -73,17 +67,46 @@ export const DEFAULT_CONFIG: ConfigResolved = {
   },
 };
 
+/**
+ * Migrate agent config from legacy mode-based format to new kind-based format.
+ * This enables backward compatibility with existing config files.
+ */
+function migrateAgentConfig(agent: any): AgentConfigUnion {
+  // If no agent config provided, use default
+  if (!agent) {
+    return DEFAULT_CONFIG.agent;
+  }
+
+  // If already using kind, return as-is (new format)
+  if ("kind" in agent) {
+    return agent as AgentConfigUnion;
+  }
+
+  // Migrate from mode to kind (legacy format)
+  if ("mode" in agent) {
+    if (agent.mode === "sdk") {
+      return {
+        kind: "claude_sdk",
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 4096,
+      };
+    } else {
+      // mode === "process"
+      return {
+        kind: "process",
+        command: agent.command ?? "claude",
+        args: agent.args ?? [],
+        completion_signal: agent.completion_signal ?? "<promise>COMPLETE</promise>",
+      };
+    }
+  }
+
+  // Fallback to default
+  return DEFAULT_CONFIG.agent;
+}
+
 export function mergeWithDefaults(partial: Partial<Config>): ConfigResolved {
-  const agent = partial.agent
-    ? {
-        mode: partial.agent.mode ?? DEFAULT_CONFIG.agent.mode,
-        command: partial.agent.command ?? DEFAULT_CONFIG.agent.command,
-        args: partial.agent.args ?? DEFAULT_CONFIG.agent.args,
-        completion_signal:
-          partial.agent.completion_signal ??
-          DEFAULT_CONFIG.agent.completion_signal,
-      }
-    : { ...DEFAULT_CONFIG.agent };
+  const agent = migrateAgentConfig(partial.agent);
 
   const prChecks = partial.pr_checks
     ? {
@@ -119,18 +142,30 @@ export function applyOverrides(
   config: ConfigResolved,
   overrides: ConfigOverrides
 ): ConfigResolved {
+  let agent = config.agent;
+
+  // Apply overrides only for process mode (where command/args/completion_signal are relevant)
+  if (agent.kind === "process") {
+    const hasProcessOverrides = overrides.agentCommand !== undefined ||
+      overrides.agentArgs !== undefined ||
+      overrides.completionSignal !== undefined;
+
+    if (hasProcessOverrides) {
+      agent = {
+        ...agent,
+        command: overrides.agentCommand ?? agent.command,
+        args: overrides.agentArgs ?? agent.args,
+        completion_signal: overrides.completionSignal ?? agent.completion_signal,
+      };
+    }
+  }
+
   return {
     schema_version: config.schema_version,
     base_branch: overrides.baseBranch ?? config.base_branch,
     branch_prefix: overrides.branchPrefix ?? config.branch_prefix,
     merge_mode: config.merge_mode,
-    agent: {
-      mode: config.agent.mode,
-      command: overrides.agentCommand ?? config.agent.command,
-      args: overrides.agentArgs ?? config.agent.args,
-      completion_signal:
-        overrides.completionSignal ?? config.agent.completion_signal,
-    },
+    agent,
     max_iterations: overrides.maxIterations ?? config.max_iterations,
     timeout_seconds: overrides.timeoutSeconds ?? config.timeout_seconds,
     pr_checks: config.pr_checks,

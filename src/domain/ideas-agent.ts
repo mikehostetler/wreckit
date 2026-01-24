@@ -1,4 +1,4 @@
-import { runAgent, getAgentConfig } from "../agent/runner";
+import { runAgentUnion, getAgentConfigUnion } from "../agent/runner";
 import { loadConfig } from "../config";
 import { logger } from "../logging";
 import { loadPromptTemplate } from "../prompts";
@@ -42,7 +42,7 @@ export async function parseIdeasWithAgent(
   const prompt = template.replace("{{input}}", text);
 
   const resolvedConfig = await loadConfig(root);
-  const config = getAgentConfig(resolvedConfig);
+  const config = getAgentConfigUnion(resolvedConfig);
 
   // Capture ideas via MCP tool call
   // Use ideas-only MCP server to reduce blast radius (Gap 2 mitigation)
@@ -57,11 +57,12 @@ export async function parseIdeasWithAgent(
   // This ensures the agent can ONLY extract structured ideas, not implement fixes
   // Using ideas-only server (Gap 2 mitigation) reduces blast radius by not registering
   // tools from other phases (save_prd, update_story_status)
-  const result = await runAgent({
+  const result = await runAgentUnion({
+    config,
     cwd: root,
     prompt,
-    config,
     logger,
+    timeoutSeconds: resolvedConfig.timeout_seconds,
     mcpServers: { wreckit: ideasServer },
     allowedTools: ["mcp__wreckit__save_parsed_ideas"],
     mockAgent: options.mockAgent,

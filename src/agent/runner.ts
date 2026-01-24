@@ -2,6 +2,7 @@ import { spawn, type ChildProcess } from "node:child_process";
 import type { ConfigResolved } from "../config";
 import type { Logger } from "../logging";
 import type { AgentEvent } from "../tui/agentEvents";
+import type { AgentConfigUnion } from "../schemas";
 
 // Registry for cleanup on exit - tracks both SDK AbortControllers and process ChildProcesses
 const activeSdkControllers = new Set<AbortController>();
@@ -84,12 +85,41 @@ export interface RunAgentOptions {
   allowedTools?: string[];
 }
 
+/**
+ * Get agent configuration in union format from resolved config.
+ * This is the new helper that replaces getAgentConfig.
+ */
+export function getAgentConfigUnion(config: ConfigResolved): AgentConfigUnion {
+  return config.agent;
+}
+
+/**
+ * Get legacy agent configuration from resolved config.
+ * This function converts the new AgentConfigUnion format back to the legacy AgentConfig format.
+ *
+ * @deprecated Use getAgentConfigUnion and runAgentUnion instead.
+ */
 export function getAgentConfig(config: ConfigResolved): AgentConfig {
+  const agent = config.agent;
+
+  // Convert from new kind-based format to legacy mode-based format
+  if (agent.kind === "process") {
+    return {
+      mode: "process",
+      command: agent.command,
+      args: agent.args,
+      completion_signal: agent.completion_signal,
+      timeout_seconds: config.timeout_seconds,
+      max_iterations: config.max_iterations,
+    };
+  }
+
+  // All SDK kinds map to legacy mode: "sdk"
   return {
-    mode: config.agent.mode,
-    command: config.agent.command,
-    args: config.agent.args,
-    completion_signal: config.agent.completion_signal,
+    mode: "sdk",
+    command: "claude",
+    args: [],
+    completion_signal: "<promise>COMPLETE</promise>",
     timeout_seconds: config.timeout_seconds,
     max_iterations: config.max_iterations,
   };
@@ -290,8 +320,6 @@ async function runProcessAgent(options: RunAgentOptions): Promise<AgentResult> {
 // New Agent Dispatch System (Phase 4 - Discriminated Union)
 // ============================================================
 
-import type { AgentConfigUnion } from "../schemas";
-
 export interface UnionRunAgentOptions {
   config: AgentConfigUnion;
   cwd: string;
@@ -303,6 +331,8 @@ export interface UnionRunAgentOptions {
   onStdoutChunk?: (chunk: string) => void;
   onStderrChunk?: (chunk: string) => void;
   onAgentEvent?: (event: AgentEvent) => void;
+  /** MCP servers to make available to the agent (e.g., wreckit server for PRD capture) */
+  mcpServers?: Record<string, unknown>;
   /** Restrict agent to only specific tools (e.g., MCP tools). Prevents use of Read, Write, Bash, etc. */
   allowedTools?: string[];
 }
@@ -376,6 +406,8 @@ export async function runAgentUnion(options: UnionRunAgentOptions): Promise<Agen
         mockAgent: options.mockAgent,
         onStdoutChunk: options.onStdoutChunk,
         onStderrChunk: options.onStderrChunk,
+        onAgentEvent: options.onAgentEvent,
+        mcpServers: options.mcpServers,
         allowedTools: options.allowedTools,
       };
       return runProcessAgent(legacyOptions);
@@ -401,6 +433,8 @@ export async function runAgentUnion(options: UnionRunAgentOptions): Promise<Agen
         mockAgent: options.mockAgent,
         onStdoutChunk: options.onStdoutChunk,
         onStderrChunk: options.onStderrChunk,
+        onAgentEvent: options.onAgentEvent,
+        mcpServers: options.mcpServers,
         allowedTools: options.allowedTools,
       };
       return runClaudeSdkAgent(legacyOptions, legacyConfig);
@@ -416,6 +450,8 @@ export async function runAgentUnion(options: UnionRunAgentOptions): Promise<Agen
         dryRun: options.dryRun,
         onStdoutChunk: options.onStdoutChunk,
         onStderrChunk: options.onStderrChunk,
+        onAgentEvent: options.onAgentEvent,
+        mcpServers: options.mcpServers,
         allowedTools: options.allowedTools,
       });
     }
@@ -430,6 +466,8 @@ export async function runAgentUnion(options: UnionRunAgentOptions): Promise<Agen
         dryRun: options.dryRun,
         onStdoutChunk: options.onStdoutChunk,
         onStderrChunk: options.onStderrChunk,
+        onAgentEvent: options.onAgentEvent,
+        mcpServers: options.mcpServers,
         allowedTools: options.allowedTools,
       });
     }
@@ -444,6 +482,8 @@ export async function runAgentUnion(options: UnionRunAgentOptions): Promise<Agen
         dryRun: options.dryRun,
         onStdoutChunk: options.onStdoutChunk,
         onStderrChunk: options.onStderrChunk,
+        onAgentEvent: options.onAgentEvent,
+        mcpServers: options.mcpServers,
         allowedTools: options.allowedTools,
       });
     }

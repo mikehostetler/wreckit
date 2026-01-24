@@ -1,0 +1,134 @@
+{
+  "schema_version": 1,
+  "id": "006-refactor-runnerts-to-adopt-runagentunion-pattern",
+  "branch_name": "wreckit/006-refactor-runnerts-to-adopt-runagentunion-pattern",
+  "user_stories": [
+    {
+      "id": "US-001",
+      "title": "Enhance UnionRunAgentOptions with mcpServers and onAgentEvent fields",
+      "acceptance_criteria": [
+        "UnionRunAgentOptions interface includes mcpServers field matching RunAgentOptions",
+        "UnionRunAgentOptions interface includes onAgentEvent field matching RunAgentOptions",
+        "runAgentUnion passes mcpServers to claude_sdk and process cases",
+        "runAgentUnion passes onAgentEvent to all SDK runners",
+        "Type checking passes with npm run typecheck",
+        "All existing tests pass"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "This is a prerequisite for migrating workflow call sites since plan and implement phases require MCP servers."
+    },
+    {
+      "id": "US-002",
+      "title": "Update ConfigResolved.agent to use AgentConfigUnion type",
+      "acceptance_criteria": [
+        "ConfigResolved interface uses AgentConfigUnion instead of inline mode-based type",
+        "ConfigSchema accepts both legacy mode format and new kind format via z.union",
+        "DEFAULT_CONFIG uses kind: 'claude_sdk' format",
+        "mergeWithDefaults includes migration logic from mode to kind",
+        "applyOverrides handles new agent structure for process mode overrides",
+        "Existing config files with mode: 'sdk' are correctly migrated to kind: 'claude_sdk'",
+        "Existing config files with mode: 'process' are correctly migrated to kind: 'process'",
+        "Type checking passes with npm run typecheck",
+        "Config tests pass"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Schema changes with backward compatibility. Migration happens transparently on config load."
+    },
+    {
+      "id": "US-003",
+      "title": "Create getAgentConfigUnion helper and export from agent module",
+      "acceptance_criteria": [
+        "getAgentConfigUnion function exists in src/agent/runner.ts",
+        "Function takes ConfigResolved and returns AgentConfigUnion",
+        "Function is exported from src/agent/index.ts",
+        "runAgentUnion is exported from src/agent/index.ts",
+        "UnionRunAgentOptions type is exported from src/agent/index.ts",
+        "Type checking passes"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Simple helper that enables gradual migration. Essentially returns config.agent directly."
+    },
+    {
+      "id": "US-004",
+      "title": "Migrate workflow call sites to runAgentUnion",
+      "acceptance_criteria": [
+        "runPhaseResearch uses runAgentUnion and getAgentConfigUnion",
+        "runPhasePlan uses runAgentUnion with mcpServers parameter",
+        "runPhaseImplement mockAgent path uses runAgentUnion",
+        "runPhaseImplement main loop uses runAgentUnion with mcpServers",
+        "runPhasePr uses runAgentUnion",
+        "All workflow call sites pass timeoutSeconds from config.timeout_seconds",
+        "buildPromptVariables checks config.agent.kind instead of config.agent.mode",
+        "Workflow tests pass",
+        "Type checking passes"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Six call sites in itemWorkflow.ts need migration. Test after each to catch issues early."
+    },
+    {
+      "id": "US-005",
+      "title": "Migrate ideas-agent.ts to runAgentUnion",
+      "acceptance_criteria": [
+        "parseIdeasWithAgent uses runAgentUnion and getAgentConfigUnion",
+        "timeoutSeconds is passed from resolved config",
+        "mcpServers and allowedTools are passed correctly",
+        "ideas-agent tests pass",
+        "Type checking passes"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Single call site in ideas-agent.ts."
+    },
+    {
+      "id": "US-006",
+      "title": "Update test mocks to use runAgentUnion",
+      "acceptance_criteria": [
+        "workflow.test.ts mocks runAgentUnion instead of runAgent",
+        "workflow.test.ts mocks getAgentConfigUnion instead of getAgentConfig",
+        "All references to mockedRunAgent updated to mockedRunAgentUnion",
+        "createTestConfig returns agent with kind format instead of mode format",
+        "agent.test.ts includes tests for getAgentConfigUnion",
+        "ideas-agent.test.ts config uses kind format",
+        "All tests pass"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Test infrastructure update. Most mock behavior remains the same, just function names change."
+    },
+    {
+      "id": "US-007",
+      "title": "Remove legacy runAgent, AgentConfig, RunAgentOptions, and getAgentConfig",
+      "acceptance_criteria": [
+        "runAgent function removed from runner.ts",
+        "AgentConfig interface removed from runner.ts",
+        "RunAgentOptions interface removed from runner.ts",
+        "getAgentConfig function removed from runner.ts",
+        "simulateMockAgent helper removed from runner.ts",
+        "Legacy exports removed from src/agent/index.ts",
+        "claude-sdk-runner.ts updated to use internal types or union types",
+        "No TypeScript errors",
+        "All tests pass",
+        "Build succeeds"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "Final cleanup. Only do after all call sites migrated and tests updated."
+    },
+    {
+      "id": "US-008",
+      "title": "Verify no regression with wreckit bench",
+      "acceptance_criteria": [
+        "Run wreckit bench command if benchmark infrastructure exists",
+        "No performance regression compared to before refactoring",
+        "Manual test of wreckit run with --mock-agent works correctly"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "Final verification step. May need to be done manually if bench infrastructure not available."
+    }
+  ]
+}

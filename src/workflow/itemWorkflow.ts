@@ -30,7 +30,7 @@ import {
   renderPrompt,
   type PromptVariables,
 } from "../prompts";
-import { runAgent, getAgentConfig } from "../agent/runner";
+import { runAgentUnion, getAgentConfigUnion } from "../agent/runner";
 import { getAllowedToolsForPhase } from "../agent/toolAllowlist";
 import {
   ensureBranch,
@@ -148,6 +148,11 @@ async function buildPromptVariables(
   const prdContent = await readFileIfExists(getPrdPath(root, item.id));
   const progress = await readFileIfExists(getProgressLogPath(root, item.id));
 
+  // Determine completion_signal and sdk_mode based on agent kind
+  const agent = config.agent;
+  const isProcessMode = agent.kind === "process";
+  const completionSignal = isProcessMode ? agent.completion_signal : "<promise>COMPLETE</promise>";
+
   return {
     id: item.id,
     title: item.title,
@@ -156,8 +161,8 @@ async function buildPromptVariables(
     item_path: itemDir,
     branch_name: branchName,
     base_branch: config.base_branch,
-    completion_signal: config.agent.completion_signal,
-    sdk_mode: config.agent.mode === "sdk",
+    completion_signal: completionSignal,
+    sdk_mode: !isProcessMode, // All non-process kinds are SDK modes
     research,
     plan,
     prd: prdContent,
@@ -212,20 +217,21 @@ export async function runPhaseResearch(
   const prompt = renderPrompt(template, variables);
 
   const itemDir = getItemDir(root, item.id);
-  const agentConfig = getAgentConfig(config);
+  const agentConfig = getAgentConfigUnion(config);
 
   // Capture git status before running agent for read-only enforcement
   const beforeStatus: GitFileChange[] = dryRun || mockAgent
     ? []
     : await getGitStatus({ cwd: root, logger });
 
-  const result = await runAgent({
+  const result = await runAgentUnion({
     config: agentConfig,
     cwd: itemDir,
     prompt,
     logger,
     dryRun,
     mockAgent,
+    timeoutSeconds: config.timeout_seconds,
     onStdoutChunk: onAgentOutput,
     onStderrChunk: onAgentOutput,
     onAgentEvent,
@@ -352,7 +358,7 @@ export async function runPhasePlan(
   const prompt = renderPrompt(template, variables);
 
   const itemDir = getItemDir(root, item.id);
-  const agentConfig = getAgentConfig(config);
+  const agentConfig = getAgentConfigUnion(config);
 
   // Capture git status before running agent for design-only enforcement
   const beforeStatus: GitFileChange[] = dryRun || mockAgent
@@ -367,13 +373,14 @@ export async function runPhasePlan(
     },
   });
 
-  const result = await runAgent({
+  const result = await runAgentUnion({
     config: agentConfig,
     cwd: itemDir,
     prompt,
     logger,
     dryRun,
     mockAgent,
+    timeoutSeconds: config.timeout_seconds,
     onStdoutChunk: onAgentOutput,
     onStderrChunk: onAgentOutput,
     onAgentEvent,
@@ -534,14 +541,15 @@ export async function runPhaseImplement(
     const template = await loadPromptTemplate(root, "implement");
     const variables = await buildPromptVariables(root, item, config);
     const prompt = renderPrompt(template, variables);
-    const agentConfig = getAgentConfig(config);
-    await runAgent({
+    const agentConfig = getAgentConfigUnion(config);
+    await runAgentUnion({
       config: agentConfig,
       cwd: itemDir,
       prompt,
       logger,
       dryRun,
       mockAgent,
+      timeoutSeconds: config.timeout_seconds,
       onStdoutChunk: onAgentOutput,
       onStderrChunk: onAgentOutput,
       onAgentEvent,
@@ -607,14 +615,15 @@ export async function runPhaseImplement(
       },
     });
 
-    const agentConfig = getAgentConfig(config);
-    const result = await runAgent({
+    const agentConfig = getAgentConfigUnion(config);
+    const result = await runAgentUnion({
       config: agentConfig,
       cwd: itemDir,
       prompt,
       logger,
       dryRun,
       mockAgent,
+      timeoutSeconds: config.timeout_seconds,
       onStdoutChunk: onAgentOutput,
       onStderrChunk: onAgentOutput,
       onAgentEvent,
@@ -1093,14 +1102,15 @@ export async function runPhasePr(
       const variables = await buildPromptVariables(root, item, config);
       const prompt = renderPrompt(template, variables);
 
-      const agentConfig = getAgentConfig(config);
-      const result = await runAgent({
+      const agentConfig = getAgentConfigUnion(config);
+      const result = await runAgentUnion({
         config: agentConfig,
         cwd: itemDir,
         prompt,
         logger,
         dryRun: false,
         mockAgent,
+        timeoutSeconds: config.timeout_seconds,
         onStdoutChunk: onAgentOutput,
         onStderrChunk: onAgentOutput,
         onAgentEvent,
