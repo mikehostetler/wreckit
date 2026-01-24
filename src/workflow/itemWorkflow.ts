@@ -213,9 +213,8 @@ export async function runPhaseResearch(
   }
 
   const template = await loadPromptTemplate(root, "research");
-  const variables = await buildPromptVariables(root, item, config);
-  const prompt = renderPrompt(template, variables);
-
+  const baseVariables = await buildPromptVariables(root, item, config);
+  
   const itemDir = getItemDir(root, item.id);
   const agentConfig = getAgentConfigUnion(config);
 
@@ -224,94 +223,116 @@ export async function runPhaseResearch(
     ? []
     : await getGitStatus({ cwd: root, logger });
 
-  const result = await runAgentUnion({
-    config: agentConfig,
-    cwd: itemDir,
-    prompt,
-    logger,
-    dryRun,
-    mockAgent,
-    timeoutSeconds: config.timeout_seconds,
-    onStdoutChunk: onAgentOutput,
-    onStderrChunk: onAgentOutput,
-    onAgentEvent,
-    // Restrict to read-only tools for research phase
-    allowedTools: getAllowedToolsForPhase("research"),
-  });
+  let attempt = 0;
+  const maxAttempts = 3;
+  let validationError: string | null = null;
+  let lastError: string | null = null;
 
-  if (dryRun) {
+  while (attempt < maxAttempts) {
+    attempt++;
+    if (attempt > 1) {
+      logger.warn(`Research validation failed (attempt ${attempt - 1}/${maxAttempts}). Retrying...`);
+    }
+
+    // Append validation feedback to prompt if this is a retry
+    let prompt = renderPrompt(template, baseVariables);
+    if (validationError) {
+      prompt += `\n\nCRITICAL: Your previous attempt failed validation with the following errors:\n${validationError}\n\nYou MUST fix these issues in this attempt. Ensure you strictly follow all format requirements and section headers.`;
+    }
+
+    const result = await runAgentUnion({
+      config: agentConfig,
+      cwd: itemDir,
+      prompt,
+      logger,
+      dryRun,
+      mockAgent,
+      timeoutSeconds: config.timeout_seconds,
+      onStdoutChunk: onAgentOutput,
+      onStderrChunk: onAgentOutput,
+      onAgentEvent,
+      // Restrict to read-only tools for research phase
+      allowedTools: getAllowedToolsForPhase("research"),
+    });
+
+    if (dryRun) {
+      return { success: true, item };
+    }
+
+    if (mockAgent) {
+      item = { ...item, state: "researched", last_error: null };
+      await saveItem(root, item);
+      return { success: true, item };
+    }
+
+    if (!result.success) {
+      lastError = result.timedOut
+        ? "Agent timed out"
+        : `Agent failed with exit code ${result.exitCode}`;
+      validationError = null; // System error, not validation error
+      // Don't retry on system errors (unless we want to?) - for now, break
+      break; 
+    }
+
+    if (!(await pathExists(researchPath))) {
+      validationError = "Agent did not create research.md";
+      lastError = validationError;
+      continue; // Retry
+    }
+
+    // Validate research document quality (Gap 2: Research Quality Validation)
+    const researchContent = await fs.readFile(researchPath, "utf-8");
+    const qualityResult = validateResearchQuality(researchContent);
+
+    if (!qualityResult.valid) {
+      validationError = `Research quality validation failed:\n${qualityResult.errors.join("\n")}`;
+      lastError = validationError;
+      continue; // Retry
+    }
+
+    logger.info(
+      `Research quality validation passed: ${qualityResult.citations} citations, ` +
+      `${qualityResult.summaryLength} char summary, ${qualityResult.analysisLength} char analysis`
+    );
+
+    // Enforce read-only behavior: check for unauthorized file modifications
+    const allowedResearchPath = `.wreckit/items/${item.id}/research.md`;
+    const compareOptions: StatusCompareOptions = {
+      cwd: root,
+      logger,
+      allowedPaths: [allowedResearchPath],
+    };
+
+    const comparison = await compareGitStatus(beforeStatus, compareOptions);
+    if (!comparison.valid) {
+      const error = formatViolations(comparison);
+      logger.error(error);
+      item = { ...item, last_error: error };
+      await saveItem(root, item);
+      return { success: false, item, error };
+    }
+
+    // Validation passed!
+    const newCtx = await buildValidationContext(root, item);
+    const validation = validateTransition(item.state, targetState, newCtx);
+    if (!validation.valid) {
+      const error = validation.reason ?? "Validation failed";
+      item = { ...item, last_error: error };
+      await saveItem(root, item);
+      return { success: false, item, error };
+    }
+
+    item = { ...item, state: targetState, last_error: null };
+    await saveItem(root, item);
+
     return { success: true, item };
   }
 
-  if (mockAgent) {
-    item = { ...item, state: "researched", last_error: null };
-    await saveItem(root, item);
-    return { success: true, item };
-  }
-
-  if (!result.success) {
-    const error = result.timedOut
-      ? "Agent timed out"
-      : `Agent failed with exit code ${result.exitCode}`;
-    item = { ...item, last_error: error };
-    await saveItem(root, item);
-    return { success: false, item, error };
-  }
-
-  if (!(await pathExists(researchPath))) {
-    const error = "Agent did not create research.md";
-    item = { ...item, last_error: error };
-    await saveItem(root, item);
-    return { success: false, item, error };
-  }
-
-  // Validate research document quality (Gap 2: Research Quality Validation)
-  const researchContent = await fs.readFile(researchPath, "utf-8");
-  const qualityResult = validateResearchQuality(researchContent);
-
-  if (!qualityResult.valid) {
-    const error = `Research quality validation failed:\n${qualityResult.errors.join("\n")}`;
-    logger.error(error);
-    item = { ...item, last_error: error };
-    await saveItem(root, item);
-    return { success: false, item, error };
-  }
-
-  logger.info(
-    `Research quality validation passed: ${qualityResult.citations} citations, ` +
-    `${qualityResult.summaryLength} char summary, ${qualityResult.analysisLength} char analysis`
-  );
-
-  // Enforce read-only behavior: check for unauthorized file modifications
-  const allowedResearchPath = `.wreckit/items/${item.id}/research.md`;
-  const compareOptions: StatusCompareOptions = {
-    cwd: root,
-    logger,
-    allowedPaths: [allowedResearchPath],
-  };
-
-  const comparison = await compareGitStatus(beforeStatus, compareOptions);
-  if (!comparison.valid) {
-    const error = formatViolations(comparison);
-    logger.error(error);
-    item = { ...item, last_error: error };
-    await saveItem(root, item);
-    return { success: false, item, error };
-  }
-
-  const newCtx = await buildValidationContext(root, item);
-  const validation = validateTransition(item.state, targetState, newCtx);
-  if (!validation.valid) {
-    const error = validation.reason ?? "Validation failed";
-    item = { ...item, last_error: error };
-    await saveItem(root, item);
-    return { success: false, item, error };
-  }
-
-  item = { ...item, state: targetState, last_error: null };
+  // If we exhausted attempts or hit a hard error
+  const finalError = lastError ?? "Research phase failed after max attempts";
+  item = { ...item, last_error: finalError };
   await saveItem(root, item);
-
-  return { success: true, item };
+  return { success: false, item, error: finalError };
 }
 
 export async function runPhasePlan(
@@ -354,9 +375,8 @@ export async function runPhasePlan(
   }
 
   const template = await loadPromptTemplate(root, "plan");
-  const variables = await buildPromptVariables(root, item, config);
-  const prompt = renderPrompt(template, variables);
-
+  const baseVariables = await buildPromptVariables(root, item, config);
+  
   const itemDir = getItemDir(root, item.id);
   const agentConfig = getAgentConfigUnion(config);
 
@@ -365,144 +385,161 @@ export async function runPhasePlan(
     ? []
     : await getGitStatus({ cwd: root, logger });
 
-  // Create MCP server to capture PRD via tool call
-  let capturedPrd: Prd | null = null;
-  const wreckitServer = createWreckitMcpServer({
-    onSavePrd: (prd) => {
-      capturedPrd = prd;
-    },
-  });
+  let attempt = 0;
+  const maxAttempts = 3;
+  let validationError: string | null = null;
+  let lastError: string | null = null;
 
-  const result = await runAgentUnion({
-    config: agentConfig,
-    cwd: itemDir,
-    prompt,
-    logger,
-    dryRun,
-    mockAgent,
-    timeoutSeconds: config.timeout_seconds,
-    onStdoutChunk: onAgentOutput,
-    onStderrChunk: onAgentOutput,
-    onAgentEvent,
-    mcpServers: { wreckit: wreckitServer },
-    // Restrict to read+write tools for plan phase
-    allowedTools: getAllowedToolsForPhase("plan"),
-  });
+  while (attempt < maxAttempts) {
+    attempt++;
+    if (attempt > 1) {
+      logger.warn(`Plan validation failed (attempt ${attempt - 1}/${maxAttempts}). Retrying...`);
+    }
 
-  if (dryRun) {
+    // Append validation feedback to prompt if this is a retry
+    let prompt = renderPrompt(template, baseVariables);
+    if (validationError) {
+      prompt += `\n\nCRITICAL: Your previous attempt failed validation with the following errors:\n${validationError}\n\nYou MUST fix these issues in this attempt. Ensure you strictly follow all format requirements, section headers, and JSON schemas.`;
+    }
+
+    // Create MCP server to capture PRD via tool call
+    let capturedPrd: Prd | null = null;
+    const wreckitServer = createWreckitMcpServer({
+      onSavePrd: (prd) => {
+        capturedPrd = prd;
+      },
+    });
+
+    const result = await runAgentUnion({
+      config: agentConfig,
+      cwd: itemDir,
+      prompt,
+      logger,
+      dryRun,
+      mockAgent,
+      timeoutSeconds: config.timeout_seconds,
+      onStdoutChunk: onAgentOutput,
+      onStderrChunk: onAgentOutput,
+      onAgentEvent,
+      mcpServers: { wreckit: wreckitServer },
+      // Restrict to read+write tools for plan phase
+      allowedTools: getAllowedToolsForPhase("plan"),
+    });
+
+    if (dryRun) {
+      return { success: true, item };
+    }
+
+    if (mockAgent) {
+      item = { ...item, state: "planned", last_error: null };
+      await saveItem(root, item);
+      return { success: true, item };
+    }
+
+    if (!result.success) {
+      lastError = result.timedOut
+        ? "Agent timed out"
+        : `Agent failed with exit code ${result.exitCode}`;
+      validationError = null; // System error
+      break; 
+    }
+
+    if (!(await pathExists(planPath))) {
+      validationError = "Agent did not create plan.md";
+      lastError = validationError;
+      continue;
+    }
+
+    // Validate plan document quality (Gap 2: Plan Content Quality Validation)
+    const planContent = await fs.readFile(planPath, "utf-8");
+    const planQualityResult = validatePlanQuality(planContent);
+
+    if (!planQualityResult.valid) {
+      validationError = `Plan quality validation failed:\n${planQualityResult.errors.join("\n")}`;
+      lastError = validationError;
+      continue;
+    }
+
+    logger.info(
+      `Plan quality validation passed: ${planQualityResult.phases} implementation phase(s)`
+    );
+
+    // If PRD was captured via MCP tool, write it to disk
+    if (capturedPrd !== null) {
+      const prd = capturedPrd as Prd;
+      await writePrd(itemDir, prd);
+      logger.info(`PRD saved via MCP tool with ${prd.user_stories.length} stories`);
+    }
+
+    // Check if prd.json exists (from MCP or direct file write)
+    if (!(await pathExists(prdPath))) {
+      validationError = "Agent did not create prd.json";
+      lastError = validationError;
+      continue;
+    }
+
+    const prd = await loadPrdSafe(itemDir);
+    if (!prd) {
+      validationError = "prd.json is not valid JSON or fails schema validation";
+      lastError = validationError;
+      continue;
+    }
+
+    // Validate story quality (Gap 3: Story Quality Validation)
+    const storyQualityResult = validateStoryQuality(prd);
+    if (!storyQualityResult.valid) {
+      validationError = `Story quality validation failed:\n${storyQualityResult.errors.join("\n")}`;
+      lastError = validationError;
+      continue;
+    }
+
+    logger.info(
+      `Story quality validation passed: ${storyQualityResult.storyCount} story/stories, ` +
+      `${storyQualityResult.failedStoryCount} failed`
+    );
+
+    // Enforce design-only behavior: check for unauthorized file modifications (Gap 1)
+    const allowedPlanPaths = [
+      `.wreckit/items/${item.id}/plan.md`,
+      `.wreckit/items/${item.id}/prd.json`,
+    ];
+    const compareOptions: StatusCompareOptions = {
+      cwd: root,
+      logger,
+      allowedPaths: allowedPlanPaths,
+    };
+
+    const comparison = await compareGitStatus(beforeStatus, compareOptions);
+    if (!comparison.valid) {
+      const error = formatViolations(comparison, 'plan');
+      logger.error(error);
+      item = { ...item, last_error: error };
+      await saveItem(root, item);
+      return { success: false, item, error };
+    }
+
+    // Validation passed!
+    const targetState: WorkflowState = "planned";
+    const newCtx = await buildValidationContext(root, item);
+    const validation = validateTransition(item.state, targetState, newCtx);
+    if (!validation.valid) {
+      const error = validation.reason ?? "Validation failed";
+      item = { ...item, last_error: error };
+      await saveItem(root, item);
+      return { success: false, item, error };
+    }
+
+    item = { ...item, state: targetState, last_error: null };
+    await saveItem(root, item);
+
     return { success: true, item };
   }
 
-  if (mockAgent) {
-    item = { ...item, state: "planned", last_error: null };
-    await saveItem(root, item);
-    return { success: true, item };
-  }
-
-  if (!result.success) {
-    const error = result.timedOut
-      ? "Agent timed out"
-      : `Agent failed with exit code ${result.exitCode}`;
-    item = { ...item, last_error: error };
-    await saveItem(root, item);
-    return { success: false, item, error };
-  }
-
-  if (!(await pathExists(planPath))) {
-    const error = "Agent did not create plan.md";
-    item = { ...item, last_error: error };
-    await saveItem(root, item);
-    return { success: false, item, error };
-  }
-
-  // Validate plan document quality (Gap 2: Plan Content Quality Validation)
-  const planContent = await fs.readFile(planPath, "utf-8");
-  const planQualityResult = validatePlanQuality(planContent);
-
-  if (!planQualityResult.valid) {
-    const error = `Plan quality validation failed:\n${planQualityResult.errors.join("\n")}`;
-    logger.error(error);
-    item = { ...item, last_error: error };
-    await saveItem(root, item);
-    return { success: false, item, error };
-  }
-
-  logger.info(
-    `Plan quality validation passed: ${planQualityResult.phases} implementation phase(s)`
-  );
-
-  // If PRD was captured via MCP tool, write it to disk
-  if (capturedPrd !== null) {
-    const prd = capturedPrd as Prd;
-    await writePrd(itemDir, prd);
-    logger.info(`PRD saved via MCP tool with ${prd.user_stories.length} stories`);
-  }
-
-  // Check if prd.json exists (from MCP or direct file write)
-  if (!(await pathExists(prdPath))) {
-    const error = "Agent did not create prd.json";
-    item = { ...item, last_error: error };
-    await saveItem(root, item);
-    return { success: false, item, error };
-  }
-
-  const prd = await loadPrdSafe(itemDir);
-  if (!prd) {
-    const error = "prd.json is not valid JSON or fails schema validation";
-    item = { ...item, last_error: error };
-    await saveItem(root, item);
-    return { success: false, item, error };
-  }
-
-  // Validate story quality (Gap 3: Story Quality Validation)
-  const storyQualityResult = validateStoryQuality(prd);
-  if (!storyQualityResult.valid) {
-    const error = `Story quality validation failed:\n${storyQualityResult.errors.join("\n")}`;
-    logger.error(error);
-    item = { ...item, last_error: error };
-    await saveItem(root, item);
-    return { success: false, item, error };
-  }
-
-  logger.info(
-    `Story quality validation passed: ${storyQualityResult.storyCount} story/stories, ` +
-    `${storyQualityResult.failedStoryCount} failed`
-  );
-
-  // Enforce design-only behavior: check for unauthorized file modifications (Gap 1)
-  const allowedPlanPaths = [
-    `.wreckit/items/${item.id}/plan.md`,
-    `.wreckit/items/${item.id}/prd.json`,
-  ];
-  const compareOptions: StatusCompareOptions = {
-    cwd: root,
-    logger,
-    allowedPaths: allowedPlanPaths,
-  };
-
-  const comparison = await compareGitStatus(beforeStatus, compareOptions);
-  if (!comparison.valid) {
-    const error = formatViolations(comparison, 'plan');
-    logger.error(error);
-    item = { ...item, last_error: error };
-    await saveItem(root, item);
-    return { success: false, item, error };
-  }
-
-  const targetState: WorkflowState = "planned";
-  const newCtx = await buildValidationContext(root, item);
-  const validation = validateTransition(item.state, targetState, newCtx);
-  if (!validation.valid) {
-    const error = validation.reason ?? "Validation failed";
-    item = { ...item, last_error: error };
-    await saveItem(root, item);
-    return { success: false, item, error };
-  }
-
-  item = { ...item, state: targetState, last_error: null };
+  // If we exhausted attempts or hit a hard error
+  const finalError = lastError ?? "Plan phase failed after max attempts";
+  item = { ...item, last_error: finalError };
   await saveItem(root, item);
-
-  return { success: true, item };
+  return { success: false, item, error: finalError };
 }
 
 export async function runPhaseImplement(
