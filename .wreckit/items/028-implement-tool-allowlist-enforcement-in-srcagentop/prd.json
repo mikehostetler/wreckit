@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "id": "028-implement-tool-allowlist-enforcement-in-srcagentop",
+  "branch_name": "wreckit/028-implement-tool-allowlist-enforcement-in-srcagentop",
+  "user_stories": [
+    {
+      "id": "US-001",
+      "title": "Implement SDK integration in opencode-sdk-runner.ts",
+      "acceptance_criteria": [
+        "Import statements added for query, registerSdkController, unregisterSdkController, and buildSdkEnv",
+        "runOpenCodeSdkAgent() executes Claude Agent SDK with tool allowlist enforcement via 'tools' option",
+        "AbortController created and registered via registerSdkController() for cleanup",
+        "Timeout of 3600 seconds (1 hour) implemented with proper abort handling",
+        "Environment built via buildSdkEnv({ cwd, logger }) for credential resolution",
+        "SDK messages streamed to onStdoutChunk/onStderrChunk callbacks or stdout/stderr",
+        "AgentEvents emitted via onAgentEvent callback for TUI integration",
+        "Type checking passes: npm run typecheck",
+        "Build succeeds: npm run build",
+        "Linting passes: npm run lint"
+      ],
+      "priority": 1,
+      "status": "pending",
+      "notes": "Copy implementation from amp-sdk-runner.ts:72-184 and helper functions from lines 186-371, changing 'Amp' to 'OpenCode' in log messages and error strings."
+    },
+    {
+      "id": "US-002",
+      "title": "Add handleSdkError helper function",
+      "acceptance_criteria": [
+        "handleSdkError() function added that categorizes errors: auth, rate limit, context window, network",
+        "Authentication errors (API key, 401, Unauthorized) show helpful credential setup instructions",
+        "Rate limit errors (429) show appropriate retry message",
+        "Context window errors (tokens, too large) suggest breaking down the task",
+        "Network errors (ECONNREFUSED, ENOTFOUND) show connection troubleshooting",
+        "Error messages reference 'OpenCode SDK' not 'Amp SDK' or 'Codex SDK'"
+      ],
+      "priority": 1,
+      "status": "pending",
+      "notes": "Copy from amp-sdk-runner.ts:186-293, replace 'Amp SDK' with 'OpenCode SDK' in error messages."
+    },
+    {
+      "id": "US-003",
+      "title": "Add message formatting and event emission helpers",
+      "acceptance_criteria": [
+        "formatSdkMessage() function added that converts SDK messages to output strings",
+        "Handles message types: assistant, tool_result, result, error",
+        "emitAgentEventsFromSdkMessage() function added that emits structured AgentEvent objects",
+        "Emits events: assistant_text, tool_started, tool_result, run_result, error",
+        "Functions are identical to amp-sdk-runner.ts implementations"
+      ],
+      "priority": 1,
+      "status": "pending",
+      "notes": "Copy formatSdkMessage() from amp-sdk-runner.ts:295-328 and emitAgentEventsFromSdkMessage() from lines 330-371 without changes."
+    },
+    {
+      "id": "US-004",
+      "title": "Create unit tests for opencode-sdk-runner",
+      "acceptance_criteria": [
+        "Test file created at src/__tests__/opencode-sdk-runner.test.ts",
+        "Test: dry-run mode returns success without calling SDK",
+        "Test: dry-run logs tool restrictions when allowedTools provided",
+        "Test: explicit allowedTools takes precedence over phase-based allowlist",
+        "Test: falls back to phase-based allowlist when no explicit tools specified",
+        "Test: has no restrictions when neither allowedTools nor phase specified",
+        "All 5 tests pass: npm test src/__tests__/opencode-sdk-runner.test.ts",
+        "Full test suite passes: npm test"
+      ],
+      "priority": 2,
+      "status": "pending",
+      "notes": "Copy from codex-sdk-runner.test.ts, change CodexSdkAgentConfig to OpenCodeSdkAgentConfig, remove 'model' from config, update function imports and names."
+    },
+    {
+      "id": "US-005",
+      "title": "Update ROADMAP.md to mark objective complete",
+      "acceptance_criteria": [
+        "ROADMAP.md line 24 changed from '- [ ] Implement tool allowlist...' to '- [x] Implement tool allowlist...'",
+        "All three SDK runner objectives in M2 milestone now show [x] complete"
+      ],
+      "priority": 3,
+      "status": "pending",
+      "notes": "Simple checkbox update to mark the objective as complete."
+    }
+  ]
+}
