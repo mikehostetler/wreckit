@@ -28,17 +28,62 @@ export const BranchCleanupSchema = z.object({
   delete_remote: z.boolean().default(true),
 });
 
+// ============================================================
+// Agent Abstraction - Discriminated Union Schemas (Phase 4)
+// Must be defined BEFORE ConfigSchema since it references them
+// ============================================================
+
+export const ProcessAgentSchema = z.object({
+  kind: z.literal("process"),
+  command: z.string(),
+  args: z.array(z.string()).default([]),
+  completion_signal: z.string(),
+});
+
+export const ClaudeSdkAgentSchema = z.object({
+  kind: z.literal("claude_sdk"),
+  model: z.string().default("claude-sonnet-4-20250514"),
+  max_tokens: z.number().default(4096),
+  tools: z.array(z.string()).optional(),
+});
+
+export const AmpSdkAgentSchema = z.object({
+  kind: z.literal("amp_sdk"),
+  model: z.string().optional(),
+});
+
+export const CodexSdkAgentSchema = z.object({
+  kind: z.literal("codex_sdk"),
+  model: z.string().default("codex-1"),
+});
+
+export const OpenCodeSdkAgentSchema = z.object({
+  kind: z.literal("opencode_sdk"),
+});
+
+export const AgentConfigUnionSchema = z.discriminatedUnion("kind", [
+  ProcessAgentSchema,
+  ClaudeSdkAgentSchema,
+  AmpSdkAgentSchema,
+  CodexSdkAgentSchema,
+  OpenCodeSdkAgentSchema,
+]);
+
+// Legacy agent config (mode-based) - for backwards compatibility
+export const LegacyAgentConfigSchema = z.object({
+  mode: AgentModeSchema,
+  command: z.string(),
+  args: z.array(z.string()),
+  completion_signal: z.string(),
+});
+
 export const ConfigSchema = z.object({
   schema_version: z.number().default(1),
   base_branch: z.string().default("main"),
   branch_prefix: z.string().default("wreckit/"),
   merge_mode: MergeModeSchema.default("pr"),
-  agent: z.object({
-    mode: AgentModeSchema.default("process"),
-    command: z.string(),
-    args: z.array(z.string()),
-    completion_signal: z.string(),
-  }),
+  // Accept either legacy mode-based format or new kind-based union format
+  agent: z.union([LegacyAgentConfigSchema, AgentConfigUnionSchema]),
   max_iterations: z.number().default(100),
   timeout_seconds: z.number().default(3600),
   pr_checks: PrChecksSchema.optional(),
@@ -113,52 +158,13 @@ export type WorkflowState = z.infer<typeof WorkflowStateSchema>;
 export type StoryStatus = z.infer<typeof StoryStatusSchema>;
 export type MergeMode = z.infer<typeof MergeModeSchema>;
 export type Config = z.infer<typeof ConfigSchema>;
+export type LegacyAgentConfig = z.infer<typeof LegacyAgentConfigSchema>;
 export type Item = z.infer<typeof ItemSchema>;
 export type PriorityHint = z.infer<typeof PriorityHintSchema>;
 export type Story = z.infer<typeof StorySchema>;
 export type Prd = z.infer<typeof PrdSchema>;
 export type IndexItem = z.infer<typeof IndexItemSchema>;
 export type Index = z.infer<typeof IndexSchema>;
-
-// ============================================================
-// Agent Abstraction - Discriminated Union Schemas (Phase 4)
-// ============================================================
-
-export const ProcessAgentSchema = z.object({
-  kind: z.literal("process"),
-  command: z.string(),
-  args: z.array(z.string()).default([]),
-  completion_signal: z.string(),
-});
-
-export const ClaudeSdkAgentSchema = z.object({
-  kind: z.literal("claude_sdk"),
-  model: z.string().default("claude-sonnet-4-20250514"),
-  max_tokens: z.number().default(4096),
-  tools: z.array(z.string()).optional(),
-});
-
-export const AmpSdkAgentSchema = z.object({
-  kind: z.literal("amp_sdk"),
-  model: z.string().optional(),
-});
-
-export const CodexSdkAgentSchema = z.object({
-  kind: z.literal("codex_sdk"),
-  model: z.string().default("codex-1"),
-});
-
-export const OpenCodeSdkAgentSchema = z.object({
-  kind: z.literal("opencode_sdk"),
-});
-
-export const AgentConfigUnionSchema = z.discriminatedUnion("kind", [
-  ProcessAgentSchema,
-  ClaudeSdkAgentSchema,
-  AmpSdkAgentSchema,
-  CodexSdkAgentSchema,
-  OpenCodeSdkAgentSchema,
-]);
 
 export type ProcessAgentConfig = z.infer<typeof ProcessAgentSchema>;
 export type ClaudeSdkAgentConfig = z.infer<typeof ClaudeSdkAgentSchema>;

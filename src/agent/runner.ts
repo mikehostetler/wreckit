@@ -84,12 +84,33 @@ export interface RunAgentOptions {
   allowedTools?: string[];
 }
 
+/**
+ * Get legacy agent configuration from resolved config.
+ * This function converts the new AgentConfigUnion format back to the legacy AgentConfig format.
+ *
+ * @deprecated Use getAgentConfigUnion and runAgentUnion instead.
+ */
 export function getAgentConfig(config: ConfigResolved): AgentConfig {
+  const agent = config.agent;
+
+  // Convert from new kind-based format to legacy mode-based format
+  if (agent.kind === "process") {
+    return {
+      mode: "process",
+      command: agent.command,
+      args: agent.args,
+      completion_signal: agent.completion_signal,
+      timeout_seconds: config.timeout_seconds,
+      max_iterations: config.max_iterations,
+    };
+  }
+
+  // All SDK kinds map to legacy mode: "sdk"
   return {
-    mode: config.agent.mode,
-    command: config.agent.command,
-    args: config.agent.args,
-    completion_signal: config.agent.completion_signal,
+    mode: "sdk",
+    command: "claude",
+    args: [],
+    completion_signal: "<promise>COMPLETE</promise>",
     timeout_seconds: config.timeout_seconds,
     max_iterations: config.max_iterations,
   };
