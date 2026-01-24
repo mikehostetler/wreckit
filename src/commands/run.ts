@@ -6,7 +6,7 @@ import { findRepoRoot, findRootFromOptions, getItemDir, getResearchPath, getPlan
 import { pathExists } from "../fs/util";
 import { readItem } from "../fs/json";
 import { loadConfig } from "../config";
-import { FileNotFoundError, WreckitError } from "../errors";
+import { FileNotFoundError, WreckitError, isWreckitError } from "../errors";
 import {
   runPhaseResearch,
   runPhasePlan,
@@ -119,10 +119,15 @@ export async function runCommand(
       const runner = phaseRunners[nextPhase];
       const result = await runner(itemId, { ...workflowOptions, force: false });
       if (!result.success) {
-        throw new WreckitError(
-          result.error ?? `Phase ${nextPhase} failed for ${itemId}`,
-          "PHASE_FAILED"
-        );
+        const errorMsg = typeof result.error === "string"
+          ? result.error
+          : result.error?.message ?? `Phase ${nextPhase} failed for ${itemId}`;
+
+        // Re-throw if already a WreckitError, otherwise wrap
+        if (isWreckitError(result.error)) {
+          throw result.error;
+        }
+        throw new WreckitError(errorMsg, "PHASE_FAILED");
       }
       continue;
     }
@@ -148,11 +153,16 @@ export async function runCommand(
     const result = await runner(itemId, workflowOptions);
 
     if (!result.success) {
-      logger.error(`Phase ${nextPhase} failed for ${itemId}: ${result.error}`);
-      throw new WreckitError(
-        result.error ?? `Phase ${nextPhase} failed for ${itemId}`,
-        "PHASE_FAILED"
-      );
+      const errorMsg = typeof result.error === "string"
+        ? result.error
+        : result.error?.message ?? `Phase ${nextPhase} failed for ${itemId}`;
+      logger.error(`Phase ${nextPhase} failed for ${itemId}: ${errorMsg}`);
+
+      // Re-throw if already a WreckitError, otherwise wrap
+      if (isWreckitError(result.error)) {
+        throw result.error;
+      }
+      throw new WreckitError(errorMsg, "PHASE_FAILED");
     }
 
     logger.info(`Completed ${nextPhase} phase: ${item.state} → ${result.item.state}`);

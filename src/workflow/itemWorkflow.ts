@@ -14,6 +14,7 @@ import {
   validatePlanQuality,
   validateStoryQuality,
 } from "../domain/validation";
+import { WreckitError } from "../errors";
 import { getNextState } from "../domain/states";
 import {
   getItemDir,
@@ -80,7 +81,11 @@ export interface WorkflowOptions {
 export interface PhaseResult {
   success: boolean;
   item: Item;
-  error?: string;
+  /**
+   * Error message or typed error.
+   * @deprecated String errors are deprecated. Use typed WreckitError for better programmatic handling.
+   */
+  error?: string | WreckitError;
 }
 
 async function readFileIfExists(filePath: string): Promise<string | undefined> {

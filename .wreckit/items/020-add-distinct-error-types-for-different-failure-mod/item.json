@@ -3,13 +3,13 @@
   "id": "020-add-distinct-error-types-for-different-failure-mod",
   "title": "Add distinct error types for different failure modes across all phases",
   "section": "roadmap",
-  "state": "idea",
+  "state": "implementing",
   "overview": "From milestone [M3] Robust Error Handling and Recovery\n\n**Motivation:** Strategic milestone: Robust Error Handling and Recovery",
   "branch": null,
   "pr_url": null,
   "pr_number": null,
-  "last_error": "Research phase detected unauthorized file modifications:\n\n  Modified M .wreckit/items/026-implement-tool-allowlist-enforcement-in-srcagentam/item.json\n  Untracked .wreckit/items/026-implement-tool-allowlist-enforcement-in-srcagentam/research.md\n\nThe research phase must be read-only. Only research.md may be created.\nAny code changes should be made during the implementation phase.",
+  "last_error": null,
   "created_at": "2026-01-24T07:23:01.571Z",
-  "updated_at": "2026-01-24T15:34:46.318Z",
+  "updated_at": "2026-01-24T16:47:46.109Z",
   "motivation": "Strategic milestone: Robust Error Handling and Recovery"
 }

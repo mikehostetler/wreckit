@@ -325,7 +325,7 @@ describe("Edge Case Tests 59-65: Error Conditions", () => {
         logger: mockLogger,
       };
 
-      await pushBranch("feature-branch", options);
+      await expect(pushBranch("feature-branch", options)).rejects.toThrow();
 
       expect(spawn).toHaveBeenCalledWith(
         "git",
@@ -342,7 +342,7 @@ describe("Edge Case Tests 59-65: Error Conditions", () => {
         logger: mockLogger,
       };
 
-      await pushBranch("protected-branch", options);
+      await expect(pushBranch("protected-branch", options)).rejects.toThrow();
 
       expect(spawn).toHaveBeenCalled();
     });
@@ -355,7 +355,7 @@ describe("Edge Case Tests 59-65: Error Conditions", () => {
         logger: mockLogger,
       };
 
-      await pushBranch("feature-branch", options);
+      await expect(pushBranch("feature-branch", options)).rejects.toThrow();
 
       expect(spawn).toHaveBeenCalled();
     });

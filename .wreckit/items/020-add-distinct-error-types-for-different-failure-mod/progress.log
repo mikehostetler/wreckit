@@ -1,0 +1,68 @@
+[2025-01-24T16:45:00Z] Implementation completed
+
+## Summary
+All 8 user stories have been implemented for adding distinct error types for different failure modes across all phases.
+
+## Stories Completed
+
+### US-001: Define ErrorCodes constants and export them
+- ErrorCodes object already existed with all codes (existing and new)
+- ErrorCode type exported as union of all code values
+- Verified all code values match their key names
+
+### US-002: Add phase-specific error classes
+- PhaseFailedError: phase, itemId properties, PHASE_FAILED code
+- PhaseValidationError: phase property, PHASE_VALIDATION code
+- TransitionError: fromState, toState properties, INVALID_TRANSITION code
+- ArtifactNotCreatedError: artifactPath, phase properties, ARTIFACT_NOT_CREATED code
+
+### US-003: Add quality validation error classes
+- ResearchQualityError: errors array, RESEARCH_QUALITY code
+- PlanQualityError: errors array, PLAN_QUALITY code
+- StoryQualityError: errors array, STORY_QUALITY code
+
+### US-004: Add git operation error classes
+- BranchError: branchName, operation properties, BRANCH_ERROR code
+- PushError: branchName, remote properties, PUSH_ERROR code
+- PrCreationError: headBranch, baseBranch properties, PR_CREATION_ERROR code
+- MergeConflictError: sourceBranch, targetBranch properties, MERGE_CONFLICT code
+- RemoteValidationError: remoteName, actualUrl, allowedPatterns properties, REMOTE_VALIDATION code
+
+### US-005: Update git/index.ts to use typed errors
+- All generic Error throws replaced with typed errors
+- getCurrentBranch: GitError
+- getBranchSha: GitError
+- ensureBranch: BranchError with appropriate operation type
+- pushBranch: PushError
+- createOrUpdatePr: PrCreationError
+- mergeAndPushToBase: BranchError, GitError, MergeConflictError
+
+### US-006: Update PhaseResult interface to support typed errors
+- PhaseResult.error type changed to 'string | WreckitError | undefined'
+- JSDoc marks string usage as deprecated
+- Backwards compatible with existing string errors
+
+### US-007: Update command layer to handle typed errors
+- src/commands/run.ts: handles both string and WreckitError
+- src/commands/phase.ts: handles both string and WreckitError
+- WreckitError instances are re-thrown directly preserving error code
+- String errors wrapped with PHASE_FAILED code
+
+### US-008: Add comprehensive tests for all new error types
+- Created src/__tests__/errors.test.ts with 42 tests
+- Tests verify ErrorCodes values match keys
+- Tests verify each error class properties
+- Tests verify isWreckitError() works for all new types
+- Tests verify toExitCode() returns 1 for all new types
+- All tests pass
+
+## Verification
+- bun test ./src/__tests__/errors.test.ts: 42 pass
+- bun test ./src/__tests__/logging.test.ts: 28 pass
+- npm run build: success
+
+## Notes
+- Most implementation was already in place from research/planning phases
+- No breaking changes to existing error handling
+- Type narrowing works correctly for PhaseResult.error
+[2026-01-24T16:47:46.108Z] Completed iteration 1 for story US-001
