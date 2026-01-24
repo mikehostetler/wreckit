@@ -2888,4 +2888,14 @@ Read
   "file_path": "/Users/speed/wreckit/ROADMAP.md"
 }
 ```
-The prd.json shows all 7 stories as "done". This is actually the old PRD with many implementation stories that were already completed. My MCP save earlier created a simpler PRD with just 2 verification stories. Let me write the correct simplified PRD that reflects what actually needed to be done:
+The prd.json shows all 7 stories as "done". This is actually the old PRD with many implementation stories that were already completed. My MCP save earlier created a simpler PRD with just 2 verification stories. Let me write the correct simplified PRD that reflects what actually needed to be done:Running next item...
+The ROADMAP.md is already updated - line 23 shows `[x]` for the codex-sdk-runner.ts objective. The implementation and documentation are complete.
+
+Now let me check the existing prd.json and update it to reflect the actual remaining work:[32mINFO[39m: [36mRunning: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[32mINFO[39m: [36mRunning pr phase on 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[34mDEBUG[39m: [36mRunning: git show-ref --verify --quiet refs/heads/wreckit/027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[32mINFO[39m: [36mBranch wreckit/027-implement-tool-allowlist-enforcement-in-srcagentco exists, switching to it[39m
+[34mDEBUG[39m: [36mRunning: git checkout wreckit/027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[34mDEBUG[39m: [36mRunning: git rev-parse --abbrev-ref HEAD[39m
+[34mDEBUG[39m: [36mRunning: git status --porcelain[39m
+[34mDEBUG[39m: [36mRunning: git add -A[39m
