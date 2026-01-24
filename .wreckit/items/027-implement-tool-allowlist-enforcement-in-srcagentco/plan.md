@@ -2,185 +2,150 @@
 
 ## Overview
 
-This item ensures tool allowlist enforcement is correctly implemented in the Codex SDK runner, completing one of the objectives in milestone [M2] Finish Experimental SDK Integrations.
+This item addresses objective "[M2] Finish Experimental SDK Integrations" by implementing tool allowlist enforcement in the Codex SDK runner. Upon analysis, the implementation is already complete in `src/agent/codex-sdk-runner.ts` (372 lines). This plan documents the verification steps and the already-completed ROADMAP update.
 
-## Current State
+## Current State Analysis
 
-**Status: COMPLETE** - Both the implementation and ROADMAP.md have been updated.
+### Key Discovery: Implementation Already Complete
 
-### Verified Implementation Status (2026-01-24)
+The source file `src/agent/codex-sdk-runner.ts` contains a **fully implemented** 372-line SDK runner:
 
-The source file `src/agent/codex-sdk-runner.ts` contains a full 372-line implementation:
+| Component | Status | Location |
+|-----------|--------|----------|
+| SDK Import | Complete | Line 1: `import { query } from "@anthropic-ai/claude-agent-sdk"` |
+| Controller Registration | Complete | Line 4: `import { registerSdkController, unregisterSdkController }` |
+| Environment Builder | Complete | Line 8: `import { buildSdkEnv }` |
+| `getEffectiveToolAllowlist()` | Complete | Lines 38-51 |
+| `runCodexSdkAgent()` | Complete | Lines 53-184 |
+| Tool allowlist enforcement | Complete | Lines 98-114 (via `tools` option) |
+| `handleSdkError()` | Complete | Lines 186-293 |
+| `formatSdkMessage()` | Complete | Lines 295-328 |
+| `emitAgentEventsFromSdkMessage()` | Complete | Lines 330-371 |
+| ROADMAP.md | Complete | Line 23 shows `[x]` |
 
-| Component | Status | Location | Verification |
-|-----------|--------|----------|--------------|
-| SDK Import | ✅ Complete | Line 1 | `import { query } from "@anthropic-ai/claude-agent-sdk"` |
-| Runner imports | ✅ Complete | Line 4 | `import { registerSdkController, unregisterSdkController }` |
-| Env import | ✅ Complete | Line 8 | `import { buildSdkEnv }` |
-| `CodexRunAgentOptions` interface | ✅ Complete | Lines 10-25 | All required fields present |
-| `getEffectiveToolAllowlist()` | ✅ Complete | Lines 38-51 | Priority: explicit > phase > undefined |
-| `runCodexSdkAgent()` | ✅ Complete | Lines 53-184 | Full SDK execution loop |
-| AbortController registration | ✅ Complete | Lines 76, 82 | `registerSdkController(abortController)` |
-| Timeout handling | ✅ Complete | Lines 78-92 | 3600s timeout with abort |
-| SDK environment building | ✅ Complete | Line 95 | `await buildSdkEnv({ cwd, logger })` |
-| **Tool allowlist enforcement** | ✅ Complete | Lines 98-113 | `tools: effectiveTools` in SDK options |
-| Message streaming | ✅ Complete | Lines 117-147 | `for await (const message of query(...))` |
-| Error handling | ✅ Complete | Lines 169-180 | `handleSdkError(error, output, logger)` |
-| Cleanup | ✅ Complete | Lines 181-183 | `unregisterSdkController(abortController)` |
-| `handleSdkError()` helper | ✅ Complete | Lines 186-293 | Auth/rate/context/network errors |
-| `formatSdkMessage()` helper | ✅ Complete | Lines 295-328 | Message formatting |
-| `emitAgentEventsFromSdkMessage()` helper | ✅ Complete | Lines 330-371 | Event emission |
-| ROADMAP.md update | ✅ Complete | Line 23 | Shows `[x]` for codex-sdk-runner.ts |
+### Key Discoveries:
 
-### Key Implementation Evidence
-
-**Tool Allowlist Enforcement (`codex-sdk-runner.ts:98-113`):**
-```typescript
-// Get effective tool allowlist
-const effectiveTools = getEffectiveToolAllowlist(options);
-if (effectiveTools) {
-  logger.info(`Tool restrictions active: ${effectiveTools.join(", ")}`);
-}
-
-// Build SDK options
-const sdkOptions: any = {
-  cwd,
-  permissionMode: "bypassPermissions",
-  allowDangerouslySkipPermissions: true,
-  abortController,
-  env: sdkEnv,
-  ...(options.mcpServers && { mcpServers: options.mcpServers }),
-  ...(effectiveTools && { tools: effectiveTools }),  // <-- Tool allowlist enforcement
-};
-```
-
-**Tool Allowlist Resolution (`codex-sdk-runner.ts:38-51`):**
-```typescript
-function getEffectiveToolAllowlist(options: CodexRunAgentOptions): string[] | undefined {
-  if (options.allowedTools !== undefined) {
-    return options.allowedTools;  // Explicit takes precedence
-  }
-  if (options.phase) {
-    return getAllowedToolsForPhase(options.phase);  // Phase-based fallback
-  }
-  return undefined;  // No restrictions
-}
-```
+- **Implementation is complete**: `src/agent/codex-sdk-runner.ts:1-372` contains full functionality
+- **Tool enforcement verified**: Line 113 shows `...(effectiveTools && { tools: effectiveTools })`
+- **ROADMAP already updated**: Line 23 shows `[x]` for this objective
+- **No test infrastructure**: Project currently has no test files
 
 ## Desired End State
 
-1. ✅ **Implementation complete** - `src/agent/codex-sdk-runner.ts` has 372 lines with full functionality
-2. ✅ **ROADMAP.md updated** - Line 23 shows `[x]` for codex-sdk-runner.ts objective
+After this item:
 
-### Verification Commands
-
-```bash
-# 1. Build succeeds
-bun run build
-
-# 2. TypeScript compiles without errors
-npx tsc --noEmit
-
-# 3. Verify file has full implementation (should be ~372 lines)
-wc -l src/agent/codex-sdk-runner.ts
-# Result: 372 src/agent/codex-sdk-runner.ts
-
-# 4. Verify ROADMAP.md shows [x]
-grep "codex-sdk-runner" ROADMAP.md
-# Result: - [x] Implement tool allowlist enforcement in `src/agent/codex-sdk-runner.ts`
-
-# 5. Verify tool allowlist is passed to SDK
-grep -n "tools: effectiveTools" src/agent/codex-sdk-runner.ts
-# Result: 113:      ...(effectiveTools && { tools: effectiveTools }),
-```
+1. **Implementation verified** - Build and type check pass
+2. **ROADMAP.md confirmed** - Shows `[x]` for objective (already done)
+3. **Documentation complete** - Plan and PRD reflect actual state
 
 ## What We're NOT Doing
 
-1. **NOT reimplementing the runner** - it's already complete (372 lines)
-2. **NOT modifying the tool enforcement logic** - already correct
-3. **NOT adding unit tests** - tracked separately under M2 objective "Add integration tests for each experimental SDK"
-4. **NOT modifying toolAllowlist.ts** - phase-based allowlists already defined
+1. **Not modifying implementation** - Already complete and working
+2. **Not adding unit tests** - No test infrastructure; tracked under separate M2 objective
+3. **Not changing SDK/dependencies** - Uses existing `@anthropic-ai/claude-agent-sdk`
+4. **Not implementing model selection** - `model` field exists but not passed to SDK
+5. **Not adding endpoint configuration** - Uses existing `buildSdkEnv()`
 
 ## Implementation Approach
 
-Since the core implementation was already complete, this item only required:
-1. ✅ Verifying the implementation works correctly
-2. ✅ Confirming ROADMAP.md shows the objective as complete
+Since implementation is complete, this item focuses on verification and documentation.
 
 ---
 
-## Phase 1: Verify Implementation Completeness
+## Phase 1: Verify Implementation and Build
 
 ### Overview
 
-Verify that the existing implementation meets all requirements.
+Verify the existing implementation compiles correctly and tool allowlist enforcement is in place.
 
-### Status: ✅ COMPLETE
+### Changes Required:
 
-All verification checks pass:
-- ✅ `bun run build` succeeds
-- ✅ `npx tsc --noEmit` passes
-- ✅ `src/agent/codex-sdk-runner.ts` has 372 lines
-- ✅ All helper functions exist
-- ✅ Tool allowlist is passed via `tools: effectiveTools`
+No code changes - verification only.
 
-### Success Criteria:
+### Verification Commands:
 
-#### Automated Verification:
-- [x] `bun run build` succeeds without errors
-- [x] `npx tsc --noEmit` passes
-- [x] `src/agent/codex-sdk-runner.ts` is ~372 lines (not 85)
+```bash
+# 1. Verify file length (~372 lines)
+wc -l src/agent/codex-sdk-runner.ts
 
-#### Manual Verification:
-- [x] grep commands confirm all components exist
-- [x] Tool allowlist enforcement is at line 113
+# 2. Verify tool allowlist enforcement
+grep -n "tools: effectiveTools" src/agent/codex-sdk-runner.ts
 
----
+# 3. Build
+npm run build
 
-## Phase 2: Update ROADMAP.md
+# 4. Type check
+npm run typecheck
 
-### Overview
-
-Mark the objective as complete in ROADMAP.md.
-
-### Status: ✅ COMPLETE
-
-ROADMAP.md line 23 already shows:
-```markdown
-- [x] Implement tool allowlist enforcement in `src/agent/codex-sdk-runner.ts`
+# 5. Lint
+npm run lint
 ```
 
 ### Success Criteria:
 
 #### Automated Verification:
-- [x] ROADMAP.md shows `[x]` for codex-sdk-runner.ts
+- [ ] Build succeeds: `npm run build`
+- [ ] Type checking passes: `npm run typecheck`
+- [ ] Linting passes: `npm run lint`
 
 #### Manual Verification:
-- [x] Line 23 shows `[x]`
-- [x] No other lines were modified
+- [ ] File has ~372 lines
+- [ ] Line 113 contains `tools: effectiveTools`
+- [ ] `getEffectiveToolAllowlist` function exists at lines 38-51
+
+**Note**: Complete all automated verification, then pause for manual confirmation before proceeding to next phase.
+
+---
+
+## Phase 2: Confirm ROADMAP Update
+
+### Overview
+
+Verify ROADMAP.md shows the objective as complete.
+
+### Changes Required:
+
+None - ROADMAP.md line 23 already shows `[x]`.
+
+### Verification Commands:
+
+```bash
+grep "codex-sdk-runner" ROADMAP.md
+```
+
+Expected: `- [x] Implement tool allowlist enforcement in \`src/agent/codex-sdk-runner.ts\``
+
+### Success Criteria:
+
+#### Automated Verification:
+- [ ] ROADMAP.md line 23 shows `[x]`
+
+#### Manual Verification:
+- [ ] M2 milestone shows 2 of 5 objectives complete
+
+**Note**: Complete verification before marking item as done.
 
 ---
 
 ## Testing Strategy
 
 ### Unit Tests:
-No unit tests being added in this item. Integration tests are tracked separately under M2.
+Not being added. No test infrastructure exists. Tests tracked under M2 objective "Add integration tests for each experimental SDK".
 
 ### Manual Testing Steps:
-1. ✅ Build verification: `bun run build`
-2. ✅ TypeScript check: `npx tsc --noEmit`
-3. ✅ Line count check: `wc -l src/agent/codex-sdk-runner.ts` (372 lines)
-4. ✅ ROADMAP.md check: `grep "codex-sdk-runner" ROADMAP.md` (shows `[x]`)
+1. Run `npm run build` - verify success
+2. Run `grep -n "tools: effectiveTools" src/agent/codex-sdk-runner.ts` - verify line 113
+3. Run `grep "codex-sdk-runner" ROADMAP.md` - verify `[x]`
 
 ## Migration Notes
 
-No migration required. The implementation is already in place and functional.
+No migration required. Implementation already complete and backward compatible.
 
 ## References
 
-- Implementation file: `src/agent/codex-sdk-runner.ts:1-372`
-- Reference implementation: `src/agent/amp-sdk-runner.ts:1-372`
-- Tool allowlist definitions: `src/agent/toolAllowlist.ts:57-117`
-- Dispatch code: `src/agent/runner.ts:459-473`
-- ROADMAP: `ROADMAP.md:16-26` (M2 milestone)
+- Implementation: `src/agent/codex-sdk-runner.ts:1-372`
+- Reference: `src/agent/amp-sdk-runner.ts:1-372`
+- Tool allowlist: `src/agent/toolAllowlist.ts:57-117`
+- Dispatch: `src/agent/runner.ts:459-473`
+- ROADMAP: `ROADMAP.md:23`
 - Research: `/Users/speed/wreckit/.wreckit/items/027-implement-tool-allowlist-enforcement-in-srcagentco/research.md`
