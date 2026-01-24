@@ -1,0 +1,31 @@
+# Progress Log: Create MIGRATION.md
+
+## 2025-01-24 - Implementation Complete
+
+### Stories Completed
+
+- **US-001**: Created MIGRATION.md with complete migration guide (~479 lines)
+  - All required sections present (Overview, Quick Migration, Configuration Reference, Environment Variables, Verification, Fallback Behavior, Troubleshooting, Staying on Process Mode)
+  - All 14 JSON configuration examples validated as syntactically correct
+  - Document follows existing README.md style
+
+- **US-002**: Verified all links resolve correctly
+  - README.md:208 links to ./MIGRATION.md
+  - CHANGELOG.md:35, 45, 67 link to ./MIGRATION.md
+  - Internal links in MIGRATION.md (to README.md, AGENTS.md, CHANGELOG.md) all use relative paths and files exist
+
+- **US-003**: Verified MIGRATION.md included in npm package
+  - package.json:14 already lists MIGRATION.md in files array
+  - `npm pack --dry-run` confirms MIGRATION.md (10.3kB) is included
+  - `bun run build` completes successfully
+
+### Key Learnings
+
+1. The migration documentation was already referenced in 4 places (README.md, CHANGELOG.md x3, package.json) but the file didn't exist
+2. Environment variable precedence is well-documented in src/agent/env.ts and needs to be exposed to users
+3. The `wreckit sdk-info` command is a powerful diagnostic tool that should be prominently featured
+4. Automatic fallback from SDK to process mode is a key migration safety feature
+
+### Files Changed
+
+- Created: `MIGRATION.md` (479 lines)

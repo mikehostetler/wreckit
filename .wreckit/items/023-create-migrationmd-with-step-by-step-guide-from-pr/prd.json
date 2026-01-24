@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "id": "023-create-migrationmd-with-step-by-step-guide-from-pr",
+  "branch_name": "wreckit/023-create-migrationmd-with-step-by-step-guide-from-pr",
+  "user_stories": [
+    {
+      "id": "US-001",
+      "title": "Create MIGRATION.md with complete migration guide",
+      "acceptance_criteria": [
+        "MIGRATION.md file exists at repository root",
+        "File includes Overview section explaining what changed in v1.0.0 and benefits of SDK mode",
+        "File includes Quick Migration section with steps for users with no custom config and users with custom config",
+        "File includes Configuration Reference section with process mode and SDK mode examples",
+        "File includes Environment Variables section documenting ANTHROPIC_API_KEY, ANTHROPIC_BASE_URL, ANTHROPIC_AUTH_TOKEN",
+        "File includes Verification section explaining wreckit sdk-info command and --dry-run flag",
+        "File includes Fallback Behavior section explaining automatic fallback to process mode",
+        "File includes Troubleshooting section covering authentication, rate limit, context window, and network errors",
+        "File includes Staying on Process Mode section for users who prefer external CLI agents",
+        "All JSON configuration examples are syntactically valid",
+        "File follows existing documentation style from README.md"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Content specification is in plan.md. Document should be ~300 lines covering all migration scenarios."
+    },
+    {
+      "id": "US-002",
+      "title": "Verify MIGRATION.md links resolve correctly",
+      "acceptance_criteria": [
+        "README.md:208 link to ./MIGRATION.md resolves correctly",
+        "CHANGELOG.md:35 link to ./MIGRATION.md resolves correctly",
+        "CHANGELOG.md:45 link to ./MIGRATION.md resolves correctly",
+        "CHANGELOG.md:67 link to ./MIGRATION.md resolves correctly",
+        "Internal links in MIGRATION.md (to README.md, AGENTS.md, specs/) resolve correctly"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Links are relative paths. Verify with manual check or automated link checker."
+    },
+    {
+      "id": "US-003",
+      "title": "Verify MIGRATION.md is included in npm package",
+      "acceptance_criteria": [
+        "package.json files array includes MIGRATION.md (already present at line 14)",
+        "bun run build completes successfully",
+        "npm pack produces a tarball containing MIGRATION.md"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "MIGRATION.md is already listed in package.json:14 files array. Just verify build works."
+    }
+  ]
+}
