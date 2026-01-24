@@ -403,19 +403,19 @@ Not in scope for this item - tracked as separate objective in [M2]: "Add integra
 
 2. **Run automated tests:**
    ```bash
-   npm test
+   bun test
    ```
    Expected: All tests pass including new opencode-sdk-runner.test.ts
 
 3. **Type check:**
    ```bash
-   npm run typecheck
+   bun run typecheck
    ```
    Expected: No errors
 
 4. **Build:**
    ```bash
-   npm run build
+   bun run build
    ```
    Expected: Success
 
