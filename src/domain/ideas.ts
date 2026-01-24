@@ -57,6 +57,17 @@ export interface ParsedIdea {
    * @deprecated Use `description` instead. Kept for backwards compatibility.
    */
   overview?: string;
+
+  /**
+   * IDs of other items that this idea depends on.
+   * The item will not be processed until all dependencies are complete.
+   */
+  dependsOn?: string[];
+
+  /**
+   * Campaign identifier for grouping related items (e.g., milestone ID like "M1").
+   */
+  campaign?: string;
 }
 
 /**
@@ -242,6 +253,10 @@ export function createItemFromIdea(
     scope_out_of_scope: idea.scope?.outOfScope,
     priority_hint: idea.priorityHint,
     urgency_hint: idea.urgencyHint,
+
+    // Dependency management and campaign grouping
+    depends_on: idea.dependsOn,
+    campaign: idea.campaign,
   };
 }
 
