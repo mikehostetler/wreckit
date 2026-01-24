@@ -3,7 +3,7 @@ import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import { getPromptsDir, getWreckitDir } from "./fs/paths";
 
-export type PromptName = "research" | "plan" | "implement" | "ideas" | "pr";
+export type PromptName = "research" | "plan" | "implement" | "ideas" | "pr" | "strategy";
 
 export interface PromptVariables {
   id: string;

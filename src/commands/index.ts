@@ -18,3 +18,5 @@ export {
   WreckitExistsError,
 } from "./init";
 export { rollbackCommand, type RollbackOptions, type RollbackResult } from "./rollback";
+export { strategyCommand, type StrategyOptions } from "./strategy";
+export { executeRoadmapCommand, type ExecuteRoadmapOptions } from "./execute-roadmap";

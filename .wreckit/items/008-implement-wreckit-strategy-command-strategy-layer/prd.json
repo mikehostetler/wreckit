@@ -1,0 +1,168 @@
+{
+  "schema_version": 1,
+  "id": "008-implement-wreckit-strategy-command-strategy-layer",
+  "branch_name": "wreckit/008-implement-wreckit-strategy-command-strategy-layer",
+  "user_stories": [
+    {
+      "id": "US-001",
+      "title": "Create roadmap domain module for parsing ROADMAP.md",
+      "acceptance_criteria": [
+        "src/domain/roadmap.ts exists with exported types: Roadmap, RoadmapMilestone, RoadmapObjective",
+        "parseRoadmap(content: string) function parses markdown into Roadmap structure",
+        "serializeRoadmap(roadmap: Roadmap) function converts Roadmap back to markdown",
+        "validateRoadmap(content: string) returns { valid: boolean, errors: string[] }",
+        "extractPendingObjectives(roadmap: Roadmap) returns array of unchecked objectives with milestone context",
+        "Parser handles all sections: Active Milestones, Backlog, Completed",
+        "Parser extracts milestone ID from [M1] format, status from **Status:** line, objectives from checkbox syntax"
+      ],
+      "priority": 1,
+      "status": "pending",
+      "notes": "Follow patterns from src/domain/ideas.ts. Use regex for markdown parsing. Support optional fields gracefully."
+    },
+    {
+      "id": "US-002",
+      "title": "Create strategy prompt template",
+      "acceptance_criteria": [
+        "src/prompts/strategy.md exists with complete prompt structure",
+        "Prompt instructs agent to analyze src/ directory for codebase health",
+        "Prompt instructs agent to analyze specs/ directory if present",
+        "Prompt instructs agent to analyze benchmark_results.md if present",
+        "Prompt defines ROADMAP.md output format with Active Milestones, Backlog, Completed sections",
+        "Prompt includes milestone format: [M1] title, **Status:** line, **Target:** line, objectives with checkboxes",
+        "Template variables {{completion_signal}} and {{item_path}} are used correctly"
+      ],
+      "priority": 1,
+      "status": "pending",
+      "notes": "Model after src/prompts/research.md structure. Emphasize strategic thinking over tactical features."
+    },
+    {
+      "id": "US-003",
+      "title": "Add strategy phase to tool allowlist",
+      "acceptance_criteria": [
+        "PHASE_TOOL_ALLOWLISTS in src/agent/toolAllowlist.ts includes 'strategy' key",
+        "Strategy phase allows: Read, Write, Glob, Grep tools",
+        "Strategy phase does NOT allow: Edit, Bash tools",
+        "getAllowedToolsForPhase('strategy') returns correct tool list",
+        "isToolAllowedInPhase('strategy', 'Bash') returns false"
+      ],
+      "priority": 1,
+      "status": "pending",
+      "notes": "Write is allowed but enforced to ROADMAP.md only via git status check in command."
+    },
+    {
+      "id": "US-004",
+      "title": "Extend PromptName type and add path helper",
+      "acceptance_criteria": [
+        "PromptName type in src/prompts.ts includes 'strategy'",
+        "loadPromptTemplate(root, 'strategy') successfully loads strategy.md",
+        "getRoadmapPath(root) function in src/fs/paths.ts returns path to ROADMAP.md at repo root",
+        "Type checking passes with extended PromptName"
+      ],
+      "priority": 1,
+      "status": "pending",
+      "notes": "Simple type extension and function addition."
+    },
+    {
+      "id": "US-005",
+      "title": "Implement wreckit strategy command",
+      "acceptance_criteria": [
+        "src/commands/strategy.ts exists with strategyCommand function",
+        "'wreckit strategy' command is registered in src/index.ts",
+        "Command accepts --force flag to regenerate existing ROADMAP.md",
+        "Command accepts --analyze-dirs flag for custom directories (default: src)",
+        "Command respects global --dry-run flag",
+        "Command loads config and runs agent with strategy prompt",
+        "Agent is restricted to strategy phase tool allowlist",
+        "Git status is captured before/after agent run",
+        "Error if agent modifies files other than ROADMAP.md",
+        "ROADMAP.md is validated after creation",
+        "Command skips if ROADMAP.md exists (without --force)"
+      ],
+      "priority": 2,
+      "status": "pending",
+      "notes": "Follow pattern from src/commands/ideas.ts and src/workflow/itemWorkflow.ts research phase."
+    },
+    {
+      "id": "US-006",
+      "title": "Implement wreckit execute-roadmap command",
+      "acceptance_criteria": [
+        "src/commands/execute-roadmap.ts exists with executeRoadmapCommand function",
+        "'wreckit execute-roadmap' command is registered in src/index.ts",
+        "Command reads ROADMAP.md from repo root",
+        "Command parses ROADMAP.md using parseRoadmap",
+        "Command extracts pending objectives from Active Milestones only",
+        "Command converts objectives to ParsedIdea format",
+        "Command uses persistItems() to create wreckit Items",
+        "Command respects global --dry-run flag",
+        "Command accepts --include-done flag to include completed objectives",
+        "Existing items with matching slugs are skipped (idempotent)",
+        "Error message if ROADMAP.md doesn't exist"
+      ],
+      "priority": 2,
+      "status": "pending",
+      "notes": "Reuse persistItems from src/domain/ideas.ts for item creation with built-in deduplication."
+    },
+    {
+      "id": "US-007",
+      "title": "Export new commands from commands index",
+      "acceptance_criteria": [
+        "src/commands/index.ts exports strategyCommand and StrategyOptions",
+        "src/commands/index.ts exports executeRoadmapCommand and ExecuteRoadmapOptions",
+        "All exports are properly typed"
+      ],
+      "priority": 2,
+      "status": "pending",
+      "notes": "Simple export additions to barrel file."
+    },
+    {
+      "id": "US-008",
+      "title": "Add unit tests for roadmap domain module",
+      "acceptance_criteria": [
+        "src/__tests__/domain/roadmap.test.ts exists",
+        "Tests parseRoadmap with valid ROADMAP.md containing all sections",
+        "Tests parseRoadmap with ROADMAP.md containing only active milestones",
+        "Tests parseRoadmap handles empty content gracefully",
+        "Tests serializeRoadmap produces valid markdown",
+        "Tests parse/serialize roundtrip maintains data integrity",
+        "Tests extractPendingObjectives returns only unchecked items",
+        "Tests validateRoadmap catches malformed content",
+        "All tests pass"
+      ],
+      "priority": 3,
+      "status": "pending",
+      "notes": "Follow test patterns from src/__tests__/domain/resolveId.test.ts"
+    },
+    {
+      "id": "US-009",
+      "title": "Add unit tests for strategy command",
+      "acceptance_criteria": [
+        "src/__tests__/commands/strategy.test.ts exists",
+        "Tests dry-run mode doesn't create ROADMAP.md",
+        "Tests command skips when ROADMAP.md exists without --force",
+        "Tests command creates ROADMAP.md with --force when it exists",
+        "Tests agent runs with correct tool restrictions",
+        "All tests pass"
+      ],
+      "priority": 3,
+      "status": "pending",
+      "notes": "Follow test patterns from src/__tests__/commands/ideas.test.ts"
+    },
+    {
+      "id": "US-010",
+      "title": "Add unit tests for execute-roadmap command",
+      "acceptance_criteria": [
+        "src/__tests__/commands/execute-roadmap.test.ts exists",
+        "Tests items created from pending objectives",
+        "Tests completed objectives skipped without --include-done",
+        "Tests completed objectives included with --include-done",
+        "Tests dry-run mode shows what would be created without creating",
+        "Tests existing items with matching slugs are skipped",
+        "Tests error when ROADMAP.md doesn't exist",
+        "All tests pass"
+      ],
+      "priority": 3,
+      "status": "pending",
+      "notes": "Follow test patterns from src/__tests__/commands/ideas.test.ts"
+    }
+  ]
+}
