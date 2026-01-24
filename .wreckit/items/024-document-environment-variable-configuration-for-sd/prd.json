@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "id": "024-document-environment-variable-configuration-for-sd",
+  "branch_name": "wreckit/024-document-environment-variable-configuration-for-sd",
+  "user_stories": [
+    {
+      "id": "US-001",
+      "title": "Add advanced configuration section to MIGRATION.md with model selection variables",
+      "acceptance_criteria": [
+        "MIGRATION.md contains an 'Advanced Configuration' subsection after line 259",
+        "Model selection variables are documented in a table: ANTHROPIC_MODEL, ANTHROPIC_DEFAULT_SONNET_MODEL, ANTHROPIC_DEFAULT_HAIKU_MODEL, ANTHROPIC_DEFAULT_OPUS_MODEL",
+        "Each variable has Purpose and Example columns with accurate values",
+        "Allowed prefixes section documents ANTHROPIC_, CLAUDE_CODE_, and API_TIMEOUT",
+        "Explanation clarifies that prefix filtering applies to ~/.claude/settings.json imports only",
+        "All variables shown by 'wreckit sdk-info' are now documented"
+      ],
+      "priority": 1,
+      "status": "pending",
+      "notes": "This makes MIGRATION.md the complete authoritative reference for all environment variables"
+    },
+    {
+      "id": "US-002",
+      "title": "Expand README.md Requirements section with SDK mode configuration details",
+      "acceptance_criteria": [
+        "SDK Mode bullet point references all three auth variables: ANTHROPIC_API_KEY, ANTHROPIC_BASE_URL, ANTHROPIC_AUTH_TOKEN",
+        "Direct API configuration example is shown: 'export ANTHROPIC_API_KEY=sk-ant-...'",
+        "Custom endpoint configuration mentions both ANTHROPIC_BASE_URL and ANTHROPIC_AUTH_TOKEN",
+        "wreckit sdk-info diagnostic command is mentioned for verification",
+        "Link to MIGRATION.md#environment-variables is included for full details",
+        "Link renders correctly and navigates to the correct section"
+      ],
+      "priority": 2,
+      "status": "pending",
+      "notes": "README.md should provide quick essential info with link to MIGRATION.md for depth"
+    },
+    {
+      "id": "US-003",
+      "title": "Add cross-reference from AGENTS.md to MIGRATION.md environment variable documentation",
+      "acceptance_criteria": [
+        "AGENTS.md contains a cross-reference after line 116 (after the auto-blank note)",
+        "Cross-reference links to MIGRATION.md#environment-variables",
+        "Text clarifies that MIGRATION.md has complete documentation including advanced configuration",
+        "Link renders correctly and navigates to the correct section"
+      ],
+      "priority": 3,
+      "status": "pending",
+      "notes": "Keeps AGENTS.md focused while pointing to canonical reference for completeness"
+    }
+  ]
+}

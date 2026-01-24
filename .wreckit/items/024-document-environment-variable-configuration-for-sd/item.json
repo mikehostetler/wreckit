@@ -3,14 +3,14 @@
   "id": "024-document-environment-variable-configuration-for-sd",
   "title": "Document environment variable configuration for SDK mode (ANTHROPIC_API_KEY, ANTHROPIC_BASE_URL)",
   "section": "roadmap",
-  "state": "idea",
+  "state": "implementing",
   "overview": "From milestone [M1] Complete Missing Documentation\n\n**Motivation:** Strategic milestone: Complete Missing Documentation",
-  "branch": null,
+  "branch": "wreckit/024-document-environment-variable-configuration-for-sd",
   "pr_url": null,
   "pr_number": null,
-  "last_error": null,
+  "last_error": "prd.json not found or invalid",
   "created_at": "2026-01-24T14:10:12.332Z",
-  "updated_at": "2026-01-24T14:10:12.332Z",
+  "updated_at": "2026-01-24T14:42:15.585Z",
   "motivation": "Strategic milestone: Complete Missing Documentation",
   "depends_on": [
     "023-create-migrationmd-with-step-by-step-guide-from-pr"

@@ -115,6 +115,8 @@ Example `.wreckit/config.local.json` for custom API routing:
 
 When `ANTHROPIC_BASE_URL` and `ANTHROPIC_AUTH_TOKEN` are set, `ANTHROPIC_API_KEY` is automatically blanked to prevent credential fallback.
 
+For complete environment variable documentation including model selection variables and allowed prefixes, see [MIGRATION.md#environment-variables](./MIGRATION.md#environment-variables).
+
 ### Merge Modes
 
 - `"pr"` (default): Creates a PR for each item, waits for merge

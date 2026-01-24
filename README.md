@@ -325,7 +325,11 @@ wreckit next  # grabs the next incomplete item, runs it
 - Node.js 18+
 - `gh` CLI (for GitHub PRs)
 - An AI agent:
-  - **SDK Mode** (recommended): Set `ANTHROPIC_API_KEY` environment variable
+  - **SDK Mode** (recommended):
+    - **Direct API**: `export ANTHROPIC_API_KEY=sk-ant-...`
+    - **Custom endpoint** (e.g., Zai): Set `ANTHROPIC_BASE_URL` and `ANTHROPIC_AUTH_TOKEN`
+    - Verify setup: `wreckit sdk-info`
+    - See [MIGRATION.md#environment-variables](./MIGRATION.md#environment-variables) for full details
   - **Process Mode**: [Amp](https://ampcode.com) or [Claude](https://claude.ai) CLI
 
 ---

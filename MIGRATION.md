@@ -257,6 +257,29 @@ Add to `.wreckit/config.json` (committed):
 
 Team members then set their token in `.wreckit/config.local.json` or shell environment.
 
+### Advanced Configuration
+
+#### Model Selection Variables
+
+These variables allow overriding the default model selection:
+
+| Variable | Purpose | Example |
+|----------|---------|---------|
+| `ANTHROPIC_MODEL` | Override the model for all requests | `claude-sonnet-4-20250514` |
+| `ANTHROPIC_DEFAULT_SONNET_MODEL` | Override the default Sonnet model | `claude-sonnet-4-20250514` |
+| `ANTHROPIC_DEFAULT_HAIKU_MODEL` | Override the default Haiku model | `claude-haiku-3-20240307` |
+| `ANTHROPIC_DEFAULT_OPUS_MODEL` | Override the default Opus model | `claude-opus-4-20250514` |
+
+#### Allowed Prefixes for Claude Settings Import
+
+When reading from `~/.claude/settings.json`, wreckit only imports environment variables with these prefixes:
+
+- `ANTHROPIC_` — API credentials and model selection
+- `CLAUDE_CODE_` — Claude Code specific settings
+- `API_TIMEOUT` — Timeout configuration
+
+This prefix filtering applies **only** to `~/.claude/settings.json` imports. Variables set in `.wreckit/config.json`, `.wreckit/config.local.json`, or shell environment are imported without prefix restrictions.
+
 ---
 
 ## Verification

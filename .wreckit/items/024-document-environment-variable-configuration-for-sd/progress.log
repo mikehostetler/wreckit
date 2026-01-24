@@ -1,0 +1,34 @@
+# Progress Log
+
+## 2025-01-24 - Implementation Complete
+
+### Summary
+Completed all three user stories for documenting environment variable configuration for SDK mode.
+
+### Changes Made
+
+1. **MIGRATION.md** - Added Advanced Configuration section (lines 260-282):
+   - Model Selection Variables table: `ANTHROPIC_MODEL`, `ANTHROPIC_DEFAULT_SONNET_MODEL`, `ANTHROPIC_DEFAULT_HAIKU_MODEL`, `ANTHROPIC_DEFAULT_OPUS_MODEL`
+   - Allowed Prefixes section: Documented `ANTHROPIC_`, `CLAUDE_CODE_`, `API_TIMEOUT`
+   - Clarified that prefix filtering applies only to `~/.claude/settings.json` imports
+
+2. **README.md** - Expanded Requirements section (lines 328-333):
+   - Added Direct API example: `export ANTHROPIC_API_KEY=sk-ant-...`
+   - Added Custom endpoint mention: `ANTHROPIC_BASE_URL` and `ANTHROPIC_AUTH_TOKEN`
+   - Added diagnostic command: `wreckit sdk-info`
+   - Added cross-reference link to MIGRATION.md#environment-variables
+
+3. **AGENTS.md** - Added cross-reference (line 118):
+   - Link to MIGRATION.md#environment-variables for complete documentation
+
+### Verification
+- Build passes: `bun run build`
+- All documentation edits render correctly
+- Links to MIGRATION.md#environment-variables section work correctly
+- All variables displayed by `wreckit sdk-info` are now documented
+
+### Notes
+- Pre-existing TypeScript type errors in test files are unrelated to this documentation work
+- MIGRATION.md is now the canonical, complete reference for environment variables
+- README.md provides quick essential info with link for depth
+- AGENTS.md points to MIGRATION.md for completeness
