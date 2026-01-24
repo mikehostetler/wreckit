@@ -2,6 +2,7 @@ import { spawn, type ChildProcess } from "node:child_process";
 import type { ConfigResolved } from "../config";
 import type { Logger } from "../logging";
 import type { AgentEvent } from "../tui/agentEvents";
+import type { AgentConfigUnion } from "../schemas";
 
 // Registry for cleanup on exit - tracks both SDK AbortControllers and process ChildProcesses
 const activeSdkControllers = new Set<AbortController>();
@@ -82,6 +83,14 @@ export interface RunAgentOptions {
   mcpServers?: Record<string, unknown>;
   /** Restrict agent to only specific tools (e.g., MCP tools). Prevents use of Read, Write, Bash, etc. */
   allowedTools?: string[];
+}
+
+/**
+ * Get agent configuration in union format from resolved config.
+ * This is the new helper that replaces getAgentConfig.
+ */
+export function getAgentConfigUnion(config: ConfigResolved): AgentConfigUnion {
+  return config.agent;
 }
 
 /**
@@ -310,8 +319,6 @@ async function runProcessAgent(options: RunAgentOptions): Promise<AgentResult> {
 // ============================================================
 // New Agent Dispatch System (Phase 4 - Discriminated Union)
 // ============================================================
-
-import type { AgentConfigUnion } from "../schemas";
 
 export interface UnionRunAgentOptions {
   config: AgentConfigUnion;

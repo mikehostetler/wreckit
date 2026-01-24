@@ -1,6 +1,8 @@
 export {
   runAgent,
+  runAgentUnion,
   getAgentConfig,
+  getAgentConfigUnion,
   terminateAllAgents,
   registerSdkController,
   unregisterSdkController,
