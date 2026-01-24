@@ -66,7 +66,7 @@
       ],
       "priority": 1,
       "status": "done",
-      "notes": "ALREADY IMPLEMENTED: CLI flags exist in src/index.ts:44-45 and are passed to orchestrateAll in lines 72-73. Verified with 'wreckit --help'."
+      "notes": "Phase 1: Add options after line 43 (after --parallel). Update orchestrateAll call to pass noResume: opts.noResume, retryFailed: opts.retryFailed."
     },
     {
       "id": "US-005",
@@ -83,7 +83,7 @@
       ],
       "priority": 2,
       "status": "done",
-      "notes": "ALREADY IMPLEMENTED: diagnoseBatchProgress exists in src/doctor.ts:466-538, called in diagnose() at line 569, fix handlers at lines 663-672."
+      "notes": "Phase 2: Follow diagnoseIndex pattern (lines 376-445) for diagnostic. Add case in applyFixes switch for STALE_BATCH_PROGRESS and BATCH_PROGRESS_CORRUPT."
     },
     {
       "id": "US-006",
@@ -100,7 +100,7 @@
       ],
       "priority": 2,
       "status": "done",
-      "notes": "ALREADY IMPLEMENTED: Schema tests in src/__tests__/schemas.test.ts:401-503, I/O tests in src/__tests__/fs.test.ts:400-468. All tests pass."
+      "notes": "Phase 3: Unit tests. Add BatchProgressSchema tests to schemas.test.ts. Add batch progress I/O tests to new file src/__tests__/batchProgress.test.ts."
     },
     {
       "id": "US-007",
@@ -114,7 +114,7 @@
       ],
       "priority": 3,
       "status": "done",
-      "notes": "ALREADY IMPLEMENTED: Doctor tests in src/__tests__/doctor.test.ts:243-350 (diagnose tests) and lines 487-545 (applyFixes tests). All 8 batch progress tests pass."
+      "notes": "Phase 3: Add doctor tests for batch progress diagnostics following existing test patterns in doctor.test.ts."
     }
   ]
 }
