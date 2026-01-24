@@ -22,19 +22,31 @@ function createMockLogger(): Logger {
 }
 
 describe("getAgentConfig", () => {
-  it("extracts correct fields from ConfigResolved", () => {
+  it("converts process kind to legacy mode format", () => {
     const config: ConfigResolved = {
       schema_version: 1,
       base_branch: "main",
       branch_prefix: "wreckit/",
       agent: {
-        mode: "process",
+        kind: "process",
         command: "amp",
         args: ["--dangerously-allow-all"],
         completion_signal: "<promise>COMPLETE</promise>",
       },
       max_iterations: 100,
       timeout_seconds: 3600,
+      merge_mode: "pr",
+      pr_checks: {
+        commands: [],
+        secret_scan: false,
+        require_all_stories_done: true,
+        allow_unsafe_direct_merge: false,
+        allowed_remote_patterns: [],
+      },
+      branch_cleanup: {
+        enabled: true,
+        delete_remote: true,
+      },
     };
 
     const result = getAgentConfig(config);
@@ -49,34 +61,47 @@ describe("getAgentConfig", () => {
     });
   });
 
-  it("works with DEFAULT_CONFIG", () => {
+  it("converts SDK kind to legacy mode format", () => {
     const result = getAgentConfig(DEFAULT_CONFIG);
 
     expect(result.mode).toBe("sdk");
     expect(result.command).toBe("claude");
-    expect(result.args).toEqual(["--dangerously-skip-permissions", "--print"]);
+    expect(result.args).toEqual([]);
     expect(result.completion_signal).toBe("<promise>COMPLETE</promise>");
     expect(result.timeout_seconds).toBe(3600);
     expect(result.max_iterations).toBe(100);
   });
 
-  it("extracts custom agent configuration", () => {
+  it("handles process kind with custom settings", () => {
     const config: ConfigResolved = {
       schema_version: 1,
       base_branch: "develop",
       branch_prefix: "feature/",
       agent: {
-        mode: "process",
+        kind: "process",
         command: "claude",
         args: ["--dangerously-skip-permissions", "--print"],
         completion_signal: "FINISHED",
       },
       max_iterations: 50,
       timeout_seconds: 1800,
+      merge_mode: "pr",
+      pr_checks: {
+        commands: [],
+        secret_scan: false,
+        require_all_stories_done: true,
+        allow_unsafe_direct_merge: false,
+        allowed_remote_patterns: [],
+      },
+      branch_cleanup: {
+        enabled: true,
+        delete_remote: true,
+      },
     };
 
     const result = getAgentConfig(config);
 
+    expect(result.mode).toBe("process");
     expect(result.command).toBe("claude");
     expect(result.args).toEqual(["--dangerously-skip-permissions", "--print"]);
     expect(result.completion_signal).toBe("FINISHED");
@@ -367,19 +392,30 @@ describe("runAgent", () => {
 });
 
 describe("runAgent - SDK mode config", () => {
-  it("SDK mode configuration", () => {
+  it("claude_sdk kind configuration", () => {
     const config: ConfigResolved = {
       schema_version: 1,
       base_branch: "main",
       branch_prefix: "wreckit/",
       agent: {
-        mode: "sdk",
-        command: "claude",
-        args: [],
-        completion_signal: "<promise>COMPLETE</promise>",
+        kind: "claude_sdk",
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 4096,
       },
       max_iterations: 100,
       timeout_seconds: 3600,
+      merge_mode: "pr",
+      pr_checks: {
+        commands: [],
+        secret_scan: false,
+        require_all_stories_done: true,
+        allow_unsafe_direct_merge: false,
+        allowed_remote_patterns: [],
+      },
+      branch_cleanup: {
+        enabled: true,
+        delete_remote: true,
+      },
     };
 
     const result = getAgentConfig(config);
