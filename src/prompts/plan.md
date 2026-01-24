@@ -53,6 +53,21 @@ Create TWO files at `{{item_path}}`:
 
 ### 1. plan.md - Detailed Implementation Plan
 
+**CRITICAL:** You MUST use the EXACT section headers below. Do not paraphrase or omit them. The system validates these headers strictly.
+
+Required Headers:
+1. `# {{title}} Implementation Plan` (Top-level header)
+2. `## Implementation Plan Title`
+3. `## Overview`
+4. `## Current State`
+5. `## Desired End State`
+6. `## What We're NOT Doing`
+7. `## Implementation Approach`
+8. `## Phases`
+9. `## Testing Strategy`
+
+Structure:
+
 ```markdown
 # {{title}} Implementation Plan
 

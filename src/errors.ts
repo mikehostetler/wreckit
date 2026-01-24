@@ -116,6 +116,30 @@ export class McpToolNotCalledError extends WreckitError {
   }
 }
 
+export class AmbiguousIdError extends WreckitError {
+  constructor(
+    public input: string,
+    public matches: string[]
+  ) {
+    const matchList = matches.map((id) => `  - ${id}`).join("\n");
+    super(
+      `Ambiguous ID '${input}' matches multiple items:\n${matchList}\nUse the full ID to specify which item.`,
+      "AMBIGUOUS_ID"
+    );
+    this.name = "AmbiguousIdError";
+  }
+}
+
+export class ItemNotFoundError extends WreckitError {
+  constructor(input: string) {
+    super(
+      `Item not found: '${input}'. Use 'wreckit list' to see available items.`,
+      "ITEM_NOT_FOUND"
+    );
+    this.name = "ItemNotFoundError";
+  }
+}
+
 export function isWreckitError(error: unknown): error is WreckitError {
   return error instanceof WreckitError;
 }
