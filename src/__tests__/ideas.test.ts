@@ -245,6 +245,56 @@ describe("createItemFromIdea", () => {
     expect(item.priority_hint).toBe("high");
     expect(item.urgency_hint).toBe("Before Q3 launch");
   });
+
+  it("maps dependsOn to depends_on", () => {
+    const idea: ParsedIdea = {
+      title: "Add tests",
+      description: "Test the feature",
+      dependsOn: ["001-add-feature", "002-setup-db"],
+    };
+
+    const item = createItemFromIdea("003-add-tests", idea);
+
+    expect(item.depends_on).toEqual(["001-add-feature", "002-setup-db"]);
+  });
+
+  it("maps campaign field", () => {
+    const idea: ParsedIdea = {
+      title: "Milestone 1 task",
+      description: "Part of milestone 1",
+      campaign: "M1",
+    };
+
+    const item = createItemFromIdea("001-milestone-1-task", idea);
+
+    expect(item.campaign).toBe("M1");
+  });
+
+  it("handles both dependsOn and campaign together", () => {
+    const idea: ParsedIdea = {
+      title: "Second task",
+      description: "Depends on first task",
+      dependsOn: ["001-first-task"],
+      campaign: "M2",
+    };
+
+    const item = createItemFromIdea("002-second-task", idea);
+
+    expect(item.depends_on).toEqual(["001-first-task"]);
+    expect(item.campaign).toBe("M2");
+  });
+
+  it("leaves depends_on and campaign undefined when not provided", () => {
+    const idea: ParsedIdea = {
+      title: "Simple idea",
+      description: "No dependencies",
+    };
+
+    const item = createItemFromIdea("001-simple-idea", idea);
+
+    expect(item.depends_on).toBeUndefined();
+    expect(item.campaign).toBeUndefined();
+  });
 });
 
 describe("persistItems", () => {

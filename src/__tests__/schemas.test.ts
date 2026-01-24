@@ -35,12 +35,13 @@ describe("StoryStatusSchema", () => {
 });
 
 describe("ConfigSchema", () => {
-  it("parses valid config from SPEC", () => {
+  it("parses valid config from SPEC (legacy format)", () => {
     const config = {
       schema_version: 1,
       base_branch: "main",
       branch_prefix: "wreckit/",
       agent: {
+        mode: "process",
         command: "amp",
         args: ["--dangerously-allow-all"],
         completion_signal: "<promise>COMPLETE</promise>",
@@ -50,12 +51,12 @@ describe("ConfigSchema", () => {
     };
     const result = ConfigSchema.parse(config);
     expect(result).toMatchObject(config);
-    expect(result.agent.mode).toBe("process");
   });
 
   it("applies defaults for optional fields", () => {
     const config = {
       agent: {
+        mode: "process",
         command: "amp",
         args: [],
         completion_signal: "DONE",
@@ -67,6 +68,23 @@ describe("ConfigSchema", () => {
     expect(result.branch_prefix).toBe("wreckit/");
     expect(result.max_iterations).toBe(100);
     expect(result.timeout_seconds).toBe(3600);
+  });
+
+  it("parses valid config from SPEC (new kind format)", () => {
+    const config = {
+      schema_version: 1,
+      base_branch: "main",
+      branch_prefix: "wreckit/",
+      agent: {
+        kind: "claude_sdk",
+        model: "claude-sonnet-4",
+        max_tokens: 4096,
+      },
+      max_iterations: 100,
+      timeout_seconds: 3600,
+    };
+    const result = ConfigSchema.parse(config);
+    expect(result).toMatchObject(config);
   });
 
   it("rejects missing agent config", () => {
@@ -156,6 +174,65 @@ describe("ItemSchema", () => {
       updated_at: "2025-01-12T00:00:00Z",
     };
     expect(() => ItemSchema.parse(item)).toThrow();
+  });
+
+  it("accepts item with depends_on and campaign fields", () => {
+    const item = {
+      schema_version: 1,
+      id: "002-feature",
+      title: "Feature name",
+      state: "idea",
+      overview: "Description",
+      branch: null,
+      pr_url: null,
+      pr_number: null,
+      last_error: null,
+      created_at: "2025-01-12T00:00:00Z",
+      updated_at: "2025-01-12T00:00:00Z",
+      depends_on: ["001-setup", "001-core"],
+      campaign: "M1",
+    };
+    const result = ItemSchema.parse(item);
+    expect(result.depends_on).toEqual(["001-setup", "001-core"]);
+    expect(result.campaign).toBe("M1");
+  });
+
+  it("accepts item without depends_on and campaign fields (backwards compatibility)", () => {
+    const item = {
+      schema_version: 1,
+      id: "001-feature",
+      title: "Feature name",
+      state: "idea",
+      overview: "Description",
+      branch: null,
+      pr_url: null,
+      pr_number: null,
+      last_error: null,
+      created_at: "2025-01-12T00:00:00Z",
+      updated_at: "2025-01-12T00:00:00Z",
+    };
+    const result = ItemSchema.parse(item);
+    expect(result.depends_on).toBeUndefined();
+    expect(result.campaign).toBeUndefined();
+  });
+
+  it("accepts item with empty depends_on array", () => {
+    const item = {
+      schema_version: 1,
+      id: "001-feature",
+      title: "Feature name",
+      state: "idea",
+      overview: "Description",
+      branch: null,
+      pr_url: null,
+      pr_number: null,
+      last_error: null,
+      created_at: "2025-01-12T00:00:00Z",
+      updated_at: "2025-01-12T00:00:00Z",
+      depends_on: [],
+    };
+    const result = ItemSchema.parse(item);
+    expect(result.depends_on).toEqual([]);
   });
 });
 
@@ -265,6 +342,27 @@ describe("IndexItemSchema", () => {
       title: "Core Types",
     };
     expect(() => IndexItemSchema.parse(indexItem)).toThrow();
+  });
+
+  it("accepts index item with depends_on field", () => {
+    const indexItem = {
+      id: "002-feature",
+      state: "idea",
+      title: "Feature",
+      depends_on: ["001-setup"],
+    };
+    const result = IndexItemSchema.parse(indexItem);
+    expect(result.depends_on).toEqual(["001-setup"]);
+  });
+
+  it("accepts index item without depends_on field (backwards compatibility)", () => {
+    const indexItem = {
+      id: "001-setup",
+      state: "done",
+      title: "Setup",
+    };
+    const result = IndexItemSchema.parse(indexItem);
+    expect(result.depends_on).toBeUndefined();
   });
 });
 

@@ -57,6 +57,17 @@ export interface ParsedIdea {
    * @deprecated Use `description` instead. Kept for backwards compatibility.
    */
   overview?: string;
+
+  /**
+   * IDs of other items that this idea depends on.
+   * The item will not be processed until all dependencies are complete.
+   */
+  dependsOn?: string[];
+
+  /**
+   * Campaign identifier for grouping related items (e.g., milestone ID like "M1").
+   */
+  campaign?: string;
 }
 
 /**
@@ -183,11 +194,14 @@ export function generateSlug(title: string): string {
 
 export async function allocateItemId(
   root: string,
-  slug: string
+  slug: string,
+  allocatedIds: Set<string> = new Set()
 ): Promise<{ id: string; dir: string; number: string }> {
   const itemsDir = getItemsDir(root);
 
   let maxNumber = 0;
+  
+  // 1. Check disk for existing numbers
   try {
     const entries = await fs.readdir(itemsDir);
     for (const entry of entries) {
@@ -202,6 +216,17 @@ export async function allocateItemId(
   } catch (err) {
     if ((err as NodeJS.ErrnoException).code !== "ENOENT") {
       throw err;
+    }
+  }
+
+  // 2. Check allocatedIds for higher numbers
+  for (const id of allocatedIds) {
+    const match = id.match(/^(\d{3})-/);
+    if (match) {
+      const num = parseInt(match[1], 10);
+      if (num > maxNumber) {
+        maxNumber = num;
+      }
     }
   }
 
@@ -242,26 +267,34 @@ export function createItemFromIdea(
     scope_out_of_scope: idea.scope?.outOfScope,
     priority_hint: idea.priorityHint,
     urgency_hint: idea.urgencyHint,
+
+    // Dependency management and campaign grouping
+    depends_on: idea.dependsOn,
+    campaign: idea.campaign,
   };
 }
 
-async function findExistingItemBySlug(
-  root: string,
-  slug: string
-): Promise<string | null> {
+/**
+ * Get a map of all known item slugs to their IDs.
+ */
+async function getAllKnownItems(root: string): Promise<Map<string, string>> {
   const itemsDir = getItemsDir(root);
+  const slugToId = new Map<string, string>();
   try {
     const entries = await fs.readdir(itemsDir);
     for (const entry of entries) {
-      if (entry.endsWith(`-${slug}`)) {
-        return entry;
+      // Matches pattern: NUMBER-slug
+      const match = entry.match(/^(\d+)-(.+)$/);
+      if (match) {
+        slugToId.set(match[2], entry);
       }
     }
   } catch {
-    // Items dir doesn't exist
+    // Items dir might not exist
   }
-  return null;
+  return slugToId;
 }
+
 
 export async function persistItems(
   root: string,
@@ -269,6 +302,13 @@ export async function persistItems(
 ): Promise<{ created: Item[]; skipped: string[] }> {
   const created: Item[] = [];
   const skipped: string[] = [];
+
+  // 1. Build a map of all known slugs to IDs (existing + new)
+  const slugToIdMap = await getAllKnownItems(root);
+  const allAllocatedIds = new Set<string>(slugToIdMap.values());
+  
+  // Track allocations for second pass
+  const allocations: Array<{ idea: ParsedIdea; id: string; dir: string; slug: string }> = [];
 
   for (const idea of ideas) {
     const slug = generateSlug(idea.title);
@@ -278,13 +318,34 @@ export async function persistItems(
       continue;
     }
 
-    const existingId = await findExistingItemBySlug(root, slug);
+    // Check if slug is already known
+    const existingId = slugToIdMap.get(slug);
     if (existingId) {
       skipped.push(existingId);
       continue;
     }
 
-    const { id, dir } = await allocateItemId(root, slug);
+    // Allocate new ID
+    const { id, dir } = await allocateItemId(root, slug, allAllocatedIds);
+    allocations.push({ idea, id, dir, slug });
+    
+    // Add to map and set so subsequent ideas can depend on this one
+    slugToIdMap.set(slug, id);
+    allAllocatedIds.add(id);
+  }
+
+  // 2. Resolve dependencies and create items
+  for (const { idea, id, dir } of allocations) {
+    // Resolve slug-based dependencies
+    if (idea.dependsOn) {
+      idea.dependsOn = idea.dependsOn.map(dep => {
+        if (dep.startsWith("slug:")) {
+          const depSlug = dep.slice(5);
+          return slugToIdMap.get(depSlug) || dep;
+        }
+        return dep;
+      });
+    }
 
     const item = createItemFromIdea(id, idea);
     await fs.mkdir(dir, { recursive: true });

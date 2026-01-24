@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "id": "016-update-documentation-with-supported-sdk-options",
+  "title": "Update documentation with supported SDK options",
+  "section": "roadmap",
+  "state": "idea",
+  "overview": "From milestone [M2] Finish Experimental SDK Integrations\n\n**Motivation:** Strategic milestone: Finish Experimental SDK Integrations",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-24T07:23:01.569Z",
+  "updated_at": "2026-01-24T07:23:01.569Z",
+  "motivation": "Strategic milestone: Finish Experimental SDK Integrations"
+}

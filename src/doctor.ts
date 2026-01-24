@@ -20,8 +20,125 @@ import {
 import { pathExists } from "./fs/util";
 import { scanItems } from "./commands/status";
 import { initPromptTemplates } from "./prompts";
-import { writeItem, writeIndex } from "./fs/json";
+import { writeItem, writeIndex, readItem } from "./fs/json";
 import { validateStoryQuality } from "./domain/validation";
+
+/**
+ * Detect circular dependencies using DFS.
+ * Returns array of cycles found (each cycle is an array of item IDs).
+ */
+function detectCycles(items: Item[]): string[][] {
+  const cycles: string[][] = [];
+  const visited = new Set<string>();
+  const recursionStack = new Set<string>();
+  const itemMap = new Map(items.map((i) => [i.id, i]));
+
+  function dfs(itemId: string, path: string[]): void {
+    if (recursionStack.has(itemId)) {
+      const cycleStart = path.indexOf(itemId);
+      if (cycleStart !== -1) {
+        cycles.push(path.slice(cycleStart).concat(itemId));
+      }
+      return;
+    }
+
+    if (visited.has(itemId)) return;
+
+    visited.add(itemId);
+    recursionStack.add(itemId);
+    path.push(itemId);
+
+    const item = itemMap.get(itemId);
+    if (item?.depends_on) {
+      for (const depId of item.depends_on) {
+        dfs(depId, [...path]);
+      }
+    }
+
+    recursionStack.delete(itemId);
+  }
+
+  for (const item of items) {
+    if (!visited.has(item.id)) {
+      dfs(item.id, []);
+    }
+  }
+
+  return cycles;
+}
+
+/**
+ * Find dependencies that reference non-existent items.
+ */
+function findMissingDependencies(
+  items: Item[]
+): Array<{ itemId: string; missingDep: string }> {
+  const missing: Array<{ itemId: string; missingDep: string }> = [];
+  const itemIds = new Set(items.map((i) => i.id));
+
+  for (const item of items) {
+    if (item.depends_on) {
+      for (const depId of item.depends_on) {
+        if (!itemIds.has(depId)) {
+          missing.push({ itemId: item.id, missingDep: depId });
+        }
+      }
+    }
+  }
+
+  return missing;
+}
+
+async function diagnoseDependencies(root: string): Promise<Diagnostic[]> {
+  const diagnostics: Diagnostic[] = [];
+  const itemsDir = getItemsDir(root);
+
+  let itemDirs: string[];
+  try {
+    const entries = await fs.readdir(itemsDir, { withFileTypes: true });
+    itemDirs = entries
+      .filter((e) => e.isDirectory() && /^\d{3}-/.test(e.name))
+      .map((e) => e.name);
+  } catch {
+    return [];
+  }
+
+  const items: Item[] = [];
+  for (const dir of itemDirs) {
+    try {
+      const item = await readItem(path.join(itemsDir, dir));
+      items.push(item);
+    } catch {
+      // Skip invalid
+    }
+  }
+
+  // Check for circular dependencies
+  const cycles = detectCycles(items);
+  for (const cycle of cycles) {
+    diagnostics.push({
+      itemId: cycle[0],
+      severity: "error",
+      code: "CIRCULAR_DEPENDENCY",
+      message: `Circular dependency detected: ${cycle.join(" -> ")}`,
+      fixable: false,
+    });
+  }
+
+  // Check for missing dependency references
+  const missing = findMissingDependencies(items);
+  for (const { itemId, missingDep } of missing) {
+    diagnostics.push({
+      itemId,
+      severity: "warning",
+      code: "MISSING_DEPENDENCY",
+      message: `Depends on non-existent item: ${missingDep}`,
+      fixable: false,
+    });
+  }
+
+  return diagnostics;
+}
 
 export type DiagnosticSeverity = "error" | "warning" | "info";
 
@@ -371,6 +488,7 @@ export async function diagnose(root: string): Promise<Diagnostic[]> {
     diagnostics.push(...(await diagnoseItem(root, itemsDir, itemDir)));
   }
 
+  diagnostics.push(...(await diagnoseDependencies(root)));
   diagnostics.push(...(await diagnoseIndex(root)));
 
   return diagnostics;

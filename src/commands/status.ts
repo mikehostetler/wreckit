@@ -38,6 +38,7 @@ export async function scanItems(root: string): Promise<IndexItem[]> {
         id: item.id,
         state: item.state,
         title: item.title,
+        depends_on: item.depends_on,
       });
     } catch {
       // Skip invalid items

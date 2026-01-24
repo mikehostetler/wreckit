@@ -1,0 +1,23 @@
+# Progress Log - Item Dependencies and Campaign Grouping
+
+## 2026-01-24 - Implementation Complete
+
+Successfully implemented all user stories for Item Dependencies and Campaign Grouping.
+
+### Summary of Changes:
+
+1.  **Schema Support**: Added `depends_on` (array of strings) and `campaign` (string) to `ItemSchema` and `IndexItemSchema`.
+2.  **Data Layer**: Updated `ParsedIdea`, `createItemFromIdea`, and `persistItems` to handle dependency resolution. `persistItems` now supports `slug:name` references for cross-item dependencies during creation.
+3.  **Orchestrator Intelligence**:
+    *   Sequential mode: Now skips items with unsatisfied dependencies.
+    *   Parallel mode: Workers poll the queue and only pick items whose dependencies are `done`.
+    *   Dry-run: Now indicates when an item is blocked and by which dependencies.
+4.  **Roadmap Integration**: `execute-roadmap` now automatically assigns the `campaign` field from milestone IDs and infers a linear dependency chain within each milestone.
+5.  **Validation**: Added cycle detection and missing reference checks to the `doctor` command.
+
+### Verification:
+- All 87 unit tests pass.
+- Manual verification of circular dependency detection in `doctor`.
+- Manual verification of dependency-aware ordering in `orchestrateAll`.
+
+The system is now safe for unsupervised autonomous execution.

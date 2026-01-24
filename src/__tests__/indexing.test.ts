@@ -104,6 +104,25 @@ describe("toIndexItem", () => {
       id: "001-auth",
       title: "Auth Feature",
       state: "planned",
+      depends_on: undefined,
+    });
+  });
+
+  it("includes depends_on when present", () => {
+    const item = createValidItem({
+      id: "002-tests",
+      title: "Add Tests",
+      state: "idea",
+      depends_on: ["001-auth"],
+    });
+
+    const result = toIndexItem(item);
+
+    expect(result).toEqual({
+      id: "002-tests",
+      title: "Add Tests",
+      state: "idea",
+      depends_on: ["001-auth"],
     });
   });
 });
@@ -127,8 +146,8 @@ describe("buildIndex", () => {
     const result = buildIndex(items);
 
     expect(result.items).toHaveLength(2);
-    expect(result.items[0]).toEqual({ id: "001-a", title: "A", state: "idea" });
-    expect(result.items[1]).toEqual({ id: "002-b", title: "B", state: "done" });
+    expect(result.items[0]).toEqual({ id: "001-a", title: "A", state: "idea", depends_on: undefined });
+    expect(result.items[1]).toEqual({ id: "002-b", title: "B", state: "done", depends_on: undefined });
   });
 
   it("sets generated_at to current ISO timestamp", () => {
