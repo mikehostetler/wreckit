@@ -8,9 +8,9 @@
   "branch": null,
   "pr_url": null,
   "pr_number": null,
-  "last_error": "Failed to checkout existing branch wreckit/026-implement-tool-allowlist-enforcement-in-srcagentam",
+  "last_error": "Git pre-flight check failed:\n\n• There are uncommitted changes in the working directory\n    Run `git stash` to temporarily save changes\n    Or run `git commit -am \"message\"` to commit changes\n    Or run `git checkout -- .` to discard changes (destructive)",
   "created_at": "2026-01-24T14:10:12.332Z",
-  "updated_at": "2026-01-24T21:35:00.000Z",
+  "updated_at": "2026-01-24T21:43:21.358Z",
   "motivation": "Strategic milestone: Finish Experimental SDK Integrations",
   "campaign": "M2"
 }
