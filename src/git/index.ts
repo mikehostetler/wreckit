@@ -821,12 +821,12 @@ export async function mergeAndPushToBase(
   // Push to remote
   const pushResult = await runGitCommand(["push", "origin", baseBranch], options);
   if (pushResult.exitCode !== 0) {
-    throw new Error(
-      `Failed to push ${baseBranch} to origin. Check that you have push access.`
+    logger.warn(
+      `Failed to push ${baseBranch} to origin. This may be expected in local-only environments.`
     );
+  } else {
+    logger.info(`Merged ${featureBranch} into ${baseBranch} and pushed to origin`);
   }
-
-  logger.info(`Merged ${featureBranch} into ${baseBranch} and pushed to origin`);
 }
 
 /**
