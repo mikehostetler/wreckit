@@ -710,6 +710,143 @@ An item references a dependency that doesn't exist.
 **Solution:**
 Either create the missing item or remove it from the `depends_on` array.
 
+### Phase-Specific Failures
+
+Each workflow phase has specific success criteria. If these aren't met, the phase fails.
+
+#### Research Phase Failures
+
+**Symptom:**
+```
+Agent did not create research.md
+```
+
+**Cause:**
+The agent completed without creating the expected research.md file.
+
+**Solutions:**
+- Re-run the research phase with `--force`: `wreckit phase research --item <id> --force`
+- Check the agent output for errors or context window issues
+- Verify the item's overview contains enough context for research
+
+#### Plan Phase Failures
+
+**Symptom (missing plan.md):**
+```
+Agent did not create plan.md
+```
+
+**Symptom (missing prd.json):**
+```
+Agent did not create prd.json
+```
+
+**Symptom (invalid prd.json):**
+```
+prd.json is not valid JSON or fails schema validation
+```
+
+**Cause:**
+The agent completed but didn't create both required artifacts (plan.md and prd.json), or the prd.json doesn't match the expected schema.
+
+**Solutions:**
+- Re-run the plan phase with `--force`: `wreckit phase plan --item <id> --force`
+- If prd.json is malformed, check for common issues:
+  - Missing required fields (`id`, `branch_name`, `user_stories`)
+  - Story priority as string instead of number
+  - Invalid status values (must be "pending" or "done")
+
+#### Implement Phase Failures
+
+**Symptom (prd not found):**
+```
+prd.json not found or invalid
+```
+
+**Cause:**
+The implement phase requires a valid prd.json from the plan phase.
+
+**Solution:**
+Run the plan phase first: `wreckit phase plan --item <id>`
+
+**Symptom (max iterations):**
+```
+Reached max iterations (100) with stories still pending
+```
+
+**Cause:**
+The agent couldn't complete all user stories within the configured iteration limit.
+
+**Solutions:**
+1. Increase the iteration limit in `.wreckit/config.json`:
+   ```json
+   {
+     "max_iterations": 200
+   }
+   ```
+
+2. Break the item into smaller stories with fewer acceptance criteria
+
+3. Resume implementation: `wreckit next` (it will continue from where it left off)
+
+#### PR Phase Failures
+
+**Symptom (stories not done):**
+```
+Not all stories are done
+```
+
+**Cause:**
+The PR phase requires all user stories to have status "done".
+
+**Solution:**
+Complete implementation first: `wreckit phase implement --item <id>`
+
+**Symptom (quality gate failed):**
+```
+Quality gate failed. The following checks must pass before pushing:
+  • Command failed: npm test
+```
+
+**Cause:**
+Pre-push quality checks (tests, linting, etc.) failed.
+
+**Solutions:**
+1. Fix the failing tests/lint issues manually
+2. Review quality check configuration in `.wreckit/config.json`:
+   ```json
+   {
+     "pr_checks": {
+       "commands": ["npm test", "npm run lint"]
+     }
+   }
+   ```
+
+### Agent Timeout
+
+**Symptom:**
+```
+Agent timed out
+```
+
+**Cause:**
+The agent didn't complete within the configured timeout (default: 3600 seconds / 1 hour).
+
+**Solutions:**
+
+1. Increase the timeout in `.wreckit/config.json`:
+   ```json
+   {
+     "timeout_seconds": 7200
+   }
+   ```
+
+2. Break the work into smaller items or stories
+
+3. Check for infinite loops or extremely large context in the agent's work
+
+**Note:** The default timeout is 3600 seconds (1 hour), which is usually sufficient for most tasks.
+
 ---
 
 ## Staying on Process Mode
