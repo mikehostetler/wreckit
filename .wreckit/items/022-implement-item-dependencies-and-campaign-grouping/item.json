@@ -3,19 +3,21 @@
   "id": "022-implement-item-dependencies-and-campaign-grouping",
   "title": "Implement Item Dependencies and Campaign Grouping",
   "section": "core",
-  "state": "implementing",
+  "state": "done",
   "overview": "Implement dependency management and campaign grouping to prevent race conditions in autonomous mode.",
   "branch": "wreckit/022-implement-item-dependencies-and-campaign-grouping",
   "pr_url": null,
   "pr_number": null,
-  "last_error": "Failed to pull latest main. Branch may be out of sync with remote.",
+  "last_error": null,
   "created_at": "2026-01-24T06:30:00.000Z",
-  "updated_at": "2026-01-24T14:08:56.215Z",
+  "updated_at": "2026-01-24T14:09:10.187Z",
   "success_criteria": [
     "ItemSchema includes 'depends_on' field (array of IDs)",
     "ItemSchema includes 'campaign' field (string)",
     "Orchestrator skips items with incomplete dependencies",
     "execute-roadmap infers dependencies (e.g. tests depend on code)",
     "Items are grouped by Milestone into Campaigns"
-  ]
+  ],
+  "rollback_sha": "fbd9dd51f9f86a81655547de4d96a7d2a572e8ea",
+  "completed_at": "2026-01-24T14:09:10.186Z"
 }

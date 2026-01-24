@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "id": "018-implement-backup-mechanism-before-doctor-fixes-spe",
+  "id": "032-implement-backup-mechanism-before-doctor-fixes-spe",
   "title": "Implement backup mechanism before doctor fixes (spec 010 Gap 3)",
   "section": "roadmap",
   "state": "idea",
@@ -9,7 +9,11 @@
   "pr_url": null,
   "pr_number": null,
   "last_error": null,
-  "created_at": "2026-01-24T07:23:01.570Z",
-  "updated_at": "2026-01-24T07:23:01.570Z",
-  "motivation": "Strategic milestone: Robust Error Handling and Recovery"
+  "created_at": "2026-01-24T14:10:12.334Z",
+  "updated_at": "2026-01-24T14:10:12.334Z",
+  "motivation": "Strategic milestone: Robust Error Handling and Recovery",
+  "depends_on": [
+    "031-fix-silent-read-errors-in-artifact-detection-specs"
+  ],
+  "campaign": "M3"
 }
