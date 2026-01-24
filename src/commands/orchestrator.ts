@@ -1,10 +1,11 @@
 import * as fs from "node:fs/promises";
+import { randomUUID } from "node:crypto";
 import type { Logger } from "../logging";
-import type { Prd } from "../schemas";
+import type { Prd, IndexItem, BatchProgress } from "../schemas";
 import { findRepoRoot, findRootFromOptions, getItemDir, getResearchPath, getPlanPath, getPrdPath } from "../fs/paths";
 import { pathExists } from "../fs/util";
 import { loadConfig } from "../config";
-import { readItem, readPrd, writeItem } from "../fs/json";
+import { readItem, readPrd, writeItem, readBatchProgress, writeBatchProgress, clearBatchProgress } from "../fs/json";
 import { scanItems } from "./status";
 import { runCommand } from "./run";
 import { TuiViewAdapter } from "../views";
@@ -12,6 +13,50 @@ import type { AgentEvent } from "../tui/agentEvents";
 import { createSimpleProgress } from "../tui";
 import { formatDryRunSummary, formatDryRunRun, type DryRunItemInfo } from "./dryRunFormatter";
 import { terminateAllAgents } from "../agent/runner";
+
+const STALE_THRESHOLD_MS = 24 * 60 * 60 * 1000; // 24 hours
+
+/**
+ * Create a new batch progress record.
+ */
+function createBatchProgress(
+  queuedItems: string[],
+  skippedItems: string[],
+  parallel: number
+): BatchProgress {
+  const now = new Date().toISOString();
+  return {
+    schema_version: 1,
+    session_id: randomUUID(),
+    pid: process.pid,
+    started_at: now,
+    updated_at: now,
+    parallel,
+    queued_items: queuedItems,
+    current_item: null,
+    completed: [],
+    failed: [],
+    skipped: skippedItems,
+  };
+}
+
+/**
+ * Check if existing progress is stale (> 24 hours old or owning process not running).
+ */
+function isProgressStale(progress: BatchProgress): boolean {
+  const updatedAt = new Date(progress.updated_at).getTime();
+  if (Date.now() - updatedAt > STALE_THRESHOLD_MS) {
+    return true;
+  }
+
+  // Check if owning process is still running
+  try {
+    process.kill(progress.pid, 0);
+    return false; // Process still running
+  } catch {
+    return true; // Process not running
+  }
+}
 
 /**
  * Check if all dependencies of an item are satisfied (all deps are "done").
@@ -35,6 +80,10 @@ export interface OrchestratorOptions {
   mockAgent?: boolean;
   /** Maximum number of items to process concurrently (default: 1 for sequential) */
   parallel?: number;
+  /** If true, ignore any existing batch progress and start fresh */
+  noResume?: boolean;
+  /** If true, include previously failed items when resuming */
+  retryFailed?: boolean;
 }
 
 export interface OrchestratorResult {
@@ -74,6 +123,72 @@ export async function orchestrateAll(
   const allDoneIds = new Set(doneItems.map((item) => item.id));
 
   result.skipped = doneItems.map((item) => item.id);
+
+  // Check for existing batch progress (resume support)
+  const { noResume = false, retryFailed = false } = options;
+  let batchProgress: BatchProgress | null = null;
+  let workingNonDoneItems = [...nonDoneItems];
+
+  if (!dryRun) {
+    if (!noResume) {
+      const existingProgress = await readBatchProgress(root);
+
+      if (existingProgress) {
+        if (isProgressStale(existingProgress)) {
+          logger.warn("Found stale batch progress, starting fresh");
+          await clearBatchProgress(root);
+        } else {
+          logger.info(`Resuming batch run (session ${existingProgress.session_id})`);
+          logger.info(`  Progress: ${existingProgress.completed.length} completed, ${existingProgress.failed.length} failed`);
+          batchProgress = existingProgress;
+
+          // Merge existing progress into result
+          result.completed = [...batchProgress.completed];
+          result.failed = [...batchProgress.failed];
+
+          // Add completed items to done set for dependency checking
+          for (const id of batchProgress.completed) {
+            allDoneIds.add(id);
+          }
+
+          // Filter out already-completed items
+          const completedSet = new Set(batchProgress.completed);
+          workingNonDoneItems = workingNonDoneItems.filter(item => !completedSet.has(item.id));
+
+          // Handle retry-failed: re-add failed items to queue
+          if (retryFailed && batchProgress.failed.length > 0) {
+            logger.info(`  Re-queuing ${batchProgress.failed.length} failed item(s)`);
+            const failedSet = new Set(batchProgress.failed);
+            const failedItems = items.filter(item => failedSet.has(item.id));
+            workingNonDoneItems.push(...failedItems);
+            result.failed = [];
+            batchProgress.failed = [];
+          } else {
+            // Filter out failed items (don't re-process unless --retry-failed)
+            const failedSet = new Set(batchProgress.failed);
+            workingNonDoneItems = workingNonDoneItems.filter(item => !failedSet.has(item.id));
+          }
+
+          // Clear current_item (will be re-set when processing starts)
+          if (batchProgress.current_item) {
+            logger.info(`  Re-queuing interrupted item: ${batchProgress.current_item}`);
+            batchProgress.current_item = null;
+          }
+        }
+      }
+    }
+
+    // Create new session if not resuming
+    if (!batchProgress) {
+      batchProgress = createBatchProgress(
+        workingNonDoneItems.map(i => i.id),
+        doneItems.map(i => i.id),
+        parallel
+      );
+      await writeBatchProgress(root, batchProgress);
+      logger.info(`Starting batch run (session ${batchProgress.session_id})`);
+    }
+  }
 
   if (dryRun) {
     const dryRunInfos: DryRunItemInfo[] = [];
@@ -143,11 +258,11 @@ export async function orchestrateAll(
   // Process items either sequentially or in parallel
   if (parallel <= 1) {
     // Sequential processing with dependency checking
-    let remainingItems = [...nonDoneItems];
+    let remainingItems = [...workingNonDoneItems];
 
     while (remainingItems.length > 0) {
       // Find next runnable item (dependencies satisfied)
-      const runnableItems = remainingItems.filter(item => 
+      const runnableItems = remainingItems.filter(item =>
         areDependenciesSatisfied(item, allDoneIds)
       );
 
@@ -159,6 +274,13 @@ export async function orchestrateAll(
       }
 
       const item = runnableItems[0];
+
+      // Update batch progress: mark item as current
+      if (batchProgress) {
+        batchProgress.current_item = item.id;
+        batchProgress.updated_at = new Date().toISOString();
+        await writeBatchProgress(root, batchProgress);
+      }
 
       if (useTui && view) {
         view.onActiveItemChanged(item.id);
@@ -191,6 +313,14 @@ export async function orchestrateAll(
         allDoneIds.add(item.id);
         remainingItems = remainingItems.filter(i => i.id !== item.id);
 
+        // Checkpoint: item completed
+        if (batchProgress) {
+          batchProgress.completed.push(item.id);
+          batchProgress.current_item = null;
+          batchProgress.updated_at = new Date().toISOString();
+          await writeBatchProgress(root, batchProgress);
+        }
+
         if (useTui && view) {
           view.onItemsChanged(items.map((it) => ({
             id: it.id,
@@ -204,6 +334,14 @@ export async function orchestrateAll(
         const errorMessage = error instanceof Error ? error.message : String(error);
         result.failed.push(item.id);
         remainingItems = remainingItems.filter(i => i.id !== item.id);
+
+        // Checkpoint: item failed
+        if (batchProgress) {
+          batchProgress.failed.push(item.id);
+          batchProgress.current_item = null;
+          batchProgress.updated_at = new Date().toISOString();
+          await writeBatchProgress(root, batchProgress);
+        }
 
         // Persist error to item.json
         try {
@@ -223,11 +361,11 @@ export async function orchestrateAll(
     }
   } else {
     // Parallel processing using worker pool
-    const effectiveParallel = Math.max(1, Math.min(parallel, nonDoneItems.length));
-    logger.info(`Processing ${nonDoneItems.length} items with ${effectiveParallel} parallel workers`);
+    const effectiveParallel = Math.max(1, Math.min(parallel, workingNonDoneItems.length));
+    logger.info(`Processing ${workingNonDoneItems.length} items with ${effectiveParallel} parallel workers`);
     await processItemsParallel(
-      nonDoneItems,
-      { force, mockAgent, logger, root, simpleProgress, parallel: effectiveParallel, allDoneIds },
+      workingNonDoneItems,
+      { force, mockAgent, logger, root, simpleProgress, parallel: effectiveParallel, allDoneIds, batchProgress },
       result
     );
   }
@@ -236,6 +374,11 @@ export async function orchestrateAll(
     view.stop();
   }
   terminateAllAgents(logger);
+
+  // Clean up batch progress on successful completion (all items processed)
+  if (!dryRun && batchProgress && result.remaining.length === 0) {
+    await clearBatchProgress(root);
+  }
 
   return result;
 }
@@ -253,10 +396,11 @@ async function processItemsParallel(
     simpleProgress: ReturnType<typeof createSimpleProgress> | null;
     parallel: number;
     allDoneIds: Set<string>;
+    batchProgress: BatchProgress | null;
   },
   result: OrchestratorResult
 ): Promise<void> {
-  const { force, mockAgent, logger, root, simpleProgress, parallel, allDoneIds } = context;
+  const { force, mockAgent, logger, root, simpleProgress, parallel, allDoneIds, batchProgress } = context;
 
   // Use a local copy of items still to process
   let queue = [...items];
@@ -301,9 +445,23 @@ async function processItemsParallel(
           allDoneIds.add(item.id);
           simpleProgress?.complete(item.id);
           logger.info(`✓ Completed ${item.id}`);
+
+          // Checkpoint: item completed (parallel mode)
+          if (batchProgress) {
+            batchProgress.completed.push(item.id);
+            batchProgress.updated_at = new Date().toISOString();
+            await writeBatchProgress(root, batchProgress);
+          }
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : String(error);
           result.failed.push(item.id);
+
+          // Checkpoint: item failed (parallel mode)
+          if (batchProgress) {
+            batchProgress.failed.push(item.id);
+            batchProgress.updated_at = new Date().toISOString();
+            await writeBatchProgress(root, batchProgress);
+          }
 
           // Persist error to item.json
           try {

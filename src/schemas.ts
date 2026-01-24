@@ -160,6 +160,24 @@ export const IndexSchema = z.object({
   generated_at: z.string(),
 });
 
+export const BatchProgressSchema = z.object({
+  schema_version: z.literal(1),
+  session_id: z.string(),
+  pid: z.number(), // Process ID for stale detection
+  started_at: z.string(), // ISO timestamp
+  updated_at: z.string(), // Last checkpoint time
+  parallel: z.number(), // Worker count (1 for sequential)
+
+  // Queue state
+  queued_items: z.array(z.string()), // Original queue (item IDs)
+  current_item: z.string().nullable(), // Currently processing (sequential mode)
+
+  // Progress tracking
+  completed: z.array(z.string()), // Successfully processed this session
+  failed: z.array(z.string()), // Failed items this session
+  skipped: z.array(z.string()), // Already done at session start
+});
+
 export type WorkflowState = z.infer<typeof WorkflowStateSchema>;
 export type StoryStatus = z.infer<typeof StoryStatusSchema>;
 export type MergeMode = z.infer<typeof MergeModeSchema>;
@@ -178,3 +196,4 @@ export type AmpSdkAgentConfig = z.infer<typeof AmpSdkAgentSchema>;
 export type CodexSdkAgentConfig = z.infer<typeof CodexSdkAgentSchema>;
 export type OpenCodeSdkAgentConfig = z.infer<typeof OpenCodeSdkAgentSchema>;
 export type AgentConfigUnion = z.infer<typeof AgentConfigUnionSchema>;
+export type BatchProgress = z.infer<typeof BatchProgressSchema>;

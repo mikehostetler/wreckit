@@ -101,6 +101,7 @@ describe("diagnose", () => {
         base_branch: "main",
         branch_prefix: "wreckit/",
         agent: {
+          mode: "process",
           command: "amp",
           args: [],
           completion_signal: "DONE",
@@ -239,6 +240,115 @@ describe("diagnose", () => {
 
     expect(promptsDiag).toBeUndefined();
   });
+
+  it("returns STALE_BATCH_PROGRESS when PID not running", async () => {
+    const progressPath = path.join(tempDir, ".wreckit", "batch-progress.json");
+    const progress = {
+      schema_version: 1,
+      session_id: "stale-test",
+      pid: 99999999, // Non-existent PID
+      started_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      parallel: 1,
+      queued_items: [],
+      current_item: null,
+      completed: [],
+      failed: [],
+      skipped: [],
+    };
+    await fs.writeFile(progressPath, JSON.stringify(progress, null, 2));
+
+    const diagnostics = await diagnose(tempDir);
+    const staleDiag = diagnostics.find((d) => d.code === "STALE_BATCH_PROGRESS");
+
+    expect(staleDiag).toBeDefined();
+    expect(staleDiag?.severity).toBe("warning");
+    expect(staleDiag?.fixable).toBe(true);
+    expect(staleDiag?.message).toContain("stale");
+  });
+
+  it("returns STALE_BATCH_PROGRESS when updated_at is older than 24 hours", async () => {
+    const progressPath = path.join(tempDir, ".wreckit", "batch-progress.json");
+    const expiredTime = new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString();
+    const progress = {
+      schema_version: 1,
+      session_id: "expired-test",
+      pid: process.pid,
+      started_at: expiredTime,
+      updated_at: expiredTime,
+      parallel: 1,
+      queued_items: [],
+      current_item: null,
+      completed: [],
+      failed: [],
+      skipped: [],
+    };
+    await fs.writeFile(progressPath, JSON.stringify(progress, null, 2));
+
+    const diagnostics = await diagnose(tempDir);
+    const staleDiag = diagnostics.find((d) => d.code === "STALE_BATCH_PROGRESS");
+
+    expect(staleDiag).toBeDefined();
+    expect(staleDiag?.message).toContain("older than 24 hours");
+  });
+
+  it("returns BATCH_PROGRESS_CORRUPT for invalid JSON", async () => {
+    const progressPath = path.join(tempDir, ".wreckit", "batch-progress.json");
+    await fs.writeFile(progressPath, "{ invalid json }");
+
+    const diagnostics = await diagnose(tempDir);
+    const corruptDiag = diagnostics.find((d) => d.code === "BATCH_PROGRESS_CORRUPT");
+
+    expect(corruptDiag).toBeDefined();
+    expect(corruptDiag?.severity).toBe("warning");
+    expect(corruptDiag?.fixable).toBe(true);
+    expect(corruptDiag?.message).toContain("invalid JSON");
+  });
+
+  it("returns BATCH_PROGRESS_CORRUPT for invalid schema", async () => {
+    const progressPath = path.join(tempDir, ".wreckit", "batch-progress.json");
+    await fs.writeFile(progressPath, JSON.stringify({ invalid: "schema" }));
+
+    const diagnostics = await diagnose(tempDir);
+    const corruptDiag = diagnostics.find((d) => d.code === "BATCH_PROGRESS_CORRUPT");
+
+    expect(corruptDiag).toBeDefined();
+    expect(corruptDiag?.message).toContain("invalid");
+  });
+
+  it("returns no batch progress diagnostics when file does not exist", async () => {
+    const diagnostics = await diagnose(tempDir);
+    const batchDiag = diagnostics.find(
+      (d) => d.code === "STALE_BATCH_PROGRESS" || d.code === "BATCH_PROGRESS_CORRUPT"
+    );
+
+    expect(batchDiag).toBeUndefined();
+  });
+
+  it("returns no batch progress diagnostics when progress is fresh with running PID", async () => {
+    const progressPath = path.join(tempDir, ".wreckit", "batch-progress.json");
+    const progress = {
+      schema_version: 1,
+      session_id: "fresh-test",
+      pid: process.pid, // Current process
+      started_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      parallel: 1,
+      queued_items: [],
+      current_item: null,
+      completed: [],
+      failed: [],
+      skipped: [],
+    };
+    await fs.writeFile(progressPath, JSON.stringify(progress, null, 2));
+
+    const diagnostics = await diagnose(tempDir);
+    const batchDiag = diagnostics.find(
+      (d) => d.code === "STALE_BATCH_PROGRESS" || d.code === "BATCH_PROGRESS_CORRUPT"
+    );
+
+    expect(batchDiag).toBeUndefined();
+  });
 });
 
 describe("applyFixes", () => {
@@ -373,6 +483,67 @@ describe("applyFixes", () => {
     expect(results).toHaveLength(2);
     expect(results.every((r) => r.fixed)).toBe(true);
   });
+
+  it("fixes STALE_BATCH_PROGRESS by removing file", async () => {
+    const progressPath = path.join(tempDir, ".wreckit", "batch-progress.json");
+    const progress = {
+      schema_version: 1,
+      session_id: "stale-fix-test",
+      pid: 99999999, // Non-existent PID
+      started_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      parallel: 1,
+      queued_items: [],
+      current_item: null,
+      completed: [],
+      failed: [],
+      skipped: [],
+    };
+    await fs.writeFile(progressPath, JSON.stringify(progress, null, 2));
+
+    const diagnostics = [
+      {
+        itemId: null,
+        severity: "warning" as const,
+        code: "STALE_BATCH_PROGRESS",
+        message: "batch-progress.json is stale",
+        fixable: true,
+      },
+    ];
+
+    const results = await applyFixes(tempDir, diagnostics, mockLogger);
+
+    expect(results).toHaveLength(1);
+    expect(results[0].fixed).toBe(true);
+    expect(results[0].message).toContain("Removed");
+
+    const exists = await fs.access(progressPath).then(() => true).catch(() => false);
+    expect(exists).toBe(false);
+  });
+
+  it("fixes BATCH_PROGRESS_CORRUPT by removing file", async () => {
+    const progressPath = path.join(tempDir, ".wreckit", "batch-progress.json");
+    await fs.writeFile(progressPath, "{ invalid json }");
+
+    const diagnostics = [
+      {
+        itemId: null,
+        severity: "warning" as const,
+        code: "BATCH_PROGRESS_CORRUPT",
+        message: "batch-progress.json has invalid JSON",
+        fixable: true,
+      },
+    ];
+
+    const results = await applyFixes(tempDir, diagnostics, mockLogger);
+
+    expect(results).toHaveLength(1);
+    expect(results[0].fixed).toBe(true);
+    expect(results[0].message).toContain("Removed");
+
+    const exists = await fs.access(progressPath).then(() => true).catch(() => false);
+    expect(exists).toBe(false);
+  });
 });
 
 describe("doctorCommand", () => {
@@ -477,7 +648,7 @@ describe("doctorCommand", () => {
         schema_version: 1,
         base_branch: "main",
         branch_prefix: "wreckit/",
-        agent: { command: "amp", args: [], completion_signal: "DONE" },
+        agent: { mode: "process", command: "amp", args: [], completion_signal: "DONE" },
         max_iterations: 100,
         timeout_seconds: 3600,
       })

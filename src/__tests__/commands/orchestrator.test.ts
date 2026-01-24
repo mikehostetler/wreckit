@@ -261,4 +261,199 @@ describe("orchestrator", () => {
       expect(result).toBe("001-first");
     });
   });
+
+  describe("batch progress persistence", () => {
+    it("creates batch-progress.json on start", async () => {
+      await setupItem(createTestItem({ id: "001-test", state: "idea" }));
+      mockedRunCommand.mockResolvedValue(undefined);
+
+      await orchestrateAll({}, mockLogger);
+
+      // Progress file should be deleted on clean completion
+      const progressPath = path.join(tempDir, ".wreckit", "batch-progress.json");
+      const exists = await fs.access(progressPath).then(() => true).catch(() => false);
+      expect(exists).toBe(false);
+    });
+
+    it("preserves progress file when items remain (dependency blocked)", async () => {
+      await setupItem(createTestItem({
+        id: "001-dep",
+        state: "idea",
+      }));
+      await setupItem(createTestItem({
+        id: "002-blocked",
+        state: "idea",
+        depends_on: ["999-nonexistent"],
+      }));
+
+      mockedRunCommand.mockResolvedValue(undefined);
+
+      const result = await orchestrateAll({}, mockLogger);
+
+      expect(result.remaining).toContain("002-blocked");
+
+      const progressPath = path.join(tempDir, ".wreckit", "batch-progress.json");
+      const exists = await fs.access(progressPath).then(() => true).catch(() => false);
+      expect(exists).toBe(true);
+    });
+
+    it("resumes from existing progress", async () => {
+      await setupItem(createTestItem({ id: "001-done", state: "idea" }));
+      await setupItem(createTestItem({ id: "002-pending", state: "idea" }));
+
+      const progressPath = path.join(tempDir, ".wreckit", "batch-progress.json");
+      const existingProgress = {
+        schema_version: 1,
+        session_id: "test123",
+        pid: process.pid,
+        started_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        parallel: 1,
+        queued_items: ["001-done", "002-pending"],
+        current_item: null,
+        completed: ["001-done"],
+        failed: [],
+        skipped: [],
+      };
+      await fs.writeFile(progressPath, JSON.stringify(existingProgress, null, 2));
+
+      mockedRunCommand.mockResolvedValue(undefined);
+
+      const result = await orchestrateAll({}, mockLogger);
+
+      expect(mockedRunCommand).toHaveBeenCalledTimes(1);
+      expect(mockedRunCommand).toHaveBeenCalledWith(
+        "002-pending",
+        expect.anything(),
+        mockLogger
+      );
+      expect(result.completed).toContain("001-done");
+      expect(result.completed).toContain("002-pending");
+    });
+
+    it("--no-resume ignores existing progress", async () => {
+      await setupItem(createTestItem({ id: "001-test", state: "idea" }));
+      await setupItem(createTestItem({ id: "002-test", state: "idea" }));
+
+      const progressPath = path.join(tempDir, ".wreckit", "batch-progress.json");
+      const existingProgress = {
+        schema_version: 1,
+        session_id: "test123",
+        pid: process.pid,
+        started_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        parallel: 1,
+        queued_items: ["001-test", "002-test"],
+        current_item: null,
+        completed: ["001-test"],
+        failed: [],
+        skipped: [],
+      };
+      await fs.writeFile(progressPath, JSON.stringify(existingProgress, null, 2));
+
+      mockedRunCommand.mockResolvedValue(undefined);
+
+      const result = await orchestrateAll({ noResume: true }, mockLogger);
+
+      expect(mockedRunCommand).toHaveBeenCalledTimes(2);
+    });
+
+    it("--retry-failed re-queues failed items", async () => {
+      await setupItem(createTestItem({ id: "001-failed", state: "idea" }));
+      await setupItem(createTestItem({ id: "002-pending", state: "idea" }));
+
+      const progressPath = path.join(tempDir, ".wreckit", "batch-progress.json");
+      const existingProgress = {
+        schema_version: 1,
+        session_id: "test123",
+        pid: process.pid,
+        started_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        parallel: 1,
+        queued_items: ["001-failed", "002-pending"],
+        current_item: null,
+        completed: [],
+        failed: ["001-failed"],
+        skipped: [],
+      };
+      await fs.writeFile(progressPath, JSON.stringify(existingProgress, null, 2));
+
+      mockedRunCommand.mockResolvedValue(undefined);
+
+      const result = await orchestrateAll({ retryFailed: true }, mockLogger);
+
+      // Should run both items (failed item re-queued)
+      expect(mockedRunCommand).toHaveBeenCalledTimes(2);
+      expect(result.completed).toContain("001-failed");
+      expect(result.completed).toContain("002-pending");
+    });
+
+    it("ignores stale progress file (old PID)", async () => {
+      await setupItem(createTestItem({ id: "001-test", state: "idea" }));
+
+      const progressPath = path.join(tempDir, ".wreckit", "batch-progress.json");
+      const existingProgress = {
+        schema_version: 1,
+        session_id: "stale",
+        pid: 99999999, // Non-existent PID
+        started_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        parallel: 1,
+        queued_items: ["001-test"],
+        current_item: null,
+        completed: [],
+        failed: [],
+        skipped: [],
+      };
+      await fs.writeFile(progressPath, JSON.stringify(existingProgress, null, 2));
+
+      mockedRunCommand.mockResolvedValue(undefined);
+
+      const result = await orchestrateAll({}, mockLogger);
+
+      expect(mockedRunCommand).toHaveBeenCalledTimes(1);
+      expect(result.completed).toContain("001-test");
+    });
+
+    it("ignores expired progress file (> 24 hours)", async () => {
+      await setupItem(createTestItem({ id: "001-test", state: "idea" }));
+
+      const progressPath = path.join(tempDir, ".wreckit", "batch-progress.json");
+      const expiredTime = new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString();
+      const existingProgress = {
+        schema_version: 1,
+        session_id: "expired",
+        pid: process.pid,
+        started_at: expiredTime,
+        updated_at: expiredTime,
+        parallel: 1,
+        queued_items: ["001-test"],
+        current_item: null,
+        completed: [],
+        failed: [],
+        skipped: [],
+      };
+      await fs.writeFile(progressPath, JSON.stringify(existingProgress, null, 2));
+
+      mockedRunCommand.mockResolvedValue(undefined);
+
+      const result = await orchestrateAll({}, mockLogger);
+
+      expect(mockedRunCommand).toHaveBeenCalledTimes(1);
+      expect(result.completed).toContain("001-test");
+    });
+
+    it("dry-run does not create progress file", async () => {
+      await setupItem(createTestItem({ id: "001-test", state: "idea" }));
+
+      const progressPath = path.join(tempDir, ".wreckit", "batch-progress.json");
+
+      const result = await orchestrateAll({ dryRun: true }, mockLogger);
+
+      expect(mockedRunCommand).not.toHaveBeenCalled();
+
+      const exists = await fs.access(progressPath).then(() => true).catch(() => false);
+      expect(exists).toBe(false);
+    });
+  });
 });

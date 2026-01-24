@@ -53,6 +53,10 @@ export function getIndexPath(root: string): string {
   return path.join(getWreckitDir(root), "index.json");
 }
 
+export function getBatchProgressPath(root: string): string {
+  return path.join(getWreckitDir(root), "batch-progress.json");
+}
+
 export function getPromptsDir(root: string): string {
   return path.join(getWreckitDir(root), "prompts");
 }

@@ -7,6 +7,7 @@ import {
   ItemSchema,
   PrdSchema,
   IndexSchema,
+  BatchProgressSchema,
   type Item,
   type Index,
 } from "./schemas";
@@ -16,11 +17,12 @@ import {
   getIndexPath,
   getPromptsDir,
   getItemsDir,
+  getBatchProgressPath,
 } from "./fs/paths";
 import { pathExists } from "./fs/util";
 import { scanItems } from "./commands/status";
 import { initPromptTemplates } from "./prompts";
-import { writeItem, writeIndex, readItem } from "./fs/json";
+import { writeItem, writeIndex, readItem, clearBatchProgress } from "./fs/json";
 import { validateStoryQuality } from "./domain/validation";
 
 /**
@@ -461,6 +463,80 @@ async function diagnosePrompts(root: string): Promise<Diagnostic[]> {
   return diagnostics;
 }
 
+async function diagnoseBatchProgress(root: string): Promise<Diagnostic[]> {
+  const diagnostics: Diagnostic[] = [];
+  const progressPath = getBatchProgressPath(root);
+
+  if (!(await pathExists(progressPath))) {
+    return diagnostics;
+  }
+
+  try {
+    const content = await fs.readFile(progressPath, "utf-8");
+    let data: unknown;
+    try {
+      data = JSON.parse(content);
+    } catch {
+      diagnostics.push({
+        itemId: null,
+        severity: "warning",
+        code: "BATCH_PROGRESS_CORRUPT",
+        message: "batch-progress.json has invalid JSON",
+        fixable: true,
+      });
+      return diagnostics;
+    }
+
+    const result = BatchProgressSchema.safeParse(data);
+    if (!result.success) {
+      diagnostics.push({
+        itemId: null,
+        severity: "warning",
+        code: "BATCH_PROGRESS_CORRUPT",
+        message: `batch-progress.json is invalid: ${result.error.message}`,
+        fixable: true,
+      });
+      return diagnostics;
+    }
+
+    const progress = result.data;
+    const STALE_THRESHOLD_MS = 24 * 60 * 60 * 1000;
+    const updatedAt = new Date(progress.updated_at).getTime();
+    const isStale = Date.now() - updatedAt > STALE_THRESHOLD_MS;
+
+    let pidRunning = false;
+    try {
+      process.kill(progress.pid, 0);
+      pidRunning = true;
+    } catch {
+      // PID not running
+    }
+
+    if (isStale || !pidRunning) {
+      const reason = isStale
+        ? "older than 24 hours"
+        : "owning process not running";
+      diagnostics.push({
+        itemId: null,
+        severity: "warning",
+        code: "STALE_BATCH_PROGRESS",
+        message: `batch-progress.json is stale (${reason})`,
+        fixable: true,
+      });
+    }
+  } catch (err) {
+    diagnostics.push({
+      itemId: null,
+      severity: "error",
+      code: "BATCH_PROGRESS_CORRUPT",
+      message: `Failed to read batch-progress.json: ${err instanceof Error ? err.message : String(err)}`,
+      fixable: true,
+    });
+  }
+
+  return diagnostics;
+}
+
 export async function diagnose(root: string): Promise<Diagnostic[]> {
   const diagnostics: Diagnostic[] = [];
   const wreckitDir = getWreckitDir(root);
@@ -481,6 +557,7 @@ export async function diagnose(root: string): Promise<Diagnostic[]> {
       .map((e) => e.name);
   } catch {
     diagnostics.push(...(await diagnoseIndex(root)));
+    diagnostics.push(...(await diagnoseBatchProgress(root)));
     return diagnostics;
   }
 
@@ -490,6 +567,7 @@ export async function diagnose(root: string): Promise<Diagnostic[]> {
 
   diagnostics.push(...(await diagnoseDependencies(root)));
   diagnostics.push(...(await diagnoseIndex(root)));
+  diagnostics.push(...(await diagnoseBatchProgress(root)));
 
   return diagnostics;
 }
@@ -579,6 +657,18 @@ export async function applyFixes(
           } catch (err) {
             message = `Failed to fix state: ${err instanceof Error ? err.message : String(err)}`;
           }
+        }
+        break;
+      }
+
+      case "STALE_BATCH_PROGRESS":
+      case "BATCH_PROGRESS_CORRUPT": {
+        try {
+          await clearBatchProgress(root);
+          fixed = true;
+          message = "Removed stale/corrupt batch-progress.json";
+        } catch (err) {
+          message = `Failed to remove: ${err instanceof Error ? err.message : String(err)}`;
         }
         break;
       }
