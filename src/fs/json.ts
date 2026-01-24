@@ -11,12 +11,14 @@ import {
   ItemSchema,
   PrdSchema,
   IndexSchema,
+  BatchProgressSchema,
   type Config,
   type Item,
   type Prd,
   type Index,
+  type BatchProgress,
 } from "../schemas";
-import { getConfigPath, getIndexPath } from "./paths";
+import { getConfigPath, getIndexPath, getBatchProgressPath } from "./paths";
 import { safeWriteJson } from "./atomic";
 import { FileLock, withRetry } from "./lock";
 
@@ -115,4 +117,46 @@ export async function readIndex(root: string): Promise<Index | null> {
 
 export async function writeIndex(root: string, index: Index): Promise<void> {
   await writeJsonPretty(getIndexPath(root), index, { useLock: true });
+}
+
+export async function readBatchProgress(
+  root: string
+): Promise<BatchProgress | null> {
+  const progressPath = getBatchProgressPath(root);
+  try {
+    return await readJsonWithSchema(progressPath, BatchProgressSchema, {
+      useLock: true,
+    });
+  } catch (err) {
+    if (err instanceof FileNotFoundError) {
+      return null;
+    }
+    // For schema validation errors or other issues, return null (treat as no progress)
+    return null;
+  }
+}
+
+export async function writeBatchProgress(
+  root: string,
+  progress: BatchProgress
+): Promise<void> {
+  const progressPath = getBatchProgressPath(root);
+  await writeJsonPretty(progressPath, progress, { useLock: true });
+}
+
+export async function clearBatchProgress(root: string): Promise<void> {
+  const progressPath = getBatchProgressPath(root);
+  try {
+    await fs.unlink(progressPath);
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code !== "ENOENT") {
+      throw err;
+    }
+  }
+  // Also clean up any orphaned lock file
+  try {
+    await fs.unlink(`${progressPath}.lock`);
+  } catch {
+    // Ignore lock cleanup errors
+  }
 }
