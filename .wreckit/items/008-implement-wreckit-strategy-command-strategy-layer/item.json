@@ -8,9 +8,9 @@
   "branch": "wreckit/008-implement-wreckit-strategy-command-strategy-layer",
   "pr_url": null,
   "pr_number": null,
-  "last_error": null,
+  "last_error": "Failed to pull latest main. Branch may be out of sync with remote.",
   "created_at": "2026-01-24T06:17:51.871Z",
-  "updated_at": "2026-01-24T07:17:40.274Z",
+  "updated_at": "2026-01-24T07:17:57.605Z",
   "success_criteria": [
     "'wreckit strategy' command analyzes src/, specs/, and benchmark_results.md",
     "ROADMAP.md is managed as the strategic state artifact",
