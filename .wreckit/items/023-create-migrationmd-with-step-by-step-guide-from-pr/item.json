@@ -3,14 +3,16 @@
   "id": "023-create-migrationmd-with-step-by-step-guide-from-pr",
   "title": "Create MIGRATION.md with step-by-step guide from process mode to SDK mode",
   "section": "roadmap",
-  "state": "implementing",
+  "state": "done",
   "overview": "From milestone [M1] Complete Missing Documentation\n\n**Motivation:** Strategic milestone: Complete Missing Documentation",
   "branch": "wreckit/023-create-migrationmd-with-step-by-step-guide-from-pr",
   "pr_url": null,
   "pr_number": null,
   "last_error": null,
   "created_at": "2026-01-24T14:10:12.330Z",
-  "updated_at": "2026-01-24T14:31:25.759Z",
+  "updated_at": "2026-01-24T14:31:49.441Z",
   "motivation": "Strategic milestone: Complete Missing Documentation",
-  "campaign": "M1"
+  "campaign": "M1",
+  "rollback_sha": "10106c057f746cc46a32ac6c4c7dace7fee47847",
+  "completed_at": "2026-01-24T14:31:49.441Z"
 }

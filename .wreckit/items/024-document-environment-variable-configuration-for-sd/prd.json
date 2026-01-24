@@ -15,7 +15,7 @@
         "All variables shown by 'wreckit sdk-info' are now documented"
       ],
       "priority": 1,
-      "status": "pending",
+      "status": "done",
       "notes": "This makes MIGRATION.md the complete authoritative reference for all environment variables"
     },
     {
@@ -30,7 +30,7 @@
         "Link renders correctly and navigates to the correct section"
       ],
       "priority": 2,
-      "status": "pending",
+      "status": "done",
       "notes": "README.md should provide quick essential info with link to MIGRATION.md for depth"
     },
     {
@@ -43,7 +43,7 @@
         "Link renders correctly and navigates to the correct section"
       ],
       "priority": 3,
-      "status": "pending",
+      "status": "done",
       "notes": "Keeps AGENTS.md focused while pointing to canonical reference for completeness"
     }
   ]
