@@ -355,20 +355,24 @@ export function extractPendingObjectives(
   milestoneId: string;
   milestoneTitle: string;
   objective: string;
+  index: number;
 }> {
   const pending: Array<{
     milestoneId: string;
     milestoneTitle: string;
     objective: string;
+    index: number;
   }> = [];
 
   for (const milestone of roadmap.activeMilestones) {
-    for (const obj of milestone.objectives) {
+    for (let i = 0; i < milestone.objectives.length; i++) {
+      const obj = milestone.objectives[i];
       if (!obj.completed) {
         pending.push({
           milestoneId: milestone.id,
           milestoneTitle: milestone.title,
           objective: obj.text,
+          index: i,
         });
       }
     }
@@ -390,21 +394,25 @@ export function extractAllObjectives(
   milestoneTitle: string;
   objective: string;
   completed: boolean;
+  index: number;
 }> {
   const objectives: Array<{
     milestoneId: string;
     milestoneTitle: string;
     objective: string;
     completed: boolean;
+    index: number;
   }> = [];
 
   for (const milestone of roadmap.activeMilestones) {
-    for (const obj of milestone.objectives) {
+    for (let i = 0; i < milestone.objectives.length; i++) {
+      const obj = milestone.objectives[i];
       objectives.push({
         milestoneId: milestone.id,
         milestoneTitle: milestone.title,
         objective: obj.text,
         completed: obj.completed,
+        index: i,
       });
     }
   }

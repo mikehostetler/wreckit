@@ -13,6 +13,19 @@ import { createSimpleProgress } from "../tui";
 import { formatDryRunSummary, formatDryRunRun, type DryRunItemInfo } from "./dryRunFormatter";
 import { terminateAllAgents } from "../agent/runner";
 
+/**
+ * Check if all dependencies of an item are satisfied (all deps are "done").
+ */
+function areDependenciesSatisfied(
+  item: IndexItem,
+  doneItemIds: Set<string>
+): boolean {
+  if (!item.depends_on || item.depends_on.length === 0) {
+    return true;
+  }
+  return item.depends_on.every((depId) => doneItemIds.has(depId));
+}
+
 export interface OrchestratorOptions {
   force?: boolean;
   dryRun?: boolean;
@@ -58,6 +71,7 @@ export async function orchestrateAll(
 
   const nonDoneItems = items.filter((item) => item.state !== "done");
   const doneItems = items.filter((item) => item.state === "done");
+  const allDoneIds = new Set(doneItems.map((item) => item.id));
 
   result.skipped = doneItems.map((item) => item.id);
 
@@ -74,6 +88,15 @@ export async function orchestrateAll(
       }
       const hasResearch = await pathExists(getResearchPath(root, item.id));
       const hasPlan = await pathExists(getPlanPath(root, item.id));
+
+      // Check for blocked dependencies in dry-run
+      const deps = fullItem.depends_on || [];
+      const blockedBy = deps.filter(id => !allDoneIds.has(id));
+      
+      if (blockedBy.length > 0) {
+        logger.info(`Item ${item.id} is blocked by: ${blockedBy.join(", ")}`);
+      }
+
       dryRunInfos.push({ item: fullItem, prd, hasResearch, hasPlan, config });
     }
     formatDryRunSummary(dryRunInfos, logger);
@@ -119,9 +142,23 @@ export async function orchestrateAll(
 
   // Process items either sequentially or in parallel
   if (parallel <= 1) {
-    // Sequential processing (original behavior)
-    for (let i = 0; i < nonDoneItems.length; i++) {
-      const item = nonDoneItems[i];
+    // Sequential processing with dependency checking
+    let remainingItems = [...nonDoneItems];
+
+    while (remainingItems.length > 0) {
+      // Find next runnable item (dependencies satisfied)
+      const runnableItems = remainingItems.filter(item => 
+        areDependenciesSatisfied(item, allDoneIds)
+      );
+
+      if (runnableItems.length === 0) {
+        // No runnable items but items remain - likely circular dependency or missing deps
+        logger.warn(`${remainingItems.length} items blocked by unsatisfied dependencies`);
+        result.remaining = remainingItems.map((item) => item.id);
+        break;
+      }
+
+      const item = runnableItems[0];
 
       if (useTui && view) {
         view.onActiveItemChanged(item.id);
@@ -151,6 +188,8 @@ export async function orchestrateAll(
           logger
         );
         result.completed.push(item.id);
+        allDoneIds.add(item.id);
+        remainingItems = remainingItems.filter(i => i.id !== item.id);
 
         if (useTui && view) {
           view.onItemsChanged(items.map((it) => ({
@@ -164,6 +203,7 @@ export async function orchestrateAll(
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         result.failed.push(item.id);
+        remainingItems = remainingItems.filter(i => i.id !== item.id);
 
         // Persist error to item.json
         try {
@@ -171,7 +211,7 @@ export async function orchestrateAll(
           const currentItem = await readItem(itemDir);
           await writeItem(itemDir, { ...currentItem, last_error: errorMessage });
         } catch {
-          // Best effort - don't fail if we can't persist the error
+          // Best effort
         }
 
         if (useTui && view) {
@@ -187,7 +227,7 @@ export async function orchestrateAll(
     logger.info(`Processing ${nonDoneItems.length} items with ${effectiveParallel} parallel workers`);
     await processItemsParallel(
       nonDoneItems,
-      { force, mockAgent, logger, root, simpleProgress, parallel: effectiveParallel },
+      { force, mockAgent, logger, root, simpleProgress, parallel: effectiveParallel, allDoneIds },
       result
     );
   }
@@ -202,13 +242,9 @@ export async function orchestrateAll(
 
 /**
  * Process multiple items in parallel using a worker pool pattern.
- *
- * @param items - Items to process
- * @param context - Processing context
- * @param result - Result object to update
  */
 async function processItemsParallel(
-  items: Array<{ id: string; state: string; title: string }>,
+  items: IndexItem[],
   context: {
     force: boolean;
     mockAgent: boolean;
@@ -216,69 +252,80 @@ async function processItemsParallel(
     root: string;
     simpleProgress: ReturnType<typeof createSimpleProgress> | null;
     parallel: number;
+    allDoneIds: Set<string>;
   },
   result: OrchestratorResult
 ): Promise<void> {
-  const { force, mockAgent, logger, root, simpleProgress, parallel } = context;
+  const { force, mockAgent, logger, root, simpleProgress, parallel, allDoneIds } = context;
 
-  // Create a queue of items to process
-  const queue = [...items];
+  // Use a local copy of items still to process
+  let queue = [...items];
 
-  // Process items with concurrency control
+  // Process items with concurrency control and dependency checking
   const processNextItem = async (): Promise<void> => {
-    if (queue.length === 0) return;
+    while (true) {
+      let item: IndexItem | undefined;
+      let itemIndex = -1;
 
-    const item = queue.shift();
-    if (!item) return;
-
-    simpleProgress?.update(item.id, "starting");
-
-    try {
-      await runCommand(
-        item.id,
-        {
-          force,
-          dryRun: false,
-          mockAgent,
-          cwd: root,
-        },
-        logger
-      );
-      result.completed.push(item.id);
-      simpleProgress?.complete(item.id);
-      logger.info(`✓ Completed ${item.id}`);
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      result.failed.push(item.id);
-
-      // Persist error to item.json
-      try {
-        const itemDir = getItemDir(root, item.id);
-        const currentItem = await readItem(itemDir);
-        await writeItem(itemDir, { ...currentItem, last_error: errorMessage });
-      } catch {
-        // Best effort - don't fail if we can't persist the error
+      // Find next runnable item (thread-safe queue management via single worker)
+      // Note: In Node.js, queue access within this function is atomic between awaits
+      for (let i = 0; i < queue.length; i++) {
+        if (areDependenciesSatisfied(queue[i], allDoneIds)) {
+          item = queue[i];
+          itemIndex = i;
+          break;
+        }
       }
 
-      simpleProgress?.fail(item.id, errorMessage);
-      logger.error(`✗ Failed ${item.id}: ${errorMessage}`);
-    }
-  };
+      if (!item) {
+        // No runnable items available right now
+        // If queue is empty, we are done
+        if (queue.length === 0) return;
+        
+        // If queue not empty but no runnable items, we might be waiting for other workers
+        // Wait a bit and try again
+        await new Promise(resolve => setTimeout(resolve, 100));
+        continue;
+      }
 
-  // Worker function that keeps processing until queue is empty
-  const worker = async (): Promise<void> => {
-    while (queue.length > 0) {
-      await processNextItem();
+      // Remove from queue
+      queue.splice(itemIndex, 1);
+
+      simpleProgress?.update(item.id, "starting");
+
+      try {
+        await runCommand(
+          item.id,
+          { force, dryRun: false, mockAgent, cwd: root },
+          logger
+        );
+        result.completed.push(item.id);
+        allDoneIds.add(item.id);
+        simpleProgress?.complete(item.id);
+        logger.info(`✓ Completed ${item.id}`);
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        result.failed.push(item.id);
+
+        // Persist error to item.json
+        try {
+          const itemDir = getItemDir(root, item.id);
+          const currentItem = await readItem(itemDir);
+          await writeItem(itemDir, { ...currentItem, last_error: errorMessage });
+        } catch { /* ignore */ }
+
+        simpleProgress?.fail(item.id, errorMessage);
+        logger.error(`✗ Failed ${item.id}: ${errorMessage}`);
+      }
     }
   };
 
   // Create workers
   const workers: Promise<void>[] = [];
   for (let i = 0; i < parallel; i++) {
-    workers.push(worker());
+    workers.push(processNextItem());
   }
 
-  // Wait for all workers to complete
   await Promise.all(workers);
 }
 
@@ -314,14 +361,12 @@ export async function orchestrateNext(
     const errorMessage = error instanceof Error ? error.message : String(error);
     logger.error(`Failed ${nextItemId}: ${errorMessage}`);
 
-    // Persist error to item.json
+    // Persist error
     try {
       const itemDir = getItemDir(root, nextItemId);
       const currentItem = await readItem(itemDir);
       await writeItem(itemDir, { ...currentItem, last_error: errorMessage });
-    } catch {
-      // Best effort - don't fail if we can't persist the error
-    }
+    } catch { /* ignore */ }
 
     return { itemId: nextItemId, success: false };
   }
@@ -329,7 +374,13 @@ export async function orchestrateNext(
 
 export async function getNextIncompleteItem(root: string): Promise<string | null> {
   const items = await scanItems(root);
+  const doneIds = new Set(items.filter(i => i.state === "done").map(i => i.id));
 
-  const nextItem = items.find((item) => item.state !== "done");
+  // Find first non-done item with satisfied dependencies
+  const nextItem = items.find((item) => {
+    if (item.state === "done") return false;
+    return areDependenciesSatisfied(item, doneIds);
+  });
+
   return nextItem?.id ?? null;
 }

@@ -299,6 +299,7 @@ describe("extractPendingObjectives", () => {
       milestoneId: "M1",
       milestoneTitle: "Improve Performance",
       objective: "Optimize database queries",
+      index: 0,
     });
   });
 
@@ -346,6 +347,7 @@ describe("extractAllObjectives", () => {
     const caching = all.find((o) => o.objective === "Add caching layer");
     expect(caching).toBeDefined();
     expect(caching?.completed).toBe(true);
+    expect(caching?.index).toBe(1);
   });
 
   it("includes completion status", () => {
@@ -355,7 +357,7 @@ describe("extractAllObjectives", () => {
     const completed = all.filter((o) => o.completed);
     const pending = all.filter((o) => !o.completed);
 
-    expect(completed).toHaveLength(1); // Only "Add caching layer"
+    expect(completed).toHaveLength(1); // Only \"Add caching layer\"
     expect(pending).toHaveLength(4);
   });
 });

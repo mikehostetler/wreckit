@@ -35,12 +35,13 @@ describe("StoryStatusSchema", () => {
 });
 
 describe("ConfigSchema", () => {
-  it("parses valid config from SPEC", () => {
+  it("parses valid config from SPEC (legacy format)", () => {
     const config = {
       schema_version: 1,
       base_branch: "main",
       branch_prefix: "wreckit/",
       agent: {
+        mode: "process",
         command: "amp",
         args: ["--dangerously-allow-all"],
         completion_signal: "<promise>COMPLETE</promise>",
@@ -50,12 +51,12 @@ describe("ConfigSchema", () => {
     };
     const result = ConfigSchema.parse(config);
     expect(result).toMatchObject(config);
-    expect(result.agent.mode).toBe("process");
   });
 
   it("applies defaults for optional fields", () => {
     const config = {
       agent: {
+        mode: "process",
         command: "amp",
         args: [],
         completion_signal: "DONE",
@@ -67,6 +68,23 @@ describe("ConfigSchema", () => {
     expect(result.branch_prefix).toBe("wreckit/");
     expect(result.max_iterations).toBe(100);
     expect(result.timeout_seconds).toBe(3600);
+  });
+
+  it("parses valid config from SPEC (new kind format)", () => {
+    const config = {
+      schema_version: 1,
+      base_branch: "main",
+      branch_prefix: "wreckit/",
+      agent: {
+        kind: "claude_sdk",
+        model: "claude-sonnet-4",
+        max_tokens: 4096,
+      },
+      max_iterations: 100,
+      timeout_seconds: 3600,
+    };
+    const result = ConfigSchema.parse(config);
+    expect(result).toMatchObject(config);
   });
 
   it("rejects missing agent config", () => {

@@ -63,21 +63,51 @@ export async function executeRoadmapCommand(
     return;
   }
 
-  // Convert objectives to ParsedIdea format
-  const ideas: ParsedIdea[] = objectives.map((obj) => ({
-    title: obj.objective,
-    description: `From milestone [${obj.milestoneId}] ${obj.milestoneTitle}`,
-    motivation: `Strategic milestone: ${obj.milestoneTitle}`,
-    suggestedSection: "roadmap",
-  }));
+  // Group objectives by milestone for dependency inference
+  const objectivesByMilestone = new Map<string, typeof objectives>();
+  for (const obj of objectives) {
+    const list = objectivesByMilestone.get(obj.milestoneId) || [];
+    list.push(obj);
+    objectivesByMilestone.set(obj.milestoneId, list);
+  }
+
+  // Convert objectives to ParsedIdea format with campaign and inferred dependencies
+  const ideas: ParsedIdea[] = [];
+
+  for (const [milestoneId, milestoneObjectives] of objectivesByMilestone) {
+    // Sort by original index to ensure proper ordering for linear dependencies
+    const sorted = [...milestoneObjectives].sort((a, b) => (a as any).index - (b as any).index);
+
+    let previousSlug: string | null = null;
+
+    for (const obj of sorted) {
+      const currentSlug = generateSlug(obj.objective);
+      if (!currentSlug) continue;
+
+      const idea: ParsedIdea = {
+        title: obj.objective,
+        description: `From milestone [${obj.milestoneId}] ${obj.milestoneTitle}`,
+        motivation: `Strategic milestone: ${obj.milestoneTitle}`,
+        suggestedSection: "roadmap",
+        campaign: obj.milestoneId,
+      };
+
+      // Infer dependency on previous objective in same milestone
+      if (previousSlug) {
+        // Use a special slug-based dependency reference that persistItems will resolve
+        idea.dependsOn = [`slug:${previousSlug}`];
+      }
+
+      ideas.push(idea);
+      previousSlug = currentSlug;
+    }
+  }
 
   if (options.dryRun) {
     logger.info(`Would create ${ideas.length} items from ROADMAP.md:`);
     for (const idea of ideas) {
       const slug = generateSlug(idea.title);
-      if (slug) {
-        logger.info(`  XXX-${slug}`);
-      }
+      logger.info(`  ${slug} [Campaign: ${idea.campaign}]${idea.dependsOn ? ` (Depends on: ${idea.dependsOn.join(", ")})` : ""}`);
     }
     return;
   }
