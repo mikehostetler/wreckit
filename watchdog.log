@@ -7095,3 +7095,4 @@ Glob
   "pattern": "/Users/speed/wreckit/.wreckit/items/028-implement-tool-allowlist-enforcement-in-srcagentop/*"
 }
 ```
+Both `plan.md` and `prd.json` exist. Let me verify the plan.md has proper sections:
