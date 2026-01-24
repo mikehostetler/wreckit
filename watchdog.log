@@ -6506,3 +6506,125 @@ Running next item...
 [34mDEBUG[39m: [36mRunning: git rev-parse --abbrev-ref HEAD[39m
 [34mDEBUG[39m: [36mRunning: git status --porcelain[39m
 [34mDEBUG[39m: [36mRunning: git add -A[39m
+[34mDEBUG[39m: [36mRunning: git commit -m feat(028-implement-tool-allowlist-enforcement-in-srcagentop): implement Implement tool allowlist enforcement in `src/agent/opencode-sdk-runner.ts`[39m
+[34mDEBUG[39m: [36mRunning: git symbolic-ref --quiet HEAD[39m
+[34mDEBUG[39m: [36mRunning: git status --porcelain[39m
+[31mERROR[39m: [36mPhase pr failed for 028-implement-tool-allowlist-enforcement-in-srcagentop: Git pre-flight check failed:
+
+• There are uncommitted changes in the working directory
+    Run `git stash` to temporarily save changes
+    Or run `git commit -am "message"` to commit changes
+    Or run `git checkout -- .` to discard changes (destructive)[39m
+[31mERROR[39m: [36mFailed 028-implement-tool-allowlist-enforcement-in-srcagentop: Git pre-flight check failed:
+
+• There are uncommitted changes in the working directory
+    Run `git stash` to temporarily save changes
+    Or run `git commit -am "message"` to commit changes
+    Or run `git checkout -- .` to discard changes (destructive)[39m
+[31mERROR[39m: [36mFailed: 028-implement-tool-allowlist-enforcement-in-srcagentop[39m
+❌ Crashed with code 1. Restarting in 5s...
+
+```tool
+mcp__wreckit__save_prd
+{
+  "prd": {
+    "schema_version": 1,
+    "id": "028-implement-tool-allowlist-enforcement-in-srcagentop",
+    "branch_name": "wreckit/028-implement-tool-allowlist-enforcement-in-srcagentop",
+    "user_stories": [
+      {
+        "id": "US-001",
+        "title": "Implement SDK integration in opencode-sdk-runner.ts",
+        "acceptance_criteria": [
+          "Import statements added for query, registerSdkController, unregisterSdkController, and buildSdkEnv",
+          "runOpenCodeSdkAgent() executes Claude Agent SDK with tool allowlist enforcement via 'tools' option",
+          "AbortController created and registered via registerSdkController() for cleanup",
+          "Timeout of 3600 seconds (1 hour) implemented with proper abort handling",
+          "Environment built via buildSdkEnv({ cwd, logger }) for credential resolution",
+          "SDK messages streamed to onStdoutChunk/onStderrChunk callbacks or stdout/stderr",
+          "AgentEvents emitted via onAgentEvent callback for TUI integration",
+          "Type checking passes: bun run typecheck",
+          "Build succeeds: bun run build",
+          "Linting passes: bun run lint"
+        ],
+        "priority": 1,
+        "status": "done",
+        "notes": "Implementation complete. Verified at src/agent/opencode-sdk-runner.ts:1-372. Follows exact pattern from amp-sdk-runner.ts."
+      },
+      {
+        "id": "US-002",
+        "title": "Add handleSdkError helper function",
+        "acceptance_criteria": [
+          "handleSdkError() function added that categorizes errors: auth, rate limit, context window, network",
+          "Authentication errors (API key, 401, Unauthorized) show helpful credential setup instructions",
+          "Rate limit errors (429) show appropriate retry message",
+          "Context window errors (tokens, too large) suggest breaking down the task",
+          "Network errors (ECONNREFUSED, ENOTFOUND) show connection troubleshooting",
+          "Error messages reference 'OpenCode SDK' not 'Amp SDK' or 'Codex SDK'"
+        ],
+        "priority": 1,
+        "status": "done",
+        "notes": "Implementation complete. Verified at src/agent/opencode-sdk-runner.ts:186-293. Error messages correctly reference 'OpenCode SDK'."
+      },
+      {
+        "id": "US-003",
+        "title": "Add message formatting and event emission helpers",
+        "acceptance_criteria": [
+          "formatSdkMessage() function added that converts SDK messages to output strings",
+          "Handles message types: assistant, tool_result, result, error",
+          "emitAgentEventsFromSdkMessage() function added that emits structured AgentEvent objects",
+          "Emits events: assistant_text, tool_started, tool_result, run_result, error",
+          "Functions are identical to amp-sdk-runner.ts implementations"
+        ],
+        "priority": 1,
+        "status": "done",
+        "notes": "Implementation complete. Verified at src/agent/opencode-sdk-runner.ts:295-371. Functions match amp-sdk-runner.ts pattern."
+      },
+      {
+        "id": "US-004",
+        "title": "Create unit tests for opencode-sdk-runner",
+        "acceptance_criteria": [
+          "Test file created at src/__tests__/opencode-sdk-runner.test.ts",
+          "Test: dry-run mode returns success without calling SDK",
+          "Test: dry-run logs tool restrictions when allowedTools provided",
+          "Test: explicit allowedTools takes precedence over phase-based allowlist",
+          "Test: falls back to phase-based allowlist when no explicit tools specified",
+          "Test: has no restrictions when neither allowedTools nor phase specified",
+          "All 5 tests pass: bun test src/__tests__/opencode-sdk-runner.test.ts",
+          "Full test suite passes: bun test"
+        ],
+        "priority": 2,
+        "status": "done",
+        "notes": "Implementation complete. Test file exists at src/__tests__/opencode-sdk-runner.test.ts with 127 lines and 5 test cases."
+      },
+      {
+        "id": "US-005",
+        "title": "Update ROADMAP.md to mark objective complete",
+        "acceptance_criteria": [
+          "ROADMAP.md line 24 changed from '- [ ] Implement tool allowlist...' to '- [x] Implement tool allowlist...'",
+          "All three SDK runner objectives in M2 milestone now show [x] complete"
+        ],
+        "priority": 3,
+        "status": "done",
+        "notes": "Implementation complete. ROADMAP.md line 24 shows [x] for opencode-sdk-runner objective."
+      }
+    ]
+  }
+}
+```
+Both files are complete. Let me verify the plan.md meets all required sections by re-reading and confirming:
+```tool
+Read
+{
+  "file_path": "/Users/speed/wreckit/.wreckit/items/028-implement-tool-allowlist-enforcement-in-srcagentop/plan.md"
+}
+```
+Running next item...
+[32mINFO[39m: [36mRunning: 028-implement-tool-allowlist-enforcement-in-srcagentop[39m
+[32mINFO[39m: [36mRunning pr phase on 028-implement-tool-allowlist-enforcement-in-srcagentop[39m
+[34mDEBUG[39m: [36mRunning: git show-ref --verify --quiet refs/heads/wreckit/028-implement-tool-allowlist-enforcement-in-srcagentop[39m
+[32mINFO[39m: [36mBranch wreckit/028-implement-tool-allowlist-enforcement-in-srcagentop exists, switching to it[39m
+[34mDEBUG[39m: [36mRunning: git checkout wreckit/028-implement-tool-allowlist-enforcement-in-srcagentop[39m
+[34mDEBUG[39m: [36mRunning: git rev-parse --abbrev-ref HEAD[39m
+[34mDEBUG[39m: [36mRunning: git status --porcelain[39m
+[34mDEBUG[39m: [36mRunning: git add -A[39m
