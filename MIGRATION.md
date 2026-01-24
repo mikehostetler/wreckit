@@ -453,6 +453,100 @@ Reinstall wreckit:
 npm install -g wreckit
 ```
 
+### Fallback to Process Mode Warning
+
+**Symptom:**
+```
+[warn] SDK authentication failed, falling back to process mode
+```
+
+**Cause:**
+When SDK mode is configured but authentication fails, wreckit automatically falls back to process mode. This allows teams to gradually migrate without breaking existing workflows.
+
+**Solutions:**
+
+1. If you **want SDK mode**, fix the authentication:
+   ```bash
+   # Verify credentials are set
+   wreckit sdk-info
+
+   # Check for common issues:
+   # - ANTHROPIC_API_KEY not set
+   # - ANTHROPIC_AUTH_TOKEN invalid or expired
+   # - Custom endpoint (ANTHROPIC_BASE_URL) returning 401
+   ```
+
+2. If you **want process mode** (no warning), configure it explicitly:
+   ```json
+   {
+     "agent": {
+       "kind": "process",
+       "command": "claude",
+       "args": ["--dangerously-skip-permissions", "--print"],
+       "completion_signal": "<promise>COMPLETE</promise>"
+     }
+   }
+   ```
+
+**Reference:** See [Fallback Behavior](#fallback-behavior) for more details on when fallback triggers.
+
+### Config Schema Validation Error
+
+**Symptom:**
+```
+SchemaValidationError: Schema validation failed for .wreckit/config.json
+```
+
+**Cause:**
+The configuration file contains invalid or unrecognized properties. This often occurs after migrating from an older wreckit version.
+
+**Solutions:**
+
+1. Run the doctor to diagnose config issues:
+   ```bash
+   wreckit doctor
+   ```
+
+2. Check for legacy `mode` vs new `kind` format:
+
+   | Legacy (deprecated) | New (current) |
+   |---------------------|---------------|
+   | `mode: "sdk"` | `kind: "claude_sdk"` |
+   | `mode: "process"` | `kind: "process"` |
+   | No agent config | `kind: "claude_sdk"` (default) |
+
+3. Example migration:
+
+   **Before (legacy):**
+   ```json
+   {
+     "agent": {
+       "mode": "process",
+       "command": "claude",
+       "args": ["--print"]
+     }
+   }
+   ```
+
+   **After (current):**
+   ```json
+   {
+     "agent": {
+       "kind": "process",
+       "command": "claude",
+       "args": ["--print"],
+       "completion_signal": "<promise>COMPLETE</promise>"
+     }
+   }
+   ```
+
+4. Verify the corrected config:
+   ```bash
+   wreckit doctor
+   ```
+
+**Note:** Wreckit automatically migrates legacy configs in memory, but you should update your config file to avoid future issues.
+
 ---
 
 ## Staying on Process Mode
