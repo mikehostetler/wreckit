@@ -20,7 +20,7 @@
       ],
       "priority": 1,
       "status": "done",
-      "notes": "Copy implementation from amp-sdk-runner.ts:72-184 and helper functions from lines 186-371, changing 'Amp' to 'OpenCode' in log messages and error strings."
+      "notes": "Implementation complete. Verified at src/agent/opencode-sdk-runner.ts:1-372. Follows exact pattern from amp-sdk-runner.ts."
     },
     {
       "id": "US-002",
@@ -35,7 +35,7 @@
       ],
       "priority": 1,
       "status": "done",
-      "notes": "Copy from amp-sdk-runner.ts:186-293, replace 'Amp SDK' with 'OpenCode SDK' in error messages."
+      "notes": "Implementation complete. Verified at src/agent/opencode-sdk-runner.ts:186-293. Error messages correctly reference 'OpenCode SDK'."
     },
     {
       "id": "US-003",
@@ -49,7 +49,7 @@
       ],
       "priority": 1,
       "status": "done",
-      "notes": "Copy formatSdkMessage() from amp-sdk-runner.ts:295-328 and emitAgentEventsFromSdkMessage() from lines 330-371 without changes."
+      "notes": "Implementation complete. Verified at src/agent/opencode-sdk-runner.ts:295-371. Functions match amp-sdk-runner.ts pattern."
     },
     {
       "id": "US-004",
@@ -66,7 +66,7 @@
       ],
       "priority": 2,
       "status": "done",
-      "notes": "Copy from codex-sdk-runner.test.ts, change CodexSdkAgentConfig to OpenCodeSdkAgentConfig, remove 'model' from config, update function imports and names."
+      "notes": "Implementation complete. Test file exists at src/__tests__/opencode-sdk-runner.test.ts with 127 lines and 5 test cases."
     },
     {
       "id": "US-005",
@@ -77,7 +77,7 @@
       ],
       "priority": 3,
       "status": "done",
-      "notes": "Simple checkbox update to mark the objective as complete."
+      "notes": "Implementation complete. ROADMAP.md line 24 shows [x] for opencode-sdk-runner objective."
     }
   ]
 }

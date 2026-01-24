@@ -2,55 +2,57 @@
 
 ## Overview
 
-This item completes the OpenCode SDK runner implementation by replacing the current stub with a full SDK integration that enforces tool allowlists per workflow phase. The implementation follows the exact pattern established by the completed Amp SDK (item 026) and Codex SDK (item 027) runners, using the `@anthropic-ai/claude-agent-sdk` package with the `tools` option to restrict available tools.
+This item implements tool allowlist enforcement in the OpenCode SDK runner, completing milestone [M2] "Finish Experimental SDK Integrations". The implementation follows the established pattern from the Amp SDK (item 026) and Codex SDK (item 027) runners, using the `@anthropic-ai/claude-agent-sdk` package with the `tools` option to restrict available tools per workflow phase.
 
-The OpenCode SDK runner is the final piece of milestone [M2] "Finish Experimental SDK Integrations". Once complete, wreckit will have three production-ready SDK alternatives (Amp, Codex, OpenCode) in addition to the primary Claude SDK.
+**Important Discovery**: Upon code verification, the implementation has already been completed:
+- `src/agent/opencode-sdk-runner.ts` contains 372 lines of working SDK integration code
+- `src/__tests__/opencode-sdk-runner.test.ts` contains 127 lines of unit tests
+- `ROADMAP.md` line 24 is already marked complete with `[x]`
+
+This plan documents the work that was done and provides verification steps.
 
 ## Current State Analysis
 
-The `src/agent/opencode-sdk-runner.ts` file (85 lines) has complete scaffolding but returns a "not yet implemented" error:
+The OpenCode SDK runner is **fully implemented** with complete feature parity to the Amp and Codex SDK runners:
 
 | Component | Status | Location |
 |-----------|--------|----------|
-| `OpenCodeRunAgentOptions` interface | Complete | Lines 7-22 |
-| `getEffectiveToolAllowlist()` function | Complete | Lines 35-48 |
-| Dry-run support | Complete | Lines 55-68 |
-| Effective tools logging | Stub | Lines 71-74 |
-| Actual SDK execution | **TODO stub** | Lines 76-84 |
-
-**Current stub behavior (lines 76-84):**
-```typescript
-logger.error("OpenCode SDK runner not yet implemented");
-return {
-  success: false,
-  output: "OpenCode SDK runner is not yet implemented. Use process mode or claude_sdk instead.",
-  timedOut: false,
-  exitCode: 1,
-  completionDetected: false,
-};
-```
+| SDK import (`query`) | Complete | `opencode-sdk-runner.ts:1` |
+| Controller registration | Complete | `opencode-sdk-runner.ts:4,82,182` |
+| Environment building (`buildSdkEnv`) | Complete | `opencode-sdk-runner.ts:8,95` |
+| `OpenCodeRunAgentOptions` interface | Complete | `opencode-sdk-runner.ts:10-25` |
+| `getEffectiveToolAllowlist()` function | Complete | `opencode-sdk-runner.ts:38-51` |
+| Dry-run support | Complete | `opencode-sdk-runner.ts:58-71` |
+| AbortController + timeout | Complete | `opencode-sdk-runner.ts:73-92` |
+| SDK options with `tools` allowlist | Complete | `opencode-sdk-runner.ts:104-114` |
+| Query message iteration | Complete | `opencode-sdk-runner.ts:117-147` |
+| Timeout/success result handling | Complete | `opencode-sdk-runner.ts:149-168` |
+| Error handling (`handleSdkError`) | Complete | `opencode-sdk-runner.ts:186-293` |
+| Message formatting (`formatSdkMessage`) | Complete | `opencode-sdk-runner.ts:295-328` |
+| Event emission (`emitAgentEventsFromSdkMessage`) | Complete | `opencode-sdk-runner.ts:330-371` |
+| Unit tests | Complete | `opencode-sdk-runner.test.ts:1-127` |
+| ROADMAP.md updated | Complete | `ROADMAP.md:24` |
 
 ### Key Discoveries:
 
-- **Pattern is established**: `amp-sdk-runner.ts:1-372` provides the exact pattern to follow
-- **Same SDK**: All SDK runners use `@anthropic-ai/claude-agent-sdk` (already in package.json v0.2.7)
-- **Tool allowlist via `tools` option**: The SDK's `tools` option restricts available tools (`amp-sdk-runner.ts:113`)
-- **Schema is minimal**: `OpenCodeSdkAgentSchema` only has `kind: "opencode_sdk"` - no model field
-- **Dispatch already works**: `runner.ts:475-489` correctly dispatches to `runOpenCodeSdkAgent`
-- **Tests use dry-run only**: Existing tests only test dry-run mode to avoid actual API calls
+- **Implementation is complete**: `src/agent/opencode-sdk-runner.ts:1-372` contains full SDK integration
+- **Tests exist**: `src/__tests__/opencode-sdk-runner.test.ts:1-127` follows the established pattern
+- **ROADMAP already updated**: Line 24 shows `[x] Implement tool allowlist enforcement in src/agent/opencode-sdk-runner.ts`
+- **Same SDK as siblings**: Uses `@anthropic-ai/claude-agent-sdk` like Amp/Codex runners
+- **Tool allowlist enforced**: SDK's `tools` option restricts available tools (line 113)
 
 ## Desired End State
 
-After implementation:
+The desired end state has been achieved:
 
 1. **`runOpenCodeSdkAgent` function** fully implements SDK integration with:
-   - AbortController registration/cleanup for graceful shutdown
-   - Timeout handling (default 3600 seconds)
-   - Environment resolution via `buildSdkEnv()`
-   - Tool allowlist enforcement via SDK's `tools` option
-   - Message streaming with formatted output
-   - Structured event emission for TUI integration
-   - Categorized error handling (auth, rate limit, context, network)
+   - AbortController registration/cleanup for graceful shutdown (lines 76-92, 181-183)
+   - Timeout handling (default 3600 seconds) (lines 78-79, 85-92)
+   - Environment resolution via `buildSdkEnv()` (line 95)
+   - Tool allowlist enforcement via SDK's `tools` option (line 113)
+   - Message streaming with formatted output (lines 117-147)
+   - Structured event emission for TUI integration (lines 125-127)
+   - Categorized error handling (auth, rate limit, context, network) (lines 186-293)
 
 2. **Test file** `src/__tests__/opencode-sdk-runner.test.ts` verifies:
    - Dry-run mode returns success without calling SDK
@@ -63,45 +65,43 @@ After implementation:
 
 ### Verification Method
 
-1. **Automated**: `bun test` passes including new test file
+1. **Automated**: `bun test` passes including opencode-sdk-runner.test.ts
 2. **Automated**: `bun run typecheck` passes
 3. **Automated**: `bun run lint` passes
 4. **Automated**: `bun run build` succeeds
-5. **Manual**: Dry-run with tool restrictions logs correctly
 
 ## What We're NOT Doing
 
-1. **NOT implementing a new SDK** - "OpenCode" uses the same `@anthropic-ai/claude-agent-sdk` as Amp/Codex/Claude runners
-2. **NOT adding new configuration options** - The schema is intentionally minimal (`kind: "opencode_sdk"` only)
-3. **NOT testing actual API calls** - Tests only cover dry-run mode (same as Amp/Codex tests)
-4. **NOT adding new tool allowlist phases** - Using existing phase definitions from `toolAllowlist.ts`
-5. **NOT modifying dispatcher logic** - `runner.ts:475-489` already correctly dispatches to OpenCode runner
-6. **NOT adding integration tests** - That's a separate objective in [M2]
+1. **NOT re-implementing** - The SDK integration is complete
+2. **NOT modifying tests** - The tests follow the established pattern and cover all required scenarios
+3. **NOT adding new configuration options** - The schema is intentionally minimal (`kind: "opencode_sdk"` only)
+4. **NOT adding integration tests** - That's a separate objective in [M2]: "Add integration tests for each experimental SDK"
 
 ## Implementation Approach
 
-The implementation is a straightforward port from `amp-sdk-runner.ts`, with name changes for "OpenCode" branding. The approach:
+The implementation followed the established pattern from `amp-sdk-runner.ts`:
 
-1. **Copy helper functions verbatim** - `handleSdkError()`, `formatSdkMessage()`, `emitAgentEventsFromSdkMessage()` are identical across SDK runners
-2. **Update error messages** - Change "Amp SDK" to "OpenCode SDK" in error strings
-3. **Preserve existing scaffolding** - Keep the already-correct `getEffectiveToolAllowlist()` and dry-run handling
-4. **Add missing imports** - `query`, `registerSdkController`, `unregisterSdkController`, `buildSdkEnv`
+1. **Copied SDK integration structure** - Same `query()` iteration, options, and result handling
+2. **Reused helper functions** - `handleSdkError()`, `formatSdkMessage()`, `emitAgentEventsFromSdkMessage()` are identical patterns
+3. **Updated error messages** - Changed "Amp SDK" to "OpenCode SDK" in error strings
+4. **Preserved existing scaffolding** - Kept the already-correct `getEffectiveToolAllowlist()` and options interface
 
 ---
 
-## Phase 1: Add Missing Imports and SDK Execution Logic
+## Phase 1: SDK Integration Implementation
 
 ### Overview
 
-Replace the stub in `runOpenCodeSdkAgent` with full SDK integration code, including all helper functions for error handling, message formatting, and event emission.
+Implement the full SDK integration in `runOpenCodeSdkAgent`, replacing any stub with complete execution logic including AbortController, timeout, environment building, and SDK query iteration.
 
 ### Changes Required:
 
-#### 1. Add SDK and Helper Imports
+#### 1. SDK and Helper Imports
 
 **File**: `src/agent/opencode-sdk-runner.ts`
-**Changes**: Replace lines 1-5 with updated imports
+**Status**: COMPLETE
 
+The file includes all necessary imports:
 ```typescript
 import { query } from "@anthropic-ai/claude-agent-sdk";
 import type { Logger } from "../logging";
@@ -113,205 +113,61 @@ import { getAllowedToolsForPhase } from "./toolAllowlist";
 import { buildSdkEnv } from "./env.js";
 ```
 
-#### 2. Update Function Destructuring
+#### 2. SDK Execution Logic
 
 **File**: `src/agent/opencode-sdk-runner.ts`
-**Changes**: Update line 53 to destructure all needed options
+**Status**: COMPLETE
 
-Change from:
-```typescript
-const { logger, dryRun, config } = options;
-```
-
-To:
-```typescript
-const { cwd, prompt, logger, dryRun, onStdoutChunk, onStderrChunk, onAgentEvent } = options;
-```
-
-#### 3. Replace Stub with SDK Execution Logic
-
-**File**: `src/agent/opencode-sdk-runner.ts`
-**Changes**: Replace lines 70-84 (from `// TODO: Implement` through error return) with full execution logic
-
-The complete replacement includes:
-- AbortController creation and registration
-- Timeout setup (3600 seconds)
+The implementation includes:
+- AbortController creation and registration (lines 73-92)
+- Timeout setup (3600 seconds default)
 - Environment building via `buildSdkEnv()`
-- SDK options construction with `tools` for allowlist
+- SDK options construction with `tools` for allowlist enforcement
 - Async iteration over `query()` messages
 - Message formatting and event emission
 - Error handling in catch block
 - Cleanup in finally block
 
-#### 4. Add Helper Functions
+#### 3. Helper Functions
 
 **File**: `src/agent/opencode-sdk-runner.ts`
-**Changes**: Add three helper functions after `runOpenCodeSdkAgent`
+**Status**: COMPLETE
 
-1. `handleSdkError()` - Categorizes errors (auth, rate limit, context, network) with OpenCode-specific messages
-2. `formatSdkMessage()` - Converts SDK messages to output strings
-3. `emitAgentEventsFromSdkMessage()` - Emits structured events for TUI
+Three helper functions implemented:
+- `handleSdkError()` - Categorizes errors (auth, rate limit, context, network) with OpenCode-specific messages (lines 186-293)
+- `formatSdkMessage()` - Converts SDK messages to output strings (lines 295-328)
+- `emitAgentEventsFromSdkMessage()` - Emits structured events for TUI (lines 330-371)
 
 ### Success Criteria:
 
 #### Automated Verification:
-- [ ] Type checking passes: `bun run typecheck`
-- [ ] Linting passes: `bun run lint`
-- [ ] Build succeeds: `bun run build`
-- [ ] Existing tests pass: `bun test`
+- [x] Type checking passes: `bun run typecheck`
+- [x] Linting passes: `bun run lint`
+- [x] Build succeeds: `bun run build`
+- [x] Existing tests pass: `bun test`
 
 #### Manual Verification:
-- [ ] Review the implementation matches amp-sdk-runner.ts structure
-- [ ] Verify error messages say "OpenCode SDK" not "Amp SDK"
+- [x] Implementation matches amp-sdk-runner.ts structure
+- [x] Error messages say "OpenCode SDK" not "Amp SDK"
 
-**Note**: Complete all automated verification, then pause for manual confirmation before proceeding to next phase.
+**Note**: Phase 1 is complete.
 
 ---
 
-## Phase 2: Add Unit Tests
+## Phase 2: Unit Tests
 
 ### Overview
 
-Create the test file `src/__tests__/opencode-sdk-runner.test.ts` following the established pattern from `amp-sdk-runner.test.ts` and `codex-sdk-runner.test.ts`. Tests verify dry-run behavior and tool allowlist resolution logic.
+Create unit tests for the OpenCode SDK runner following the established pattern from `amp-sdk-runner.test.ts` and `codex-sdk-runner.test.ts`. Tests verify dry-run behavior and tool allowlist resolution logic.
 
 ### Changes Required:
 
-#### 1. Create Test File
+#### 1. Test File
 
 **File**: `src/__tests__/opencode-sdk-runner.test.ts`
-**Changes**: Create new file with test structure
+**Status**: COMPLETE
 
-```typescript
-import { describe, it, expect, mock, beforeEach } from "bun:test";
-import type { Logger } from "../logging";
-import type { OpenCodeSdkAgentConfig } from "../schemas";
-
-// Test helper to create mock logger
-function createMockLogger(): Logger {
-  return {
-    debug: mock(() => {}),
-    info: mock(() => {}),
-    warn: mock(() => {}),
-    error: mock(() => {}),
-    json: mock(() => {}),
-  };
-}
-
-function createDefaultConfig(): OpenCodeSdkAgentConfig {
-  return {
-    kind: "opencode_sdk",
-  };
-}
-
-describe("runOpenCodeSdkAgent", () => {
-  let mockLogger: Logger;
-
-  beforeEach(() => {
-    mockLogger = createMockLogger();
-  });
-
-  describe("dry-run mode", () => {
-    it("returns success without calling SDK", async () => {
-      const { runOpenCodeSdkAgent } = await import("../agent/opencode-sdk-runner");
-      const result = await runOpenCodeSdkAgent({
-        config: createDefaultConfig(),
-        cwd: "/tmp/test",
-        prompt: "test prompt",
-        logger: mockLogger,
-        dryRun: true,
-      });
-
-      expect(result.success).toBe(true);
-      expect(result.output).toContain("[dry-run]");
-      expect(result.completionDetected).toBe(true);
-    });
-
-    it("logs tool restrictions when allowedTools provided", async () => {
-      const { runOpenCodeSdkAgent } = await import("../agent/opencode-sdk-runner");
-      const result = await runOpenCodeSdkAgent({
-        config: createDefaultConfig(),
-        cwd: "/tmp/test",
-        prompt: "test prompt",
-        logger: mockLogger,
-        dryRun: true,
-        allowedTools: ["Read", "Glob"],
-      });
-
-      expect(result.success).toBe(true);
-      const debugCalls = (mockLogger.debug as any).mock.calls;
-      const hasToolRestrictions = debugCalls.some((call: any[]) =>
-        call[0]?.includes?.("Tool restrictions")
-      );
-      expect(hasToolRestrictions).toBe(true);
-    });
-  });
-
-  describe("getEffectiveToolAllowlist resolution", () => {
-    it("prefers explicit allowedTools over phase", async () => {
-      const { runOpenCodeSdkAgent } = await import("../agent/opencode-sdk-runner");
-      const result = await runOpenCodeSdkAgent({
-        config: createDefaultConfig(),
-        cwd: "/tmp/test",
-        prompt: "test prompt",
-        logger: mockLogger,
-        dryRun: true,
-        allowedTools: ["Read"],
-        phase: "implement", // Would give more tools, but explicit wins
-      });
-
-      expect(result.success).toBe(true);
-      const debugCalls = (mockLogger.debug as any).mock.calls;
-      const toolRestrictionCall = debugCalls.find((call: any[]) =>
-        call[0]?.includes?.("Tool restrictions")
-      );
-      expect(toolRestrictionCall).toBeDefined();
-      expect(toolRestrictionCall[0]).toContain("Read");
-      expect(toolRestrictionCall[0]).not.toContain("Bash");
-    });
-
-    it("falls back to phase-based allowlist when no explicit tools", async () => {
-      const { runOpenCodeSdkAgent } = await import("../agent/opencode-sdk-runner");
-      const result = await runOpenCodeSdkAgent({
-        config: createDefaultConfig(),
-        cwd: "/tmp/test",
-        prompt: "test prompt",
-        logger: mockLogger,
-        dryRun: true,
-        phase: "research",
-      });
-
-      expect(result.success).toBe(true);
-      const debugCalls = (mockLogger.debug as any).mock.calls;
-      const toolRestrictionCall = debugCalls.find((call: any[]) =>
-        call[0]?.includes?.("Tool restrictions")
-      );
-      expect(toolRestrictionCall).toBeDefined();
-      expect(toolRestrictionCall[0]).toContain("Glob");
-      expect(toolRestrictionCall[0]).toContain("Read");
-    });
-
-    it("has no restrictions when neither allowedTools nor phase specified", async () => {
-      const { runOpenCodeSdkAgent } = await import("../agent/opencode-sdk-runner");
-      const result = await runOpenCodeSdkAgent({
-        config: createDefaultConfig(),
-        cwd: "/tmp/test",
-        prompt: "test prompt",
-        logger: mockLogger,
-        dryRun: true,
-      });
-
-      expect(result.success).toBe(true);
-      const debugCalls = (mockLogger.debug as any).mock.calls;
-      const hasToolRestrictions = debugCalls.some((call: any[]) =>
-        call[0]?.includes?.("Tool restrictions")
-      );
-      expect(hasToolRestrictions).toBe(false);
-    });
-  });
-});
-```
-
-Tests to include:
+Test file exists with 5 test cases:
 
 **`dry-run mode` describe block:**
 - `returns success without calling SDK` - Verifies dry-run returns success with `[dry-run]` in output
@@ -325,19 +181,19 @@ Tests to include:
 ### Success Criteria:
 
 #### Automated Verification:
-- [ ] All tests pass: `bun test`
-- [ ] New test file is included in test run
-- [ ] Type checking passes: `bun run typecheck`
+- [x] All tests pass: `bun test`
+- [x] Test file is included in test run
+- [x] Type checking passes: `bun run typecheck`
 
 #### Manual Verification:
-- [ ] Test output shows all 5 tests passing for opencode-sdk-runner.test.ts
-- [ ] Test coverage includes all three SDK runners (amp, codex, opencode)
+- [x] Test output shows all 5 tests passing for opencode-sdk-runner.test.ts
+- [x] Test coverage includes all three SDK runners (amp, codex, opencode)
 
-**Note**: Complete all automated verification, then pause for manual confirmation before proceeding to next phase.
+**Note**: Phase 2 is complete.
 
 ---
 
-## Phase 3: Update Roadmap
+## Phase 3: Documentation Update
 
 ### Overview
 
@@ -345,33 +201,27 @@ Mark the objective as complete in ROADMAP.md to reflect the finished implementat
 
 ### Changes Required:
 
-#### 1. Mark Objective Complete
+#### 1. ROADMAP.md Update
 
 **File**: `ROADMAP.md`
-**Changes**: Update line 24 from `[ ]` to `[x]`
+**Status**: COMPLETE
 
-Change:
-```markdown
-- [ ] Implement tool allowlist enforcement in `src/agent/opencode-sdk-runner.ts`
-```
-
-To:
-```markdown
-- [x] Implement tool allowlist enforcement in `src/agent/opencode-sdk-runner.ts`
-```
+Line 24 shows: `- [x] Implement tool allowlist enforcement in src/agent/opencode-sdk-runner.ts`
 
 ### Success Criteria:
 
 #### Automated Verification:
-- [ ] Lint passes (no trailing whitespace): `bun run lint`
+- [x] Lint passes (no trailing whitespace): `bun run lint`
 
 #### Manual Verification:
-- [ ] ROADMAP.md shows 3 of 5 objectives complete for [M2]:
+- [x] ROADMAP.md shows 3 of 5 objectives complete for [M2]:
   - [x] Implement tool allowlist enforcement in `src/agent/amp-sdk-runner.ts`
   - [x] Implement tool allowlist enforcement in `src/agent/codex-sdk-runner.ts`
   - [x] Implement tool allowlist enforcement in `src/agent/opencode-sdk-runner.ts`
   - [ ] Add integration tests for each experimental SDK
   - [ ] Update documentation with supported SDK options
+
+**Note**: Phase 3 is complete.
 
 ---
 
@@ -379,15 +229,15 @@ To:
 
 ### Unit Tests:
 
-**File**: `src/__tests__/opencode-sdk-runner.test.ts`
+**File**: `src/__tests__/opencode-sdk-runner.test.ts` (exists)
 
-| Test | Purpose |
-|------|---------|
-| `returns success without calling SDK` | Verifies dry-run mode works |
-| `logs tool restrictions when allowedTools provided` | Verifies allowlist logging |
-| `prefers explicit allowedTools over phase` | Verifies precedence order |
-| `falls back to phase-based allowlist when no explicit tools` | Verifies phase fallback |
-| `has no restrictions when neither allowedTools nor phase specified` | Verifies no-restriction default |
+| Test | Purpose | Status |
+|------|---------|--------|
+| `returns success without calling SDK` | Verifies dry-run mode works | Complete |
+| `logs tool restrictions when allowedTools provided` | Verifies allowlist logging | Complete |
+| `prefers explicit allowedTools over phase` | Verifies precedence order | Complete |
+| `falls back to phase-based allowlist when no explicit tools` | Verifies phase fallback | Complete |
+| `has no restrictions when neither allowedTools nor phase specified` | Verifies no-restriction default | Complete |
 
 ### Integration Tests:
 
@@ -395,42 +245,41 @@ Not in scope for this item - tracked as separate objective in [M2]: "Add integra
 
 ### Manual Testing Steps:
 
-1. **Verify dry-run output:**
+1. **Run automated tests:**
    ```bash
-   wreckit implement --dry-run --agent '{"kind":"opencode_sdk"}'
+   bun test src/__tests__/opencode-sdk-runner.test.ts
    ```
-   Expected: Output contains `[dry-run] Would run OpenCode SDK agent`
+   Expected: All 5 tests pass
 
-2. **Run automated tests:**
-   ```bash
-   bun test
-   ```
-   Expected: All tests pass including new opencode-sdk-runner.test.ts
-
-3. **Type check:**
+2. **Type check:**
    ```bash
    bun run typecheck
    ```
    Expected: No errors
 
-4. **Build:**
+3. **Build:**
    ```bash
    bun run build
    ```
    Expected: Success
 
+4. **Verify ROADMAP status:**
+   ```bash
+   grep -n "opencode-sdk-runner" ROADMAP.md
+   ```
+   Expected: Shows `[x]` indicating complete
+
 ## Migration Notes
 
-No migration required. This is a new implementation replacing a stub. The schema (`kind: "opencode_sdk"`) already exists and is already supported in the dispatcher. Any existing configurations using `opencode_sdk` will now work instead of returning an error.
+No migration required. The implementation is complete and backward-compatible. Any configurations using `kind: "opencode_sdk"` will work as expected.
 
 ## References
 
 - Research: `/Users/speed/wreckit/.wreckit/items/028-implement-tool-allowlist-enforcement-in-srcagentop/research.md`
-- Target file: `src/agent/opencode-sdk-runner.ts:1-85`
-- Primary reference: `src/agent/amp-sdk-runner.ts:1-372`
-- Secondary reference: `src/agent/codex-sdk-runner.ts:1-372`
-- Test pattern: `src/__tests__/amp-sdk-runner.test.ts:1-131`
-- Test pattern: `src/__tests__/codex-sdk-runner.test.ts:1-129`
+- Implementation: `src/agent/opencode-sdk-runner.ts:1-372`
+- Unit tests: `src/__tests__/opencode-sdk-runner.test.ts:1-127`
+- Reference (Amp): `src/agent/amp-sdk-runner.ts:1-372`
+- Reference (Codex): `src/agent/codex-sdk-runner.ts:1-372`
 - Tool allowlist: `src/agent/toolAllowlist.ts:57-117`
 - Environment builder: `src/agent/env.ts:79-108`
 - Dispatcher: `src/agent/runner.ts:475-489`
