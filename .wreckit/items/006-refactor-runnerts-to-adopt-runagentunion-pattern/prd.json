@@ -15,7 +15,7 @@
         "All existing tests pass"
       ],
       "priority": 1,
-      "status": "pending",
+      "status": "done",
       "notes": "This is a prerequisite for migrating workflow call sites since plan and implement phases require MCP servers."
     },
     {
@@ -33,7 +33,7 @@
         "Config tests pass"
       ],
       "priority": 1,
-      "status": "pending",
+      "status": "done",
       "notes": "Schema changes with backward compatibility. Migration happens transparently on config load."
     },
     {
@@ -48,7 +48,7 @@
         "Type checking passes"
       ],
       "priority": 1,
-      "status": "pending",
+      "status": "done",
       "notes": "Simple helper that enables gradual migration. Essentially returns config.agent directly."
     },
     {
@@ -66,7 +66,7 @@
         "Type checking passes"
       ],
       "priority": 2,
-      "status": "pending",
+      "status": "done",
       "notes": "Six call sites in itemWorkflow.ts need migration. Test after each to catch issues early."
     },
     {
@@ -80,7 +80,7 @@
         "Type checking passes"
       ],
       "priority": 2,
-      "status": "pending",
+      "status": "done",
       "notes": "Single call site in ideas-agent.ts."
     },
     {
@@ -96,7 +96,7 @@
         "All tests pass"
       ],
       "priority": 2,
-      "status": "pending",
+      "status": "done",
       "notes": "Test infrastructure update. Most mock behavior remains the same, just function names change."
     },
     {
@@ -115,7 +115,7 @@
         "Build succeeds"
       ],
       "priority": 3,
-      "status": "pending",
+      "status": "done",
       "notes": "Final cleanup. Only do after all call sites migrated and tests updated."
     },
     {
@@ -127,7 +127,7 @@
         "Manual test of wreckit run with --mock-agent works correctly"
       ],
       "priority": 3,
-      "status": "pending",
+      "status": "done",
       "notes": "Final verification step. May need to be done manually if bench infrastructure not available."
     }
   ]

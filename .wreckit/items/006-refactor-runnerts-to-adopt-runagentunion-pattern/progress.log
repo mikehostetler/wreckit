@@ -57,3 +57,4 @@
 - Some edge case tests still use old config format and will need updating separately
 - Legacy API is deprecated but kept for backward compatibility with internal helpers
 - The runAgentUnion function internally bridges to legacy helpers (runProcessAgent, runClaudeSdkAgent)
+[2026-01-24T06:40:54.321Z] Completed iteration 1 for story US-001
