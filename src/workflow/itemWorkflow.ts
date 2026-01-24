@@ -611,6 +611,11 @@ export async function runPhaseImplement(
 
   if (allStoriesDone(prd)) {
     logger.info(`All stories already done for ${itemId}`);
+    if (item.state === "planned") {
+      item = { ...item, state: "implementing" };
+      await saveItem(root, item);
+      onPhaseChanged?.("implementing");
+    }
     return { success: true, item };
   }
 
