@@ -847,6 +847,99 @@ The agent didn't complete within the configured timeout (default: 3600 seconds /
 
 **Note:** The default timeout is 3600 seconds (1 hour), which is usually sufficient for most tasks.
 
+### PRD Quality Validation Failures
+
+**Symptom:**
+```
+Story quality validation failed:
+Story "US-001" (Add feature): Insufficient acceptance criteria: 1, required at least 2
+```
+
+**Cause:**
+The PRD generated during the plan phase doesn't meet quality requirements.
+
+**Quality Requirements:**
+
+| Requirement | Rule |
+|-------------|------|
+| Story count | At least 1, not more than 15 |
+| Acceptance criteria | Each story needs 2+ criteria |
+| Story ID format | Must follow `US-###` pattern |
+| Priority range | Values 1-4 |
+| Title | Must be non-empty |
+
+**Example of a valid story in prd.json:**
+```json
+{
+  "id": "US-001",
+  "title": "Add user authentication",
+  "acceptance_criteria": [
+    "User can log in with email and password",
+    "Failed login shows error message",
+    "Session expires after 24 hours"
+  ],
+  "priority": 1,
+  "status": "pending",
+  "notes": "Implement OAuth2 flow"
+}
+```
+
+**Solutions:**
+
+1. Re-run the plan phase with `--force`: `wreckit phase plan --item <id> --force`
+
+2. Manually edit `prd.json` to fix quality issues:
+   - Add more acceptance criteria (minimum 2)
+   - Fix story ID format to `US-001`, `US-002`, etc.
+   - Ensure priority is a number between 1 and 4
+
+3. Check with doctor: `wreckit doctor`
+
+### Remote URL Validation Failed
+
+**Symptom:**
+```
+Remote URL validation failed.
+This check prevents pushing code to an unintended repository.
+
+  • Remote URL 'https://github.com/wrong/repo.git' does not match any allowed pattern.
+    Expected one of: github.com/myorg/
+```
+
+**Cause:**
+The `allowed_remote_patterns` configuration is set, and the current git remote doesn't match any allowed pattern.
+
+**Purpose:**
+This is a safety check to prevent accidentally pushing code to the wrong repository (e.g., a public fork instead of your organization's repo).
+
+**Solutions:**
+
+1. Verify the remote is correct:
+   ```bash
+   git remote -v
+   ```
+
+2. Update the remote if needed:
+   ```bash
+   git remote set-url origin https://github.com/correct-org/correct-repo.git
+   ```
+
+3. Or add the remote pattern to your config (`.wreckit/config.json`):
+   ```json
+   {
+     "pr_checks": {
+       "allowed_remote_patterns": [
+         "github.com/your-org/",
+         "github.com/your-username/"
+       ]
+     }
+   }
+   ```
+
+**Note:** Patterns match against the normalized URL (without protocol prefix or `.git` suffix). For example, `github.com/myorg/` matches both:
+- `https://github.com/myorg/repo.git`
+- `git@github.com:myorg/repo.git`
+
 ---
 
 ## Staying on Process Mode
