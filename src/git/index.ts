@@ -51,11 +51,41 @@ export interface CommandResult {
   exitCode: number;
 }
 
+// Mutex for serializing git operations to prevent index.lock contention
+class Mutex {
+  private mutex = Promise.resolve();
+
+  lock(): Promise<() => void> {
+    let begin: (unlock: () => void) => void = () => {};
+
+    this.mutex = this.mutex.then(() => {
+      return new Promise((resolve) => {
+        begin = resolve;
+      });
+    });
+
+    return new Promise((resolve) => {
+      resolve(() => begin(() => {}));
+    });
+  }
+
+  async dispatch<T>(fn: (() => T) | (() => PromiseLike<T>)): Promise<T> {
+    const unlock = await this.lock();
+    try {
+      return await Promise.resolve(fn());
+    } finally {
+      unlock();
+    }
+  }
+}
+
+const gitMutex = new Mutex();
+
 export async function runGitCommand(
   args: string[],
   options: GitOptions
 ): Promise<CommandResult> {
-  return runCommand("git", args, options);
+  return gitMutex.dispatch(() => runCommand("git", args, options));
 }
 
 export async function runGhCommand(
