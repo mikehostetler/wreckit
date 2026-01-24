@@ -1,0 +1,101 @@
+# Progress Log for 005-benchmarking-suite-for-resumability-and-concurrenc
+
+## US-001: Create benchmark schema and utility functions
+**Status:** Done
+**Date:** 2025-01-24
+
+### Completed:
+- Created `src/benchmarks/schema.ts` with Zod schemas for Metric, SuiteResult, Environment, and BenchmarkResult
+- Created `src/benchmarks/utils.ts` with timing utilities (measure, benchmark, calculateStats) and helpers (makeTempDir, cleanup, getEnvironment)
+- Created `src/benchmarks/index.ts` barrel export file
+- Verified all functions work correctly via runtime tests
+
+### Notes:
+- Pre-existing TypeScript errors in the codebase (test files and some agent files) - not related to benchmark code
+- calculateStats correctly computes p50=6 for input [1..10], matching expected behavior (sorted[5])
+- getEnvironment properly detects Bun version 1.2.9 and cpu_count=10 on this system
+
+## US-002: Implement resumability benchmark suite
+**Status:** Done
+**Date:** 2025-01-24
+
+### Completed:
+- Created `src/benchmarks/suites/resumability.ts` with runResumabilitySuite function
+- Implements 4 benchmarks: item_read_ms, prd_read_10_stories_ms, story_skip_detection_50done_ms, state_recovery_ms
+- Each benchmark uses unique temp directories with cleanup
+- Returns proper SuiteResult with all metrics including p50, p95, p99, samples
+
+### Notes:
+- Uses readItem, readPrd from src/fs/json.ts for actual file operations
+- Creates test fixtures matching Item and Prd schemas
+- Story skip detection simulates the pattern from itemWorkflow.ts (filter pending, sort by priority)
+
+## US-003: Implement concurrency scaling benchmark suite
+**Status:** Done
+**Date:** 2025-01-24
+
+### Completed:
+- Created `src/benchmarks/suites/concurrency.ts` with runConcurrencySuite function
+- Tests parallel scaling at 1, 2, 4, and 8 worker levels
+- Measures duration, throughput (items/sec), and efficiency (% of ideal scaling)
+- Uses worker pool pattern matching orchestrator.ts with shared queue
+
+### Notes:
+- Efficiency shows expected sublinear scaling due to I/O contention
+- On test system: 72% efficiency at parallel=2, 40% at parallel=4, 22% at parallel=8
+
+## US-004: Implement file operations benchmark suite
+**Status:** Done
+**Date:** 2025-01-24
+
+### Completed:
+- Created `src/benchmarks/suites/fileops.ts` with runFileOpsSuite function
+- Benchmarks atomic writes at small (~100B), medium (~1KB), and large (~10KB) payload sizes
+- Benchmarks lock acquisition (exclusive, with pattern, and contention scenarios)
+
+### Notes:
+- Large payload writes take ~0.5ms vs ~0.3ms for small/medium (as expected)
+- Lock contention benchmark shows ~6ms for 2 concurrent acquires with 5ms hold time
+
+## US-005, US-006, US-007: Output formatters
+**Status:** Done
+**Date:** 2025-01-24
+
+### Completed:
+- Created `src/benchmarks/reporters/json.ts` - JSON output with 2-space indentation
+- Created `src/benchmarks/reporters/markdown.ts` - Paper-ready markdown with tables
+- Created `src/benchmarks/reporters/csv.ts` - Spreadsheet-compatible CSV with proper escaping
+
+### Notes:
+- Markdown includes environment section and per-suite tables with p50/p95/p99 columns
+- CSV escapes values containing commas/quotes/newlines
+- All three formats produce consistent data
+
+## US-008: Benchmark runner and CLI entry point
+**Status:** Done
+**Date:** 2025-01-24
+
+### Completed:
+- Created `src/benchmarks/runner.ts` with runBenchmarks and formatOutput functions
+- Created `src/benchmarks/cli.ts` with argument parsing
+- Added "benchmark" script to package.json
+- CLI supports --suite, --format, --iterations, --output, --help flags
+
+### Notes:
+- Progress messages go to stderr so output can be piped
+- All formats working correctly (json, md, csv)
+- File output working with -o flag
+
+## US-009: Unit tests for benchmarks
+**Status:** Done
+**Date:** 2025-01-24
+
+### Completed:
+- Created `src/__tests__/benchmarks.test.ts` with 23 test cases
+- Tests calculateStats, makeTempDir, getEnvironment utilities
+- Tests all three formatters (JSON, Markdown, CSV)
+
+### Notes:
+- All 23 tests passing
+- Tests verify edge cases like empty samples, missing optional fields, CSV escaping
+[2026-01-24T06:10:19.810Z] Completed iteration 1 for story US-001
