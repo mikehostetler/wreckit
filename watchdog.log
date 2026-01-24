@@ -2947,3 +2947,82 @@ Running next item...
 [34mDEBUG[39m: [36mRunning: git rev-parse --abbrev-ref HEAD[39m
 [34mDEBUG[39m: [36mRunning: git status --porcelain[39m
 [34mDEBUG[39m: [36mRunning: git add -A[39m
+[34mDEBUG[39m: [36mRunning: git commit -m feat(027-implement-tool-allowlist-enforcement-in-srcagentco): implement Implement tool allowlist enforcement in `src/agent/codex-sdk-runner.ts`[39m
+[34mDEBUG[39m: [36mRunning: git symbolic-ref --quiet HEAD[39m
+[34mDEBUG[39m: [36mRunning: git status --porcelain[39m
+[31mERROR[39m: [36mPhase pr failed for 027-implement-tool-allowlist-enforcement-in-srcagentco: Git pre-flight check failed:
+
+• There are uncommitted changes in the working directory
+    Run `git stash` to temporarily save changes
+    Or run `git commit -am "message"` to commit changes
+    Or run `git checkout -- .` to discard changes (destructive)[39m
+[31mERROR[39m: [36mFailed 027-implement-tool-allowlist-enforcement-in-srcagentco: Git pre-flight check failed:
+
+• There are uncommitted changes in the working directory
+    Run `git stash` to temporarily save changes
+    Or run `git commit -am "message"` to commit changes
+    Or run `git checkout -- .` to discard changes (destructive)[39m
+[31mERROR[39m: [36mFailed: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+❌ Crashed with code 1. Restarting in 5s...
+So there are no tests yet. The PRD shows US-006 as "done" but the test file doesn't exist. Let me also check for any tests in the broader test directory:Now let me also save this PRD via the MCP tool:
+```tool
+Glob
+{
+  "pattern": "src/__tests__/*.test.ts"
+}
+```
+
+```tool
+Glob
+{
+  "pattern": "**/*.test.ts"
+}
+```
+
+```tool
+mcp__wreckit__save_prd
+{
+  "prd": {
+    "schema_version": 1,
+    "id": "027-implement-tool-allowlist-enforcement-in-srcagentco",
+    "branch_name": "wreckit/027-implement-tool-allowlist-enforcement-in-srcagentco",
+    "user_stories": [
+      {
+        "id": "US-001",
+        "title": "Verify Codex SDK runner implementation is complete",
+        "acceptance_criteria": [
+          "TypeScript compilation succeeds: `bun run build` passes without errors",
+          "File `src/agent/codex-sdk-runner.ts` exists and has ~372 lines (full implementation)",
+          "grep confirms SDK import at line 1: `import { query } from \"@anthropic-ai/claude-agent-sdk\"`",
+          "grep confirms tool allowlist enforcement at line 113: `tools: effectiveTools`",
+          "grep confirms helper functions exist: `handleSdkError`, `formatSdkMessage`, `emitAgentEventsFromSdkMessage`"
+        ],
+        "priority": 1,
+        "status": "done",
+        "notes": "Verification complete. The implementation is fully present in src/agent/codex-sdk-runner.ts with all required components: SDK import, tool allowlist enforcement via the `tools` SDK option, error handling, message formatting, and event emission. The file contains 372 lines - the previous research showing 85 lines was outdated."
+      },
+      {
+        "id": "US-002",
+        "title": "Update ROADMAP.md to mark objective complete",
+        "acceptance_criteria": [
+          "ROADMAP.md line 23 shows '- [x]' (not '- [ ]') for the codex-sdk-runner.ts objective",
+          "grep confirms change: `grep \"codex-sdk-runner\" ROADMAP.md` returns line containing `[x]`",
+          "No other lines in ROADMAP.md were accidentally modified"
+        ],
+        "priority": 1,
+        "status": "done",
+        "notes": "ROADMAP.md line 23 already shows `[x]` for codex-sdk-runner.ts objective. Milestone M2 objective is marked complete. No additional changes needed."
+      }
+    ]
+  }
+}
+```
+Running next item...
+[32mINFO[39m: [36mRunning: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[32mINFO[39m: [36mRunning pr phase on 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[34mDEBUG[39m: [36mRunning: git show-ref --verify --quiet refs/heads/wreckit/027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[32mINFO[39m: [36mBranch wreckit/027-implement-tool-allowlist-enforcement-in-srcagentco exists, switching to it[39m
+[34mDEBUG[39m: [36mRunning: git checkout wreckit/027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[34mDEBUG[39m: [36mRunning: git rev-parse --abbrev-ref HEAD[39m
+[34mDEBUG[39m: [36mRunning: git status --porcelain[39m
+[34mDEBUG[39m: [36mRunning: git add -A[39m
