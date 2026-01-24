@@ -5844,3 +5844,66 @@ Running next item...
 [34mDEBUG[39m: [36mRunning: git rev-parse --abbrev-ref HEAD[39m
 [34mDEBUG[39m: [36mRunning: git status --porcelain[39m
 [34mDEBUG[39m: [36mRunning: git add -A[39m
+[34mDEBUG[39m: [36mRunning: git commit -m feat(028-implement-tool-allowlist-enforcement-in-srcagentop): implement Implement tool allowlist enforcement in `src/agent/opencode-sdk-runner.ts`[39m
+[34mDEBUG[39m: [36mRunning: git symbolic-ref --quiet HEAD[39m
+[34mDEBUG[39m: [36mRunning: git status --porcelain[39m
+[31mERROR[39m: [36mPhase pr failed for 028-implement-tool-allowlist-enforcement-in-srcagentop: Git pre-flight check failed:
+
+• There are uncommitted changes in the working directory
+    Run `git stash` to temporarily save changes
+    Or run `git commit -am "message"` to commit changes
+    Or run `git checkout -- .` to discard changes (destructive)[39m
+[31mERROR[39m: [36mFailed 028-implement-tool-allowlist-enforcement-in-srcagentop: Git pre-flight check failed:
+
+• There are uncommitted changes in the working directory
+    Run `git stash` to temporarily save changes
+    Or run `git commit -am "message"` to commit changes
+    Or run `git checkout -- .` to discard changes (destructive)[39m
+[31mERROR[39m: [36mFailed: 028-implement-tool-allowlist-enforcement-in-srcagentop[39m
+❌ Crashed with code 1. Restarting in 5s...
+Excellent! Now I have a complete picture. Let me analyze what I've found:
+
+**Key Discovery**: The `opencode-sdk-runner.ts` file is **already fully implemented** (lines 1-372). It has:
+1. All imports already present (lines 1-8)
+2. `getEffectiveToolAllowlist()` function (lines 38-51)
+3. Complete `runOpenCodeSdkAgent()` function with SDK integration (lines 53-184)
+4. `handleSdkError()` function (lines 186-293)
+5. `formatSdkMessage()` function (lines 295-328)
+6. `emitAgentEventsFromSdkMessage()` function (lines 330-371)
+
+The implementation is identical to `amp-sdk-runner.ts` - just with "OpenCode" naming instead of "Amp".
+
+The ROADMAP.md at line 24 already shows `[x]` for this item, marking it as complete.
+
+The only thing missing is the **unit test file** - there's no `opencode-sdk-runner.test.ts` yet.
+
+Let me verify by checking if the test file exists:
+```tool
+Glob
+{
+  "pattern": "src/__tests__/*opencode*"
+}
+```
+
+```tool
+Glob
+{
+  "pattern": "src/__tests__/*sdk*.test.ts"
+}
+```
+
+```tool
+Glob
+{
+  "pattern": "src/__tests__/*.test.ts"
+}
+```
+Running next item...
+[32mINFO[39m: [36mRunning: 028-implement-tool-allowlist-enforcement-in-srcagentop[39m
+[32mINFO[39m: [36mRunning pr phase on 028-implement-tool-allowlist-enforcement-in-srcagentop[39m
+[34mDEBUG[39m: [36mRunning: git show-ref --verify --quiet refs/heads/wreckit/028-implement-tool-allowlist-enforcement-in-srcagentop[39m
+[32mINFO[39m: [36mBranch wreckit/028-implement-tool-allowlist-enforcement-in-srcagentop exists, switching to it[39m
+[34mDEBUG[39m: [36mRunning: git checkout wreckit/028-implement-tool-allowlist-enforcement-in-srcagentop[39m
+[34mDEBUG[39m: [36mRunning: git rev-parse --abbrev-ref HEAD[39m
+[34mDEBUG[39m: [36mRunning: git status --porcelain[39m
+[34mDEBUG[39m: [36mRunning: git add -A[39m
