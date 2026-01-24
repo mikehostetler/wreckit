@@ -4407,3 +4407,119 @@ Running next item...
 [34mDEBUG[39m: [36mRunning: git rev-parse --abbrev-ref HEAD[39m
 [34mDEBUG[39m: [36mRunning: git status --porcelain[39m
 [34mDEBUG[39m: [36mRunning: git add -A[39m
+[34mDEBUG[39m: [36mRunning: git commit -m feat(020-add-distinct-error-types-for-different-failure-mod): implement Add distinct error types for different failure modes across all phases[39m
+[34mDEBUG[39m: [36mRunning: git symbolic-ref --quiet HEAD[39m
+[34mDEBUG[39m: [36mRunning: git status --porcelain[39m
+[31mERROR[39m: [36mPhase pr failed for 020-add-distinct-error-types-for-different-failure-mod: Git pre-flight check failed:
+
+• There are uncommitted changes in the working directory
+    Run `git stash` to temporarily save changes
+    Or run `git commit -am "message"` to commit changes
+    Or run `git checkout -- .` to discard changes (destructive)[39m
+[31mERROR[39m: [36mFailed 020-add-distinct-error-types-for-different-failure-mod: Git pre-flight check failed:
+
+• There are uncommitted changes in the working directory
+    Run `git stash` to temporarily save changes
+    Or run `git commit -am "message"` to commit changes
+    Or run `git checkout -- .` to discard changes (destructive)[39m
+[31mERROR[39m: [36mFailed: 020-add-distinct-error-types-for-different-failure-mod[39m
+❌ Crashed with code 1. Restarting in 5s...
+All tests pass. The implementation is complete.
+
+<promise>COMPLETE</promise>
+
+## Summary
+
+I have successfully implemented all 8 user stories for adding distinct error types for different failure modes across all phases:
+
+### US-001: Define ErrorCodes constants and export them
+- Added `ErrorCodes` object with all error codes as constants
+- Added `ErrorCode` type as a union of all code values
+- Updated all existing error classes to use `ErrorCodes` constants
+
+### US-002: Add phase-specific error classes
+- `PhaseFailedError` - with `phase`, `itemId` properties
+- `PhaseValidationError` - with `phase` property
+- `TransitionError` - with `fromState`, `toState` properties
+- `ArtifactNotCreatedError` - with `artifactPath`, `phase` properties
+
+### US-003: Add quality validation error classes
+- `ResearchQualityError` - with `errors` array
+- `PlanQualityError` - with `errors` array
+- `StoryQualityError` - with `errors` array
+
+### US-004: Add git operation error classes
+- `BranchError` - with `branchName`, `operation` properties
+- `PushError` - with `branchName`, `remote` properties
+- `PrCreationError` - with `headBranch`, `baseBranch` properties
+- `MergeConflictError` - with `sourceBranch`, `targetBranch` properties
+- `RemoteValidationError` - with `remoteName`, `actualUrl`, `allowedPatterns` properties
+
+### US-005: Update git/index.ts to use typed errors
+- Replaced all `throw new Error()` with typed errors
+- Verified no generic Error throws remain in git operations
+
+### US-006: Update PhaseResult interface to support typed errors
+- Changed `error` type to `string | WreckitError | undefined`
+- Added deprecation JSDoc for string usage
+
+### US-007: Update command layer to handle typed errors
+- Updated `run.ts` and `phase.ts` to handle both string and WreckitError
+- WreckitError instances are re-thrown directly preserving error codes
+
+### US-008: Add comprehensive tests for all new error types
+- 42 tests in `src/__tests__/errors.test.ts` - all passing
+- Tests verify codes, properties, `isWreckitError()`, and `toExitCode()`All tests pass. The implementation is complete.
+
+<promise>COMPLETE</promise>
+
+## Summary
+
+I have successfully implemented all 8 user stories for adding distinct error types for different failure modes across all phases:
+
+### US-001: Define ErrorCodes constants and export them
+- Added `ErrorCodes` object with all error codes as constants
+- Added `ErrorCode` type as a union of all code values
+- Updated all existing error classes to use `ErrorCodes` constants
+
+### US-002: Add phase-specific error classes
+- `PhaseFailedError` - with `phase`, `itemId` properties
+- `PhaseValidationError` - with `phase` property
+- `TransitionError` - with `fromState`, `toState` properties
+- `ArtifactNotCreatedError` - with `artifactPath`, `phase` properties
+
+### US-003: Add quality validation error classes
+- `ResearchQualityError` - with `errors` array
+- `PlanQualityError` - with `errors` array
+- `StoryQualityError` - with `errors` array
+
+### US-004: Add git operation error classes
+- `BranchError` - with `branchName`, `operation` properties
+- `PushError` - with `branchName`, `remote` properties
+- `PrCreationError` - with `headBranch`, `baseBranch` properties
+- `MergeConflictError` - with `sourceBranch`, `targetBranch` properties
+- `RemoteValidationError` - with `remoteName`, `actualUrl`, `allowedPatterns` properties
+
+### US-005: Update git/index.ts to use typed errors
+- Replaced all `throw new Error()` with typed errors
+- Verified no generic Error throws remain in git operations
+
+### US-006: Update PhaseResult interface to support typed errors
+- Changed `error` type to `string | WreckitError | undefined`
+- Added deprecation JSDoc for string usage
+
+### US-007: Update command layer to handle typed errors
+- Updated `run.ts` and `phase.ts` to handle both string and WreckitError
+- WreckitError instances are re-thrown directly preserving error codes
+
+### US-008: Add comprehensive tests for all new error types
+- 42 tests in `src/__tests__/errors.test.ts` - all passing
+- Tests verify codes, properties, `isWreckitError()`, and `toExitCode()`Running next item...
+[32mINFO[39m: [36mRunning: 020-add-distinct-error-types-for-different-failure-mod[39m
+[32mINFO[39m: [36mRunning pr phase on 020-add-distinct-error-types-for-different-failure-mod[39m
+[34mDEBUG[39m: [36mRunning: git show-ref --verify --quiet refs/heads/wreckit/020-add-distinct-error-types-for-different-failure-mod[39m
+[32mINFO[39m: [36mBranch wreckit/020-add-distinct-error-types-for-different-failure-mod exists, switching to it[39m
+[34mDEBUG[39m: [36mRunning: git checkout wreckit/020-add-distinct-error-types-for-different-failure-mod[39m
+[34mDEBUG[39m: [36mRunning: git rev-parse --abbrev-ref HEAD[39m
+[34mDEBUG[39m: [36mRunning: git status --porcelain[39m
+[34mDEBUG[39m: [36mRunning: git add -A[39m
