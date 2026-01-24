@@ -1,0 +1,109 @@
+{
+  "schema_version": 1,
+  "id": "027-implement-tool-allowlist-enforcement-in-srcagentco",
+  "branch_name": "wreckit/027-implement-tool-allowlist-enforcement-in-srcagentco",
+  "user_stories": [
+    {
+      "id": "US-001",
+      "title": "Add required imports to codex-sdk-runner.ts",
+      "acceptance_criteria": [
+        "Import `query` from `@anthropic-ai/claude-agent-sdk` is added at line 1",
+        "Import `registerSdkController, unregisterSdkController` from `./runner.js` is added after existing imports",
+        "Import `buildSdkEnv` from `./env.js` is added after existing imports",
+        "TypeScript compilation succeeds: `bunx tsc --noEmit`"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Follow the exact import pattern from amp-sdk-runner.ts lines 1-8. These imports are required for SDK execution, cleanup registration, and environment building."
+    },
+    {
+      "id": "US-002",
+      "title": "Implement core SDK execution loop in runCodexSdkAgent()",
+      "acceptance_criteria": [
+        "AbortController is created and registered with registerSdkController() for cleanup on exit",
+        "Timeout of 3600 seconds is enforced via setTimeout and abortController.abort()",
+        "SDK environment is built via buildSdkEnv() with proper precedence (local > config > process > claude settings)",
+        "Tool restrictions are passed to SDK via the `tools` option when effectiveTools is specified",
+        "Messages are streamed via `for await (const message of query(...))` loop",
+        "On successful completion, returns AgentResult with success=true and completionDetected=true",
+        "On timeout, returns AgentResult with timedOut=true and success=false",
+        "AbortController is unregistered in finally block via unregisterSdkController()",
+        "Build succeeds: `bun run build`"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Copy implementation from amp-sdk-runner.ts lines 73-184. Replace stub error at lines 70-83 with working SDK execution. SDK options should include: cwd, permissionMode ('bypassPermissions'), allowDangerouslySkipPermissions (true), abortController, env, mcpServers (optional), and tools (for allowlist)."
+    },
+    {
+      "id": "US-003",
+      "title": "Add handleSdkError() helper function",
+      "acceptance_criteria": [
+        "Function categorizes auth errors (API key, 401, authentication, Unauthorized, Invalid API key, /login)",
+        "Auth errors include helpful message with credential setup instructions referencing 'Codex SDK'",
+        "Function categorizes rate limit errors (rate limit, 429, too many requests)",
+        "Function categorizes context window errors (context, tokens, too large, maximum context length)",
+        "Function categorizes network errors (ECONNREFUSED, ENOTFOUND, network, connection)",
+        "All error messages reference 'Codex SDK' not 'Amp SDK'",
+        "Function returns { success: boolean; output: string; exitCode: number | null }"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Copy from amp-sdk-runner.ts lines 186-293 and replace all occurrences of 'Amp' with 'Codex' in user-facing strings. The auth help message should list .wreckit/config.local.json, shell environment, and ~/.claude/settings.json as credential locations."
+    },
+    {
+      "id": "US-004",
+      "title": "Add formatSdkMessage() helper function",
+      "acceptance_criteria": [
+        "Handles assistant messages - extracts text and formats tool_use blocks as ```tool code blocks",
+        "Handles tool_result messages - formats as ```result code blocks",
+        "Handles result messages - returns the result text directly",
+        "Handles error messages - formats with error emoji prefix",
+        "Returns empty string for unknown message types"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Copy directly from amp-sdk-runner.ts lines 295-328. No branding changes needed - this function has no Amp-specific strings."
+    },
+    {
+      "id": "US-005",
+      "title": "Add emitAgentEventsFromSdkMessage() helper function",
+      "acceptance_criteria": [
+        "Emits assistant_text events for text blocks in assistant messages",
+        "Emits tool_started events for tool_use blocks with toolUseId, toolName, and input",
+        "Emits tool_result events for tool_result messages with toolUseId and result",
+        "Emits run_result events for result messages with optional subtype",
+        "Emits error events for error messages"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Copy directly from amp-sdk-runner.ts lines 330-371. No branding changes needed - this function has no Amp-specific strings."
+    },
+    {
+      "id": "US-006",
+      "title": "Add unit tests for Codex SDK runner",
+      "acceptance_criteria": [
+        "Test file exists at src/__tests__/codex-sdk-runner.test.ts",
+        "Test 'returns success without calling SDK' verifies dry-run returns success with [dry-run] in output",
+        "Test 'logs tool restrictions when allowedTools provided' verifies debug logging includes tool names",
+        "Test 'prefers explicit allowedTools over phase' verifies explicit list overrides phase-based tools",
+        "Test 'falls back to phase-based allowlist when no explicit tools' verifies phase lookup works",
+        "Test 'has no restrictions when neither allowedTools nor phase specified' verifies no restrictions logged",
+        "All 5 tests pass: `bun test src/__tests__/codex-sdk-runner.test.ts`"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Follow pattern from amp-sdk-runner.test.ts. Use dynamic import for test isolation, mock logger with bun:test mock(), and test only dry-run mode to avoid SDK calls."
+    },
+    {
+      "id": "US-007",
+      "title": "Update ROADMAP.md to mark objective complete",
+      "acceptance_criteria": [
+        "Line 23 updated from '- [ ] Implement tool allowlist enforcement in `src/agent/codex-sdk-runner.ts`' to '- [x] Implement tool allowlist enforcement in `src/agent/codex-sdk-runner.ts`'",
+        "Milestone M2 objectives show this item as complete with [x] checkbox"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "Single character change from [ ] to [x]. This is the final documentation update to reflect implementation completion."
+    }
+  ]
+}

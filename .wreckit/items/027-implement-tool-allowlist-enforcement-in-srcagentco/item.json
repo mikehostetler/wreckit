@@ -3,14 +3,14 @@
   "id": "027-implement-tool-allowlist-enforcement-in-srcagentco",
   "title": "Implement tool allowlist enforcement in `src/agent/codex-sdk-runner.ts`",
   "section": "roadmap",
-  "state": "idea",
+  "state": "implementing",
   "overview": "From milestone [M2] Finish Experimental SDK Integrations\n\n**Motivation:** Strategic milestone: Finish Experimental SDK Integrations",
   "branch": null,
   "pr_url": null,
   "pr_number": null,
   "last_error": null,
   "created_at": "2026-01-24T14:10:12.333Z",
-  "updated_at": "2026-01-24T14:10:12.333Z",
+  "updated_at": "2026-01-24T22:31:42.838Z",
   "motivation": "Strategic milestone: Finish Experimental SDK Integrations",
   "depends_on": [
     "026-implement-tool-allowlist-enforcement-in-srcagentam"
