@@ -124,6 +124,10 @@ export const ItemSchema = z.object({
   merged_at: z.string().nullable().optional(),
   merge_commit_sha: z.string().nullable().optional(),
   checks_passed: z.boolean().nullable().optional(),
+
+  // Dependency management and campaign grouping (Item 022)
+  depends_on: z.array(z.string()).optional(),
+  campaign: z.string().optional(),
 });
 
 export const StorySchema = z.object({
@@ -146,6 +150,8 @@ export const IndexItemSchema = z.object({
   id: z.string(),
   state: WorkflowStateSchema,
   title: z.string(),
+  // Dependency management for efficient orchestration (Item 022)
+  depends_on: z.array(z.string()).optional(),
 });
 
 export const IndexSchema = z.object({

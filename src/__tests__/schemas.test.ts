@@ -157,6 +157,65 @@ describe("ItemSchema", () => {
     };
     expect(() => ItemSchema.parse(item)).toThrow();
   });
+
+  it("accepts item with depends_on and campaign fields", () => {
+    const item = {
+      schema_version: 1,
+      id: "002-feature",
+      title: "Feature name",
+      state: "idea",
+      overview: "Description",
+      branch: null,
+      pr_url: null,
+      pr_number: null,
+      last_error: null,
+      created_at: "2025-01-12T00:00:00Z",
+      updated_at: "2025-01-12T00:00:00Z",
+      depends_on: ["001-setup", "001-core"],
+      campaign: "M1",
+    };
+    const result = ItemSchema.parse(item);
+    expect(result.depends_on).toEqual(["001-setup", "001-core"]);
+    expect(result.campaign).toBe("M1");
+  });
+
+  it("accepts item without depends_on and campaign fields (backwards compatibility)", () => {
+    const item = {
+      schema_version: 1,
+      id: "001-feature",
+      title: "Feature name",
+      state: "idea",
+      overview: "Description",
+      branch: null,
+      pr_url: null,
+      pr_number: null,
+      last_error: null,
+      created_at: "2025-01-12T00:00:00Z",
+      updated_at: "2025-01-12T00:00:00Z",
+    };
+    const result = ItemSchema.parse(item);
+    expect(result.depends_on).toBeUndefined();
+    expect(result.campaign).toBeUndefined();
+  });
+
+  it("accepts item with empty depends_on array", () => {
+    const item = {
+      schema_version: 1,
+      id: "001-feature",
+      title: "Feature name",
+      state: "idea",
+      overview: "Description",
+      branch: null,
+      pr_url: null,
+      pr_number: null,
+      last_error: null,
+      created_at: "2025-01-12T00:00:00Z",
+      updated_at: "2025-01-12T00:00:00Z",
+      depends_on: [],
+    };
+    const result = ItemSchema.parse(item);
+    expect(result.depends_on).toEqual([]);
+  });
 });
 
 describe("StorySchema", () => {
@@ -265,6 +324,27 @@ describe("IndexItemSchema", () => {
       title: "Core Types",
     };
     expect(() => IndexItemSchema.parse(indexItem)).toThrow();
+  });
+
+  it("accepts index item with depends_on field", () => {
+    const indexItem = {
+      id: "002-feature",
+      state: "idea",
+      title: "Feature",
+      depends_on: ["001-setup"],
+    };
+    const result = IndexItemSchema.parse(indexItem);
+    expect(result.depends_on).toEqual(["001-setup"]);
+  });
+
+  it("accepts index item without depends_on field (backwards compatibility)", () => {
+    const indexItem = {
+      id: "001-setup",
+      state: "done",
+      title: "Setup",
+    };
+    const result = IndexItemSchema.parse(indexItem);
+    expect(result.depends_on).toBeUndefined();
   });
 });
 
