@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "id": "005-benchmarking-suite-for-resumability-and-concurrenc",
+  "title": "Benchmarking suite for resumability and concurrency scaling",
+  "section": "tooling",
+  "state": "implementing",
+  "overview": "Add a benchmarking suite that measures resumability and concurrency scaling performance, generating paper-ready metrics in multiple formats.\n\n**Success criteria:**\n- Generates paper-ready metrics\n- Outputs in JSON format\n- Outputs in Markdown format\n- Outputs in CSV format\n\n**Technical constraints:**\n- Must output JSON, MD, and CSV formats",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": "Failed to push branch wreckit/005-benchmarking-suite-for-resumability-and-concurrenc to origin. Check that you have push access and the remote is configured correctly.",
+  "created_at": "2026-01-24T05:56:34.177Z",
+  "updated_at": "2026-01-24T06:10:20.461Z",
+  "success_criteria": [
+    "Generates paper-ready metrics",
+    "Outputs in JSON format",
+    "Outputs in Markdown format",
+    "Outputs in CSV format"
+  ],
+  "technical_constraints": [
+    "Must output JSON, MD, and CSV formats"
+  ]
+}
