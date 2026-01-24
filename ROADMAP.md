@@ -20,7 +20,7 @@
 
 #### Objectives
 - [x] Implement tool allowlist enforcement in `src/agent/amp-sdk-runner.ts`
-- [ ] Implement tool allowlist enforcement in `src/agent/codex-sdk-runner.ts`
+- [x] Implement tool allowlist enforcement in `src/agent/codex-sdk-runner.ts`
 - [ ] Implement tool allowlist enforcement in `src/agent/opencode-sdk-runner.ts`
 - [ ] Add integration tests for each experimental SDK
 - [ ] Update documentation with supported SDK options
