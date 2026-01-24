@@ -15,7 +15,7 @@
         "Config section references 'wreckit doctor' for diagnosis"
       ],
       "priority": 1,
-      "status": "pending",
+      "status": "done",
       "notes": "Phase 1: Core migration documentation covering automatic fallback and config format changes"
     },
     {
@@ -30,7 +30,7 @@
         "State section references 'wreckit doctor --fix' for auto-repair"
       ],
       "priority": 2,
-      "status": "pending",
+      "status": "done",
       "notes": "Phase 2: Git and state management issues that affect workflow progression"
     },
     {
@@ -47,7 +47,7 @@
         "Timeout section documents config override: timeout_seconds"
       ],
       "priority": 2,
-      "status": "pending",
+      "status": "done",
       "notes": "Phase 3: Runtime issues during workflow execution"
     },
     {
@@ -62,7 +62,7 @@
         "Remote section includes git remote verification commands"
       ],
       "priority": 3,
-      "status": "pending",
+      "status": "done",
       "notes": "Phase 4: Quality gate and safety check documentation"
     }
   ]
