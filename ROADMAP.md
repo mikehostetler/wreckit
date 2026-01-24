@@ -19,7 +19,7 @@
 **Strategic Goal:** Three SDK integrations (Amp, Codex, OpenCode) are marked as experimental with TODO placeholders. Users need production-ready alternatives to Claude SDK for multi-model support.
 
 #### Objectives
-- [ ] Implement tool allowlist enforcement in `src/agent/amp-sdk-runner.ts`
+- [x] Implement tool allowlist enforcement in `src/agent/amp-sdk-runner.ts`
 - [ ] Implement tool allowlist enforcement in `src/agent/codex-sdk-runner.ts`
 - [ ] Implement tool allowlist enforcement in `src/agent/opencode-sdk-runner.ts`
 - [ ] Add integration tests for each experimental SDK
