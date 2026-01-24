@@ -14,12 +14,12 @@
         "Environment built via buildSdkEnv({ cwd, logger }) for credential resolution",
         "SDK messages streamed to onStdoutChunk/onStderrChunk callbacks or stdout/stderr",
         "AgentEvents emitted via onAgentEvent callback for TUI integration",
-        "Type checking passes: npm run typecheck",
-        "Build succeeds: npm run build",
-        "Linting passes: npm run lint"
+        "Type checking passes: bun run typecheck",
+        "Build succeeds: bun run build",
+        "Linting passes: bun run lint"
       ],
       "priority": 1,
-      "status": "pending",
+      "status": "done",
       "notes": "Copy implementation from amp-sdk-runner.ts:72-184 and helper functions from lines 186-371, changing 'Amp' to 'OpenCode' in log messages and error strings."
     },
     {
@@ -34,7 +34,7 @@
         "Error messages reference 'OpenCode SDK' not 'Amp SDK' or 'Codex SDK'"
       ],
       "priority": 1,
-      "status": "pending",
+      "status": "done",
       "notes": "Copy from amp-sdk-runner.ts:186-293, replace 'Amp SDK' with 'OpenCode SDK' in error messages."
     },
     {
@@ -48,7 +48,7 @@
         "Functions are identical to amp-sdk-runner.ts implementations"
       ],
       "priority": 1,
-      "status": "pending",
+      "status": "done",
       "notes": "Copy formatSdkMessage() from amp-sdk-runner.ts:295-328 and emitAgentEventsFromSdkMessage() from lines 330-371 without changes."
     },
     {
@@ -61,11 +61,11 @@
         "Test: explicit allowedTools takes precedence over phase-based allowlist",
         "Test: falls back to phase-based allowlist when no explicit tools specified",
         "Test: has no restrictions when neither allowedTools nor phase specified",
-        "All 5 tests pass: npm test src/__tests__/opencode-sdk-runner.test.ts",
-        "Full test suite passes: npm test"
+        "All 5 tests pass: bun test src/__tests__/opencode-sdk-runner.test.ts",
+        "Full test suite passes: bun test"
       ],
       "priority": 2,
-      "status": "pending",
+      "status": "done",
       "notes": "Copy from codex-sdk-runner.test.ts, change CodexSdkAgentConfig to OpenCodeSdkAgentConfig, remove 'model' from config, update function imports and names."
     },
     {
@@ -76,7 +76,7 @@
         "All three SDK runner objectives in M2 milestone now show [x] complete"
       ],
       "priority": 3,
-      "status": "pending",
+      "status": "done",
       "notes": "Simple checkbox update to mark the objective as complete."
     }
   ]
