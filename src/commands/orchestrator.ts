@@ -264,58 +264,62 @@ async function processItemsParallel(
   // Process items with concurrency control and dependency checking
   const processNextItem = async (): Promise<void> => {
     while (true) {
-      let item: IndexItem | undefined;
-      let itemIndex = -1;
-
-      // Find next runnable item (thread-safe queue management via single worker)
-      // Note: In Node.js, queue access within this function is atomic between awaits
-      for (let i = 0; i < queue.length; i++) {
-        if (areDependenciesSatisfied(queue[i], allDoneIds)) {
-          item = queue[i];
-          itemIndex = i;
-          break;
-        }
-      }
-
-      if (!item) {
-        // No runnable items available right now
-        // If queue is empty, we are done
-        if (queue.length === 0) return;
-        
-        // If queue not empty but no runnable items, we might be waiting for other workers
-        // Wait a bit and try again
-        await new Promise(resolve => setTimeout(resolve, 100));
-        continue;
-      }
-
-      // Remove from queue
-      queue.splice(itemIndex, 1);
-
-      simpleProgress?.update(item.id, "starting");
-
       try {
-        await runCommand(
-          item.id,
-          { force, dryRun: false, mockAgent, cwd: root },
-          logger
-        );
-        result.completed.push(item.id);
-        allDoneIds.add(item.id);
-        simpleProgress?.complete(item.id);
-        logger.info(`✓ Completed ${item.id}`);
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        result.failed.push(item.id);
+        let item: IndexItem | undefined;
+        let itemIndex = -1;
 
-        // Persist error to item.json
+        // Find next runnable item (thread-safe queue management via single worker)
+        for (let i = 0; i < queue.length; i++) {
+          if (areDependenciesSatisfied(queue[i], allDoneIds)) {
+            item = queue[i];
+            itemIndex = i;
+            break;
+          }
+        }
+
+        if (!item) {
+          // No runnable items available right now
+          if (queue.length === 0) return;
+          
+          // Wait a bit and try again
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          continue;
+        }
+
+        // Remove from queue
+        queue.splice(itemIndex, 1);
+
+        simpleProgress?.update(item.id, "starting");
+
         try {
-          const itemDir = getItemDir(root, item.id);
-          const currentItem = await readItem(itemDir);
-          await writeItem(itemDir, { ...currentItem, last_error: errorMessage });
-        } catch { /* ignore */ }
+          await runCommand(
+            item.id,
+            { force, dryRun: false, mockAgent, cwd: root },
+            logger
+          );
+          result.completed.push(item.id);
+          allDoneIds.add(item.id);
+          simpleProgress?.complete(item.id);
+          logger.info(`✓ Completed ${item.id}`);
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          result.failed.push(item.id);
 
-        simpleProgress?.fail(item.id, errorMessage);
-        logger.error(`✗ Failed ${item.id}: ${errorMessage}`);
+          // Persist error to item.json
+          try {
+            const itemDir = getItemDir(root, item.id);
+            const currentItem = await readItem(itemDir);
+            await writeItem(itemDir, { ...currentItem, last_error: errorMessage });
+          } catch { /* ignore */ }
+
+          simpleProgress?.fail(item.id, errorMessage);
+          logger.error(`✗ Failed ${item.id}: ${errorMessage}`);
+        }
+      } catch (fatalError) {
+        const msg = fatalError instanceof Error ? fatalError.message : String(fatalError);
+        logger.error(`FATAL Worker Error: ${msg}`);
+        // If we hit a truly fatal error in the worker logic, we should probably stop this worker
+        return;
       }
     }
   };

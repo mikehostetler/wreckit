@@ -592,6 +592,22 @@ program
 async function main(): Promise<void> {
   setupInterruptHandler(logger);
 
+  // Global error handlers to prevent silent crashes in autonomous mode
+  process.on("unhandledRejection", (reason) => {
+    const msg = reason instanceof Error ? reason.message : String(reason);
+    const stack = reason instanceof Error ? reason.stack : "";
+    logger.error(`[FATAL] Unhandled Rejection: ${msg}`);
+    if (stack) logger.error(stack);
+    // Don't exit immediately, let other workers continue if possible
+  });
+
+  process.on("uncaughtException", (error) => {
+    const msg = error instanceof Error ? error.message : String(error);
+    logger.error(`[FATAL] Uncaught Exception: ${msg}`);
+    if (error.stack) logger.error(error.stack);
+    process.exit(1);
+  });
+
   program.hook("preAction", (thisCommand) => {
     const opts = thisCommand.opts();
     initLogger({

@@ -1,0 +1,122 @@
+{
+  "schema_version": 1,
+  "id": "020-add-distinct-error-types-for-different-failure-mod",
+  "branch_name": "wreckit/020-add-distinct-error-types-for-different-failure-mod",
+  "user_stories": [
+    {
+      "id": "US-001",
+      "title": "Define ErrorCodes constants and export them",
+      "acceptance_criteria": [
+        "ErrorCodes object is exported from src/errors.ts with all existing and new error codes",
+        "ErrorCode type is exported as union of all code values",
+        "All code values match their key names (e.g., ErrorCodes.PHASE_FAILED === 'PHASE_FAILED')",
+        "Existing error classes continue to work unchanged"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Foundation for all other stories. Must be done first as other errors reference ErrorCodes."
+    },
+    {
+      "id": "US-002",
+      "title": "Add phase-specific error classes",
+      "acceptance_criteria": [
+        "PhaseFailedError class exists with phase, itemId properties and PHASE_FAILED code",
+        "PhaseValidationError class exists with phase property and PHASE_VALIDATION code",
+        "TransitionError class exists with fromState, toState properties and INVALID_TRANSITION code",
+        "ArtifactNotCreatedError class exists with artifactPath, phase properties and ARTIFACT_NOT_CREATED code",
+        "All classes extend WreckitError and work with isWreckitError()",
+        "All classes have correct name property set"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "These errors are used throughout the workflow system."
+    },
+    {
+      "id": "US-003",
+      "title": "Add quality validation error classes",
+      "acceptance_criteria": [
+        "ResearchQualityError class exists with errors array and RESEARCH_QUALITY code",
+        "PlanQualityError class exists with errors array and PLAN_QUALITY code",
+        "StoryQualityError class exists with errors array and STORY_QUALITY code",
+        "Error messages include all validation errors from the array",
+        "All classes extend WreckitError and work with isWreckitError()"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Quality validation is already implemented but uses string errors."
+    },
+    {
+      "id": "US-004",
+      "title": "Add git operation error classes",
+      "acceptance_criteria": [
+        "BranchError class exists with branchName, operation properties and BRANCH_ERROR code",
+        "PushError class exists with branchName, remote properties and PUSH_ERROR code",
+        "PrCreationError class exists with headBranch, baseBranch properties and PR_CREATION_ERROR code",
+        "MergeConflictError class exists with sourceBranch, targetBranch properties and MERGE_CONFLICT code",
+        "RemoteValidationError class exists with remoteName, actualUrl, allowedPatterns properties and REMOTE_VALIDATION code",
+        "All classes extend WreckitError and work with isWreckitError()"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Git operations currently use generic Error throws."
+    },
+    {
+      "id": "US-005",
+      "title": "Update git/index.ts to use typed errors",
+      "acceptance_criteria": [
+        "getCurrentBranch throws GitError instead of generic Error",
+        "getBranchSha throws GitError instead of generic Error",
+        "ensureBranch throws BranchError with appropriate operation type",
+        "pushBranch throws PushError with branch and remote info",
+        "createOrUpdatePr throws PrCreationError with branch info",
+        "mergeAndPushToBase throws MergeConflictError for merge failures and BranchError for checkout failures",
+        "No 'throw new Error' statements remain in src/git/index.ts"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Requires US-004 to be complete. Must update imports and all throw sites."
+    },
+    {
+      "id": "US-006",
+      "title": "Update PhaseResult interface to support typed errors",
+      "acceptance_criteria": [
+        "PhaseResult.error type is 'string | WreckitError | undefined'",
+        "JSDoc marks string usage as deprecated",
+        "Existing code that sets error as string continues to compile",
+        "Type narrowing works correctly for both string and WreckitError"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Backwards compatibility is critical - must support both types."
+    },
+    {
+      "id": "US-007",
+      "title": "Update command layer to handle typed errors",
+      "acceptance_criteria": [
+        "src/commands/run.ts handles both string and WreckitError in result.error",
+        "src/commands/phase.ts handles both string and WreckitError in result.error",
+        "WreckitError instances are re-thrown directly preserving error code",
+        "String errors are wrapped in WreckitError with PHASE_FAILED code",
+        "Error messages are logged correctly regardless of error type"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Requires US-006. Commands should prefer typed errors going forward."
+    },
+    {
+      "id": "US-008",
+      "title": "Add comprehensive tests for all new error types",
+      "acceptance_criteria": [
+        "Test file src/__tests__/errors.test.ts exists",
+        "Tests verify ErrorCodes constant values match keys",
+        "Tests verify each error class has correct code, name, and properties",
+        "Tests verify all new errors work with isWreckitError()",
+        "Tests verify all new errors return exit code 1 from toExitCode()",
+        "All tests pass with npm test"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Follow existing test patterns from src/__tests__/logging.test.ts"
+    }
+  ]
+}

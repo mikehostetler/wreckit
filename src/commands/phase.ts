@@ -3,7 +3,7 @@ import type { WorkflowState } from "../schemas";
 import { findRepoRoot, findRootFromOptions, getItemDir } from "../fs/paths";
 import { readItem } from "../fs/json";
 import { loadConfig } from "../config";
-import { FileNotFoundError, WreckitError } from "../errors";
+import { FileNotFoundError, WreckitError, isWreckitError } from "../errors";
 import {
   runPhaseResearch,
   runPhasePlan,
@@ -208,9 +208,14 @@ export async function runPhaseCommand(
       `Successfully ran ${phase} phase on ${itemId}: ${item.state} → ${result.item.state}`
     );
   } else {
-    throw new WreckitError(
-      result.error ?? `Phase ${phase} failed for ${itemId}`,
-      "PHASE_FAILED"
-    );
+    const errorMsg = typeof result.error === "string"
+      ? result.error
+      : result.error?.message ?? `Phase ${phase} failed for ${itemId}`;
+
+    // Re-throw if already a WreckitError, otherwise wrap
+    if (isWreckitError(result.error)) {
+      throw result.error;
+    }
+    throw new WreckitError(errorMsg, "PHASE_FAILED");
   }
 }

@@ -1,6 +1,13 @@
 import { spawn } from "node:child_process";
 import * as path from "node:path";
 import type { Logger } from "../logging";
+import {
+  BranchError,
+  PushError,
+  PrCreationError,
+  MergeConflictError,
+  GitError,
+} from "../errors";
 export type { PrChecksResolved } from "../config";
 export type { QualityCheckOptions, QualityCheckResult, SecretScanResult } from "./quality";
 export { runPrePushQualityGates, runQualityChecks, runSecretScan, scanForSecrets } from "./quality";
@@ -340,7 +347,7 @@ export async function getCurrentBranch(options: GitOptions): Promise<string> {
     options
   );
   if (result.exitCode !== 0) {
-    throw new Error("Failed to get current branch");
+    throw new GitError("Failed to get current branch");
   }
   return result.stdout;
 }
@@ -358,7 +365,7 @@ export async function getBranchSha(
 ): Promise<string> {
   const result = await runGitCommand(["rev-parse", branch], options);
   if (result.exitCode !== 0) {
-    throw new Error(`Failed to get SHA for ${branch}`);
+    throw new GitError(`Failed to get SHA for ${branch}`);
   }
   return result.stdout;
 }
@@ -460,7 +467,7 @@ export async function ensureBranch(
     logger.info(`Branch ${branchName} exists, switching to it`);
     const checkoutResult = await runGitCommand(["checkout", branchName], options);
     if (checkoutResult.exitCode !== 0) {
-      throw new Error(`Failed to checkout existing branch ${branchName}`);
+      throw new BranchError(branchName, "checkout", `Failed to checkout existing branch ${branchName}`);
     }
     return { branchName, created: false };
   }
@@ -468,11 +475,11 @@ export async function ensureBranch(
   logger.info(`Creating branch ${branchName} from ${baseBranch}`);
   const checkoutBase = await runGitCommand(["checkout", baseBranch], options);
   if (checkoutBase.exitCode !== 0) {
-    throw new Error(`Failed to checkout base branch ${baseBranch}`);
+    throw new BranchError(baseBranch, "checkout", `Failed to checkout base branch ${baseBranch}`);
   }
   const createBranch = await runGitCommand(["checkout", "-b", branchName], options);
   if (createBranch.exitCode !== 0) {
-    throw new Error(`Failed to create branch ${branchName}`);
+    throw new BranchError(branchName, "create", `Failed to create branch ${branchName}`);
   }
 
   return { branchName, created: true };
@@ -634,7 +641,9 @@ export async function pushBranch(
 
   const result = await runGitCommand(["push", "-u", "origin", branchName], options);
   if (result.exitCode !== 0) {
-    throw new Error(
+    throw new PushError(
+      branchName,
+      "origin",
       `Failed to push branch ${branchName} to origin. ` +
       `Check that you have push access and the remote is configured correctly.`
     );
@@ -705,12 +714,12 @@ export async function createOrUpdatePr(
   );
 
   if (result.exitCode !== 0) {
-    throw new Error(`Failed to create PR: ${result.stdout}`);
+    throw new PrCreationError(headBranch, baseBranch, `Failed to create PR: ${result.stdout}`);
   }
 
   const prInfo = await getPrByBranch(headBranch, options);
   if (!prInfo) {
-    throw new Error("PR was created but could not retrieve its info");
+    throw new PrCreationError(headBranch, baseBranch, "PR was created but could not retrieve its info");
   }
 
   return { url: prInfo.url, number: prInfo.number, created: true };
@@ -825,13 +834,13 @@ export async function mergeAndPushToBase(
   // Switch to base branch
   const checkoutResult = await runGitCommand(["checkout", baseBranch], options);
   if (checkoutResult.exitCode !== 0) {
-    throw new Error(`Failed to checkout base branch ${baseBranch}`);
+    throw new BranchError(baseBranch, "checkout", `Failed to checkout base branch ${baseBranch}`);
   }
 
   // Pull latest changes from remote
   const pullResult = await runGitCommand(["pull", "--ff-only"], options);
   if (pullResult.exitCode !== 0) {
-    throw new Error(
+    throw new GitError(
       `Failed to pull latest ${baseBranch}. Resolve conflicts manually or try again.`
     );
   }
@@ -842,10 +851,7 @@ export async function mergeAndPushToBase(
     options
   );
   if (mergeResult.exitCode !== 0) {
-    throw new Error(
-      `Failed to merge ${featureBranch} into ${baseBranch}. ` +
-      `There may be merge conflicts that need manual resolution.`
-    );
+    throw new MergeConflictError(featureBranch, baseBranch);
   }
 
   // Push to remote
