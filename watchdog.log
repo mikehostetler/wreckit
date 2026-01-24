@@ -465,3 +465,213 @@ Read
   "file_path": "/Users/speed/wreckit/src/fs/json.ts"
 }
 ```
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 021-implement-progress-persistence-for-batch-operation[39m
+[32mINFO[39m: [36mRunning complete phase on 021-implement-progress-persistence-for-batch-operation[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 4 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 021-implement-progress-persistence-for-batch-operation: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 021-implement-progress-persistence-for-batch-operation: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 021-implement-progress-persistence-for-batch-operation[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 021-implement-progress-persistence-for-batch-operation[39m
+[32mINFO[39m: [36mRunning complete phase on 021-implement-progress-persistence-for-batch-operation[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 4 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 021-implement-progress-persistence-for-batch-operation: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 021-implement-progress-persistence-for-batch-operation: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 021-implement-progress-persistence-for-batch-operation[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 021-implement-progress-persistence-for-batch-operation[39m
+[32mINFO[39m: [36mRunning complete phase on 021-implement-progress-persistence-for-batch-operation[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 4 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 021-implement-progress-persistence-for-batch-operation: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 021-implement-progress-persistence-for-batch-operation: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 021-implement-progress-persistence-for-batch-operation[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 021-implement-progress-persistence-for-batch-operation[39m
+[32mINFO[39m: [36mRunning complete phase on 021-implement-progress-persistence-for-batch-operation[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 4 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 021-implement-progress-persistence-for-batch-operation: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 021-implement-progress-persistence-for-batch-operation: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 021-implement-progress-persistence-for-batch-operation[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 021-implement-progress-persistence-for-batch-operation[39m
+[32mINFO[39m: [36mRunning complete phase on 021-implement-progress-persistence-for-batch-operation[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 4 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 021-implement-progress-persistence-for-batch-operation: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 021-implement-progress-persistence-for-batch-operation: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 021-implement-progress-persistence-for-batch-operation[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 021-implement-progress-persistence-for-batch-operation[39m
+[32mINFO[39m: [36mRunning complete phase on 021-implement-progress-persistence-for-batch-operation[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 4 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 021-implement-progress-persistence-for-batch-operation: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 021-implement-progress-persistence-for-batch-operation: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 021-implement-progress-persistence-for-batch-operation[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 021-implement-progress-persistence-for-batch-operation[39m
+[32mINFO[39m: [36mRunning complete phase on 021-implement-progress-persistence-for-batch-operation[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 4 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 021-implement-progress-persistence-for-batch-operation: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 021-implement-progress-persistence-for-batch-operation: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 021-implement-progress-persistence-for-batch-operation[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 021-implement-progress-persistence-for-batch-operation[39m
+[32mINFO[39m: [36mRunning complete phase on 021-implement-progress-persistence-for-batch-operation[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 4 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 021-implement-progress-persistence-for-batch-operation: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 021-implement-progress-persistence-for-batch-operation: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 021-implement-progress-persistence-for-batch-operation[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 021-implement-progress-persistence-for-batch-operation[39m
+[32mINFO[39m: [36mRunning complete phase on 021-implement-progress-persistence-for-batch-operation[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 4 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 021-implement-progress-persistence-for-batch-operation: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 021-implement-progress-persistence-for-batch-operation: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 021-implement-progress-persistence-for-batch-operation[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 021-implement-progress-persistence-for-batch-operation[39m
+[32mINFO[39m: [36mRunning complete phase on 021-implement-progress-persistence-for-batch-operation[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 4 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 021-implement-progress-persistence-for-batch-operation: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 021-implement-progress-persistence-for-batch-operation: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 021-implement-progress-persistence-for-batch-operation[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 021-implement-progress-persistence-for-batch-operation[39m
+[32mINFO[39m: [36mRunning complete phase on 021-implement-progress-persistence-for-batch-operation[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 4 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 021-implement-progress-persistence-for-batch-operation: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 021-implement-progress-persistence-for-batch-operation: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 021-implement-progress-persistence-for-batch-operation[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 021-implement-progress-persistence-for-batch-operation[39m
+[32mINFO[39m: [36mRunning complete phase on 021-implement-progress-persistence-for-batch-operation[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 4 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 021-implement-progress-persistence-for-batch-operation: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 021-implement-progress-persistence-for-batch-operation: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 021-implement-progress-persistence-for-batch-operation[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 021-implement-progress-persistence-for-batch-operation[39m
+[32mINFO[39m: [36mRunning complete phase on 021-implement-progress-persistence-for-batch-operation[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 4 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 021-implement-progress-persistence-for-batch-operation: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 021-implement-progress-persistence-for-batch-operation: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 021-implement-progress-persistence-for-batch-operation[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 021-implement-progress-persistence-for-batch-operation[39m
+[32mINFO[39m: [36mRunning complete phase on 021-implement-progress-persistence-for-batch-operation[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 4 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 021-implement-progress-persistence-for-batch-operation: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 021-implement-progress-persistence-for-batch-operation: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 021-implement-progress-persistence-for-batch-operation[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 021-implement-progress-persistence-for-batch-operation[39m
+[32mINFO[39m: [36mRunning complete phase on 021-implement-progress-persistence-for-batch-operation[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 4 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 021-implement-progress-persistence-for-batch-operation: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 021-implement-progress-persistence-for-batch-operation: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 021-implement-progress-persistence-for-batch-operation[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 021-implement-progress-persistence-for-batch-operation[39m
+[32mINFO[39m: [36mRunning complete phase on 021-implement-progress-persistence-for-batch-operation[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 4 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 021-implement-progress-persistence-for-batch-operation: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 021-implement-progress-persistence-for-batch-operation: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 021-implement-progress-persistence-for-batch-operation[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 021-implement-progress-persistence-for-batch-operation[39m
+[32mINFO[39m: [36mRunning complete phase on 021-implement-progress-persistence-for-batch-operation[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 4 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 021-implement-progress-persistence-for-batch-operation: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 021-implement-progress-persistence-for-batch-operation: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 021-implement-progress-persistence-for-batch-operation[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 021-implement-progress-persistence-for-batch-operation[39m
+[32mINFO[39m: [36mRunning complete phase on 021-implement-progress-persistence-for-batch-operation[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 4 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 021-implement-progress-persistence-for-batch-operation: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 021-implement-progress-persistence-for-batch-operation: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 021-implement-progress-persistence-for-batch-operation[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 021-implement-progress-persistence-for-batch-operation[39m
+[32mINFO[39m: [36mRunning complete phase on 021-implement-progress-persistence-for-batch-operation[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 4 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 021-implement-progress-persistence-for-batch-operation: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 021-implement-progress-persistence-for-batch-operation: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 021-implement-progress-persistence-for-batch-operation[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 021-implement-progress-persistence-for-batch-operation[39m
+[32mINFO[39m: [36mRunning complete phase on 021-implement-progress-persistence-for-batch-operation[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 4 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 021-implement-progress-persistence-for-batch-operation: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 021-implement-progress-persistence-for-batch-operation: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 021-implement-progress-persistence-for-batch-operation[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 021-implement-progress-persistence-for-batch-operation[39m
+[32mINFO[39m: [36mRunning complete phase on 021-implement-progress-persistence-for-batch-operation[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 4 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 021-implement-progress-persistence-for-batch-operation: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 021-implement-progress-persistence-for-batch-operation: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 021-implement-progress-persistence-for-batch-operation[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 021-implement-progress-persistence-for-batch-operation[39m
+[32mINFO[39m: [36mRunning complete phase on 021-implement-progress-persistence-for-batch-operation[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 4 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 021-implement-progress-persistence-for-batch-operation: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 021-implement-progress-persistence-for-batch-operation: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 021-implement-progress-persistence-for-batch-operation[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 021-implement-progress-persistence-for-batch-operation[39m
+[32mINFO[39m: [36mRunning complete phase on 021-implement-progress-persistence-for-batch-operation[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 4 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 021-implement-progress-persistence-for-batch-operation: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 021-implement-progress-persistence-for-batch-operation: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 021-implement-progress-persistence-for-batch-operation[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 021-implement-progress-persistence-for-batch-operation[39m
+[32mINFO[39m: [36mRunning complete phase on 021-implement-progress-persistence-for-batch-operation[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 4 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 021-implement-progress-persistence-for-batch-operation: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 021-implement-progress-persistence-for-batch-operation: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 021-implement-progress-persistence-for-batch-operation[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 021-implement-progress-persistence-for-batch-operation[39m
+[32mINFO[39m: [36mRunning complete phase on 021-implement-progress-persistence-for-batch-operation[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 4 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 021-implement-progress-persistence-for-batch-operation: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 021-implement-progress-persistence-for-batch-operation: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 021-implement-progress-persistence-for-batch-operation[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 021-implement-progress-persistence-for-batch-operation[39m
+[32mINFO[39m: [36mRunning complete phase on 021-implement-progress-persistence-for-batch-operation[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 4 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 021-implement-progress-persistence-for-batch-operation: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 021-implement-progress-persistence-for-batch-operation: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 021-implement-progress-persistence-for-batch-operation[39m
+❌ Crashed with code 1. Restarting in 5s...
+❌ Crashed with code 1. Restarting in 5s...
