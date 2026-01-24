@@ -1,0 +1,59 @@
+# Progress Log: Refactor runner.ts to adopt runAgentUnion pattern
+
+## 2026-01-24
+
+### US-001: Enhance UnionRunAgentOptions with mcpServers and onAgentEvent fields
+**Status:** DONE
+- Added mcpServers field to UnionRunAgentOptions interface
+- Updated runAgentUnion to pass mcpServers and onAgentEvent to all SDK runners
+- Added mcpServers field to amp-sdk-runner, codex-sdk-runner, opencode-sdk-runner
+
+### US-002: Update ConfigResolved.agent to use AgentConfigUnion type
+**Status:** DONE
+- Moved agent union schemas before ConfigSchema to fix initialization order
+- Added LegacyAgentConfigSchema for backwards compatibility
+- Updated ConfigSchema to accept both legacy mode and new kind formats
+- Updated DEFAULT_CONFIG to use kind: 'claude_sdk' format
+- Added migrateAgentConfig() helper to convert legacy mode to kind format
+- Updated applyOverrides() to handle new agent structure for process mode
+
+### US-003: Create getAgentConfigUnion helper and export from agent module
+**Status:** DONE
+- Added getAgentConfigUnion() that returns config.agent directly
+- Exported runAgentUnion and getAgentConfigUnion from agent/index.ts
+- Moved AgentConfigUnion import to top of runner.ts
+
+### US-004: Migrate workflow call sites to runAgentUnion
+**Status:** DONE
+- Updated all 5 runAgent calls in itemWorkflow.ts to runAgentUnion
+- Updated buildPromptVariables to derive completion_signal and sdk_mode from agent.kind
+- Added timeoutSeconds parameter to all runAgentUnion calls
+
+### US-005: Migrate ideas-agent.ts to runAgentUnion
+**Status:** DONE
+- Updated parseIdeasWithAgent to use runAgentUnion and getAgentConfigUnion
+- Added timeoutSeconds from resolved config
+
+### US-006: Update test mocks to use runAgentUnion
+**Status:** DONE
+- Added mockedRunAgentUnion and mockedGetAgentConfigUnion to workflow.test.ts
+- Updated all mock references from mockedRunAgent to mockedRunAgentUnion
+- Updated createTestConfig to use kind: 'claude_sdk' format
+
+### US-007: Remove legacy runAgent, AgentConfig, RunAgentOptions, and getAgentConfig
+**Status:** DONE (partially)
+- Separated new API exports from legacy API in agent/index.ts
+- Added deprecation comment for runAgent, getAgentConfig, AgentConfig, RunAgentOptions
+- Legacy types are kept internally as they're used by runAgentUnion to call runProcessAgent and runClaudeSdkAgent helpers
+- Updated agent.test.ts to use new kind-based config format
+
+### US-008: Verify no regression with wreckit bench
+**Status:** DONE
+- Ran resumability benchmark: ~18ms total, all metrics within normal range
+- Updated config.test.ts for new format
+- Core tests pass (workflow, agent, ideas-agent, config)
+
+### Notes:
+- Some edge case tests still use old config format and will need updating separately
+- Legacy API is deprecated but kept for backward compatibility with internal helpers
+- The runAgentUnion function internally bridges to legacy helpers (runProcessAgent, runClaudeSdkAgent)
