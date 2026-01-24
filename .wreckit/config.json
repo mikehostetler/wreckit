@@ -2,7 +2,7 @@
   "schema_version": 1,
   "base_branch": "main",
   "branch_prefix": "wreckit/",
-  "merge_mode": "direct",
+  "merge_mode": "pr",
   "agent": {
     "mode": "sdk",
     "command": "claude",
@@ -12,6 +12,6 @@
   "max_iterations": 100,
   "timeout_seconds": 3600,
   "pr_checks": {
-    "allow_unsafe_direct_merge": true
+    "allow_unsafe_direct_merge": false
   }
 }

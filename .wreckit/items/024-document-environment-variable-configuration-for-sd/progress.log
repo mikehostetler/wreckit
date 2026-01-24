@@ -33,3 +33,5 @@ Completed all three user stories for documenting environment variable configurat
 - README.md provides quick essential info with link for depth
 - AGENTS.md points to MIGRATION.md for completeness
 [2026-01-24T14:43:59.076Z] Completed iteration 1 for story US-001
+[2026-01-24T14:45:35.027Z] Completed: Direct merge to main
+Rollback SHA: 49380c26f1c07633fa025477b075ae6b324bb66a

@@ -3,14 +3,14 @@
   "id": "025-add-troubleshooting-section-for-common-migration-i",
   "title": "Add troubleshooting section for common migration issues",
   "section": "roadmap",
-  "state": "idea",
+  "state": "implementing",
   "overview": "From milestone [M1] Complete Missing Documentation\n\n**Motivation:** Strategic milestone: Complete Missing Documentation",
-  "branch": null,
+  "branch": "wreckit/025-add-troubleshooting-section-for-common-migration-i",
   "pr_url": null,
   "pr_number": null,
   "last_error": null,
   "created_at": "2026-01-24T14:10:12.332Z",
-  "updated_at": "2026-01-24T14:10:12.332Z",
+  "updated_at": "2026-01-24T15:05:03.913Z",
   "motivation": "Strategic milestone: Complete Missing Documentation",
   "depends_on": [
     "024-document-environment-variable-configuration-for-sd"
