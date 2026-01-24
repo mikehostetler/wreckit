@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "id": "025-add-troubleshooting-section-for-common-migration-i",
+  "branch_name": "wreckit/025-add-troubleshooting-section-for-common-migration-i",
+  "user_stories": [
+    {
+      "id": "US-001",
+      "title": "Add fallback behavior and config migration troubleshooting sections",
+      "acceptance_criteria": [
+        "MIGRATION.md contains 'Fallback to Process Mode Warning' subsection after line 454",
+        "Fallback section includes the exact warning message from src/agent/runner.ts:190",
+        "Fallback section references 'wreckit sdk-info' for diagnosis",
+        "MIGRATION.md contains 'Config Schema Validation Error' subsection",
+        "Config section includes migration table for mode→kind conversion",
+        "Config section references 'wreckit doctor' for diagnosis"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Phase 1: Core migration documentation covering automatic fallback and config format changes"
+    },
+    {
+      "id": "US-002",
+      "title": "Add git preflight and state mismatch troubleshooting sections",
+      "acceptance_criteria": [
+        "MIGRATION.md contains 'Git Repository Issues' subsection",
+        "Git section documents all 5 preflight error codes: NOT_GIT_REPO, DETACHED_HEAD, UNCOMMITTED_CHANGES, BRANCH_DIVERGED, NO_REMOTE",
+        "Git section includes recovery steps matching src/git/index.ts:517-571",
+        "MIGRATION.md contains 'State and Artifact Mismatches' subsection",
+        "State section documents doctor diagnostic codes: STATE_FILE_MISMATCH, INDEX_STALE, MISSING_ITEM_JSON, INVALID_PRD, CIRCULAR_DEPENDENCY, MISSING_DEPENDENCY",
+        "State section references 'wreckit doctor --fix' for auto-repair"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Phase 2: Git and state management issues that affect workflow progression"
+    },
+    {
+      "id": "US-003",
+      "title": "Add phase failure and timeout troubleshooting sections",
+      "acceptance_criteria": [
+        "MIGRATION.md contains 'Phase-Specific Failures' subsection",
+        "Phase section documents research phase failure: 'Agent did not create research.md'",
+        "Phase section documents plan phase failures: missing plan.md, missing prd.json, invalid prd.json",
+        "Phase section documents implement phase failures: prd.json not found, max iterations exceeded",
+        "Phase section documents PR phase failures: stories not done, quality gate failed",
+        "MIGRATION.md contains 'Agent Timeout' subsection",
+        "Timeout section includes default value (3600 seconds) matching src/config.ts:56",
+        "Timeout section documents config override: timeout_seconds"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Phase 3: Runtime issues during workflow execution"
+    },
+    {
+      "id": "US-004",
+      "title": "Add PRD quality and remote validation troubleshooting sections",
+      "acceptance_criteria": [
+        "MIGRATION.md contains 'PRD Quality Validation Failures' subsection",
+        "PRD section documents story quality requirements: acceptance criteria, title length, ID format",
+        "PRD section includes example of valid prd.json story structure",
+        "MIGRATION.md contains 'Remote URL Validation Failed' subsection",
+        "Remote section documents allowed_remote_patterns configuration",
+        "Remote section includes git remote verification commands"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "Phase 4: Quality gate and safety check documentation"
+    }
+  ]
+}
