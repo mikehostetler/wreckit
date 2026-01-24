@@ -2864,3 +2864,28 @@ Running next item...
 [34mDEBUG[39m: [36mRunning: git rev-parse --abbrev-ref HEAD[39m
 [34mDEBUG[39m: [36mRunning: git status --porcelain[39m
 [34mDEBUG[39m: [36mRunning: git add -A[39m
+[34mDEBUG[39m: [36mRunning: git commit -m feat(027-implement-tool-allowlist-enforcement-in-srcagentco): implement Implement tool allowlist enforcement in `src/agent/codex-sdk-runner.ts`[39m
+[34mDEBUG[39m: [36mRunning: git symbolic-ref --quiet HEAD[39m
+[34mDEBUG[39m: [36mRunning: git status --porcelain[39m
+[31mERROR[39m: [36mPhase pr failed for 027-implement-tool-allowlist-enforcement-in-srcagentco: Git pre-flight check failed:
+
+• There are uncommitted changes in the working directory
+    Run `git stash` to temporarily save changes
+    Or run `git commit -am "message"` to commit changes
+    Or run `git checkout -- .` to discard changes (destructive)[39m
+[31mERROR[39m: [36mFailed 027-implement-tool-allowlist-enforcement-in-srcagentco: Git pre-flight check failed:
+
+• There are uncommitted changes in the working directory
+    Run `git stash` to temporarily save changes
+    Or run `git commit -am "message"` to commit changes
+    Or run `git checkout -- .` to discard changes (destructive)[39m
+[31mERROR[39m: [36mFailed: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+❌ Crashed with code 1. Restarting in 5s...
+I can see the plan has already been updated to reflect the completed status. Let me also verify the ROADMAP.md to see if it was actually updated:
+```tool
+Read
+{
+  "file_path": "/Users/speed/wreckit/ROADMAP.md"
+}
+```
+The prd.json shows all 7 stories as "done". This is actually the old PRD with many implementation stories that were already completed. My MCP save earlier created a simpler PRD with just 2 verification stories. Let me write the correct simplified PRD that reflects what actually needed to be done:
