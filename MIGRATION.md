@@ -547,6 +547,169 @@ The configuration file contains invalid or unrecognized properties. This often o
 
 **Note:** Wreckit automatically migrates legacy configs in memory, but you should update your config file to avoid future issues.
 
+### Git Repository Issues
+
+Git pre-flight checks run before each workflow phase to ensure a clean working state.
+
+#### NOT_GIT_REPO
+
+**Symptom:**
+```
+Git pre-flight check failed:
+• Not a git repository
+```
+
+**Solutions:**
+- Run `git init` to initialize a new repository
+- Or navigate to an existing git repository
+
+#### DETACHED_HEAD
+
+**Symptom:**
+```
+Git pre-flight check failed:
+• Repository is in detached HEAD state
+```
+
+**Solutions:**
+- Run `git checkout <branch-name>` to switch to a branch
+- Or run `git checkout -b <new-branch>` to create a new branch from current state
+
+#### UNCOMMITTED_CHANGES
+
+**Symptom:**
+```
+Git pre-flight check failed:
+• There are uncommitted changes in the working directory
+```
+
+**Solutions:**
+- Run `git stash` to temporarily save changes
+- Or run `git commit -am "message"` to commit changes
+- Or run `git checkout -- .` to discard changes (destructive)
+
+#### BRANCH_DIVERGED
+
+**Symptom:**
+```
+Git pre-flight check failed:
+• Local branch has diverged from remote
+```
+
+**Solutions:**
+- Run `git pull --rebase` to rebase local changes on top of remote
+- Or run `git pull` to merge remote changes
+- Resolve any conflicts and commit
+
+#### NO_REMOTE
+
+**Symptom:**
+```
+Git pre-flight check failed:
+• No remote repository configured
+```
+
+**Solution:**
+- Run `git remote add origin <url>` to add a remote
+
+### State and Artifact Mismatches
+
+Wreckit maintains workflow state in `item.json` and expects corresponding artifacts (files) to exist.
+
+#### STATE_FILE_MISMATCH
+
+**Symptom:**
+```
+warning: State is 'researched' but research.md is missing
+warning: State is 'planned' but plan.md and prd.json are missing
+```
+
+**Cause:**
+The item's state indicates a phase was completed, but the expected output file is missing.
+
+**Solutions:**
+1. Auto-repair with doctor:
+   ```bash
+   wreckit doctor --fix
+   ```
+   This will reset the state to match the available artifacts.
+
+2. Manually re-run the phase:
+   ```bash
+   wreckit phase research --item <id> --force
+   ```
+
+#### INDEX_STALE
+
+**Symptom:**
+```
+warning: index.json is out of sync: 3 items missing from index
+```
+
+**Cause:**
+The cached index doesn't match the actual item directories.
+
+**Solution:**
+```bash
+wreckit doctor --fix
+```
+This rebuilds index.json from the actual items directory.
+
+#### MISSING_ITEM_JSON
+
+**Symptom:**
+```
+error: item.json missing in .wreckit/items/<id>
+```
+
+**Cause:**
+An item directory exists but lacks the required item.json file.
+
+**Solution:**
+Either remove the orphan directory or recreate the item.json manually.
+
+#### INVALID_PRD
+
+**Symptom:**
+```
+error: prd.json is invalid: Expected number, received string
+```
+
+**Cause:**
+The prd.json file doesn't match the expected schema.
+
+**Solution:**
+Review and fix the prd.json file. Common issues:
+- Story priority should be a number (1-4), not a string
+- Story status should be "pending" or "done"
+- Story IDs should follow the "US-###" format
+
+#### CIRCULAR_DEPENDENCY
+
+**Symptom:**
+```
+error: Circular dependency detected: item-a -> item-b -> item-a
+```
+
+**Cause:**
+Item dependencies form a cycle that cannot be resolved.
+
+**Solution:**
+Edit the item.json files to remove the circular reference in the `depends_on` arrays.
+
+#### MISSING_DEPENDENCY
+
+**Symptom:**
+```
+warning: Depends on non-existent item: 999-nonexistent-item
+```
+
+**Cause:**
+An item references a dependency that doesn't exist.
+
+**Solution:**
+Either create the missing item or remove it from the `depends_on` array.
+
 ---
 
 ## Staying on Process Mode
