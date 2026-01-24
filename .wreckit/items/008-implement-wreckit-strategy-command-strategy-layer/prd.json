@@ -16,7 +16,7 @@
         "Parser extracts milestone ID from [M1] format, status from **Status:** line, objectives from checkbox syntax"
       ],
       "priority": 1,
-      "status": "pending",
+      "status": "done",
       "notes": "Follow patterns from src/domain/ideas.ts. Use regex for markdown parsing. Support optional fields gracefully."
     },
     {
@@ -32,7 +32,7 @@
         "Template variables {{completion_signal}} and {{item_path}} are used correctly"
       ],
       "priority": 1,
-      "status": "pending",
+      "status": "done",
       "notes": "Model after src/prompts/research.md structure. Emphasize strategic thinking over tactical features."
     },
     {
@@ -46,7 +46,7 @@
         "isToolAllowedInPhase('strategy', 'Bash') returns false"
       ],
       "priority": 1,
-      "status": "pending",
+      "status": "done",
       "notes": "Write is allowed but enforced to ROADMAP.md only via git status check in command."
     },
     {
@@ -59,7 +59,7 @@
         "Type checking passes with extended PromptName"
       ],
       "priority": 1,
-      "status": "pending",
+      "status": "done",
       "notes": "Simple type extension and function addition."
     },
     {
@@ -79,7 +79,7 @@
         "Command skips if ROADMAP.md exists (without --force)"
       ],
       "priority": 2,
-      "status": "pending",
+      "status": "done",
       "notes": "Follow pattern from src/commands/ideas.ts and src/workflow/itemWorkflow.ts research phase."
     },
     {
@@ -99,7 +99,7 @@
         "Error message if ROADMAP.md doesn't exist"
       ],
       "priority": 2,
-      "status": "pending",
+      "status": "done",
       "notes": "Reuse persistItems from src/domain/ideas.ts for item creation with built-in deduplication."
     },
     {
@@ -111,7 +111,7 @@
         "All exports are properly typed"
       ],
       "priority": 2,
-      "status": "pending",
+      "status": "done",
       "notes": "Simple export additions to barrel file."
     },
     {
@@ -129,7 +129,7 @@
         "All tests pass"
       ],
       "priority": 3,
-      "status": "pending",
+      "status": "done",
       "notes": "Follow test patterns from src/__tests__/domain/resolveId.test.ts"
     },
     {
@@ -144,7 +144,7 @@
         "All tests pass"
       ],
       "priority": 3,
-      "status": "pending",
+      "status": "done",
       "notes": "Follow test patterns from src/__tests__/commands/ideas.test.ts"
     },
     {
@@ -161,7 +161,7 @@
         "All tests pass"
       ],
       "priority": 3,
-      "status": "pending",
+      "status": "done",
       "notes": "Follow test patterns from src/__tests__/commands/ideas.test.ts"
     }
   ]
