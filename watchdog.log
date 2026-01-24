@@ -3916,3 +3916,291 @@ Running next item...
     Or run `git checkout -- .` to discard changes (destructive)[39m
 [31mERROR[39m: [36mFailed: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
 ❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[32mINFO[39m: [36mRunning complete phase on 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 6 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[32mINFO[39m: [36mRunning complete phase on 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 6 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+Running next item...
+[32mINFO[39m: [36mRunning: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[32mINFO[39m: [36mRunning complete phase on 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 6 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+❌ Crashed with code 1. Restarting in 5s...
+[31mERROR[39m: [36mPhase complete failed for 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[32mINFO[39m: [36mRunning complete phase on 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 6 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[32mINFO[39m: [36mRunning complete phase on 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 6 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+Running next item...
+[32mINFO[39m: [36mRunning: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[32mINFO[39m: [36mRunning complete phase on 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 6 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+❌ Crashed with code 1. Restarting in 5s...
+[31mERROR[39m: [36mPhase complete failed for 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[32mINFO[39m: [36mRunning complete phase on 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 6 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+Running next item...
+[32mINFO[39m: [36mRunning: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[32mINFO[39m: [36mRunning complete phase on 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 6 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[32mINFO[39m: [36mRunning: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[32mINFO[39m: [36mRunning complete phase on 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 6 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+❌ Crashed with code 1. Restarting in 5s...
+[31mERROR[39m: [36mPhase complete failed for 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[32mINFO[39m: [36mRunning complete phase on 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 6 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[32mINFO[39m: [36mRunning complete phase on 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 6 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+Running next item...
+[32mINFO[39m: [36mRunning: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[32mINFO[39m: [36mRunning complete phase on 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 6 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+❌ Crashed with code 1. Restarting in 5s...
+[31mERROR[39m: [36mPhase complete failed for 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[32mINFO[39m: [36mRunning complete phase on 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 6 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+Running next item...
+[32mINFO[39m: [36mRunning: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[32mINFO[39m: [36mRunning complete phase on 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 6 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[32mINFO[39m: [36mRunning: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[32mINFO[39m: [36mRunning complete phase on 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 6 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+❌ Crashed with code 1. Restarting in 5s...
+[31mERROR[39m: [36mPhase complete failed for 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[32mINFO[39m: [36mRunning complete phase on 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 6 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+Running next item...
+[32mINFO[39m: [36mRunning: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[32mINFO[39m: [36mRunning complete phase on 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 6 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[32mINFO[39m: [36mRunning: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[32mINFO[39m: [36mRunning complete phase on 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 6 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+❌ Crashed with code 1. Restarting in 5s...
+[31mERROR[39m: [36mPhase complete failed for 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[32mINFO[39m: [36mRunning complete phase on 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 6 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+Running next item...
+[32mINFO[39m: [36mRunning: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[32mINFO[39m: [36mRunning complete phase on 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 6 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[32mINFO[39m: [36mRunning: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[32mINFO[39m: [36mRunning complete phase on 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 6 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+❌ Crashed with code 1. Restarting in 5s...
+[31mERROR[39m: [36mPhase complete failed for 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[32mINFO[39m: [36mRunning complete phase on 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 6 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+Running next item...
+[32mINFO[39m: [36mRunning: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[32mINFO[39m: [36mRunning complete phase on 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 6 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[32mINFO[39m: [36mRunning: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[32mINFO[39m: [36mRunning complete phase on 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 6 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+❌ Crashed with code 1. Restarting in 5s...
+[31mERROR[39m: [36mPhase complete failed for 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[32mINFO[39m: [36mRunning complete phase on 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 6 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+Running next item...
+[32mINFO[39m: [36mRunning: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[32mINFO[39m: [36mRunning complete phase on 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 6 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[32mINFO[39m: [36mRunning: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[32mINFO[39m: [36mRunning complete phase on 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 6 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+❌ Crashed with code 1. Restarting in 5s...
+[31mERROR[39m: [36mPhase complete failed for 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[32mINFO[39m: [36mRunning complete phase on 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 6 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+Running next item...
+[32mINFO[39m: [36mRunning: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[32mINFO[39m: [36mRunning complete phase on 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 6 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[32mINFO[39m: [36mRunning: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[32mINFO[39m: [36mRunning complete phase on 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 6 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+❌ Crashed with code 1. Restarting in 5s...
+[31mERROR[39m: [36mPhase complete failed for 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[32mINFO[39m: [36mRunning complete phase on 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 6 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+Running next item...
+[32mINFO[39m: [36mRunning: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[32mINFO[39m: [36mRunning complete phase on 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 6 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[32mINFO[39m: [36mRunning: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[32mINFO[39m: [36mRunning complete phase on 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 6 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+❌ Crashed with code 1. Restarting in 5s...
+[31mERROR[39m: [36mPhase complete failed for 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[32mINFO[39m: [36mRunning complete phase on 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 6 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+Running next item...
+[32mINFO[39m: [36mRunning: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[32mINFO[39m: [36mRunning complete phase on 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 6 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[32mINFO[39m: [36mRunning: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[32mINFO[39m: [36mRunning complete phase on 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 6 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+❌ Crashed with code 1. Restarting in 5s...
+[31mERROR[39m: [36mPhase complete failed for 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 027-implement-tool-allowlist-enforcement-in-srcagentco: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 027-implement-tool-allowlist-enforcement-in-srcagentco[39m
+❌ Crashed with code 1. Restarting in 5s...

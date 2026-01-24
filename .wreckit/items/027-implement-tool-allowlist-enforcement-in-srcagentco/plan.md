@@ -33,13 +33,7 @@ The source file `src/agent/codex-sdk-runner.ts` contains a **fully implemented**
 
 ### Research Summary Discrepancy
 
-The research summary incorrectly stated the file had a "TODO stub" returning "not yet implemented". This was outdated - the actual implementation was completed in a prior iteration. The verification confirms:
-
-```bash
-# No TODOs or incomplete markers
-grep -c "TODO\|FIXME\|not yet implemented" src/agent/codex-sdk-runner.ts
-# Returns: 0
-```
+The research summary incorrectly stated the file had a "TODO stub" returning "not yet implemented". This was outdated - the actual implementation was completed in a prior iteration.
 
 ## Desired End State
 
@@ -65,73 +59,100 @@ Since implementation is complete, this item only requires verification and closu
 
 ---
 
-## Phase 1: Verification
+## Phase 1: Verify Implementation Completeness
 
 ### Overview
 
-Verify the existing implementation compiles and tests pass.
+Verify the existing Codex SDK runner implementation compiles, tests pass, and tool allowlist enforcement is correctly implemented.
 
 ### Changes Required:
 
 **None** - verification only.
 
-### Verification Commands:
+### Verification Steps:
 
-```bash
-# 1. Run unit tests
-bun test ./src/__tests__/codex-sdk-runner.test.ts
+#### 1. Verify SDK Import and Registration
+**File**: `src/agent/codex-sdk-runner.ts:1-8`
 
-# 2. Build project
-bun run build
+```typescript
+import { query } from "@anthropic-ai/claude-agent-sdk";
+import type { Logger } from "../logging";
+import type { AgentResult } from "./runner";
+import { registerSdkController, unregisterSdkController } from "./runner.js";
+import type { CodexSdkAgentConfig } from "../schemas";
+import type { AgentEvent } from "../tui/agentEvents";
+import { getAllowedToolsForPhase } from "./toolAllowlist";
+import { buildSdkEnv } from "./env.js";
+```
 
-# 3. Verify tool enforcement exists
-grep -n "tools: effectiveTools" src/agent/codex-sdk-runner.ts
+#### 2. Verify Tool Allowlist Resolution
+**File**: `src/agent/codex-sdk-runner.ts:38-51`
 
-# 4. Verify ROADMAP status
-grep "codex-sdk-runner" ROADMAP.md
+```typescript
+function getEffectiveToolAllowlist(options: CodexRunAgentOptions): string[] | undefined {
+  // Explicit allowedTools takes precedence
+  if (options.allowedTools !== undefined) {
+    return options.allowedTools;
+  }
+
+  // Fall back to phase-based allowlist if phase is specified
+  if (options.phase) {
+    return getAllowedToolsForPhase(options.phase);
+  }
+
+  // No restrictions
+  return undefined;
+}
+```
+
+#### 3. Verify Tool Allowlist Enforcement in SDK Options
+**File**: `src/agent/codex-sdk-runner.ts:104-114`
+
+```typescript
+// Build SDK options
+const sdkOptions: any = {
+  cwd, // Working directory
+  permissionMode: "bypassPermissions", // wreckit runs autonomously
+  allowDangerouslySkipPermissions: true, // Required for bypassPermissions
+  abortController, // Enable cancellation on TUI quit/signals
+  env: sdkEnv, // Pass environment to ensure custom endpoints are honored
+  // Pass MCP servers if provided
+  ...(options.mcpServers && { mcpServers: options.mcpServers }),
+  // Restrict tools if effectiveTools is specified
+  ...(effectiveTools && { tools: effectiveTools }),
+};
 ```
 
 ### Success Criteria:
 
 #### Automated Verification:
 - [ ] Tests pass: `bun test ./src/__tests__/codex-sdk-runner.test.ts` (5 tests)
+- [ ] Type checking passes: `npx tsc --noEmit`
 - [ ] Build succeeds: `bun run build`
 
 #### Manual Verification:
 - [ ] Line 113 contains `tools: effectiveTools` for enforcement
-- [ ] ROADMAP.md line 23 shows `[x]` for this objective
+- [ ] `getEffectiveToolAllowlist()` follows correct priority (explicit > phase > undefined)
 - [ ] No TODOs or "not implemented" messages in codex-sdk-runner.ts
 
-**Note**: Complete all automated verification, then pause for manual confirmation.
+**Note**: Complete all automated verification, then pause for manual confirmation before proceeding to next phase.
 
 ---
 
-## Phase 2: Close Item
+## Phase 2: Verify Unit Tests Exist and Pass
 
 ### Overview
 
-Mark the item as complete after verification.
+Ensure unit tests exist and pass for the Codex SDK runner.
 
 ### Changes Required:
 
-Update item state from "implementing" to "done" (via wreckit workflow).
+**None** - verification only.
 
-### Success Criteria:
+### Test File Location
+**File**: `src/__tests__/codex-sdk-runner.test.ts`
 
-#### Automated Verification:
-- [ ] Item state shows "done"
-
-#### Manual Verification:
-- [ ] All Phase 1 criteria confirmed
-- [ ] M2 milestone shows 2 of 5 objectives complete
-
----
-
-## Testing Strategy
-
-### Existing Unit Tests:
-
-File: `src/__tests__/codex-sdk-runner.test.ts` (129 lines)
+### Expected Test Coverage:
 
 | Test | Description |
 |------|-------------|
@@ -141,20 +162,79 @@ File: `src/__tests__/codex-sdk-runner.test.ts` (129 lines)
 | `falls back to phase-based` | Verifies phase resolution |
 | `no restrictions when unspecified` | Verifies undefined behavior |
 
-### Manual Testing Steps:
+### Verification Commands:
 
+```bash
+# Run unit tests
+bun test ./src/__tests__/codex-sdk-runner.test.ts
+```
+
+### Success Criteria:
+
+#### Automated Verification:
+- [ ] Test file exists: `test -f src/__tests__/codex-sdk-runner.test.ts`
+- [ ] Tests pass: `bun test src/__tests__/codex-sdk-runner.test.ts`
+
+#### Manual Verification:
+- [ ] Test covers dry-run mode
+- [ ] Test covers tool allowlist resolution priority
+
+**Note**: Complete all automated verification, then pause for manual confirmation before proceeding to next phase.
+
+---
+
+## Phase 3: Verify ROADMAP.md Status
+
+### Overview
+
+Confirm ROADMAP.md reflects the completed objective.
+
+### Changes Required:
+
+**None** - verification only.
+
+### Expected Status:
+**File**: `ROADMAP.md:23`
+
+```markdown
+- [x] Implement tool allowlist enforcement in `src/agent/codex-sdk-runner.ts`
+```
+
+### Verification Commands:
+
+```bash
+# Verify ROADMAP status
+grep "codex-sdk-runner" ROADMAP.md
+```
+
+### Success Criteria:
+
+#### Automated Verification:
+- [ ] Grep confirms `[x]`: `grep "codex-sdk-runner" ROADMAP.md | grep "\[x\]"`
+
+#### Manual Verification:
+- [ ] Line 23 shows `[x]` (not `[ ]`)
+- [ ] M2 milestone shows this as one of the completed objectives
+
+**Note**: Complete all automated verification, then pause for manual confirmation before proceeding to next phase.
+
+---
+
+## Testing Strategy
+
+### Unit Tests:
+- `src/__tests__/codex-sdk-runner.test.ts` covers:
+  - Dry-run mode (returns success without SDK call)
+  - Tool restrictions logging in dry-run
+  - `getEffectiveToolAllowlist` priority resolution
+
+### Integration Tests:
+- Tracked separately under M2 objective "Add integration tests for each experimental SDK"
+
+### Manual Testing Steps:
 1. Run `bun test ./src/__tests__/codex-sdk-runner.test.ts`
 2. Confirm 5 tests pass
 3. Review test output for any warnings
-
-### Integration Testing:
-
-Integration tests are a **separate objective** in ROADMAP.md:
-```markdown
-- [ ] Add integration tests for each experimental SDK
-```
-
-This is out of scope for this item.
 
 ## Migration Notes
 

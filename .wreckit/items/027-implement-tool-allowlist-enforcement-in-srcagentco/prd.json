@@ -5,30 +5,42 @@
   "user_stories": [
     {
       "id": "US-001",
-      "title": "Verify Codex SDK runner implementation is complete",
+      "title": "Verify Codex SDK runner implementation completeness",
       "acceptance_criteria": [
-        "TypeScript compilation succeeds: `npm run build` passes without errors",
-        "Type checking passes: `npm run typecheck` succeeds",
-        "Linting passes: `npm run lint` succeeds",
-        "File `src/agent/codex-sdk-runner.ts` exists and has ~372 lines (full implementation)",
-        "Tool allowlist enforcement exists at line 113: `tools: effectiveTools`",
-        "Helper functions exist: `handleSdkError`, `formatSdkMessage`, `emitAgentEventsFromSdkMessage`"
+        "Tests pass: `bun test ./src/__tests__/codex-sdk-runner.test.ts` runs 5 tests successfully",
+        "Type checking passes: `npx tsc --noEmit` completes without errors",
+        "Build succeeds: `bun run build` completes without errors",
+        "Tool allowlist enforcement exists: `grep 'tools: effectiveTools' src/agent/codex-sdk-runner.ts` returns line 113",
+        "No incomplete markers: `grep -c 'TODO|FIXME|not yet implemented' src/agent/codex-sdk-runner.ts` returns 0"
       ],
       "priority": 1,
       "status": "done",
-      "notes": "Verification complete. The implementation is fully present in src/agent/codex-sdk-runner.ts with all required components. The file contains 372 lines with complete SDK integration, tool allowlist enforcement, error handling, message formatting, and event emission."
+      "notes": "Verification confirms the implementation is complete. The file has 372 lines with full SDK integration following the amp-sdk-runner.ts pattern."
     },
     {
       "id": "US-002",
-      "title": "Confirm ROADMAP.md shows objective as complete",
+      "title": "Verify unit tests exist and pass",
       "acceptance_criteria": [
-        "ROADMAP.md line 23 shows '- [x]' for the codex-sdk-runner.ts objective",
-        "Grep confirms: `grep 'codex-sdk-runner' ROADMAP.md` returns line containing `[x]`",
-        "Milestone M2 shows this as one of the completed objectives"
+        "Test file exists: `test -f src/__tests__/codex-sdk-runner.test.ts` succeeds",
+        "Tests pass: `bun test src/__tests__/codex-sdk-runner.test.ts` shows 5 passing tests",
+        "Dry-run mode test exists: grep confirms 'dry-run' test case",
+        "Tool allowlist resolution tests exist: grep confirms priority tests"
       ],
       "priority": 1,
       "status": "done",
-      "notes": "ROADMAP.md line 23 already shows `[x]` for the codex-sdk-runner.ts objective. M2 milestone now shows 2 of 5 objectives complete (amp-sdk-runner and codex-sdk-runner)."
+      "notes": "Unit tests exist at src/__tests__/codex-sdk-runner.test.ts with 129 lines covering dry-run mode, tool restrictions logging, and getEffectiveToolAllowlist priority resolution."
+    },
+    {
+      "id": "US-003",
+      "title": "Verify ROADMAP.md shows objective as complete",
+      "acceptance_criteria": [
+        "ROADMAP.md line 23 shows '[x]' for the codex-sdk-runner.ts objective",
+        "Grep confirms: `grep 'codex-sdk-runner' ROADMAP.md` returns line containing '[x]'",
+        "M2 milestone shows this as one of the completed objectives"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "ROADMAP.md line 23 already shows `[x]` for the codex-sdk-runner.ts objective. M2 milestone now shows 2 of 5 objectives complete."
     }
   ]
 }
