@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "id": "007-implement-wreckit-evolve-command",
+  "title": "Implement 'wreckit evolve' command",
+  "section": "tooling",
+  "state": "idea",
+  "overview": "Need an automated way to discover and capture improvement opportunities in the codebase without manual identification.\n\n**Motivation:** Acts as the 'Idea Generation' phase of the recursive flywheel, enabling continuous automated discovery of improvements.\n\n**Success criteria:**\n- Command analyzes the codebase\n- Identifies refactors, missing specs, and optimizations\n- Automatically creates new Wreckit items for discovered improvements",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-24T06:44:00.727Z",
+  "updated_at": "2026-01-24T06:44:00.727Z",
+  "problem_statement": "Need an automated way to discover and capture improvement opportunities in the codebase without manual identification.",
+  "motivation": "Acts as the 'Idea Generation' phase of the recursive flywheel, enabling continuous automated discovery of improvements.",
+  "success_criteria": [
+    "Command analyzes the codebase",
+    "Identifies refactors, missing specs, and optimizations",
+    "Automatically creates new Wreckit items for discovered improvements"
+  ]
+}

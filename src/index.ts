@@ -15,6 +15,8 @@ import { orchestrateAll, orchestrateNext } from "./commands/orchestrator";
 import { doctorCommand } from "./commands/doctor";
 import { initCommand } from "./commands/init";
 import { rollbackCommand } from "./commands/rollback";
+import { strategyCommand } from "./commands/strategy";
+import { executeRoadmapCommand } from "./commands/execute-roadmap";
 // import { sdkInfoCommand } from "./commands/sdk-info";
 import { runOnboardingIfNeeded } from "./onboarding";
 import { resolveId } from "./domain/resolveId";
@@ -528,6 +530,64 @@ program
 //       }
 //     );
 //   });
+
+program
+  .command("strategy")
+  .description("Analyze codebase and generate/update ROADMAP.md")
+  .option("--force", "Regenerate ROADMAP.md even if it exists")
+  .option("--analyze-dirs <dirs...>", "Directories to analyze (default: src)")
+  .action(async (options, cmd) => {
+    const globalOpts = cmd.optsWithGlobals();
+    await executeCommand(
+      async () => {
+        await strategyCommand(
+          {
+            force: options.force,
+            dryRun: globalOpts.dryRun,
+            cwd: resolveCwd(globalOpts.cwd),
+            verbose: globalOpts.verbose,
+            analyzeDirs: options.analyzeDirs,
+          },
+          logger
+        );
+      },
+      logger,
+      {
+        verbose: globalOpts.verbose,
+        quiet: globalOpts.quiet,
+        dryRun: globalOpts.dryRun,
+        cwd: resolveCwd(globalOpts.cwd),
+      }
+    );
+  });
+
+program
+  .command("execute-roadmap")
+  .description("Convert active ROADMAP milestones into wreckit Items")
+  .option("--include-done", "Include completed objectives")
+  .action(async (options, cmd) => {
+    const globalOpts = cmd.optsWithGlobals();
+    await executeCommand(
+      async () => {
+        await executeRoadmapCommand(
+          {
+            dryRun: globalOpts.dryRun,
+            cwd: resolveCwd(globalOpts.cwd),
+            verbose: globalOpts.verbose,
+            includeDone: options.includeDone,
+          },
+          logger
+        );
+      },
+      logger,
+      {
+        verbose: globalOpts.verbose,
+        quiet: globalOpts.quiet,
+        dryRun: globalOpts.dryRun,
+        cwd: resolveCwd(globalOpts.cwd),
+      }
+    );
+  });
 
 async function main(): Promise<void> {
   setupInterruptHandler(logger);

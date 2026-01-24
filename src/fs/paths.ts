@@ -88,3 +88,7 @@ export function getProgressLogPath(root: string, id: string): string {
 export function getPromptPath(root: string, id: string): string {
   return path.join(getItemDir(root, id), "prompt.md");
 }
+
+export function getRoadmapPath(root: string): string {
+  return path.join(root, "ROADMAP.md");
+}

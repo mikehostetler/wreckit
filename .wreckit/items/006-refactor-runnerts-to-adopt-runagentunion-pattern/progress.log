@@ -58,3 +58,5 @@
 - Legacy API is deprecated but kept for backward compatibility with internal helpers
 - The runAgentUnion function internally bridges to legacy helpers (runProcessAgent, runClaudeSdkAgent)
 [2026-01-24T06:40:54.321Z] Completed iteration 1 for story US-001
+[2026-01-24T06:41:11.912Z] Completed: Direct merge to main
+Rollback SHA: 6af39054dd7e2bcd59f6ae076476c86ecf0ff9e5

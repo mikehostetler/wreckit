@@ -3,18 +3,20 @@
   "id": "006-refactor-runnerts-to-adopt-runagentunion-pattern",
   "title": "Refactor runner.ts to adopt runAgentUnion pattern",
   "section": "backend",
-  "state": "implementing",
+  "state": "done",
   "overview": "The codebase has legacy runAgent logic that needs to be replaced with the runAgentUnion pattern.\n\n**Motivation:** Consolidate agent running logic under a single pattern, removing legacy code.\n\n**Success criteria:**\n- Tests pass\n- wreckit bench shows no regression",
   "branch": "wreckit/006-refactor-runnerts-to-adopt-runagentunion-pattern",
   "pr_url": null,
   "pr_number": null,
   "last_error": null,
   "created_at": "2026-01-24T06:16:21.527Z",
-  "updated_at": "2026-01-24T06:40:54.321Z",
+  "updated_at": "2026-01-24T06:41:11.913Z",
   "problem_statement": "The codebase has legacy runAgent logic that needs to be replaced with the runAgentUnion pattern.",
   "motivation": "Consolidate agent running logic under a single pattern, removing legacy code.",
   "success_criteria": [
     "Tests pass",
     "wreckit bench shows no regression"
-  ]
+  ],
+  "rollback_sha": "6af39054dd7e2bcd59f6ae076476c86ecf0ff9e5",
+  "completed_at": "2026-01-24T06:41:11.912Z"
 }

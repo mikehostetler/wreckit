@@ -48,6 +48,7 @@ export type ToolName = typeof AVAILABLE_TOOLS[keyof typeof AVAILABLE_TOOLS];
  * - implement: Full tool access (Read, Write, Edit, Glob, Grep, Bash)
  * - pr: Read + Bash tools (Read for verification, Bash for git operations)
  * - complete: Read + MCP tools (Read for verification, wreckit_complete)
+ * - strategy: Read + Write tools (Read, Glob, Grep for analysis, Write for ROADMAP.md)
  *
  * IMPORTANT: These tool names MUST match the SDK's tool naming convention:
  * - Built-in tools: "Read", "Write", "Edit", "Glob", "Grep", "Bash"
@@ -103,6 +104,15 @@ export const PHASE_TOOL_ALLOWLISTS: Record<string, ToolName[] | undefined> = {
     AVAILABLE_TOOLS.Glob,
     AVAILABLE_TOOLS.Grep,
     AVAILABLE_TOOLS.wreckit_complete,
+  ],
+
+  // Strategy phase: Read + Write for codebase analysis and ROADMAP.md creation
+  // Write is allowed but enforced to ROADMAP.md only via git status check in command
+  strategy: [
+    AVAILABLE_TOOLS.Read,
+    AVAILABLE_TOOLS.Write,
+    AVAILABLE_TOOLS.Glob,
+    AVAILABLE_TOOLS.Grep,
   ],
 } as const;
 

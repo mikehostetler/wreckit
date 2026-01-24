@@ -1,0 +1,83 @@
+[2025-01-24] Implementation Complete
+
+## Summary
+Implemented the 'wreckit strategy' command (Strategy Layer) to prevent Feature Factory anti-patterns.
+
+## Completed User Stories
+
+### US-001: Create roadmap domain module (Priority 1) - DONE
+- Created src/domain/roadmap.ts with:
+  - Types: Roadmap, RoadmapMilestone, RoadmapObjective
+  - parseRoadmap(content) - parses ROADMAP.md into structured data
+  - serializeRoadmap(roadmap) - converts structure back to markdown
+  - validateRoadmap(content) - validates format and returns errors
+  - extractPendingObjectives(roadmap) - extracts unchecked objectives from active milestones
+  - extractAllObjectives(roadmap) - extracts all objectives including completed
+
+### US-002: Create strategy prompt template (Priority 1) - DONE
+- Created src/prompts/strategy.md with:
+  - Instructions to analyze src/, specs/, benchmark_results.md
+  - ROADMAP.md output format specification
+  - Strategic thinking emphasis
+
+### US-003: Add strategy phase to tool allowlist (Priority 1) - DONE
+- Added 'strategy' key to PHASE_TOOL_ALLOWLISTS in src/agent/toolAllowlist.ts
+- Allowed tools: Read, Write, Glob, Grep
+- Blocked: Edit, Bash
+
+### US-004: Extend PromptName type and add path helper (Priority 1) - DONE
+- Added 'strategy' to PromptName type in src/prompts.ts
+- Added getRoadmapPath(root) function in src/fs/paths.ts
+
+### US-005: Implement wreckit strategy command (Priority 2) - DONE
+- Created src/commands/strategy.ts with strategyCommand function
+- Registered 'wreckit strategy' in src/index.ts
+- Implemented --force flag, --analyze-dirs flag, --dry-run support
+- Agent runs with strategy tool allowlist
+- Git status check to enforce only ROADMAP.md is modified
+- ROADMAP.md format validation
+
+### US-006: Implement wreckit execute-roadmap command (Priority 2) - DONE
+- Created src/commands/execute-roadmap.ts with executeRoadmapCommand function
+- Registered 'wreckit execute-roadmap' in src/index.ts
+- Reads and parses ROADMAP.md
+- Extracts pending objectives from active milestones
+- Converts to ParsedIdea format and creates items via persistItems()
+- --include-done flag to include completed objectives
+- Idempotent (skips existing items with matching slugs)
+
+### US-007: Export new commands from commands index (Priority 2) - DONE
+- Updated src/commands/index.ts to export:
+  - strategyCommand, StrategyOptions
+  - executeRoadmapCommand, ExecuteRoadmapOptions
+
+### US-008: Add unit tests for roadmap domain module (Priority 3) - DONE
+- Created src/__tests__/domain/roadmap.test.ts with 20 tests
+- All tests pass
+
+### US-009: Add unit tests for strategy command (Priority 3) - DONE
+- Created src/__tests__/commands/strategy.test.ts with 3 tests
+- Tests dry-run mode, skip when exists, and analyze-dirs option
+
+### US-010: Add unit tests for execute-roadmap command (Priority 3) - DONE
+- Created src/__tests__/commands/execute-roadmap.test.ts with 7 tests
+- Tests item creation, dry-run, include-done, idempotency, error handling
+
+## Key Learnings
+
+1. The existing codebase has well-established patterns for:
+   - CLI commands (Commander.js with executeCommand wrapper)
+   - Tool allowlists per phase
+   - Prompt templates with variable substitution
+   - Git status comparison for enforcing file modification constraints
+
+2. ROADMAP.md format was designed to be both human-readable and machine-parseable:
+   - Section headers (## Active Milestones, ## Backlog, ## Completed)
+   - Milestone format: ### [M1] Title with **Status:**, **Target:**, **Strategic Goal:**
+   - Checkbox objectives: - [ ] and - [x]
+
+3. The hierarchical control loop (Strategy -> Plan -> Implement) is now established:
+   - 'wreckit strategy' produces ROADMAP.md
+   - 'wreckit execute-roadmap' creates Items from milestones
+   - Items follow normal workflow: research -> plan -> implement -> PR
+[2026-01-24T07:17:40.274Z] Completed iteration 1 for story US-001
