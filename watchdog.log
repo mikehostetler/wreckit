@@ -6339,3 +6339,30 @@ Running next item...
 [34mDEBUG[39m: [36mRunning: git rev-parse --abbrev-ref HEAD[39m
 [34mDEBUG[39m: [36mRunning: git status --porcelain[39m
 [34mDEBUG[39m: [36mRunning: git add -A[39m
+[34mDEBUG[39m: [36mRunning: git commit -m feat(020-add-distinct-error-types-for-different-failure-mod): implement Add distinct error types for different failure modes across all phases[39m
+[34mDEBUG[39m: [36mRunning: git symbolic-ref --quiet HEAD[39m
+[34mDEBUG[39m: [36mRunning: git status --porcelain[39m
+[31mERROR[39m: [36mPhase pr failed for 020-add-distinct-error-types-for-different-failure-mod: Git pre-flight check failed:
+
+• There are uncommitted changes in the working directory
+    Run `git stash` to temporarily save changes
+    Or run `git commit -am "message"` to commit changes
+    Or run `git checkout -- .` to discard changes (destructive)[39m
+[31mERROR[39m: [36mFailed 020-add-distinct-error-types-for-different-failure-mod: Git pre-flight check failed:
+
+• There are uncommitted changes in the working directory
+    Run `git stash` to temporarily save changes
+    Or run `git commit -am "message"` to commit changes
+    Or run `git checkout -- .` to discard changes (destructive)[39m
+[31mERROR[39m: [36mFailed: 020-add-distinct-error-types-for-different-failure-mod[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+Running next item...
+[32mINFO[39m: [36mRunning: 020-add-distinct-error-types-for-different-failure-mod[39m
+[32mINFO[39m: [36mRunning pr phase on 020-add-distinct-error-types-for-different-failure-mod[39m
+[34mDEBUG[39m: [36mRunning: git show-ref --verify --quiet refs/heads/wreckit/020-add-distinct-error-types-for-different-failure-mod[39m
+[32mINFO[39m: [36mBranch wreckit/020-add-distinct-error-types-for-different-failure-mod exists, switching to it[39m
+[34mDEBUG[39m: [36mRunning: git checkout wreckit/020-add-distinct-error-types-for-different-failure-mod[39m
+[34mDEBUG[39m: [36mRunning: git rev-parse --abbrev-ref HEAD[39m
+[34mDEBUG[39m: [36mRunning: git status --porcelain[39m
+[34mDEBUG[39m: [36mRunning: git add -A[39m
