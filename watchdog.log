@@ -5996,3 +5996,45 @@ Running next item...
 [34mDEBUG[39m: [36mRunning: git rev-parse --abbrev-ref HEAD[39m
 [34mDEBUG[39m: [36mRunning: git status --porcelain[39m
 [34mDEBUG[39m: [36mRunning: git add -A[39m
+[34mDEBUG[39m: [36mRunning: git commit -m feat(028-implement-tool-allowlist-enforcement-in-srcagentop): implement Implement tool allowlist enforcement in `src/agent/opencode-sdk-runner.ts`[39m
+[34mDEBUG[39m: [36mRunning: git symbolic-ref --quiet HEAD[39m
+[34mDEBUG[39m: [36mRunning: git status --porcelain[39m
+[31mERROR[39m: [36mPhase pr failed for 028-implement-tool-allowlist-enforcement-in-srcagentop: Git pre-flight check failed:
+
+• There are uncommitted changes in the working directory
+    Run `git stash` to temporarily save changes
+    Or run `git commit -am "message"` to commit changes
+    Or run `git checkout -- .` to discard changes (destructive)[39m
+[31mERROR[39m: [36mFailed 028-implement-tool-allowlist-enforcement-in-srcagentop: Git pre-flight check failed:
+
+• There are uncommitted changes in the working directory
+    Run `git stash` to temporarily save changes
+    Or run `git commit -am "message"` to commit changes
+    Or run `git checkout -- .` to discard changes (destructive)[39m
+[31mERROR[39m: [36mFailed: 028-implement-tool-allowlist-enforcement-in-srcagentop[39m
+❌ Crashed with code 1. Restarting in 5s...
+Now I have a complete picture. The implementation is **already complete**:
+
+1. **`src/agent/opencode-sdk-runner.ts`** - Fully implemented (372 lines) with:
+   - All imports
+   - `getEffectiveToolAllowlist()` function
+   - Complete `runOpenCodeSdkAgent()` with SDK integration
+   - `handleSdkError()`, `formatSdkMessage()`, `emitAgentEventsFromSdkMessage()` helper functions
+
+2. **`src/__tests__/opencode-sdk-runner.test.ts`** - Fully implemented (128 lines) with:
+   - Dry-run mode tests
+   - `getEffectiveToolAllowlist` resolution tests
+
+3. **ROADMAP.md line 24** - Already marked as complete `[x]`
+
+This item is **already done**. The research summary was based on an earlier state of the codebase. The implementation has since been completed.
+
+Let me verify the implementation is working by examining the current state more carefully to make sure there are no gaps:Running next item...
+[32mINFO[39m: [36mRunning: 028-implement-tool-allowlist-enforcement-in-srcagentop[39m
+[32mINFO[39m: [36mRunning pr phase on 028-implement-tool-allowlist-enforcement-in-srcagentop[39m
+[34mDEBUG[39m: [36mRunning: git show-ref --verify --quiet refs/heads/wreckit/028-implement-tool-allowlist-enforcement-in-srcagentop[39m
+[32mINFO[39m: [36mBranch wreckit/028-implement-tool-allowlist-enforcement-in-srcagentop exists, switching to it[39m
+[34mDEBUG[39m: [36mRunning: git checkout wreckit/028-implement-tool-allowlist-enforcement-in-srcagentop[39m
+[34mDEBUG[39m: [36mRunning: git rev-parse --abbrev-ref HEAD[39m
+[34mDEBUG[39m: [36mRunning: git status --porcelain[39m
+[34mDEBUG[39m: [36mRunning: git add -A[39m
