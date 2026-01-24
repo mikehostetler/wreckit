@@ -8,6 +8,7 @@ import {
   getWreckitDir,
   getConfigPath,
   getIndexPath,
+  getBatchProgressPath,
   getPromptsDir,
   getItemsDir,
   getItemDir,
@@ -26,6 +27,9 @@ import {
   writePrd,
   readIndex,
   writeIndex,
+  readBatchProgress,
+  writeBatchProgress,
+  clearBatchProgress,
 } from "../fs";
 import {
   RepoNotFoundError,
@@ -33,7 +37,7 @@ import {
   SchemaValidationError,
   FileNotFoundError,
 } from "../errors";
-import type { Item, Prd, Index, Config } from "../schemas";
+import type { Item, Prd, Index, Config, BatchProgress } from "../schemas";
 
 describe("Path utilities", () => {
   let tempDir: string;
@@ -94,6 +98,10 @@ describe("Path utilities", () => {
 
     it("getIndexPath returns correct path", () => {
       expect(getIndexPath(root)).toBe("/test/repo/.wreckit/index.json");
+    });
+
+    it("getBatchProgressPath returns correct path", () => {
+      expect(getBatchProgressPath(root)).toBe("/test/repo/.wreckit/batch-progress.json");
     });
 
     it("getPromptsDir returns correct path", () => {
@@ -386,6 +394,76 @@ describe("Typed wrapper tests", () => {
       );
 
       await expect(readIndex(tempDir)).rejects.toThrow(SchemaValidationError);
+    });
+  });
+
+  describe("readBatchProgress / writeBatchProgress / clearBatchProgress", () => {
+    const validProgress: BatchProgress = {
+      schema_version: 1,
+      session_id: "test-session-123",
+      pid: 12345,
+      started_at: "2025-01-12T00:00:00Z",
+      updated_at: "2025-01-12T00:00:00Z",
+      parallel: 1,
+      queued_items: ["001-test", "002-test"],
+      current_item: null,
+      completed: [],
+      failed: [],
+      skipped: [],
+    };
+
+    it("returns null when progress file does not exist", async () => {
+      const result = await readBatchProgress(tempDir);
+      expect(result).toBeNull();
+    });
+
+    it("writes and reads valid progress round-trip", async () => {
+      await writeBatchProgress(tempDir, validProgress);
+      const result = await readBatchProgress(tempDir);
+
+      expect(result).toEqual(validProgress);
+    });
+
+    it("clearBatchProgress removes progress file", async () => {
+      await writeBatchProgress(tempDir, validProgress);
+
+      // Verify file exists
+      const beforeClear = await readBatchProgress(tempDir);
+      expect(beforeClear).not.toBeNull();
+
+      await clearBatchProgress(tempDir);
+
+      // Verify file is gone
+      const afterClear = await readBatchProgress(tempDir);
+      expect(afterClear).toBeNull();
+    });
+
+    it("clearBatchProgress does not throw when file does not exist", async () => {
+      // Should not throw - just verify it resolves successfully
+      await clearBatchProgress(tempDir);
+      // If we get here without exception, test passes
+    });
+
+    it("returns null for invalid JSON (graceful degradation)", async () => {
+      await fs.writeFile(
+        path.join(tempDir, ".wreckit", "batch-progress.json"),
+        "{ invalid json }"
+      );
+
+      // Should return null instead of throwing
+      const result = await readBatchProgress(tempDir);
+      expect(result).toBeNull();
+    });
+
+    it("returns null for invalid schema (graceful degradation)", async () => {
+      await fs.writeFile(
+        path.join(tempDir, ".wreckit", "batch-progress.json"),
+        JSON.stringify({ invalid: "schema" })
+      );
+
+      // Should return null instead of throwing
+      const result = await readBatchProgress(tempDir);
+      expect(result).toBeNull();
     });
   });
 });

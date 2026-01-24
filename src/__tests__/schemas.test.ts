@@ -8,6 +8,7 @@ import {
   PrdSchema,
   IndexItemSchema,
   IndexSchema,
+  BatchProgressSchema,
 } from "../schemas";
 
 describe("WorkflowStateSchema", () => {
@@ -394,5 +395,109 @@ describe("IndexSchema", () => {
       generated_at: "2025-01-12T00:00:00Z",
     };
     expect(() => IndexSchema.parse(index)).toThrow();
+  });
+});
+
+describe("BatchProgressSchema", () => {
+  it("parses valid batch progress", () => {
+    const progress = {
+      schema_version: 1,
+      session_id: "abc-123",
+      pid: 12345,
+      started_at: "2025-01-12T00:00:00Z",
+      updated_at: "2025-01-12T00:00:00Z",
+      parallel: 1,
+      queued_items: ["001-test", "002-test"],
+      current_item: "001-test",
+      completed: [],
+      failed: [],
+      skipped: [],
+    };
+    const result = BatchProgressSchema.parse(progress);
+    expect(result).toEqual(progress);
+  });
+
+  it("accepts null for current_item", () => {
+    const progress = {
+      schema_version: 1,
+      session_id: "abc-123",
+      pid: 12345,
+      started_at: "2025-01-12T00:00:00Z",
+      updated_at: "2025-01-12T00:00:00Z",
+      parallel: 1,
+      queued_items: [],
+      current_item: null,
+      completed: ["001-done"],
+      failed: [],
+      skipped: ["002-skip"],
+    };
+    const result = BatchProgressSchema.parse(progress);
+    expect(result.current_item).toBeNull();
+    expect(result.completed).toEqual(["001-done"]);
+    expect(result.skipped).toEqual(["002-skip"]);
+  });
+
+  it("rejects missing session_id", () => {
+    const progress = {
+      schema_version: 1,
+      pid: 12345,
+      started_at: "2025-01-12T00:00:00Z",
+      updated_at: "2025-01-12T00:00:00Z",
+      parallel: 1,
+      queued_items: [],
+      current_item: null,
+      completed: [],
+      failed: [],
+      skipped: [],
+    };
+    expect(() => BatchProgressSchema.parse(progress)).toThrow();
+  });
+
+  it("rejects wrong schema_version", () => {
+    const progress = {
+      schema_version: 2,
+      session_id: "abc-123",
+      pid: 12345,
+      started_at: "2025-01-12T00:00:00Z",
+      updated_at: "2025-01-12T00:00:00Z",
+      parallel: 1,
+      queued_items: [],
+      current_item: null,
+      completed: [],
+      failed: [],
+      skipped: [],
+    };
+    expect(() => BatchProgressSchema.parse(progress)).toThrow();
+  });
+
+  it("rejects missing pid", () => {
+    const progress = {
+      schema_version: 1,
+      session_id: "abc-123",
+      started_at: "2025-01-12T00:00:00Z",
+      updated_at: "2025-01-12T00:00:00Z",
+      parallel: 1,
+      queued_items: [],
+      current_item: null,
+      completed: [],
+      failed: [],
+      skipped: [],
+    };
+    expect(() => BatchProgressSchema.parse(progress)).toThrow();
+  });
+
+  it("rejects missing arrays", () => {
+    const progress = {
+      schema_version: 1,
+      session_id: "abc-123",
+      pid: 12345,
+      started_at: "2025-01-12T00:00:00Z",
+      updated_at: "2025-01-12T00:00:00Z",
+      parallel: 1,
+      queued_items: [],
+      current_item: null,
+      // missing completed, failed, skipped
+    };
+    expect(() => BatchProgressSchema.parse(progress)).toThrow();
   });
 });

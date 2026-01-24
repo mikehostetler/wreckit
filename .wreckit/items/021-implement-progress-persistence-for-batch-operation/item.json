@@ -3,13 +3,13 @@
   "id": "021-implement-progress-persistence-for-batch-operation",
   "title": "Implement progress persistence for batch operations (spec 009 Gap 2)",
   "section": "roadmap",
-  "state": "idea",
+  "state": "implementing",
   "overview": "From milestone [M3] Robust Error Handling and Recovery\n\n**Motivation:** Strategic milestone: Robust Error Handling and Recovery",
   "branch": null,
   "pr_url": null,
   "pr_number": null,
-  "last_error": null,
+  "last_error": "Research phase detected unauthorized file modifications:\n\n  Modified M .wreckit/items/021-implement-progress-persistence-for-batch-operation/item.json\n  Modified M src/__tests__/fs.test.ts\n  Modified M src/__tests__/schemas.test.ts\n  Modified M src/doctor.ts\n  Modified M src/fs/index.ts\n  Modified M watchdog.log\n\nThe research phase must be read-only. Only research.md may be created.\nAny code changes should be made during the implementation phase.",
   "created_at": "2026-01-24T07:23:01.571Z",
-  "updated_at": "2026-01-24T07:23:01.571Z",
+  "updated_at": "2026-01-24T19:27:43.797Z",
   "motivation": "Strategic milestone: Robust Error Handling and Recovery"
 }

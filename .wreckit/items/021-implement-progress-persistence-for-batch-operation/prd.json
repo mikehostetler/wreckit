@@ -1,0 +1,120 @@
+{
+  "schema_version": 1,
+  "id": "021-implement-progress-persistence-for-batch-operation",
+  "branch_name": "wreckit/021-implement-progress-persistence-for-batch-operation",
+  "user_stories": [
+    {
+      "id": "US-001",
+      "title": "Add BatchProgress schema and path helper",
+      "acceptance_criteria": [
+        "BatchProgressSchema is defined in src/schemas.ts with fields: schema_version (literal 1), session_id, pid, started_at, updated_at, parallel, queued_items, current_item (nullable), completed, failed, skipped (all string arrays)",
+        "BatchProgress TypeScript type is exported from src/schemas.ts using z.infer pattern",
+        "getBatchProgressPath(root) function exists in src/fs/paths.ts and returns '.wreckit/batch-progress.json' relative to root",
+        "Type checking passes: bun run build (includes tsc)",
+        "Schema can be imported and used: import { BatchProgressSchema, type BatchProgress } from '../schemas'"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "ALREADY IMPLEMENTED: BatchProgressSchema exists in src/schemas.ts:163-179, getBatchProgressPath in src/fs/paths.ts:56-58"
+    },
+    {
+      "id": "US-002",
+      "title": "Add batch progress read/write/clear functions",
+      "acceptance_criteria": [
+        "readBatchProgress(root) function exists in src/fs/json.ts returning Promise<BatchProgress | null>",
+        "readBatchProgress returns null when file doesn't exist (FileNotFoundError)",
+        "readBatchProgress returns null for invalid JSON or schema validation failure (graceful degradation)",
+        "writeBatchProgress(root, progress) writes atomically using writeJsonPretty with useLock: true",
+        "clearBatchProgress(root) removes batch-progress.json and its .lock file",
+        "clearBatchProgress does not throw ENOENT when files don't exist",
+        "All functions use getBatchProgressPath for consistency"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "ALREADY IMPLEMENTED: Functions exist in src/fs/json.ts:122-162"
+    },
+    {
+      "id": "US-003",
+      "title": "Integrate progress persistence into orchestrateAll (sequential mode)",
+      "acceptance_criteria": [
+        "OrchestratorOptions interface extended with noResume?: boolean and retryFailed?: boolean",
+        "createBatchProgress helper creates new progress with randomUUID session_id and process.pid",
+        "isProgressStale helper returns true if updated_at > 24 hours or owning PID not running",
+        "Progress file created at batch start before processing begins (unless dryRun)",
+        "current_item set to item.id when each item starts, cleared when done",
+        "completed array updated after successful item, failed array updated after failed item",
+        "Progress file written after each state change using writeBatchProgress",
+        "Progress file deleted via clearBatchProgress on clean completion (remaining.length === 0)",
+        "Resume: existing valid progress merges completed/failed into result, skips completed items",
+        "Stale progress is logged, cleared, and fresh session started",
+        "Dry-run mode never creates or modifies progress file"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "ALREADY IMPLEMENTED: Orchestrator integration in src/commands/orchestrator.ts:103-384. Includes createBatchProgress (lines 22-41), isProgressStale (lines 46-59), OrchestratorOptions (lines 83-86), resume logic (lines 127-191), checkpointing (lines 278-344)"
+    },
+    {
+      "id": "US-004",
+      "title": "Add --no-resume and --retry-failed CLI flags",
+      "acceptance_criteria": [
+        ".option('--no-resume', 'Start fresh batch run, ignoring saved progress') added to program in src/index.ts",
+        ".option('--retry-failed', 'Include previously failed items when resuming') added to program",
+        "Both options visible in wreckit --help output",
+        "opts.noResume and opts.retryFailed passed to orchestrateAll call (around line 69)",
+        "--no-resume causes existing progress to be ignored unconditionally",
+        "--retry-failed causes failed items from progress to be added back to workingNonDoneItems"
+      ],
+      "priority": 1,
+      "status": "pending",
+      "notes": "Phase 1: Add options after line 43 (after --parallel). Update orchestrateAll call to pass noResume: opts.noResume, retryFailed: opts.retryFailed."
+    },
+    {
+      "id": "US-005",
+      "title": "Add doctor diagnostics for stale/corrupt batch progress",
+      "acceptance_criteria": [
+        "diagnoseBatchProgress function added to src/doctor.ts returning Diagnostic[]",
+        "Detects STALE_BATCH_PROGRESS when PID not running or updated_at > 24 hours",
+        "Detects BATCH_PROGRESS_CORRUPT for invalid JSON or schema validation failure",
+        "Both diagnostics have severity: 'warning' and fixable: true",
+        "diagnoseBatchProgress called in diagnose() function",
+        "applyFixes handles STALE_BATCH_PROGRESS and BATCH_PROGRESS_CORRUPT via clearBatchProgress",
+        "wreckit doctor shows stale/corrupt progress when present",
+        "wreckit doctor --fix removes stale/corrupt progress files"
+      ],
+      "priority": 2,
+      "status": "pending",
+      "notes": "Phase 2: Follow diagnoseIndex pattern (lines 376-445) for diagnostic. Add case in applyFixes switch for STALE_BATCH_PROGRESS and BATCH_PROGRESS_CORRUPT."
+    },
+    {
+      "id": "US-006",
+      "title": "Add unit tests for batch progress schema and I/O",
+      "acceptance_criteria": [
+        "Test in src/__tests__/schemas.test.ts: BatchProgressSchema.parse accepts valid progress object",
+        "Test: BatchProgressSchema.parse throws for missing session_id",
+        "Test: BatchProgressSchema.parse throws for wrong schema_version (e.g., 2)",
+        "Test: readBatchProgress returns null for missing file",
+        "Test: writeBatchProgress then readBatchProgress round-trips correctly",
+        "Test: clearBatchProgress removes file, subsequent readBatchProgress returns null",
+        "Test: clearBatchProgress does not throw when file doesn't exist",
+        "All new tests pass: bun test"
+      ],
+      "priority": 2,
+      "status": "pending",
+      "notes": "Phase 3: Unit tests. Add BatchProgressSchema tests to schemas.test.ts. Add batch progress I/O tests to new file src/__tests__/batchProgress.test.ts."
+    },
+    {
+      "id": "US-007",
+      "title": "Add doctor tests for batch progress diagnostics",
+      "acceptance_criteria": [
+        "Test: STALE_BATCH_PROGRESS detected when progress file has non-running PID",
+        "Test: BATCH_PROGRESS_CORRUPT detected for invalid JSON in progress file",
+        "Test: wreckit doctor --fix removes stale batch progress file",
+        "Test: wreckit doctor --fix removes corrupt batch progress file",
+        "All doctor tests pass: bun test src/__tests__/doctor.test.ts"
+      ],
+      "priority": 3,
+      "status": "pending",
+      "notes": "Phase 3: Add doctor tests for batch progress diagnostics following existing test patterns in doctor.test.ts."
+    }
+  ]
+}
