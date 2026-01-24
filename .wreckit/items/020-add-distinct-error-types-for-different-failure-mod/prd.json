@@ -112,7 +112,7 @@
         "Tests verify each error class has correct code, name, and properties",
         "Tests verify all new errors work with isWreckitError()",
         "Tests verify all new errors return exit code 1 from toExitCode()",
-        "All tests pass with bun test"
+        "All tests pass with npm test"
       ],
       "priority": 2,
       "status": "done",
