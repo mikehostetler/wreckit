@@ -49,6 +49,19 @@ Compile your research with:
 
 Create a file at: `{{item_path}}/research.md`
 
+**CRITICAL:** You MUST use the EXACT section headers below. Do not paraphrase or omit them. The system validates these headers strictly.
+
+Required Headers:
+1. `# Research: {{title}}` (Top-level header)
+2. `## Research Question`
+3. `## Summary`
+4. `## Current State Analysis`
+5. `## Key Files`
+6. `## Technical Considerations`
+7. `## Risks and Mitigations`
+8. `## Recommended Approach`
+9. `## Open Questions`
+
 Use this structure:
 
 ```markdown
@@ -70,7 +83,7 @@ Use this structure:
 - [Current patterns and conventions]
 - [Integration points]
 
-### Key Files
+## Key Files
 - `path/to/file.ext:123` - Description of what's there
 - `another/file.ts:45-67` - Description of the code block
 
