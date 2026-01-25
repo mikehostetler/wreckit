@@ -4,7 +4,8 @@
     "plan": ["documentation-writer"],
     "implement": ["full-capability"],
     "pr": ["git-integration"],
-    "complete": ["verification"]
+    "complete": ["verification"],
+    "media": ["manim-generation", "remotion-generation"]
   },
   "skills": [
     {
@@ -90,6 +91,37 @@
           "description": "Final git state verification"
         }
       ]
+    },
+    {
+      "id": "manim-generation",
+      "name": "Manim Animation Generation",
+      "description": "Generate mathematical animations using Manim engine (Python-based). Requires: Python 3.8+, FFmpeg, LaTeX. CLI: manim render scene.py SceneName -pqh. Output: MP4 files in media/videos/",
+      "tools": ["Bash", "Write", "Read", "Glob"],
+      "required_context": [
+        {
+          "type": "git_status",
+          "description": "Check for existing Manim project files"
+        }
+      ],
+      "mcp_servers": {}
+    },
+    {
+      "id": "remotion-generation",
+      "name": "Remotion Video Generation",
+      "description": "Generate React-based videos using Remotion framework. Requires: Node.js 16+, FFmpeg. CLI: npx remotion render HelloWorld out/video.mp4. Output: MP4 files.",
+      "tools": ["Bash", "Write", "Read", "Glob"],
+      "required_context": [
+        {
+          "type": "file",
+          "path": "package.json",
+          "description": "Check for Remotion in dependencies"
+        },
+        {
+          "type": "git_status",
+          "description": "Check for existing Remotion project structure"
+        }
+      ],
+      "mcp_servers": {}
     }
   ]
 }

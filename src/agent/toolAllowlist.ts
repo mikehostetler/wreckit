@@ -122,6 +122,15 @@ export const PHASE_TOOL_ALLOWLISTS: Record<string, ToolName[] | undefined> = {
     AVAILABLE_TOOLS.Glob,
     AVAILABLE_TOOLS.Grep,
   ],
+
+  // Media phase: Bash for CLI tools, Write for scripts, Read for source, Glob/Grep for exploration
+  media: [
+    AVAILABLE_TOOLS.Read,
+    AVAILABLE_TOOLS.Write,
+    AVAILABLE_TOOLS.Glob,
+    AVAILABLE_TOOLS.Grep,
+    AVAILABLE_TOOLS.Bash,
+  ],
 } as const;
 
 /**

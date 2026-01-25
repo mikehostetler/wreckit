@@ -15,13 +15,30 @@ interface CritiqueResult {
 
 function parseCritiqueJson(output: string): CritiqueResult | null {
   try {
-    // Find JSON object in the output
-    const jsonMatch = output.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) return null;
-    
-    const parsed = JSON.parse(jsonMatch[0]);
-    if (parsed.status === "approved" || parsed.status === "rejected") {
-      return parsed as CritiqueResult;
+    // Strategy 1: Look for JSON markdown block
+    const codeBlockMatch = output.match(/```json\s*([\s\S]*?)\s*```/);
+    if (codeBlockMatch) {
+      try {
+        const parsed = JSON.parse(codeBlockMatch[1]);
+        if (parsed.status === "approved" || parsed.status === "rejected") {
+          return parsed as CritiqueResult;
+        }
+      } catch {}
+    }
+
+    // Strategy 2: Find the last valid JSON object in the output (in case of multiple or trailing text)
+    const matches = output.match(/\{[\s\S]*?\}/g);
+    if (matches) {
+      for (let i = matches.length - 1; i >= 0; i--) {
+        try {
+          const parsed = JSON.parse(matches[i]);
+          if (parsed.status === "approved" || parsed.status === "rejected") {
+            return parsed as CritiqueResult;
+          }
+        } catch {
+          continue;
+        }
+      }
     }
     return null;
   } catch {
@@ -44,8 +61,13 @@ export async function runPhaseCritique(
   } = options;
 
   let item = await readItem(getItemDir(root, itemId));
+  const itemDir = getItemDir(root, item.id);
   
   if (item.state !== "implementing" && item.state !== "critique") {
+    // If we are in 'planned', it means we regressed. Allow it to fail gracefully so runCommand can pick up 'implement' next.
+    if (item.state === "planned") {
+       return { success: true, item };
+    }
     return {
       success: false,
       item,
@@ -58,7 +80,6 @@ export async function runPhaseCritique(
     return { success: true, item };
   }
 
-  const itemDir = getItemDir(root, item.id);
   const template = await loadPromptTemplate(root, "critique");
   
   // Load context for variables
@@ -106,11 +127,16 @@ export async function runPhaseCritique(
     return { success: true, item };
   }
 
+  // TECHNICAL FAILURE HANDLING (Self-Healing)
   if (!result.success) {
-    const error = "Critic agent failed to run";
-    item = { ...item, last_error: error };
+    const error = result.timedOut ? "Critic timed out (complexity too high)" : `Critic failed: ${result.output.slice(0, 100)}...`;
+    logger.warn(`Critique technical failure: ${error}. Regressing to 'planned' for simplification.`);
+    
+    // Regress to planned to force re-implementation/simplification
+    item = { ...item, state: "planned", last_error: error };
     await writeItem(itemDir, item);
-    return { success: false, item, error };
+    // Return SUCCESS so the loop continues to 'implement' phase instead of crashing
+    return { success: true, item };
   }
 
   const critique = parseCritiqueJson(result.output);
@@ -118,9 +144,10 @@ export async function runPhaseCritique(
   if (!critique) {
     const error = "Critic failed to output valid JSON decision";
     logger.error(error);
-    item = { ...item, last_error: error };
+    // Regress to planned on parsing failure too
+    item = { ...item, state: "planned", last_error: error };
     await writeItem(itemDir, item);
-    return { success: false, item, error };
+    return { success: true, item };
   }
 
   // Log critique
@@ -139,7 +166,7 @@ export async function runPhaseCritique(
       last_error: `Critique Failed: ${critique.reason}` 
     };
     await writeItem(itemDir, item);
-    return { success: false, item, error: "Critique rejected implementation" };
+    return { success: true, item };
   }
 
   logger.info("Critic APPROVED implementation");
