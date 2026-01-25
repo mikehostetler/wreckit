@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Documentation for experimental SDK modes (`amp_sdk`, `codex_sdk`, `opencode_sdk`)
+  - All experimental SDKs share authentication and environment variable resolution with `claude_sdk`
+  - See README.md "Experimental SDK Modes" section for configuration examples
+  - See MIGRATION.md "Experimental SDK Modes" section for detailed reference
+
 ### Removed
 - Removed duplicate `idea` CLI command. Use `wreckit ideas` instead.
   - The `idea` command was identical to `ideas` and caused confusion

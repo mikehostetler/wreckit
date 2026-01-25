@@ -162,30 +162,74 @@ Lives in `.wreckit/config.json`:
 
 ### Agent Options
 
-Wreckit supports two agent execution modes:
+Wreckit supports multiple agent execution backends:
 
-#### SDK Mode (Recommended)
-Uses the Claude Agent SDK directly for better performance and error handling:
+| Kind | Description | Configuration |
+|------|-------------|---------------|
+| `claude_sdk` | Claude Agent SDK (recommended) | model, max_tokens, tools |
+| `amp_sdk` | Amp SDK (experimental) | model (optional) |
+| `codex_sdk` | Codex SDK (experimental) | model (default: codex-1) |
+| `opencode_sdk` | OpenCode SDK (experimental) | none |
+| `process` | External CLI process | command, args, completion_signal |
+
+#### Claude SDK Mode (Recommended)
+
+Uses the Claude Agent SDK directly for best performance and error handling:
 
 ```json
 {
   "agent": {
-    "mode": "sdk",
-    "sdk_model": "claude-sonnet-4-20250514",
-    "sdk_max_tokens": 8192,
-    "sdk_tools": ["Read", "Edit", "Bash", "Glob", "Grep"]
+    "kind": "claude_sdk",
+    "model": "claude-sonnet-4-20250514",
+    "max_tokens": 8192
   }
 }
 ```
 
-#### Process Mode (Default)
-Spawns an external Claude Code process (backward compatible):
+#### Experimental SDK Modes
 
-**Amp:**
+Wreckit also supports experimental SDK integrations. These use the same underlying SDK infrastructure and share authentication/environment variable resolution with `claude_sdk`.
+
+> **Note:** Experimental SDKs may have API changes in future releases.
+
+**Amp SDK:**
 ```json
 {
   "agent": {
-    "mode": "process",
+    "kind": "amp_sdk",
+    "model": "custom-model"
+  }
+}
+```
+
+**Codex SDK:**
+```json
+{
+  "agent": {
+    "kind": "codex_sdk",
+    "model": "codex-1"
+  }
+}
+```
+
+**OpenCode SDK:**
+```json
+{
+  "agent": {
+    "kind": "opencode_sdk"
+  }
+}
+```
+
+#### Process Mode
+
+Spawns an external CLI process (for backward compatibility or custom agents):
+
+**Amp CLI:**
+```json
+{
+  "agent": {
+    "kind": "process",
     "command": "amp",
     "args": ["--dangerously-allow-all"],
     "completion_signal": "<promise>COMPLETE</promise>"
@@ -193,11 +237,11 @@ Spawns an external Claude Code process (backward compatible):
 }
 ```
 
-**Claude:**
+**Claude CLI:**
 ```json
 {
   "agent": {
-    "mode": "process",
+    "kind": "process",
     "command": "claude",
     "args": ["--dangerously-skip-permissions", "--print"],
     "completion_signal": "<promise>COMPLETE</promise>"
@@ -205,7 +249,7 @@ Spawns an external Claude Code process (backward compatible):
 }
 ```
 
-See [MIGRATION.md](./MIGRATION.md) for detailed migration guide.
+See [MIGRATION.md](./MIGRATION.md) for detailed configuration and environment variable documentation.
 
 ---
 
