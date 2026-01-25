@@ -3,14 +3,14 @@
   "id": "034-create-wreckit-learn-command-to-compile-codebase-p",
   "title": "Create `wreckit learn` command to compile codebase patterns into reusable Skill artifacts",
   "section": "roadmap",
-  "state": "idea",
+  "state": "implementing",
   "overview": "From milestone [M4] Recursive Evolution & Skill-Based Media Layer\n\n**Motivation:** Strategic milestone: Recursive Evolution & Skill-Based Media Layer",
   "branch": null,
   "pr_url": null,
   "pr_number": null,
-  "last_error": null,
+  "last_error": "Research phase detected unauthorized file modifications:\n\n  Untracked .wreckit/items/034-create-wreckit-learn-command-to-compile-codebase-p/plan.md\n  Untracked .wreckit/items/034-create-wreckit-learn-command-to-compile-codebase-p/prd.json\n\nThe research phase must be read-only. Only research.md may be created.\nAny code changes should be made during the implementation phase.",
   "created_at": "2026-01-25T01:01:23.621Z",
-  "updated_at": "2026-01-25T01:01:23.621Z",
+  "updated_at": "2026-01-25T05:19:46.169Z",
   "motivation": "Strategic milestone: Recursive Evolution & Skill-Based Media Layer",
   "depends_on": [
     "033-implement-phase-specific-skill-loading-jit-context"

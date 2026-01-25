@@ -15,6 +15,8 @@ export {
   getPlanPath,
   getProgressLogPath,
   getPromptPath,
+  getRoadmapPath,
+  getSkillsPath,
 } from "./paths";
 
 export {

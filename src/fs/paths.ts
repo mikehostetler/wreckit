@@ -97,6 +97,10 @@ export function getRoadmapPath(root: string): string {
   return path.join(root, "ROADMAP.md");
 }
 
+export function getSkillsPath(root: string): string {
+  return path.join(getWreckitDir(root), "skills.json");
+}
+
 export function getBackupsDir(root: string): string {
   return path.join(getWreckitDir(root), "backups");
 }
