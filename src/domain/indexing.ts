@@ -8,7 +8,12 @@ import {
   readItem,
   writeIndex,
 } from "../fs";
-import { dirExists } from "../fs/util";
+import { dirExists, checkPathAccess } from "../fs/util";
+import {
+  FileNotFoundError,
+  InvalidJsonError,
+  SchemaValidationError,
+} from "../errors";
 
 const ITEM_DIR_PATTERN = /^(\d+)-(.+)$/;
 
@@ -98,8 +103,13 @@ export async function getItem(
 
   try {
     return await readItem(itemDir);
-  } catch {
-    return null;
+  } catch (err) {
+    // Expected "not found" conditions (Spec 002 Gap 3)
+    if (err instanceof FileNotFoundError) return null;
+    if (err instanceof InvalidJsonError) return null;
+    if (err instanceof SchemaValidationError) return null;
+    // Unexpected errors - re-throw
+    throw err;
   }
 }
 
@@ -107,10 +117,11 @@ export async function itemExists(root: string, id: string): Promise<boolean> {
   const itemDir = getItemDir(root, id);
   const itemJsonPath = path.join(itemDir, "item.json");
 
-  try {
-    await fs.access(itemJsonPath);
-    return true;
-  } catch {
-    return false;
+  // Use error-aware check (Spec 002 Gap 3)
+  const check = await checkPathAccess(itemJsonPath);
+  if (check.error) {
+    // Permission error - throw instead of returning false
+    throw check.error;
   }
+  return check.exists;
 }

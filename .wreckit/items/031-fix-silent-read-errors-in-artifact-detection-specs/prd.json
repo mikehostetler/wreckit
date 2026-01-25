@@ -1,0 +1,197 @@
+{
+  "schema_version": 1,
+  "id": "031-fix-silent-read-errors-in-artifact-detection-specs",
+  "branch_name": "wreckit/031-fix-silent-read-errors-in-artifact-detection-specs",
+  "user_stories": [
+    {
+      "id": "US-001",
+      "title": "Add ArtifactReadError class and error code",
+      "acceptance_criteria": [
+        "ARTIFACT_READ_ERROR code is added to ErrorCodes object in src/errors.ts",
+        "ArtifactReadError class extends WreckitError with filePath and cause properties",
+        "ArtifactReadError message includes the file path and underlying error message",
+        "bun run typecheck passes with no errors",
+        "bun run build succeeds"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Foundation for all other error handling changes. Located in src/errors.ts after FileNotFoundError class."
+    },
+    {
+      "id": "US-002",
+      "title": "Add tryReadFile and checkPathAccess utilities",
+      "acceptance_criteria": [
+        "tryReadFile function returns discriminated union: { status: 'ok', content } | { status: 'not_found' } | { status: 'error', error }",
+        "checkPathAccess function returns { exists: boolean, error?: ArtifactReadError }",
+        "Both functions correctly distinguish ENOENT from permission errors",
+        "Functions are exported from src/fs/util.ts and src/fs/index.ts",
+        "bun test src/__tests__/fs-util.test.ts passes with new test cases"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "These utilities will be used by doctor and workflow. Do not modify existing pathExists/dirExists to maintain backwards compatibility."
+    },
+    {
+      "id": "US-003",
+      "title": "Update doctor to report ARTIFACT_UNREADABLE diagnostic",
+      "acceptance_criteria": [
+        "diagnoseItem uses checkPathAccess for research.md, plan.md, prd.json checks",
+        "ARTIFACT_UNREADABLE diagnostic is reported when artifact exists but cannot be read",
+        "Diagnostic includes the specific file and error message",
+        "Diagnostic severity is 'error' and fixable is false",
+        "Existing artifact missing diagnostics still work correctly",
+        "bun test src/__tests__/doctor.test.ts passes"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "This addresses Spec 010 Gap 4. Doctor should continue checking other items when one has read errors."
+    },
+    {
+      "id": "US-004",
+      "title": "Update readFileIfExists to throw on permission errors",
+      "acceptance_criteria": [
+        "readFileIfExists returns undefined only for ENOENT errors",
+        "readFileIfExists throws for EACCES, EPERM, EIO and other non-ENOENT errors",
+        "Workflow research phase fails with clear error when research.md is unreadable",
+        "Workflow plan phase fails with clear error when plan.md is unreadable",
+        "bun test passes"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "This addresses Spec 002 Gap 3. Located in src/workflow/itemWorkflow.ts lines 91-97."
+    },
+    {
+      "id": "US-005",
+      "title": "Update loadPrdSafe to throw on permission errors",
+      "acceptance_criteria": [
+        "loadPrdSafe returns null only for FileNotFoundError, InvalidJsonError, SchemaValidationError",
+        "loadPrdSafe throws for permission and I/O errors",
+        "Import FileNotFoundError, InvalidJsonError, SchemaValidationError from errors module",
+        "Workflow implement phase fails with clear error when prd.json is unreadable",
+        "bun test passes"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Located in src/workflow/itemWorkflow.ts lines 99-105."
+    },
+    {
+      "id": "US-006",
+      "title": "Update buildValidationContext to handle read errors",
+      "acceptance_criteria": [
+        "buildValidationContext uses checkPathAccess instead of pathExists",
+        "Function throws ArtifactReadError when artifacts cannot be accessed due to permissions",
+        "Function still returns correct ValidationContext when artifacts are accessible or missing",
+        "bun test passes"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Located in src/workflow/itemWorkflow.ts lines 107-128."
+    },
+    {
+      "id": "US-007",
+      "title": "Update status command scanItems to warn on read errors",
+      "acceptance_criteria": [
+        "scanItems logs warning for non-ENOENT read errors",
+        "scanItems continues processing other items after encountering unreadable item",
+        "Silently skips FileNotFoundError, InvalidJsonError, SchemaValidationError as before",
+        "Warning includes item path and error message",
+        "bun test src/__tests__/commands/status.test.ts passes"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "Located in src/commands/status.ts lines 33-45."
+    },
+    {
+      "id": "US-008",
+      "title": "Update indexing getItem to throw on permission errors",
+      "acceptance_criteria": [
+        "getItem returns null only for FileNotFoundError, InvalidJsonError, SchemaValidationError",
+        "getItem throws for permission and I/O errors",
+        "Import error classes from errors module",
+        "bun test src/__tests__/indexing.test.ts passes"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "Located in src/domain/indexing.ts lines 93-104."
+    },
+    {
+      "id": "US-009",
+      "title": "Update indexing itemExists to throw on permission errors",
+      "acceptance_criteria": [
+        "itemExists uses checkPathAccess instead of manual fs.access try/catch",
+        "itemExists throws ArtifactReadError for permission errors",
+        "itemExists returns false only for ENOENT",
+        "bun test src/__tests__/indexing.test.ts passes"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "Located in src/domain/indexing.ts lines 106-116."
+    },
+    {
+      "id": "US-010",
+      "title": "Update applyFixes to handle artifact read errors",
+      "acceptance_criteria": [
+        "STATE_FILE_MISMATCH fix uses checkPathAccess for artifact checks",
+        "Fix logs warning and skips fixing when artifacts cannot be read",
+        "Fix proceeds normally when artifacts are accessible or genuinely missing",
+        "bun test src/__tests__/doctor.test.ts passes"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "Located in src/doctor.ts lines 617-660. Use try/catch around checkPathAccess calls."
+    },
+    {
+      "id": "US-011",
+      "title": "Add tests for error-aware utilities",
+      "acceptance_criteria": [
+        "Tests for tryReadFile cover ok, not_found, and error cases",
+        "Tests for checkPathAccess cover exists, not_found, and error cases",
+        "Permission error tests are skipped on Windows with skipIf",
+        "All new tests pass: bun test src/__tests__/fs-util.test.ts"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "Platform-specific tests should use conditional skips. Add to src/__tests__/fs-util.test.ts."
+    },
+    {
+      "id": "US-012",
+      "title": "Update show command to handle artifact read errors",
+      "acceptance_criteria": [
+        "loadItemDetails uses checkPathAccess instead of pathExists for research.md and plan.md",
+        "Show command throws ArtifactReadError for permission-denied artifacts",
+        "Show command works normally for existing or genuinely missing artifacts",
+        "bun test src/__tests__/commands/show.test.ts passes"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "Located in src/commands/show.ts lines 27-28."
+    },
+    {
+      "id": "US-013",
+      "title": "Update readBatchProgress to throw on permission errors",
+      "acceptance_criteria": [
+        "readBatchProgress returns null for FileNotFoundError, InvalidJsonError, SchemaValidationError",
+        "readBatchProgress throws for permission and I/O errors",
+        "Batch operations surface clear error when progress file is permission-denied",
+        "bun test src/__tests__/fs.test.ts passes"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "Located in src/fs/json.ts lines 130-137. Schema/JSON errors still return null for doctor to handle."
+    },
+    {
+      "id": "US-014",
+      "title": "Add integration test for ARTIFACT_UNREADABLE diagnostic",
+      "acceptance_criteria": [
+        "Test creates item with permission-denied artifact",
+        "Test verifies ARTIFACT_UNREADABLE diagnostic is reported",
+        "Test cleans up permissions after running",
+        "Test is skipped on Windows platform",
+        "Test passes: bun test"
+      ],
+      "priority": 4,
+      "status": "done",
+      "notes": "Add to src/__tests__/doctor.test.ts or new edge-cases file."
+    }
+  ]
+}

@@ -4,7 +4,7 @@ import type { Logger } from "../logging";
 import type { Item, Prd } from "../schemas";
 import { PrdSchema } from "../schemas";
 import { findRepoRoot, findRootFromOptions, getItemDir, getResearchPath, getPlanPath, getPrdPath } from "../fs/paths";
-import { pathExists } from "../fs/util";
+import { checkPathAccess } from "../fs/util";
 import { readItem, readJsonWithSchema } from "../fs/json";
 import { FileNotFoundError } from "../errors";
 
@@ -24,8 +24,19 @@ export async function loadItemDetails(root: string, id: string): Promise<ItemDet
   const itemDir = getItemDir(root, id);
   const item = await readItem(itemDir);
 
-  const hasResearch = await pathExists(getResearchPath(root, id));
-  const hasPlan = await pathExists(getPlanPath(root, id));
+  // Use error-aware checks for artifact presence (Spec 002 Gap 3)
+  const researchCheck = await checkPathAccess(getResearchPath(root, id));
+  const planCheck = await checkPathAccess(getPlanPath(root, id));
+
+  if (researchCheck.error) {
+    throw researchCheck.error;
+  }
+  if (planCheck.error) {
+    throw planCheck.error;
+  }
+
+  const hasResearch = researchCheck.exists;
+  const hasPlan = planCheck.exists;
 
   let prd: Prd | null = null;
   try {

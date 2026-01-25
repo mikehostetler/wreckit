@@ -49,6 +49,9 @@ export const ErrorCodes = {
   PR_CREATION_ERROR: "PR_CREATION_ERROR",
   MERGE_CONFLICT: "MERGE_CONFLICT",
   REMOTE_VALIDATION: "REMOTE_VALIDATION",
+
+  // Artifact read errors (for permission/I/O issues)
+  ARTIFACT_READ_ERROR: "ARTIFACT_READ_ERROR",
 } as const;
 
 export type ErrorCode = (typeof ErrorCodes)[keyof typeof ErrorCodes];
@@ -78,6 +81,23 @@ export class FileNotFoundError extends WreckitError {
   constructor(message: string) {
     super(message, ErrorCodes.FILE_NOT_FOUND);
     this.name = "FileNotFoundError";
+  }
+}
+
+/**
+ * Thrown when an artifact exists but cannot be read due to permission or I/O errors.
+ * This distinguishes "file cannot be accessed" from "file does not exist" (FileNotFoundError).
+ */
+export class ArtifactReadError extends WreckitError {
+  constructor(
+    public readonly filePath: string,
+    public readonly cause: Error
+  ) {
+    super(
+      `Cannot read artifact ${filePath}: ${cause.message}`,
+      ErrorCodes.ARTIFACT_READ_ERROR
+    );
+    this.name = "ArtifactReadError";
   }
 }
 

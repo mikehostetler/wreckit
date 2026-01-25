@@ -19,7 +19,7 @@ import {
   getItemsDir,
   getBatchProgressPath,
 } from "./fs/paths";
-import { pathExists } from "./fs/util";
+import { pathExists, checkPathAccess } from "./fs/util";
 import { scanItems } from "./commands/status";
 import { initPromptTemplates } from "./prompts";
 import { writeItem, writeIndex, readItem, clearBatchProgress } from "./fs/json";
@@ -259,9 +259,44 @@ async function diagnoseItem(
   const planPath = path.join(itemDir, "plan.md");
   const prdPath = path.join(itemDir, "prd.json");
 
-  const hasResearch = await pathExists(researchPath);
-  const hasPlan = await pathExists(planPath);
-  const hasPrd = await pathExists(prdPath);
+  // Check artifact accessibility with proper error handling (Spec 010 Gap 4)
+  const researchCheck = await checkPathAccess(researchPath);
+  const planCheck = await checkPathAccess(planPath);
+  const prdCheck = await checkPathAccess(prdPath);
+
+  // Report unreadable artifacts as ARTIFACT_UNREADABLE diagnostics
+  if (researchCheck.error) {
+    diagnostics.push({
+      itemId,
+      severity: "error",
+      code: "ARTIFACT_UNREADABLE",
+      message: `Cannot read research.md: ${researchCheck.error.cause.message}`,
+      fixable: false,
+    });
+  }
+  if (planCheck.error) {
+    diagnostics.push({
+      itemId,
+      severity: "error",
+      code: "ARTIFACT_UNREADABLE",
+      message: `Cannot read plan.md: ${planCheck.error.cause.message}`,
+      fixable: false,
+    });
+  }
+  if (prdCheck.error) {
+    diagnostics.push({
+      itemId,
+      severity: "error",
+      code: "ARTIFACT_UNREADABLE",
+      message: `Cannot read prd.json: ${prdCheck.error.cause.message}`,
+      fixable: false,
+    });
+  }
+
+  // Use exists flag - false if error or not found
+  const hasResearch = researchCheck.exists && !researchCheck.error;
+  const hasPlan = planCheck.exists && !planCheck.error;
+  const hasPrd = prdCheck.exists && !prdCheck.error;
 
   if (item.state === "researched" && !hasResearch) {
     diagnostics.push({
@@ -622,11 +657,22 @@ export async function applyFixes(
             const data = await readJson(itemJsonPath);
             const item = ItemSchema.parse(data);
 
-            const hasResearch = await pathExists(
+            // Use error-aware checks for artifact presence (Spec 010 Gap 4)
+            const researchCheck = await checkPathAccess(
               path.join(itemDir, "research.md")
             );
-            const hasPlan = await pathExists(path.join(itemDir, "plan.md"));
-            const hasPrd = await pathExists(path.join(itemDir, "prd.json"));
+            const planCheck = await checkPathAccess(path.join(itemDir, "plan.md"));
+            const prdCheck = await checkPathAccess(path.join(itemDir, "prd.json"));
+
+            // If any artifact is unreadable, skip the fix
+            if (researchCheck.error || planCheck.error || prdCheck.error) {
+              message = "Cannot fix: artifact files are unreadable (check permissions)";
+              break;
+            }
+
+            const hasResearch = researchCheck.exists;
+            const hasPlan = planCheck.exists;
+            const hasPrd = prdCheck.exists;
 
             let newState = item.state;
             if (item.state === "researched" && !hasResearch) {
