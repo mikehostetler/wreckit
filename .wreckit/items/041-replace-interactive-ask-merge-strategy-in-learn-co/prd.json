@@ -1,0 +1,162 @@
+{
+  "schema_version": 1,
+  "id": "041-replace-interactive-ask-merge-strategy-in-learn-co",
+  "branch_name": "wreckit/041-replace-interactive-ask-merge-strategy-in-learn-co",
+  "user_stories": [
+    {
+      "id": "US-001",
+      "title": "Refactor append logic into reusable helper function",
+      "acceptance_criteria": [
+        "Extract existing append logic (lines 116-138 in learn.ts) into performAppendMerge() helper function",
+        "Update 'append' case to call performAppendMerge() instead of inline logic",
+        "All existing append tests still pass without modification",
+        "Type checking passes with no errors",
+        "Code compiles successfully"
+      ],
+      "priority": 1,
+      "status": "pending",
+      "notes": "This refactoring is necessary to avoid code duplication since the 'ask' strategy needs to fall back to append behavior in non-TTY environments. The helper function will be called from both the 'append' case and the 'ask' fallback path."
+    },
+    {
+      "id": "US-002",
+      "title": "Implement TTY detection and fallback to append",
+      "acceptance_criteria": [
+        "Add readline import to learn.ts",
+        "Implement process.stdout.isTTY check in 'ask' case",
+        "Non-TTY environments fall back to performAppendMerge() with warning message",
+        "Warning message 'Not a TTY environment. Falling back to 'append' merge strategy.' is displayed",
+        "Test verifies TTY property is checked correctly",
+        "Test verifies fallback behavior works in non-TTY mode"
+      ],
+      "priority": 1,
+      "status": "pending",
+      "notes": "TTY detection must happen before any interactive logic to prevent readline from being used in CI/CD or piped input scenarios. Use pattern from onboarding.ts:113: 'interactive = process.stdout.isTTY ?? false'"
+    },
+    {
+      "id": "US-003",
+      "title": "Implement interactive conflict collection phase",
+      "acceptance_criteria": [
+        "Collect all phase_skills conflicts before prompting user",
+        "Conflict detection finds skills in different phases between existing and extracted configs",
+        "Display count of conflicts to user before prompting",
+        "No-conflict scenario uses append behavior without prompting",
+        "Console output shows 'Interactive Skill Merge' header",
+        "Console output uses ANSI formatting for better readability (bold, dim, colors)"
+      ],
+      "priority": 2,
+      "status": "pending",
+      "notes": "Collecting conflicts first allows us to inform users how many decisions they'll need to make, and to exit early if there are no conflicts (use append). Only phase_skills conflicts are in scope - skill definition conflicts are not prompted for."
+    },
+    {
+      "id": "US-004",
+      "title": "Implement interactive user prompts for conflict resolution",
+      "acceptance_criteria": [
+        "For each conflict, prompt displays: skill ID, existing phase, extracted phase",
+        "Prompt offers 3 choices: [1] keep existing, [2] use extracted, [3] keep both",
+        "Default option is [1] when user presses Enter",
+        "Invalid input defaults to option 1 (keep existing)",
+        "After each choice, console shows what action was taken",
+        "Readline interface is created once and reused for all prompts",
+        "Readline interface is closed in finally block even if errors occur"
+      ],
+      "priority": 2,
+      "status": "pending",
+      "notes": "Use readline pattern from ideas-interview.ts:515-524. Always close the interface in a finally block to prevent resource leaks. Empty input should trigger default behavior, not an error."
+    },
+    {
+      "id": "US-005",
+      "title": "Implement conflict resolution logic and result assembly",
+      "acceptance_criteria": [
+        "Option 1 (keep existing): Skill remains in its current phase",
+        "Option 2 (use extracted): Skill removed from existing phase, added to extracted phase",
+        "Option 3 (keep both): Skill appears in both existing and extracted phases",
+        "Non-conflicting skills from extracted are added automatically",
+        "Existing skill definitions are kept (never replaced by extracted definitions)",
+        "Final result includes both phase_skills and skills arrays",
+        "Console shows '✓ Merge complete.' message at the end"
+      ],
+      "priority": 2,
+      "status": "pending",
+      "notes": "Per success criteria, only skill ID conflicts are resolved - if a skill ID exists in both configs with different definitions, keep the existing definition without prompting. This is out of scope."
+    },
+    {
+      "id": "US-006",
+      "title": "Add tests for TTY detection and fallback behavior",
+      "acceptance_criteria": [
+        "Test verifies non-TTY environment falls back to append",
+        "Test uses Object.defineProperty to mock process.stdout.isTTY (pattern from tui.test.ts:270-281)",
+        "Test restores original isTTY value in finally block",
+        "Test verifies warning message is logged in non-TTY mode",
+        "Test verifies fallback produces same result as append strategy",
+        "All existing tests still pass (no regressions)"
+      ],
+      "priority": 3,
+      "status": "pending",
+      "notes": "Mocking TTY requires setting 'configurable: true' on the property descriptor to allow restoration. Always restore original value in finally block to avoid polluting other tests."
+    },
+    {
+      "id": "US-007",
+      "title": "Add tests for interactive merge scenarios",
+      "acceptance_criteria": [
+        "Test verifies no-conflict scenario uses append without prompts",
+        "Test mocks readline.createInterface to avoid actual prompts",
+        "Test verifies single conflict resolution with option 1 (keep existing)",
+        "Test verifies single conflict resolution with option 2 (use extracted)",
+        "Test verifies single conflict resolution with option 3 (keep both)",
+        "Test verifies invalid input defaults to option 1",
+        "Test verifies multiple conflicts are processed in sequence",
+        "Test verifies readline.close() is called even on errors"
+      ],
+      "priority": 3,
+      "status": "pending",
+      "notes": "Mock readline by replacing globalThis.readline.createInterface with a mock function. Use Bun's 'mock' function: 'mock(() => ({ question: ..., close: ... }))'. Track question count to return different answers for sequential prompts."
+    },
+    {
+      "id": "US-008",
+      "title": "Remove obsolete test and add new test suite structure",
+      "acceptance_criteria": [
+        "Remove test at lines 156-170 that expects 'not yet implemented' error",
+        "Add new 'describe(\"ask strategy\")' block for ask-specific tests",
+        "Import 'mock' from 'bun:test' at top of file",
+        "All learn command tests pass after changes",
+        "Test suite has descriptive names for each test case",
+        "Tests follow AAA pattern (Arrange, Act, Assert)"
+      ],
+      "priority": 3,
+      "status": "pending",
+      "notes": "The current test expects an error that will no longer be thrown. Replace it with comprehensive tests for the new interactive behavior. Organize tests in a describe block for better structure."
+    },
+    {
+      "id": "US-009",
+      "title": "Update documentation with ask strategy details",
+      "acceptance_criteria": [
+        "Update line 24 to include 'ask' in merge strategy options table",
+        "Add 'Ask (interactive)' section after 'Replace' section (after line 132)",
+        "Documentation describes TTY fallback behavior",
+        "Documentation shows example interaction with prompts",
+        "Documentation lists when to use ask strategy",
+        "Remove obsolete 'Merge strategy not implemented' troubleshooting section (lines 287-292)",
+        "Documentation is valid Markdown with no syntax errors"
+      ],
+      "priority": 4,
+      "status": "pending",
+      "notes": "Documentation should be clear about when ask is useful (curating skills from multiple sessions) and when it's not (CI/CD environments). Include example interaction output showing the prompts and responses."
+    },
+    {
+      "id": "US-010",
+      "title": "Verify non-TTY environments work correctly with actual command",
+      "acceptance_criteria": [
+        "Test 'echo \"\" | wreckit learn --merge ask' falls back to append",
+        "Verify warning message appears in non-TTY mode",
+        "Verify skills.json is written correctly in non-TTY mode",
+        "Verify 'wreckit learn --merge ask' in TTY mode shows prompts",
+        "Verify Ctrl+C during interactive merge terminates cleanly",
+        "Verify 'wreckit learn --merge ask' with no conflicts uses append",
+        "Manual testing confirms documentation matches actual behavior"
+      ],
+      "priority": 4,
+      "status": "pending",
+      "notes": "Manual testing is essential for interactive features. Test in both actual TTY (terminal) and non-TTY (piped input, CI/CD) environments. Verify the readline interface is properly closed on termination."
+    }
+  ]
+}
