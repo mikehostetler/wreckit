@@ -17434,3 +17434,47 @@ Running next item...
 [34mDEBUG[39m: [36mRunning: git rev-parse --abbrev-ref HEAD[39m
 [34mDEBUG[39m: [36mRunning: git status --porcelain[39m
 [34mDEBUG[39m: [36mRunning: git add -A[39m
+[34mDEBUG[39m: [36mRunning: git commit -m feat(031-fix-silent-read-errors-in-artifact-detection-specs): implement Fix silent read errors in artifact detection (specs 002, 010 Gap: errors swallowed)[39m
+[34mDEBUG[39m: [36mRunning: git symbolic-ref --quiet HEAD[39m
+[34mDEBUG[39m: [36mRunning: git status --porcelain[39m
+[31mERROR[39m: [36mPhase pr failed for 031-fix-silent-read-errors-in-artifact-detection-specs: Git pre-flight check failed:
+
+• There are uncommitted changes in the working directory
+    Run `git stash` to temporarily save changes
+    Or run `git commit -am "message"` to commit changes
+    Or run `git checkout -- .` to discard changes (destructive)[39m
+[31mERROR[39m: [36mFailed 031-fix-silent-read-errors-in-artifact-detection-specs: Git pre-flight check failed:
+
+• There are uncommitted changes in the working directory
+    Run `git stash` to temporarily save changes
+    Or run `git commit -am "message"` to commit changes
+    Or run `git checkout -- .` to discard changes (destructive)[39m
+[31mERROR[39m: [36mFailed: 031-fix-silent-read-errors-in-artifact-detection-specs[39m
+❌ Crashed with code 1. Restarting in 5s...
+
+```tool
+Bash
+{
+  "command": "cd /Users/speed/wreckit && bun test src/__tests__/fs-util.test.ts src/__tests__/fs.test.ts src/__tests__/doctor.test.ts src/__tests__/indexing.test.ts 2>&1 | tail -20",
+  "description": "Final verification of all relevant tests"
+}
+```
+All 106 tests pass. All user stories are complete.
+
+<promise>COMPLETE</promise>All 106 tests pass. All user stories are complete.
+
+<promise>COMPLETE</promise>[34mDEBUG[39m: [36mRunning: git status --porcelain[39m
+[32mINFO[39m: [36mStory US-001 marked as 'done' via MCP[39m
+[32mINFO[39m: [36mStory US-002 marked as 'done' via MCP[39m
+[32mINFO[39m: [36mStory US-003 marked as 'done' via MCP[39m
+[32mINFO[39m: [36mStory US-004 marked as 'done' via MCP[39m
+[32mINFO[39m: [36mStory US-005 marked as 'done' via MCP[39m
+[32mINFO[39m: [36mStory US-006 marked as 'done' via MCP[39m
+[32mINFO[39m: [36mCompleted implement phase: planned → implementing[39m
+[32mINFO[39m: [36mRunning pr phase on 031-fix-silent-read-errors-in-artifact-detection-specs[39m
+[34mDEBUG[39m: [36mRunning: git show-ref --verify --quiet refs/heads/wreckit/031-fix-silent-read-errors-in-artifact-detection-specs[39m
+[32mINFO[39m: [36mBranch wreckit/031-fix-silent-read-errors-in-artifact-detection-specs exists, switching to it[39m
+[34mDEBUG[39m: [36mRunning: git checkout wreckit/031-fix-silent-read-errors-in-artifact-detection-specs[39m
+[34mDEBUG[39m: [36mRunning: git rev-parse --abbrev-ref HEAD[39m
+[34mDEBUG[39m: [36mRunning: git status --porcelain[39m
+[34mDEBUG[39m: [36mRunning: git add -A[39m
