@@ -1,0 +1,95 @@
+{
+  "phase_skills": {
+    "research": ["code-exploration", "context-awareness"],
+    "plan": ["documentation-writer"],
+    "implement": ["full-capability"],
+    "pr": ["git-integration"],
+    "complete": ["verification"]
+  },
+  "skills": [
+    {
+      "id": "code-exploration",
+      "name": "Code Exploration",
+      "description": "Read-only codebase analysis with grep and glob tools",
+      "tools": ["Read", "Glob", "Grep"],
+      "required_context": [
+        {
+          "type": "git_status",
+          "description": "Current repository state for context"
+        },
+        {
+          "type": "item_metadata",
+          "description": "Item metadata for context"
+        }
+      ]
+    },
+    {
+      "id": "context-awareness",
+      "name": "Context Awareness",
+      "description": "Loads existing research and plan for context",
+      "tools": [],
+      "required_context": [
+        {
+          "type": "phase_artifact",
+          "path": "research.md",
+          "description": "Existing research document"
+        }
+      ]
+    },
+    {
+      "id": "documentation-writer",
+      "name": "Documentation Writer",
+      "description": "Read and write tools for creating plan and PRD documents",
+      "tools": ["Read", "Write", "Edit", "Glob", "Grep"],
+      "required_context": [
+        {
+          "type": "phase_artifact",
+          "path": "research.md",
+          "description": "Research as input for planning"
+        }
+      ]
+    },
+    {
+      "id": "full-capability",
+      "name": "Full Implementation Capability",
+      "description": "All tools available for implementation phase",
+      "tools": ["Read", "Write", "Edit", "Glob", "Grep", "Bash", "mcp__wreckit__update_story_status"],
+      "required_context": [
+        {
+          "type": "phase_artifact",
+          "path": "plan.md",
+          "description": "Implementation plan"
+        },
+        {
+          "type": "phase_artifact",
+          "path": "prd.json",
+          "description": "User stories to implement"
+        }
+      ]
+    },
+    {
+      "id": "git-integration",
+      "name": "Git Integration",
+      "description": "Read tools for verification and bash for git operations",
+      "tools": ["Read", "Glob", "Grep", "Bash"],
+      "required_context": [
+        {
+          "type": "git_status",
+          "description": "Git status for PR creation"
+        }
+      ]
+    },
+    {
+      "id": "verification",
+      "name": "Verification",
+      "description": "Read-only tools for final verification",
+      "tools": ["Read", "Glob", "Grep"],
+      "required_context": [
+        {
+          "type": "git_status",
+          "description": "Final git state verification"
+        }
+      ]
+    }
+  ]
+}

@@ -360,6 +360,34 @@ program
   });
 
 program
+  .command("critique <id>")
+  .description("Run adversarial critique phase: implementing → critique")
+  .option("--force", "Force re-run critique")
+  .action(async (id, options, cmd) => {
+    const globalOpts = cmd.optsWithGlobals();
+    await executeCommand(
+      async () => {
+        const cwd = resolveCwd(globalOpts.cwd);
+        const root = findRepoRoot(cwd);
+        const resolvedId = await resolveId(root, id);
+        await runPhaseCommand(
+          "critique",
+          resolvedId,
+          { force: options.force, dryRun: globalOpts.dryRun, cwd },
+          logger
+        );
+      },
+      logger,
+      {
+        verbose: globalOpts.verbose,
+        quiet: globalOpts.quiet,
+        dryRun: globalOpts.dryRun,
+        cwd: resolveCwd(globalOpts.cwd),
+      }
+    );
+  });
+
+program
   .command("rollback <id>")
   .description("Rollback a direct-merge item to its pre-merge state")
   .option("--force", "Force rollback even if item is not in 'done' state")

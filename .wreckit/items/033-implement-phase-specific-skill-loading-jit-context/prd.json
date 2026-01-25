@@ -1,0 +1,207 @@
+{
+  "schema_version": 1,
+  "id": "033-implement-phase-specific-skill-loading-jit-context",
+  "branch_name": "wreckit/033-implement-phase-specific-skill-loading-jit-context",
+  "user_stories": [
+    {
+      "id": "US-001",
+      "title": "Define skill schema and integrate with config system",
+      "acceptance_criteria": [
+        "SkillContextRequirementSchema defined with type enum (file, git_status, item_metadata, phase_artifact)",
+        "SkillSchema defined with id, name, description, tools, mcp_servers, required_context fields",
+        "SkillConfigSchema defined with phase_skills mapping and skills array",
+        "ConfigSchema extended with optional skills field of type SkillConfigSchema",
+        "ConfigResolved interface includes optional skills field",
+        "TypeScript types exported: Skill, SkillConfig, SkillContextRequirement, PhaseSkillsMapping",
+        "Config with skills field loads successfully via loadConfig()",
+        "Config without skills field loads successfully (backward compatibility)",
+        "Zod validation rejects invalid skill definitions",
+        "npm run typecheck passes with no errors"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Foundation for all subsequent work. Follow existing Zod schema patterns in src/schemas.ts. Must maintain backward compatibility - skills field must be optional."
+    },
+    {
+      "id": "US-002",
+      "title": "Implement skill loader with tool merging and security enforcement",
+      "acceptance_criteria": [
+        "loadSkillsForPhase() function implemented in src/agent/skillLoader.ts",
+        "Returns SkillLoadResult with allowedTools, mcpServers, contextRequirements, loadedSkillIds",
+        "Handles missing skill config gracefully (returns phase tools from PHASE_TOOL_ALLOWLISTS)",
+        "Handles unknown skill IDs gracefully (skips them with warning)",
+        "Merges skill tools with phase tool allowlists via intersection (security boundary)",
+        "Skills cannot exceed phase tool permissions (intersection logic enforced)",
+        "Aggregates MCP servers from all loaded skills via Object.assign",
+        "Collects context requirements from all loaded skills",
+        "Returns phase tools if no skills configured for phase",
+        "Returns empty MCP servers and context requirements if no skills loaded",
+        "Unit tests pass for all merge and security scenarios",
+        "npm run typecheck passes"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Core skill loading logic. Critical for security - must enforce that skills cannot exceed phase tool permissions. Test intersection logic thoroughly with tools including Bash in research phase (should be excluded)."
+    },
+    {
+      "id": "US-003",
+      "title": "Implement JIT context builder for skill requirements",
+      "acceptance_criteria": [
+        "buildJitContext() function implemented in src/agent/contextBuilder.ts",
+        "Handles empty requirements gracefully (returns empty context)",
+        "Supports type='file' context requirement (reads file at path)",
+        "Supports type='git_status' context requirement (collects git status)",
+        "Supports type='item_metadata' context requirement (serializes item metadata)",
+        "Supports type='phase_artifact' context requirement (loads research.md, plan.md, etc.)",
+        "Handles file read errors gracefully (logs error, continues with other context)",
+        "Returns BuiltContext with files, gitStatus, itemMetadata, artifacts, errors fields",
+        "formatContextForPrompt() formats context as markdown for prompt injection",
+        "Git status formatted as human-readable output (file status and paths)",
+        "Item metadata formatted as JSON code block",
+        "Unit tests pass for all context types and error scenarios",
+        "npm run typecheck passes"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "Context loading is resilient - partial failures should not prevent phase execution. Errors collected and returned for logging. Test with various file types and git states."
+    },
+    {
+      "id": "US-004",
+      "title": "Extend prompt variables to support skill context injection",
+      "acceptance_criteria": [
+        "PromptVariables interface extended with skill_context?: string field",
+        "renderPrompt() includes skill_context in variable map",
+        "skill_context substituted into prompt templates via {{skill_context}} variable",
+        "Conditional {{#if skill_context}} works in prompt templates",
+        "Existing prompt templates continue to work without skill_context",
+        "npm run typecheck passes"
+      ],
+      "priority": 4,
+      "status": "done",
+      "notes": "Simple extension to existing prompt system. Follow the existing pattern for other prompt variables like research, plan, prd."
+    },
+    {
+      "id": "US-005",
+      "title": "Integrate skill loading into buildPromptVariables function",
+      "acceptance_criteria": [
+        "buildPromptVariables() accepts optional phase parameter",
+        "buildPromptVariables() loads skills for phase if skills configured",
+        "buildPromptVariables() builds JIT context from skill requirements via buildJitContext()",
+        "buildPromptVariables() formats context via formatContextForPrompt()",
+        "buildPromptVariables() includes skill_context in returned variables",
+        "Imports added for loadSkillsForPhase, buildJitContext, formatContextForPrompt",
+        "Logs loaded skill IDs for transparency via console.log",
+        "Logs JIT context summary (files count, artifacts count)",
+        "Logs context loading errors if any via console.warn",
+        "Unit tests verify skill context building with valid skills",
+        "Unit tests verify backward compatibility without skills",
+        "npm run typecheck passes"
+      ],
+      "priority": 5,
+      "status": "done",
+      "notes": "This is the core integration point. The phase parameter flows from phase execution functions to buildPromptVariables. Follow existing logging patterns in itemWorkflow.ts."
+    },
+    {
+      "id": "US-006",
+      "title": "Integrate skill loading into research phase execution",
+      "acceptance_criteria": [
+        "runPhaseResearch() passes phase='research' to buildPromptVariables()",
+        "runPhaseResearch() calls loadSkillsForPhase() to get skill result",
+        "runPhaseResearch() merges skill MCP servers into mcpServers parameter",
+        "runPhaseResearch() uses skill result allowedTools for tool restrictions",
+        "MCP server merging uses object spread ...(skillResult.mcpServers || {})",
+        "Research phase works unchanged when no skills configured (backward compatibility)",
+        "Integration tests verify research phase with skills config",
+        "Integration tests verify research phase without skills config",
+        "npm run typecheck passes"
+      ],
+      "priority": 6,
+      "status": "done",
+      "notes": "First phase integration. Pattern will be replicated for plan, implement, pr phases. Research phase has no wreckit MCP server, so only skill MCP servers are merged."
+    },
+    {
+      "id": "US-007",
+      "title": "Integrate skill loading into plan phase execution",
+      "acceptance_criteria": [
+        "runPhasePlan() passes phase='plan' to buildPromptVariables()",
+        "runPhasePlan() calls loadSkillsForPhase() to get skill result",
+        "runPhasePlan() merges skill MCP servers with wreckit MCP server",
+        "Wreckit MCP server not overridden by skill MCP servers (wreckit first, then skills)",
+        "MCP server merging uses { wreckit: wreckitServer, ...(skillResult.mcpServers || {}) }",
+        "runPhasePlan() uses skill result allowedTools for tool restrictions",
+        "MCP tools (save_prd) continue to work with skills loaded",
+        "Plan phase works unchanged when no skills configured",
+        "Integration tests verify plan phase with skills config",
+        "Integration tests verify plan phase without skills config",
+        "npm run typecheck passes"
+      ],
+      "priority": 7,
+      "status": "done",
+      "notes": "Plan phase has existing wreckit MCP server - must ensure skill MCP servers merged alongside, not replacing. Test that save_prd tool still works with skills."
+    },
+    {
+      "id": "US-008",
+      "title": "Integrate skill loading into implement and PR phases",
+      "acceptance_criteria": [
+        "runPhaseImplement() passes phase='implement' to buildPromptVariables()",
+        "runPhaseImplement() calls loadSkillsForPhase() and merges results",
+        "runPhaseImplement() merges wreckit MCP server with skill MCP servers",
+        "MCP tools (update_story_status) continue to work with skills loaded",
+        "Implement phase works unchanged when no skills configured",
+        "runPhasePr() passes phase='pr' to buildPromptVariables()",
+        "runPhasePr() calls loadSkillsForPhase() and merges results",
+        "PR phase works unchanged when no skills configured",
+        "Integration tests verify implement phase with skills config",
+        "Integration tests verify PR phase with skills config",
+        "npm run typecheck passes"
+      ],
+      "priority": 8,
+      "status": "done",
+      "notes": "Implement and PR phases follow the same pattern as plan phase (wreckit MCP server + skill MCP servers). Verify story status updates still work in implement phase."
+    },
+    {
+      "id": "US-009",
+      "title": "Create default skills configuration and documentation",
+      "acceptance_criteria": [
+        ".wreckit/skills.json created with example skill definitions",
+        "Example skills demonstrate all context requirement types (file, git_status, item_metadata, phase_artifact)",
+        "Skills demonstrate tool restrictions per phase",
+        "Skills demonstrate MCP server usage pattern",
+        "Skills cover common use cases (code-exploration, documentation-writer, full-capability, git-integration)",
+        "docs/skills.md created with comprehensive documentation",
+        "Documentation includes overview, configuration, schema reference, security model",
+        "Documentation includes context requirement types and examples",
+        "Documentation includes tool names reference",
+        "Documentation includes examples (code-analysis, test-generation, refactoring)",
+        "Documentation includes best practices and troubleshooting",
+        ".wreckit/skills.json validates against SkillConfigSchema",
+        "Documentation is clear and complete",
+        "Example skills work when tested manually"
+      ],
+      "priority": 9,
+      "status": "done",
+      "notes": "This makes the feature discoverable and usable. Create practical, realistic skills that demonstrate the feature's value. Include comments in skills.json explaining what each skill does."
+    },
+    {
+      "id": "US-010",
+      "title": "Verify backward compatibility and edge cases",
+      "acceptance_criteria": [
+        "Wreckit works without .wreckit/skills.json file",
+        "Wreckit works with empty skills object {}",
+        "Wreckit works with phase_skills mapping missing phases",
+        "Wreckit works with skills defined but not mapped to any phase",
+        "Wreckit handles unknown skill IDs in phase_skills gracefully (skips with warning)",
+        "Wreckit handles skill tools not in phase allowlist (excluded from intersection)",
+        "Wreckit handles missing files in context requirements (error logged, continues)",
+        "Existing wreckit repositories continue to work without changes",
+        "All phases execute successfully with no skills configured",
+        "All phases execute successfully with skills configured",
+        "Type checking passes with new types",
+        "No breaking changes to existing APIs"
+      ],
+      "priority": 10,
+      "status": "done",
+      "notes": "Critical story - backward compatibility must be 100%. Test with existing repos, existing configs, edge cases. This is the verification story that confirms the entire implementation works correctly."
+    }
+  ]
+}
