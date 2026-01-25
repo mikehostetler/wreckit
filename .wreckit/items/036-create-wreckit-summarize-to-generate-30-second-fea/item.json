@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "id": "036-create-wreckit-summarize-to-generate-30-second-fea",
+  "title": "Create `wreckit summarize` to generate 30-second feature visualization videos autonomously",
+  "section": "roadmap",
+  "state": "idea",
+  "overview": "From milestone [M4] Recursive Evolution & Skill-Based Media Layer\n\n**Motivation:** Strategic milestone: Recursive Evolution & Skill-Based Media Layer",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-25T01:01:23.622Z",
+  "updated_at": "2026-01-25T01:01:23.622Z",
+  "motivation": "Strategic milestone: Recursive Evolution & Skill-Based Media Layer",
+  "depends_on": [
+    "035-implement-autonomous-media-layer-integration-with-"
+  ],
+  "campaign": "M4"
+}

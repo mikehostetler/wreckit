@@ -52,6 +52,9 @@
   "dependencies": {
     "@anthropic-ai/claude-agent-sdk": "^0.2.7",
     "@clack/prompts": "^0.11.0",
+    "@openai/codex-sdk": "^0.89.0",
+    "@opencode-ai/sdk": "^1.1.35",
+    "@sourcegraph/amp-sdk": "^0.1.0-20260125004252-g9e25e01",
     "@types/react": "^19.2.8",
     "commander": "^14.0.2",
     "ink": "^6.6.0",
