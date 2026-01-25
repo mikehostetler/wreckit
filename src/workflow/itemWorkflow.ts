@@ -63,6 +63,9 @@ import {
   type RemoteValidationResult,
   type PrDetails,
 } from "../git";
+import { runPhaseCritique } from "./critique";
+
+export { runPhaseCritique };
 
 export interface WorkflowOptions {
   root: string;
