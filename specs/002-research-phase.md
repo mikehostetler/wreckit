@@ -328,13 +328,13 @@ Create `.wreckit/prompts/research.md` to customize the research prompt. This fil
 
 **Status:** Fixed - Research quality validation implemented in `src/domain/validation.ts:validateResearchQuality()`. Checks required sections, citation density, and minimum length.
 
-### Gap 3: Silent Read Errors
+### Gap 3: Silent Read Errors ✅ FIXED
 
-If reading existing artifacts fails (permissions, corruption), errors are swallowed and the artifact is treated as missing.
+~~If reading existing artifacts fails (permissions, corruption), errors are swallowed and the artifact is treated as missing.~~
 
 **Impact:** State inconsistencies may go undetected.
 
-**Status:** Open - Still relies on try/catch returning undefined for missing files.
+**Status:** Fixed - Error-aware utilities `tryReadFile()` and `checkPathAccess()` in `src/fs/util.ts:42-101` distinguish ENOENT from permission/I/O errors. `buildValidationContext()` in `src/workflow/itemWorkflow.ts` throws on access errors. `readFileIfExists()` and `loadPrdSafe()` properly propagate unexpected errors. Scanning functions in `src/domain/indexing.ts` and `src/doctor.ts` warn on read errors. `ArtifactReadError` class in `src/errors.ts:91-102` provides typed error for permission/I/O failures.
 
 ---
 

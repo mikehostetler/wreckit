@@ -131,8 +131,13 @@ export async function readBatchProgress(
     if (err instanceof FileNotFoundError) {
       return null;
     }
-    // For schema validation errors or other issues, return null (treat as no progress)
-    return null;
+    // Schema validation errors are expected (corrupt progress file)
+    // These are detected and fixed by doctor, so return null to allow continue
+    if (err instanceof SchemaValidationError || err instanceof InvalidJsonError) {
+      return null;
+    }
+    // Permission errors and I/O errors should propagate (Spec 002 Gap 3)
+    throw err;
   }
 }
 

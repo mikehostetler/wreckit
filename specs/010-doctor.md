@@ -284,13 +284,13 @@ Fixes modify files without creating backups.
 
 **Status:** Open - No backup mechanism implemented.
 
-### Gap 4: Silent Read Errors
+### Gap 4: Silent Read Errors ✅ FIXED
 
-If reading an artifact fails (permissions), the error is swallowed and artifact treated as missing.
+~~If reading an artifact fails (permissions), the error is swallowed and artifact treated as missing.~~
 
 **Impact:** Real errors masked as missing files.
 
-**Status:** Open - Still swallows read errors.
+**Status:** Fixed - Doctor uses `checkPathAccess()` from `src/fs/util.ts:88-101` to distinguish "not found" from "cannot access". Reports `ARTIFACT_UNREADABLE` diagnostic with severity "error" when artifacts exist but cannot be read. See `src/doctor.ts:262-294`. Fix application also uses error-aware checks at lines 661-675. `diagnoseDependencies()` reports `ITEMS_DIR_UNREADABLE` diagnostic for directory permission errors.
 
 ---
 

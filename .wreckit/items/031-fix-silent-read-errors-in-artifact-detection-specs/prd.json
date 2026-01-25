@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "id": "031-fix-silent-read-errors-in-artifact-detection-specs",
+  "branch_name": "wreckit/031-fix-silent-read-errors-in-artifact-detection-specs",
+  "user_stories": [
+    {
+      "id": "US-001",
+      "title": "Fix directory read error swallowing in indexing.ts",
+      "acceptance_criteria": [
+        "indexing.ts scanItems distinguishes ENOENT from permission errors when reading items directory",
+        "Permission errors on items directory log a warning instead of silently returning empty",
+        "ENOENT on items directory still returns empty array (expected case)",
+        "bun test passes",
+        "bun run typecheck passes"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Located in src/domain/indexing.ts lines 57-61. This is one of the remaining edge cases in the implementation."
+    },
+    {
+      "id": "US-002",
+      "title": "Fix directory read error swallowing in doctor.ts diagnoseDependencies",
+      "acceptance_criteria": [
+        "diagnoseDependencies imports error classes from ./errors module",
+        "Directory read errors on items directory produce ITEMS_DIR_UNREADABLE diagnostic instead of empty return",
+        "Item read errors distinguish expected errors (FileNotFoundError, InvalidJsonError, SchemaValidationError) from unexpected (permission/I/O)",
+        "Unexpected item read errors log a warning",
+        "ENOENT on items directory returns empty array (expected case)",
+        "bun test passes",
+        "bun run typecheck passes"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Located in src/doctor.ts lines 98-116. Add new ITEMS_DIR_UNREADABLE diagnostic code."
+    },
+    {
+      "id": "US-003",
+      "title": "Update Spec 002 to mark Gap 3 as FIXED",
+      "acceptance_criteria": [
+        "Gap 3 header in specs/002-research-phase.md includes 'FIXED' marker",
+        "Original problem description is struck through",
+        "Status section lists implementation references: tryReadFile, checkPathAccess, readFileIfExists, buildValidationContext, ArtifactReadError",
+        "File paths and line numbers in status are accurate",
+        "Spec file is valid markdown with no syntax errors"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Located in specs/002-research-phase.md lines 331-338. This documents the completed work for Spec 002 Gap 3."
+    },
+    {
+      "id": "US-004",
+      "title": "Update Spec 010 to mark Gap 4 as FIXED",
+      "acceptance_criteria": [
+        "Gap 4 header in specs/010-doctor.md includes 'FIXED' marker",
+        "Original problem description is struck through",
+        "Status section lists implementation references: diagnoseItem, checkPathAccess, ARTIFACT_UNREADABLE, ArtifactReadError",
+        "File paths and line numbers in status are accurate",
+        "Spec file is valid markdown with no syntax errors"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Located in specs/010-doctor.md lines 287-294. This documents the completed work for Spec 010 Gap 4."
+    },
+    {
+      "id": "US-005",
+      "title": "Add test for ITEMS_DIR_UNREADABLE diagnostic",
+      "acceptance_criteria": [
+        "New test in src/__tests__/doctor.test.ts verifies ITEMS_DIR_UNREADABLE diagnostic",
+        "Test creates items directory then removes read permission",
+        "Test verifies diagnostic has severity 'warning' and fixable false",
+        "Test cleans up permissions in finally block",
+        "Test skips on Windows and when running as root",
+        "bun test src/__tests__/doctor.test.ts passes"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "Integration test to verify the new diagnostic works correctly."
+    },
+    {
+      "id": "US-006",
+      "title": "Verify all existing tests pass",
+      "acceptance_criteria": [
+        "bun test runs all test suites successfully",
+        "No test failures related to artifact reading or error handling",
+        "Permission error tests execute on Unix platforms (may skip on Windows/root)",
+        "ARTIFACT_UNREADABLE test in doctor.test.ts passes",
+        "fs-util tests for tryReadFile and checkPathAccess pass"
+      ],
+      "priority": 4,
+      "status": "done",
+      "notes": "Final verification that all existing tests still pass with no regressions."
+    }
+  ]
+}

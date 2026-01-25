@@ -175,6 +175,69 @@ describe("diagnose", () => {
     expect(mismatch?.message).toContain("research.md");
   });
 
+  it("returns ARTIFACT_UNREADABLE when artifact cannot be accessed", async () => {
+    // Skip on Windows and when running as root (root bypasses permissions)
+    if (process.platform === "win32" || process.getuid?.() === 0) {
+      return;
+    }
+
+    await createItem(tempDir, "001-item", { state: "idea" });
+    const itemDir = path.join(tempDir, ".wreckit", "items", "001-item");
+
+    // Create a restricted subdirectory containing research.md, then create
+    // a symlink from the expected location to this inaccessible path
+    const restrictedDir = path.join(itemDir, "restricted-artifacts");
+    await fs.mkdir(restrictedDir);
+    await fs.writeFile(path.join(restrictedDir, "research.md"), "# Research");
+    await fs.chmod(restrictedDir, 0o000); // Remove all access to directory
+
+    // Create symlink from expected research.md path to the inaccessible one
+    await fs.symlink(
+      path.join(restrictedDir, "research.md"),
+      path.join(itemDir, "research.md")
+    );
+
+    try {
+      const diagnostics = await diagnose(tempDir);
+      const unreadable = diagnostics.find((d) => d.code === "ARTIFACT_UNREADABLE");
+
+      expect(unreadable).toBeDefined();
+      expect(unreadable?.severity).toBe("error");
+      expect(unreadable?.fixable).toBe(false);
+      expect(unreadable?.message).toContain("Cannot read research.md");
+    } finally {
+      await fs.chmod(restrictedDir, 0o755);
+    }
+  });
+
+  it("returns ITEMS_DIR_UNREADABLE when items directory cannot be accessed", async () => {
+    // Skip on Windows and when running as root (root bypasses permissions)
+    if (process.platform === "win32" || process.getuid?.() === 0) {
+      return;
+    }
+
+    const itemsDir = path.join(tempDir, ".wreckit", "items");
+    await fs.mkdir(itemsDir, { recursive: true });
+
+    // Create an item first so there's something to fail on
+    await createItem(tempDir, "001-test", { state: "idea" });
+
+    // Remove read permission from items directory
+    await fs.chmod(itemsDir, 0o000);
+
+    try {
+      const diagnostics = await diagnose(tempDir);
+      const unreadable = diagnostics.find((d) => d.code === "ITEMS_DIR_UNREADABLE");
+
+      expect(unreadable).toBeDefined();
+      expect(unreadable?.severity).toBe("warning");
+      expect(unreadable?.fixable).toBe(false);
+      expect(unreadable?.message).toContain("Cannot read items directory");
+    } finally {
+      await fs.chmod(itemsDir, 0o755);
+    }
+  });
+
   it("detects state/file mismatch for planned without plan files", async () => {
     await createItem(tempDir, "001-item", { state: "planned" });
 

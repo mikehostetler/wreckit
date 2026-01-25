@@ -27,11 +27,16 @@ import {
   removeEmptyBackupSession,
 } from "./fs/backup";
 import type { BackupFileEntry } from "./schemas";
-import { pathExists } from "./fs/util";
+import { pathExists, checkPathAccess } from "./fs/util";
 import { scanItems } from "./commands/status";
 import { initPromptTemplates } from "./prompts";
 import { writeItem, writeIndex, readItem, clearBatchProgress } from "./fs/json";
 import { validateStoryQuality } from "./domain/validation";
+import {
+  FileNotFoundError,
+  InvalidJsonError,
+  SchemaValidationError,
+} from "./errors";
 
 /**
  * Detect circular dependencies using DFS.
@@ -109,8 +114,18 @@ async function diagnoseDependencies(root: string): Promise<Diagnostic[]> {
     itemDirs = entries
       .filter((e) => e.isDirectory() && /^\d{3}-/.test(e.name))
       .map((e) => e.name);
-  } catch {
-    return [];
+  } catch (err) {
+    // ENOENT is expected (no items yet), other errors should report
+    if ((err as NodeJS.ErrnoException).code !== "ENOENT") {
+      diagnostics.push({
+        itemId: null,
+        severity: "warning",
+        code: "ITEMS_DIR_UNREADABLE",
+        message: `Cannot read items directory: ${err instanceof Error ? err.message : String(err)}`,
+        fixable: false,
+      });
+    }
+    return diagnostics;
   }
 
   const items: Item[] = [];
@@ -118,8 +133,15 @@ async function diagnoseDependencies(root: string): Promise<Diagnostic[]> {
     try {
       const item = await readItem(path.join(itemsDir, dir));
       items.push(item);
-    } catch {
-      // Skip invalid
+    } catch (err) {
+      // Expected errors: skip silently (consistent with scanItems pattern)
+      if (err instanceof FileNotFoundError) continue;
+      if (err instanceof InvalidJsonError) continue;
+      if (err instanceof SchemaValidationError) continue;
+      // Unexpected errors: warn
+      console.warn(
+        `Warning: Cannot read item ${dir}: ${err instanceof Error ? err.message : String(err)}`
+      );
     }
   }
 
@@ -272,9 +294,44 @@ async function diagnoseItem(
   const planPath = path.join(itemDir, "plan.md");
   const prdPath = path.join(itemDir, "prd.json");
 
-  const hasResearch = await pathExists(researchPath);
-  const hasPlan = await pathExists(planPath);
-  const hasPrd = await pathExists(prdPath);
+  // Check artifact accessibility with proper error handling (Spec 010 Gap 4)
+  const researchCheck = await checkPathAccess(researchPath);
+  const planCheck = await checkPathAccess(planPath);
+  const prdCheck = await checkPathAccess(prdPath);
+
+  // Report unreadable artifacts as ARTIFACT_UNREADABLE diagnostics
+  if (researchCheck.error) {
+    diagnostics.push({
+      itemId,
+      severity: "error",
+      code: "ARTIFACT_UNREADABLE",
+      message: `Cannot read research.md: ${researchCheck.error.cause.message}`,
+      fixable: false,
+    });
+  }
+  if (planCheck.error) {
+    diagnostics.push({
+      itemId,
+      severity: "error",
+      code: "ARTIFACT_UNREADABLE",
+      message: `Cannot read plan.md: ${planCheck.error.cause.message}`,
+      fixable: false,
+    });
+  }
+  if (prdCheck.error) {
+    diagnostics.push({
+      itemId,
+      severity: "error",
+      code: "ARTIFACT_UNREADABLE",
+      message: `Cannot read prd.json: ${prdCheck.error.cause.message}`,
+      fixable: false,
+    });
+  }
+
+  // Use exists flag - false if error or not found
+  const hasResearch = researchCheck.exists && !researchCheck.error;
+  const hasPlan = planCheck.exists && !planCheck.error;
+  const hasPrd = prdCheck.exists && !prdCheck.error;
 
   if (item.state === "researched" && !hasResearch) {
     diagnostics.push({
@@ -568,7 +625,17 @@ export async function diagnose(root: string): Promise<Diagnostic[]> {
     itemDirs = entries
       .filter((e) => e.isDirectory() && /^\d{3}-/.test(e.name))
       .map((e) => e.name);
-  } catch {
+  } catch (err) {
+    // ENOENT is expected (no items yet), other errors should report
+    if ((err as NodeJS.ErrnoException).code !== "ENOENT") {
+      diagnostics.push({
+        itemId: null,
+        severity: "warning",
+        code: "ITEMS_DIR_UNREADABLE",
+        message: `Cannot read items directory: ${err instanceof Error ? err.message : String(err)}`,
+        fixable: false,
+      });
+    }
     diagnostics.push(...(await diagnoseIndex(root)));
     diagnostics.push(...(await diagnoseBatchProgress(root)));
     return diagnostics;
@@ -661,11 +728,22 @@ export async function applyFixes(
             const data = await readJson(itemJsonPath);
             const item = ItemSchema.parse(data);
 
-            const hasResearch = await pathExists(
+            // Use error-aware checks for artifact presence (Spec 010 Gap 4)
+            const researchCheck = await checkPathAccess(
               path.join(itemDir, "research.md")
             );
-            const hasPlan = await pathExists(path.join(itemDir, "plan.md"));
-            const hasPrd = await pathExists(path.join(itemDir, "prd.json"));
+            const planCheck = await checkPathAccess(path.join(itemDir, "plan.md"));
+            const prdCheck = await checkPathAccess(path.join(itemDir, "prd.json"));
+
+            // If any artifact is unreadable, skip the fix
+            if (researchCheck.error || planCheck.error || prdCheck.error) {
+              message = "Cannot fix: artifact files are unreadable (check permissions)";
+              break;
+            }
+
+            const hasResearch = researchCheck.exists;
+            const hasPlan = planCheck.exists;
+            const hasPrd = prdCheck.exists;
 
             let newState = item.state;
             if (item.state === "researched" && !hasResearch) {

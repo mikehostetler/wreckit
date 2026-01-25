@@ -35,6 +35,10 @@ export {
 export {
   pathExists,
   dirExists,
+  tryReadFile,
+  checkPathAccess,
+  type FileReadResult,
+  type PathAccessResult,
 } from "./util";
 
 export {

@@ -14,7 +14,12 @@ import {
   validatePlanQuality,
   validateStoryQuality,
 } from "../domain/validation";
-import { WreckitError } from "../errors";
+import {
+  WreckitError,
+  FileNotFoundError,
+  InvalidJsonError,
+  SchemaValidationError,
+} from "../errors";
 import { getNextState } from "../domain/states";
 import {
   getItemDir,
@@ -23,7 +28,7 @@ import {
   getPrdPath,
   getProgressLogPath,
 } from "../fs/paths";
-import { pathExists } from "../fs/util";
+import { pathExists, checkPathAccess } from "../fs/util";
 import { readItem, writeItem, readPrd, writePrd } from "../fs/json";
 import { createWreckitMcpServer } from "../agent/mcp/wreckitMcpServer";
 import {
@@ -94,16 +99,26 @@ export interface PhaseResult {
 async function readFileIfExists(filePath: string): Promise<string | undefined> {
   try {
     return await fs.readFile(filePath, "utf-8");
-  } catch {
-    return undefined;
+  } catch (err) {
+    // Return undefined for missing files (expected case)
+    if ((err as NodeJS.ErrnoException).code === "ENOENT") {
+      return undefined;
+    }
+    // Re-throw permission/I/O errors - don't silently swallow
+    throw err;
   }
 }
 
 async function loadPrdSafe(itemDir: string): Promise<Prd | null> {
   try {
     return await readPrd(itemDir);
-  } catch {
-    return null;
+  } catch (err) {
+    // Expected "missing" conditions - return null
+    if (err instanceof FileNotFoundError) return null;
+    if (err instanceof InvalidJsonError) return null;
+    if (err instanceof SchemaValidationError) return null;
+    // Unexpected error (permissions, I/O) - re-throw
+    throw err;
   }
 }
 
@@ -115,8 +130,15 @@ export async function buildValidationContext(
   const researchPath = getResearchPath(root, item.id);
   const planPath = getPlanPath(root, item.id);
 
-  const hasResearchMd = await pathExists(researchPath);
-  const hasPlanMd = await pathExists(planPath);
+  // Use error-aware checks - throw on permission errors (Spec 002 Gap 3)
+  const researchCheck = await checkPathAccess(researchPath);
+  if (researchCheck.error) throw researchCheck.error;
+
+  const planCheck = await checkPathAccess(planPath);
+  if (planCheck.error) throw planCheck.error;
+
+  const hasResearchMd = researchCheck.exists;
+  const hasPlanMd = planCheck.exists;
   const prd = await loadPrdSafe(itemDir);
   const hasPr = item.pr_url !== null;
   const prMerged = item.state === "done";

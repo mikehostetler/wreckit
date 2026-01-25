@@ -5,6 +5,11 @@ import type { Index, IndexItem, Item } from "../schemas";
 import { findRepoRoot, findRootFromOptions, getItemsDir } from "../fs/paths";
 import { readItem } from "../fs/json";
 import { buildIdMap } from "../domain/resolveId";
+import {
+  FileNotFoundError,
+  InvalidJsonError,
+  SchemaValidationError,
+} from "../errors";
 
 export interface StatusOptions {
   json?: boolean;
@@ -40,8 +45,15 @@ export async function scanItems(root: string): Promise<IndexItem[]> {
         title: item.title,
         depends_on: item.depends_on,
       });
-    } catch {
-      // Skip invalid items
+    } catch (err) {
+      // Expected errors: skip silently (Spec 002 Gap 3)
+      if (err instanceof FileNotFoundError) continue;
+      if (err instanceof InvalidJsonError) continue;
+      if (err instanceof SchemaValidationError) continue;
+      // Unexpected errors (permissions): log warning
+      console.warn(
+        `Warning: Cannot read item at ${itemPath}: ${err instanceof Error ? err.message : String(err)}`
+      );
     }
   }
 
