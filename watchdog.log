@@ -8332,3 +8332,42 @@ Bash
 [34mDEBUG[39m: [36mRunning: git rev-parse --abbrev-ref HEAD[39m
 [34mDEBUG[39m: [36mRunning: git status --porcelain[39m
 [34mDEBUG[39m: [36mRunning: git add -A[39m
+[34mDEBUG[39m: [36mRunning: git commit -m feat(029-add-integration-tests-for-each-experimental-sdk): implement Add integration tests for each experimental SDK[39m
+[34mDEBUG[39m: [36mRunning: git symbolic-ref --quiet HEAD[39m
+All files exist and all stories are complete.
+
+<promise>COMPLETE</promise>[34mDEBUG[39m: [36mRunning: git status --porcelain[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Git pre-flight check failed:
+
+• There are uncommitted changes in the working directory
+    Run `git stash` to temporarily save changes
+    Or run `git commit -am "message"` to commit changes
+    Or run `git checkout -- .` to discard changes (destructive)[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Git pre-flight check failed:
+
+• There are uncommitted changes in the working directory
+    Run `git stash` to temporarily save changes
+    Or run `git commit -am "message"` to commit changes
+    Or run `git checkout -- .` to discard changes (destructive)[39m
+All files exist and all stories are complete.
+
+<promise>COMPLETE</promise>[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+[34mDEBUG[39m: [36mRunning: git status --porcelain[39m
+[32mINFO[39m: [36mStory US-001 changed 1 file(s): M .wreckit/items/029-add-integration-tests-for-each-experimental-sdk/item.json[39m
+[32mINFO[39m: [36mStory US-001 marked as 'done' via MCP[39m
+[32mINFO[39m: [36mStory US-002 marked as 'done' via MCP[39m
+[32mINFO[39m: [36mStory US-003 marked as 'done' via MCP[39m
+[32mINFO[39m: [36mStory US-004 marked as 'done' via MCP[39m
+[32mINFO[39m: [36mStory US-001 marked as 'done' via MCP[39m
+[32mINFO[39m: [36mStory US-002 marked as 'done' via MCP[39m
+[32mINFO[39m: [36mStory US-003 marked as 'done' via MCP[39m
+[32mINFO[39m: [36mStory US-004 marked as 'done' via MCP[39m
+[32mINFO[39m: [36mCompleted implement phase: planned → implementing[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: git show-ref --verify --quiet refs/heads/wreckit/029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mBranch wreckit/029-add-integration-tests-for-each-experimental-sdk exists, switching to it[39m
+[34mDEBUG[39m: [36mRunning: git checkout wreckit/029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: git rev-parse --abbrev-ref HEAD[39m
+[34mDEBUG[39m: [36mRunning: git status --porcelain[39m
+[34mDEBUG[39m: [36mRunning: git add -A[39m
