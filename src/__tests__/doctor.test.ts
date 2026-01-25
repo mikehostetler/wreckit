@@ -672,3 +672,258 @@ describe("doctorCommand", () => {
     consoleSpy.mockRestore();
   });
 });
+
+describe("applyFixes backup integration", () => {
+  let tempDir: string;
+  let mockLogger: ReturnType<typeof createMockLogger>;
+
+  beforeEach(async () => {
+    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "wreckit-doctor-backup-"));
+    await createWreckitDir(tempDir);
+    mockLogger = createMockLogger();
+  });
+
+  afterEach(async () => {
+    await fs.rm(tempDir, { recursive: true, force: true });
+  });
+
+  it("backup created before STATE_FILE_MISMATCH fix", async () => {
+    await createItem(tempDir, "001-item", { state: "researched" });
+
+    const diagnostics = [
+      {
+        itemId: "001-item",
+        severity: "warning" as const,
+        code: "STATE_FILE_MISMATCH",
+        message: "State is 'researched' but research.md is missing",
+        fixable: true,
+      },
+    ];
+
+    const { results, backupSessionId } = await applyFixes(tempDir, diagnostics, mockLogger);
+
+    expect(results).toHaveLength(1);
+    expect(results[0].fixed).toBe(true);
+    expect(results[0].backup).toBeDefined();
+    expect(backupSessionId).toBeDefined();
+
+    // Verify backup exists and contains original state
+    const backupPath = path.join(
+      tempDir,
+      ".wreckit",
+      "backups",
+      backupSessionId!,
+      "items",
+      "001-item",
+      "item.json"
+    );
+    const backupContent = await fs.readFile(backupPath, "utf-8");
+    const backupItem = JSON.parse(backupContent);
+    expect(backupItem.state).toBe("researched");
+
+    // Verify manifest exists
+    const manifestPath = path.join(
+      tempDir,
+      ".wreckit",
+      "backups",
+      backupSessionId!,
+      "manifest.json"
+    );
+    const manifestContent = await fs.readFile(manifestPath, "utf-8");
+    const manifest = JSON.parse(manifestContent);
+    expect(manifest.files).toHaveLength(1);
+    expect(manifest.files[0].diagnostic_code).toBe("STATE_FILE_MISMATCH");
+  });
+
+  it("backup created before batch-progress deletion", async () => {
+    const progressPath = path.join(tempDir, ".wreckit", "batch-progress.json");
+    const progressContent = {
+      schema_version: 1,
+      session_id: "test-session",
+      pid: 99999999,
+      started_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      parallel: 1,
+      queued_items: ["item-1", "item-2"],
+      current_item: "item-1",
+      completed: [],
+      failed: [],
+      skipped: [],
+    };
+    await fs.writeFile(progressPath, JSON.stringify(progressContent, null, 2));
+
+    const diagnostics = [
+      {
+        itemId: null,
+        severity: "warning" as const,
+        code: "STALE_BATCH_PROGRESS",
+        message: "batch-progress.json is stale",
+        fixable: true,
+      },
+    ];
+
+    const { results, backupSessionId } = await applyFixes(tempDir, diagnostics, mockLogger);
+
+    expect(results).toHaveLength(1);
+    expect(results[0].fixed).toBe(true);
+    expect(results[0].backup).toBeDefined();
+    expect(results[0].backup!.filePath).toBe("batch-progress.json");
+    expect(backupSessionId).toBeDefined();
+
+    // Verify backup contains original content
+    const backupPath = path.join(
+      tempDir,
+      ".wreckit",
+      "backups",
+      backupSessionId!,
+      "batch-progress.json"
+    );
+    const backupContent = await fs.readFile(backupPath, "utf-8");
+    const backupProgress = JSON.parse(backupContent);
+    expect(backupProgress.queued_items).toEqual(["item-1", "item-2"]);
+  });
+
+  it("backup created before INDEX_STALE fix", async () => {
+    await createItem(tempDir, "001-item", { state: "idea" });
+
+    // Create an existing index to backup
+    const indexPath = path.join(tempDir, ".wreckit", "index.json");
+    const oldIndex = {
+      schema_version: 1,
+      items: [{ id: "old-item", state: "done", title: "Old" }],
+      generated_at: "2025-01-01T00:00:00Z",
+    };
+    await fs.writeFile(indexPath, JSON.stringify(oldIndex, null, 2));
+
+    const diagnostics = [
+      {
+        itemId: null,
+        severity: "warning" as const,
+        code: "INDEX_STALE",
+        message: "index.json is out of sync",
+        fixable: true,
+      },
+    ];
+
+    const { results, backupSessionId } = await applyFixes(tempDir, diagnostics, mockLogger);
+
+    expect(results).toHaveLength(1);
+    expect(results[0].fixed).toBe(true);
+    expect(results[0].backup).toBeDefined();
+    expect(backupSessionId).toBeDefined();
+
+    // Verify backup contains old index
+    const backupPath = path.join(
+      tempDir,
+      ".wreckit",
+      "backups",
+      backupSessionId!,
+      "index.json"
+    );
+    const backupContent = await fs.readFile(backupPath, "utf-8");
+    const backupIndex = JSON.parse(backupContent);
+    expect(backupIndex.items[0].id).toBe("old-item");
+  });
+
+  it("no backup for MISSING_PROMPTS fix (creation only)", async () => {
+    const diagnostics = [
+      {
+        itemId: null,
+        severity: "info" as const,
+        code: "MISSING_PROMPTS",
+        message: "prompts directory is missing",
+        fixable: true,
+      },
+    ];
+
+    const { results, backupSessionId } = await applyFixes(tempDir, diagnostics, mockLogger);
+
+    expect(results).toHaveLength(1);
+    expect(results[0].fixed).toBe(true);
+    expect(results[0].backup).toBeUndefined();
+    // No backup session created (empty session cleaned up)
+    expect(backupSessionId).toBeNull();
+  });
+
+  it("backup manifest contains correct file entries", async () => {
+    await createItem(tempDir, "001-item", { state: "researched" });
+    await createItem(tempDir, "002-item", { state: "researched" });
+
+    const diagnostics = [
+      {
+        itemId: "001-item",
+        severity: "warning" as const,
+        code: "STATE_FILE_MISMATCH",
+        message: "State mismatch",
+        fixable: true,
+      },
+      {
+        itemId: "002-item",
+        severity: "warning" as const,
+        code: "STATE_FILE_MISMATCH",
+        message: "State mismatch",
+        fixable: true,
+      },
+    ];
+
+    const { results, backupSessionId } = await applyFixes(tempDir, diagnostics, mockLogger);
+
+    expect(results).toHaveLength(2);
+    expect(backupSessionId).toBeDefined();
+
+    const manifestPath = path.join(
+      tempDir,
+      ".wreckit",
+      "backups",
+      backupSessionId!,
+      "manifest.json"
+    );
+    const manifestContent = await fs.readFile(manifestPath, "utf-8");
+    const manifest = JSON.parse(manifestContent);
+
+    expect(manifest.files).toHaveLength(2);
+    expect(manifest.files[0].item_id).toBe("001-item");
+    expect(manifest.files[1].item_id).toBe("002-item");
+    expect(manifest.files[0].operation).toBe("modified");
+    expect(manifest.files[1].operation).toBe("modified");
+  });
+
+  it("old backups cleaned up after successful fix (keep 10)", async () => {
+    const backupsDir = path.join(tempDir, ".wreckit", "backups");
+    await fs.mkdir(backupsDir, { recursive: true });
+
+    // Create 12 existing backup sessions
+    for (let i = 0; i < 12; i++) {
+      const sessionId = `2025-01-${String(i + 1).padStart(2, "0")}T00-00-00-000Z`;
+      const sessionDir = path.join(backupsDir, sessionId);
+      await fs.mkdir(sessionDir);
+      await fs.writeFile(
+        path.join(sessionDir, "manifest.json"),
+        JSON.stringify({ schema_version: 1, session_id: sessionId, files: [] })
+      );
+    }
+
+    await createItem(tempDir, "001-item", { state: "researched" });
+
+    const diagnostics = [
+      {
+        itemId: "001-item",
+        severity: "warning" as const,
+        code: "STATE_FILE_MISMATCH",
+        message: "State mismatch",
+        fixable: true,
+      },
+    ];
+
+    const { backupSessionId } = await applyFixes(tempDir, diagnostics, mockLogger);
+
+    expect(backupSessionId).toBeDefined();
+
+    // Should now have 10 old sessions + 1 new = 10 total (since cleanup runs after)
+    const entries = await fs.readdir(backupsDir, { withFileTypes: true });
+    const sessions = entries.filter((e) => e.isDirectory());
+
+    // Cleanup keeps 10, so 12 old + 1 new = 13, then cleanup removes 3 oldest
+    expect(sessions.length).toBe(10);
+  });
+});
