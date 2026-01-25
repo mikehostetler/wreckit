@@ -5,54 +5,51 @@
   "user_stories": [
     {
       "id": "US-001",
-      "title": "Document experimental SDK options in README.md",
+      "title": "Mark documentation objective complete in ROADMAP.md",
       "acceptance_criteria": [
-        "README.md contains a table listing all five agent kinds (claude_sdk, amp_sdk, codex_sdk, opencode_sdk, process)",
-        "README.md includes JSON configuration examples for amp_sdk, codex_sdk, and opencode_sdk",
-        "Experimental SDKs are clearly labeled as experimental with a note about potential API changes",
-        "Link to MIGRATION.md for detailed configuration is present"
+        "ROADMAP.md line 26 is changed from '- [ ] Update documentation with supported SDK options' to '- [x] Update documentation with supported SDK options'",
+        "All five M2 objectives in ROADMAP.md lines 22-26 now show [x] checkmarks",
+        "Grep command 'grep \"[x] Update documentation\" ROADMAP.md' returns a match"
       ],
       "priority": 1,
-      "status": "done",
-      "notes": "Updates README.md lines 163-208. Follow existing pattern for SDK Mode and Process Mode sections."
+      "status": "pending",
+      "notes": "Single-line change to mark the milestone objective as complete. All documentation already exists in README.md, MIGRATION.md, and AGENTS.md from previous work."
     },
     {
       "id": "US-002",
-      "title": "Document experimental SDK configuration in MIGRATION.md",
+      "title": "Verify README.md SDK documentation accuracy",
       "acceptance_criteria": [
-        "MIGRATION.md contains 'Experimental SDK Modes' section after Configuration Reference",
-        "Each experimental SDK has a configuration example with JSON code block",
-        "Each experimental SDK has a table documenting its options, types, defaults, and descriptions",
-        "Section includes guidance on switching between SDK modes",
-        "Note that all SDK modes share the same environment variable resolution"
+        "README.md Agent Options table (lines 167-174) lists all five agent kinds: claude_sdk, amp_sdk, codex_sdk, opencode_sdk, process",
+        "README.md Experimental SDK Modes section (lines 189-222) includes JSON configuration examples for amp_sdk, codex_sdk, and opencode_sdk",
+        "Experimental SDKs are clearly labeled with a note about experimental status"
       ],
       "priority": 2,
-      "status": "done",
-      "notes": "Insert after line 186 in MIGRATION.md. Include Amp SDK, Codex SDK, OpenCode SDK subsections."
+      "status": "pending",
+      "notes": "Verification only - documentation already exists. Cross-reference with src/schemas.ts:50-62 to confirm accuracy."
     },
     {
       "id": "US-003",
-      "title": "Update AGENTS.md with all agent kinds",
+      "title": "Verify MIGRATION.md experimental SDK documentation accuracy",
       "acceptance_criteria": [
-        "Config example in AGENTS.md uses kind: claude_sdk format instead of legacy mode: sdk",
-        "AGENTS.md contains a table listing all five agent kinds with descriptions",
-        "Experimental SDKs are labeled as experimental in the table"
+        "MIGRATION.md Experimental SDK Modes section (lines 187-274) contains configuration tables for amp_sdk, codex_sdk, and opencode_sdk",
+        "Each experimental SDK has documented options, types, defaults, and descriptions",
+        "Section includes note that all SDK modes share the same environment variable resolution"
       ],
       "priority": 3,
-      "status": "done",
-      "notes": "Updates lines 79-93. Add Agent Kind Options section with table."
+      "status": "pending",
+      "notes": "Verification only - documentation already exists. Confirm tables match schema definitions in src/schemas.ts."
     },
     {
       "id": "US-004",
-      "title": "Add changelog entry for experimental SDK documentation",
+      "title": "Verify AGENTS.md agent kind options accuracy",
       "acceptance_criteria": [
-        "CHANGELOG.md [Unreleased] section contains Added subsection for experimental SDK documentation",
-        "Entry mentions all three experimental SDK modes (amp_sdk, codex_sdk, opencode_sdk)",
-        "Entry references README.md and MIGRATION.md for details"
+        "AGENTS.md Agent Kind Options table (lines 98-108) lists all five kinds with descriptions",
+        "Experimental SDKs are labeled as experimental in the table",
+        "Reference to README.md for configuration examples is present"
       ],
       "priority": 4,
-      "status": "done",
-      "notes": "Add after line 8 in existing [Unreleased] section. Follow Keep a Changelog format."
+      "status": "pending",
+      "notes": "Verification only - documentation already exists. Confirm developer guidelines are accurate."
     }
   ]
 }

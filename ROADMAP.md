@@ -23,7 +23,7 @@
 - [x] Implement tool allowlist enforcement in `src/agent/codex-sdk-runner.ts`
 - [x] Implement tool allowlist enforcement in `src/agent/opencode-sdk-runner.ts`
 - [x] Add integration tests for each experimental SDK
-- [ ] Update documentation with supported SDK options
+- [x] Update documentation with supported SDK options
 
 ### [M3] Robust Error Handling and Recovery
 **Status:** planned
