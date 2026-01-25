@@ -1,0 +1,174 @@
+{
+  "schema_version": 1,
+  "id": "036-create-wreckit-summarize-to-generate-30-second-fea",
+  "branch_name": "wreckit/036-create-wreckit-summarize-to-generate-30-second-fea",
+  "user_stories": [
+    {
+      "id": "US-001",
+      "title": "Add media directory path utilities to paths.ts",
+      "acceptance_criteria": [
+        "getMediaDir() function added to src/fs/paths.ts that returns path to .wreckit/media directory",
+        "getMediaOutputPath() function added to src/fs/paths.ts that returns path to <item-id>-summary.mp4",
+        "getMediaOutputPath() sanitizes item IDs by replacing '/' with '-' to prevent nested directories",
+        "Path utilities follow existing patterns in src/fs/paths.ts (same naming, structure)",
+        "TypeScript compilation passes: npm run typecheck",
+        "Unit tests verify correct path generation for various item IDs"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Foundation for all other stories. Must be implemented first. Sanitization is critical - item IDs like '036/feature' must become '036-feature-summary.mp4'."
+    },
+    {
+      "id": "US-002",
+      "title": "Create summarize.ts command file with options interface",
+      "acceptance_criteria": [
+        "src/commands/summarize.ts file created with SummarizeOptions interface",
+        "SummarizeOptions includes: item?, phase?, all?, dryRun?, cwd?, verbose?",
+        "determineSourceItems() function implemented following learn.ts pattern (lines 34-76)",
+        "determineSourceItems() supports --item <id> for specific item",
+        "determineSourceItems() supports --phase <state> for state filtering",
+        "determineSourceItems() supports --all for all completed items",
+        "determineSourceItems() defaults to recent 5 completed items when no flags provided",
+        "summarizeCommand() function created with basic structure (implementation in later story)",
+        "TypeScript compilation passes with no import errors"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Follows exact pattern from src/commands/learn.ts. The determineSourceItems() function is critical for flexible item selection. Default to recent 5 done items matches learn command behavior."
+    },
+    {
+      "id": "US-003",
+      "title": "Implement skill loading and context building in summarize command",
+      "acceptance_criteria": [
+        "summarizeCommand() loads media phase skills using loadSkillsForPhase('media', config.skills)",
+        "Logs loaded skill IDs (or warns if no skills loaded)",
+        "Builds JIT context using buildJitContext(skillResult.contextRequirements, item, config, root)",
+        "Formats context for prompt using formatContextForPrompt(context)",
+        "Includes skill_context in prompt variables for agent",
+        "Handles empty context gracefully (no crashes on missing context)",
+        "Logs skill loading and context building for transparency"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Critical for agent to have media generation capabilities. Uses Item 033 infrastructure. Context building provides JIT context from skill requirements (git_status, item_metadata, phase_artifacts)."
+    },
+    {
+      "id": "US-004",
+      "title": "Implement agent execution with media phase tools",
+      "acceptance_criteria": [
+        "Loads media.md prompt template using loadPromptTemplate(root, 'media')",
+        "Renders prompt with item variables: id, title, section, overview, item_path, branch_name, base_branch, completion_signal, skill_context",
+        "Runs agent using runAgentUnion() with allowedTools from getAllowedToolsForPhase('media')",
+        "Uses 3x timeout multiplier (config.timeout_seconds * 3) for video rendering",
+        "Creates .wreckit/media/ directory on-demand if it doesn't exist",
+        "Handles agent failures gracefully (timeout, exit code errors)",
+        "Logs agent start, completion, and errors"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Media phase allows: Read, Write, Glob, Grep, Bash (no Edit). 3x timeout is critical - video rendering takes 5-10 minutes for 30s video. Default timeout 3600s becomes 10800s (3 hours)."
+    },
+    {
+      "id": "US-005",
+      "title": "Implement output validation and file existence checks",
+      "acceptance_criteria": [
+        "Validates expected output path using getMediaOutputPath(root, item.id)",
+        "Checks if video file exists after agent completion",
+        "Validates file is non-empty (stats.size > 0)",
+        "Validates file size is reasonable (< 50MB for 30s video)",
+        "Logs warnings if file missing or wrong location",
+        "Logs errors for empty files",
+        "Logs success with file path and size",
+        "Continues processing next item even if current item fails"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Validation is critical - agent might fail silently or create output at wrong location. 50MB limit prevents massive uncompressed files. Continue-on-error allows batch processing to complete even if some items fail."
+    },
+    {
+      "id": "US-006",
+      "title": "Implement dry-run mode and logging",
+      "acceptance_criteria": [
+        "Dry-run mode skips actual agent execution",
+        "Dry-run logs item details (ID, title)",
+        "Dry-run logs expected output path",
+        "Dry-run logs loaded skills",
+        "Verbose logging shows skill loading details",
+        "Verbose logging shows context building details",
+        "Logs show progress through multiple items",
+        "Logs provide clear visibility into each step (item selection, skill loading, context building, agent execution, validation)"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Dry-run is essential for testing without actual video generation. Verbose logging helps debugging. Follows logging patterns from learn.ts and strategy.ts."
+    },
+    {
+      "id": "US-007",
+      "title": "Register summarize command in CLI",
+      "acceptance_criteria": [
+        "Import summarizeCommand in src/index.ts after other command imports",
+        "Register 'summarize' command in CLI program after learn command",
+        "Command description: 'Generate 30-second feature visualization videos for completed items'",
+        "Supports --item <id> option for specific item",
+        "Supports --phase <state> option for state filtering",
+        "Supports --all option for all completed items",
+        "Integrates with executeCommand wrapper for error handling",
+        "Respects global options: --dry-run, --verbose, --quiet, --cwd",
+        "wreckit --help shows summarize command",
+        "wreckit summarize --help shows all options"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "Follows exact pattern from learn command registration (src/index.ts:625-659). Uses executeCommand wrapper for consistent error handling and logging."
+    },
+    {
+      "id": "US-008",
+      "title": "Handle edge cases and error conditions",
+      "acceptance_criteria": [
+        "Handles no source items found gracefully (warns and exits)",
+        "Handles non-existent item IDs with helpful error message",
+        "Handles items in wrong state gracefully (filters out)",
+        "Handles missing plan.md or prd.json gracefully (uses overview only)",
+        "Handles agent timeout gracefully (logs error, continues to next item)",
+        "Handles agent failure gracefully (logs error, continues to next item)",
+        "Handles missing video output gracefully (warns, continues to next item)",
+        "Handles empty video files gracefully (logs error, continues to next item)",
+        "All error messages are actionable and helpful"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "Robust error handling is critical for user experience. Continue-on-error allows batch processing to complete even if some items fail. Never crash on single item failure."
+    },
+    {
+      "id": "US-009",
+      "title": "Add unit tests for path utilities",
+      "acceptance_criteria": [
+        "Test getMediaDir() returns correct path for various root paths",
+        "Test getMediaOutputPath() generates correct filename format",
+        "Test getMediaOutputPath() sanitizes item IDs (replaces '/' with '-')",
+        "Test getMediaOutputPath() handles special characters in IDs",
+        "All tests pass: npm test",
+        "Tests cover edge cases (empty ID, special characters, nested paths)"
+      ],
+      "priority": 4,
+      "status": "done",
+      "notes": "Unit tests ensure path utilities work correctly. Critical for preventing file system errors. Test edge cases like '036/feature-name', '001-simple', '036-test-case'"
+    },
+    {
+      "id": "US-010",
+      "title": "Add integration tests for item selection",
+      "acceptance_criteria": [
+        "Test determineSourceItems() with --item flag loads specific item",
+        "Test determineSourceItems() with --phase flag filters by state",
+        "Test determineSourceItems() with --all flag loads all done items",
+        "Test determineSourceItems() with no flags defaults to recent 5 done items",
+        "Test determineSourceItems() handles no done items available",
+        "Test determineSourceItems() handles empty items directory",
+        "All tests pass: npm test"
+      ],
+      "priority": 4,
+      "status": "done",
+      "notes": "Integration tests verify item selection logic works correctly. Follows same pattern as learn command item selection."
+    }
+  ]
+}

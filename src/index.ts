@@ -18,6 +18,7 @@ import { rollbackCommand } from "./commands/rollback";
 import { strategyCommand } from "./commands/strategy";
 import { executeRoadmapCommand } from "./commands/execute-roadmap";
 import { learnCommand } from "./commands/learn";
+import { summarizeCommand } from "./commands/summarize";
 // import { sdkInfoCommand } from "./commands/sdk-info";
 import { runOnboardingIfNeeded } from "./onboarding";
 import { resolveId } from "./domain/resolveId";
@@ -644,6 +645,38 @@ program
             output: options.output,
             merge: options.merge,
             review: options.review,
+            dryRun: globalOpts.dryRun,
+            cwd: resolveCwd(globalOpts.cwd),
+            verbose: globalOpts.verbose,
+          },
+          logger
+        );
+      },
+      logger,
+      {
+        verbose: globalOpts.verbose,
+        quiet: globalOpts.quiet,
+        dryRun: globalOpts.dryRun,
+        cwd: resolveCwd(globalOpts.cwd),
+      }
+    );
+  });
+
+program
+  .command("summarize")
+  .description("Generate 30-second feature visualization videos for completed items")
+  .option("--item <id>", "Generate video for specific item")
+  .option("--phase <state>", "Generate videos for items in specific state")
+  .option("--all", "Generate videos for all completed items")
+  .action(async (options, cmd) => {
+    const globalOpts = cmd.optsWithGlobals();
+    await executeCommand(
+      async () => {
+        await summarizeCommand(
+          {
+            item: options.item,
+            phase: options.phase,
+            all: options.all,
             dryRun: globalOpts.dryRun,
             cwd: resolveCwd(globalOpts.cwd),
             verbose: globalOpts.verbose,

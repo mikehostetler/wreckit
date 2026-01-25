@@ -112,3 +112,13 @@ export function getBackupSessionDir(root: string, sessionId: string): string {
 export function getBackupManifestPath(root: string, sessionId: string): string {
   return path.join(getBackupSessionDir(root, sessionId), "manifest.json");
 }
+
+export function getMediaDir(root: string): string {
+  return path.join(getWreckitDir(root), "media");
+}
+
+export function getMediaOutputPath(root: string, itemId: string): string {
+  // Sanitize item ID for filename (replace slashes with dashes)
+  const sanitizedId = itemId.replace(/\//g, "-");
+  return path.join(getMediaDir(root), `${sanitizedId}-summary.mp4`);
+}
