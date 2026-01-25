@@ -9946,3 +9946,12 @@ Running next item...
     Or run `git checkout -- .` to discard changes (destructive)[39m
 [31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
 ❌ Crashed with code 1. Restarting in 5s...
+I see the watchdog.log has captured some of my commands in its output. The item.json was updated by the wreckit system. Let me check what the actual state of prd.json and progress.log is in the working directory vs. what's committed:Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: git show-ref --verify --quiet refs/heads/wreckit/029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mBranch wreckit/029-add-integration-tests-for-each-experimental-sdk exists, switching to it[39m
+[34mDEBUG[39m: [36mRunning: git checkout wreckit/029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: git rev-parse --abbrev-ref HEAD[39m
+[34mDEBUG[39m: [36mRunning: git status --porcelain[39m
+[34mDEBUG[39m: [36mRunning: git add -A[39m
