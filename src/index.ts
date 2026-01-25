@@ -18,6 +18,7 @@ import { rollbackCommand } from "./commands/rollback";
 import { strategyCommand } from "./commands/strategy";
 import { executeRoadmapCommand } from "./commands/execute-roadmap";
 import { learnCommand } from "./commands/learn";
+import { dreamCommand } from "./commands/dream";
 import { summarizeCommand } from "./commands/summarize";
 // import { sdkInfoCommand } from "./commands/sdk-info";
 import { runOnboardingIfNeeded } from "./onboarding";
@@ -647,6 +648,36 @@ program
             output: options.output,
             merge: options.merge,
             review: options.review,
+            dryRun: globalOpts.dryRun,
+            cwd: resolveCwd(globalOpts.cwd),
+            verbose: globalOpts.verbose,
+          },
+          logger
+        );
+      },
+      logger,
+      {
+        verbose: globalOpts.verbose,
+        quiet: globalOpts.quiet,
+        dryRun: globalOpts.dryRun,
+        cwd: resolveCwd(globalOpts.cwd),
+      }
+    );
+  });
+
+program
+  .command("dream")
+  .description("Autonomous ideation: Scan codebase for TODOs and gaps to generate new roadmap items")
+  .option("--max-items <number>", "Maximum number of items to generate (default: 5)", "5")
+  .option("--source <type>", "Filter by source type: todo, gap, debt, or all (default)", "all")
+  .action(async (options, cmd) => {
+    const globalOpts = cmd.optsWithGlobals();
+    await executeCommand(
+      async () => {
+        await dreamCommand(
+          {
+            maxItems: parseInt(options.maxItems, 10),
+            source: options.source,
             dryRun: globalOpts.dryRun,
             cwd: resolveCwd(globalOpts.cwd),
             verbose: globalOpts.verbose,
