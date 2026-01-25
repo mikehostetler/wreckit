@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "id": "037-generate-launchpad-marketing-video",
+  "branch_name": "wreckit/037-generate-launchpad-marketing-video",
+  "user_stories": [
+    {
+      "id": "US-001",
+      "title": "Enhance media prompt template with Launchpad-specific guidance",
+      "acceptance_criteria": [
+        "Launchpad-specific section added to src/prompts/media.md",
+        "Section includes visual style requirements (dark theme, neon accents, kinetic typography)",
+        "Section includes technical specifications (1080p, 30fps, 30s duration, <50MB)",
+        "Section includes detailed scene structure with timing (4 scenes: title card 0-5s, agent loop 5-15s, watchdog 15-25s, CTA 25-30s)",
+        "Section includes React component guidelines with inline style examples",
+        "Section includes Remotion hooks examples (interpolate, spring, useCurrentFrame)",
+        "Section includes complete Root.tsx template code",
+        "Section includes LaunchpadVideo.tsx template with scene structure",
+        "Section includes rendering workflow steps (FFmpeg check, project creation, test render, final render)",
+        "Section includes best practices for agent to follow",
+        "Section includes troubleshooting section covering common issues",
+        "All code examples are syntactically valid TypeScript and React",
+        "Prompt mentions completion signal: <promise>COMPLETE</promise>",
+        "Prompt provides FFmpeg installation instructions for all platforms"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "COMPLETED: Enhanced src/prompts/media.md with comprehensive Launchpad-style video generation guide. Added visual style requirements, technical specifications, scene structure, React component guidelines, rendering workflow, code examples, best practices, and troubleshooting section."
+    },
+    {
+      "id": "US-002",
+      "title": "Execute summarize command to generate Launchpad-style video",
+      "acceptance_criteria": [
+        "Command executed: wreckit summarize --item 037-generate-launchpad-marketing-video",
+        "Media phase skills loaded successfully (remotion-generation)",
+        "JIT context built (package.json checked, git status retrieved)",
+        "Agent created temporary Remotion project directory",
+        "Agent created Root.tsx with composition registration",
+        "Agent created LaunchpadVideo.tsx with main video component",
+        "Agent executed test render (first 3 seconds at low quality)",
+        "Agent executed final render to expected output path",
+        "Video file exists at .wreckit/media/037-generate-launchpad-marketing-video-summary.mp4",
+        "Video file size is greater than 0 bytes",
+        "Video file size is less than 50MB",
+        "Command logged success message with file size",
+        "Temporary remotion-temp directory cleaned up (if agent didn't auto-clean)",
+        "Completion signal output by agent: <promise>COMPLETE</promise>"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "This is command execution only - no code changes. The summarize command and media generation infrastructure are already complete. Agent will autonomously create Remotion project and render video based on enhanced prompt."
+    },
+    {
+      "id": "US-003",
+      "title": "Verify generated video quality and content",
+      "acceptance_criteria": [
+        "Video file plays successfully in media player (VLC, QuickTime, etc.)",
+        "Video duration is approximately 30 seconds (within 1-2 second tolerance)",
+        "Video resolution is 1920x1080 (Full HD)",
+        "Visual quality is acceptable (clear text, smooth animations, no major artifacts)",
+        "Scene 1 (0-5s): Title card 'Wreckit: The Factory is Alive' with kinetic typography visible",
+        "Scene 2 (5-15s): Agent loop visualization with code blocks and terminal scrolling",
+        "Scene 3 (15-25s): Watchdog and media layer with animated diagrams",
+        "Scene 4 (25-30s): Call to action with 'Get Started Today' text",
+        "Dark theme with neon accents (blue/purple gradients) present",
+        "Fast transitions visible between scenes (<300ms)",
+        "Text is readable with appropriate font sizes (bold, modern typography)",
+        "Animations are smooth with no stuttering or freezing",
+        "No rendering glitches, artifacts, or corrupted frames",
+        "Audio not required (video-only is acceptable)"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "Manual verification required - open the generated video file and watch it end-to-end. This is a quality assurance step to ensure the agent-produced video meets Launchpad style requirements."
+    }
+  ]
+}

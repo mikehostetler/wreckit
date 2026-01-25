@@ -1,0 +1,91 @@
+# Plan Template Structure: Before vs After
+
+## BEFORE (Broken)
+
+# [Title] Implementation Plan
+├── ## Implementation Plan Title  ❌ MISSING
+├── ## Overview  ✓
+├── ## Current State Analysis  ❌ WRONG NAME (should be "Current State")
+├── ## Desired End State  ✓
+├── ## What We're NOT Doing  ✓
+├── ## Implementation Approach  ✓
+├── ### Phase 1: [Name]  ❌ NOT WRAPPED
+├── ### Phase 2: [Name] ❌ NOT WRAPPED
+└── ## Testing Strategy  ✓
+
+Error: Missing "Phases" container!
+Error: Section name mismatch!
+
+
+## AFTER (Fixed)
+
+# [Title] Implementation Plan
+├── ## Implementation Plan Title  ✓ ADDED
+├── ## Overview  ✓
+├── ## Current State  ✓ FIXED
+├── ## Desired End State  ✓
+├── ## What We're NOT Doing  ✓
+├── ## Implementation Approach  ✓
+├── ## Phases  ✓ ADDED CONTAINER
+│   ├── ### Phase 1: [Name]  ✓ NOW PROPERLY WRAPPED
+│   └── ### Phase 2: [Name]  ✓ NOW PROPERLY WRAPPED
+└── ## Testing Strategy  ✓
+
+✓ All sections match validator!
+✓ Phases properly contained!
+
+
+## Validation Flow
+
+Agent generates plan.md
+    ↓
+Follows template instructions
+    ↓
+Creates plan.md with sections
+    ↓
+Validator reads plan.md
+    ↓
+Regex: /^#+\s*current state\s*$/m
+    ↓
+❌ MATCH FAILED! (has "current state analysis")
+    ↓
+Validation Error
+
+---
+
+## After Fix
+
+Agent generates plan.md
+    ↓
+Follows FIXED template instructions
+    ↓
+Creates plan.md with CORRECT sections
+    ↓
+Validator reads plan.md
+    ↓
+Regex: /^#+\s*current state\s*$/m
+    ↓
+✓ MATCH FOUND!
+    ↓
+All regexes pass
+    ↓
+✓ VALIDATION SUCCESSFUL!
+
+
+## Required Changes
+
+1. Rename section header:
+   - ## Current State Analysis
+   + ## Current State
+
+2. Add missing section:
+   + ## Implementation Plan Title
+
+3. Wrap phases in container:
+   - ### Phase 1: ...
+   - ### Phase 2: ...
+   + ## Phases
+     + ### Phase 1: ...
+     + ### Phase 2: ...
+
+File: src/prompts/plan.md
