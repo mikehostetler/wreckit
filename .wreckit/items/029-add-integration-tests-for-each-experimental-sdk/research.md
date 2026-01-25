@@ -1,6 +1,6 @@
 # Research: Add integration tests for each experimental SDK
 
-**Date**: 2025-01-24
+**Date**: 2026-01-24
 **Item**: 029-add-integration-tests-for-each-experimental-sdk
 
 ## Research Question
@@ -10,316 +10,525 @@ From milestone [M2] Finish Experimental SDK Integrations
 
 ## Summary
 
-The wreckit project has three experimental SDK runners (Amp, Codex, OpenCode) that wrap the Claude Agent SDK's `query()` function. Currently, each has basic unit tests that verify dry-run mode and tool allowlist resolution, but there are **no integration tests** that verify the SDKs work correctly through the full workflow pipeline, handle errors appropriately, or properly integrate with MCP servers.
+The three experimental SDK runners (Amp, Codex, OpenCode) have been fully implemented with tool allowlist enforcement, but currently only have unit tests that cover dry-run mode. The existing tests in `src/__tests__/{amp,codex,opencode}-sdk-runner.test.ts` verify `getEffectiveToolAllowlist` resolution and dry-run behavior, but do not test actual SDK execution paths including message streaming, error handling, timeout behavior, and TUI event emission.
 
-The existing unit tests in `src/__tests__/amp-sdk-runner.test.ts`, `src/__tests__/codex-sdk-runner.test.ts`, and `src/__tests__/opencode-sdk-runner.test.ts` only test the runners in dry-run mode, which bypasses actual SDK calls. The stable `claude_sdk` runner also lacks comprehensive integration tests - its behavior is primarily tested through workflow tests which mock the agent runner entirely.
+Integration tests are needed to verify that each SDK runner correctly: (1) enforces tool allowlists via the SDK's `tools` option, (2) handles authentication errors gracefully with helpful messages, (3) streams output via `onStdoutChunk`/`onStderrChunk` callbacks, (4) emits structured `AgentEvent` objects for TUI integration, (5) respects timeout configuration and aborts cleanly, and (6) produces consistent `AgentResult` structures. The tests should follow the established patterns in `src/__tests__/edge-cases/mock-agent.isospec.ts` and `src/__tests__/integration/idempotent.test.ts`.
 
-To complete milestone [M2], we need integration tests that verify each experimental SDK runner: (1) handles SDK messages correctly (assistant, tool_result, result, error), (2) handles all error categories appropriately (auth, rate-limit, context, network), (3) respects timeout and cancellation, (4) passes tool allowlists and MCP servers to the SDK correctly, and (5) emits appropriate agent events for TUI consumption. These tests should use mocked SDK responses to avoid real API calls while exercising the full code paths.
+The main challenge is that all three SDK runners use the same underlying `@anthropic-ai/claude-agent-sdk` package and call its `query()` function. Testing the actual SDK execution requires either mocking the SDK's async iterator or creating controlled test scenarios. The recommended approach is to mock the SDK module to provide predictable message sequences, allowing verification of message formatting, event emission, and error handling without requiring actual API credentials.
 
 ## Current State Analysis
 
 ### Existing Implementation
 
-The three experimental SDK runners are located in `src/agent/`:
-- `src/agent/amp-sdk-runner.ts:1-372` - Amp SDK runner (experimental)
-- `src/agent/codex-sdk-runner.ts:1-372` - Codex SDK runner (experimental)
-- `src/agent/opencode-sdk-runner.ts:1-372` - OpenCode SDK runner (experimental)
+The three experimental SDK runners are fully implemented with identical structure:
 
-All three runners share nearly identical implementations:
-1. They all import `query` from `@anthropic-ai/claude-agent-sdk` (line 1)
-2. They all implement `getEffectiveToolAllowlist()` for phase-based tool restrictions (lines 38-51)
-3. They all have the same error handling patterns in `handleSdkError()` (lines 186-293)
-4. They all support `mcpServers`, `allowedTools`, and `phase` options
-5. They all use `buildSdkEnv()` for environment configuration (line 95)
-6. They all format messages via `formatSdkMessage()` (lines 295-328)
-7. They all emit events via `emitAgentEventsFromSdkMessage()` (lines 330-371)
+| SDK Runner | File | Lines | Status |
+|------------|------|-------|--------|
+| Amp SDK | `src/agent/amp-sdk-runner.ts` | 372 | Fully implemented |
+| Codex SDK | `src/agent/codex-sdk-runner.ts` | 372 | Fully implemented |
+| OpenCode SDK | `src/agent/opencode-sdk-runner.ts` | 372 | Fully implemented |
 
-The stable SDK runner `src/agent/claude-sdk-runner.ts:1-301` follows a similar pattern but lacks the `phase` parameter for tool allowlisting - it relies on explicit `allowedTools` only.
+Each runner includes:
+- `getEffectiveToolAllowlist()` function (lines 38-51) - Priority resolution of tool allowlist
+- `runXxxSdkAgent()` function (lines 53-184) - Main execution with timeout, abort, and streaming
+- `handleSdkError()` function (lines 186-293) - Error categorization (auth, rate limit, context, network)
+- `formatSdkMessage()` function (lines 295-328) - Converts SDK messages to output strings
+- `emitAgentEventsFromSdkMessage()` function (lines 330-371) - Emits structured TUI events
 
 ### Key Files
 
-- `src/agent/runner.ts:348-494` - The `runAgentUnion()` function dispatches to correct SDK runner based on `config.kind`
-- `src/agent/runner.ts:443-457` - Amp SDK dispatch case
-- `src/agent/runner.ts:459-473` - Codex SDK dispatch case
-- `src/agent/runner.ts:475-489` - OpenCode SDK dispatch case
-- `src/agent/toolAllowlist.ts:57-117` - Tool allowlist definitions for all phases
-- `src/schemas.ts:50-53` - `AmpSdkAgentSchema` definition
-- `src/schemas.ts:55-58` - `CodexSdkAgentSchema` definition
-- `src/schemas.ts:60-62` - `OpenCodeSdkAgentSchema` definition
-- `src/__tests__/amp-sdk-runner.test.ts:1-131` - Basic dry-run and allowlist tests for Amp
-- `src/__tests__/codex-sdk-runner.test.ts:1-128` - Basic dry-run and allowlist tests for Codex
-- `src/__tests__/opencode-sdk-runner.test.ts:1-127` - Basic dry-run and allowlist tests for OpenCode
-- `src/__tests__/agent.test.ts:1-428` - Tests for main agent runner including SDK mode
-- `src/__tests__/workflow.test.ts:1-2042` - Comprehensive workflow tests that mock `runAgentUnion`
-- `src/__tests__/integration/README.md:1-81` - Manual SDK testing instructions
+| File | Description |
+|------|-------------|
+| `src/__tests__/amp-sdk-runner.test.ts:1-131` | Existing unit tests - dry-run and `getEffectiveToolAllowlist` |
+| `src/__tests__/codex-sdk-runner.test.ts:1-129` | Existing unit tests - dry-run and `getEffectiveToolAllowlist` |
+| `src/__tests__/opencode-sdk-runner.test.ts:1-128` | Existing unit tests - dry-run and `getEffectiveToolAllowlist` |
+| `src/__tests__/edge-cases/mock-agent.isospec.ts:1-394` | Integration test pattern for mock-agent mode |
+| `src/__tests__/edge-cases/dry-run.isospec.ts:1-556` | Integration test pattern for dry-run mode |
+| `src/__tests__/integration/idempotent.test.ts:1-189` | Integration test pattern for workflow idempotency |
+| `src/__tests__/integration/README.md:1-81` | Manual testing guide for SDK mode feature parity |
+| `src/agent/toolAllowlist.ts:57-117` | Phase-based tool allowlists (`PHASE_TOOL_ALLOWLISTS`) |
+| `src/workflow/itemWorkflow.ts:248-261` | Workflow integration - calls `runAgentUnion` with `allowedTools` |
+| `src/agent/runner.ts:443-489` | Dispatch code that calls experimental SDK runners |
 
-### Existing Test Patterns
+### Current Test Coverage
 
-The existing SDK runner tests follow a consistent pattern (`amp-sdk-runner.test.ts:22-131`):
+The existing unit tests cover (identical patterns in all three files):
 
-1. **Test helpers**: Create mock logger and default config (lines 6-21)
-2. **dry-run mode tests**: Verify success without calling SDK (lines 29-62)
-3. **getEffectiveToolAllowlist tests**: Verify tool allowlist priority (lines 65-129)
+**`amp-sdk-runner.test.ts` (Lines 1-131):**
+- Dry-run mode: returns success without calling SDK (lines 30-43)
+- Dry-run mode: logs tool restrictions when `allowedTools` provided (lines 45-63)
+- `getEffectiveToolAllowlist`: explicit `allowedTools` takes precedence over phase (lines 66-88)
+- `getEffectiveToolAllowlist`: falls back to phase-based allowlist (lines 90-110)
+- `getEffectiveToolAllowlist`: no restrictions when neither specified (lines 112-129)
 
-The workflow tests (`workflow.test.ts:12-31`) use vi.fn() module mocking:
+### Missing Test Coverage
+
+The following scenarios are NOT tested:
+
+1. **SDK Execution Path**: Actual calls to `query()` with message iteration
+2. **Message Streaming**: `onStdoutChunk`/`onStderrChunk` callback invocation
+3. **Event Emission**: `onAgentEvent` callback with structured `AgentEvent` objects
+4. **Error Handling**: Authentication (401), rate limit (429), context (tokens), network (ECONNREFUSED)
+5. **Timeout Behavior**: AbortController triggering after `timeoutSeconds`
+6. **Tool Allowlist Enforcement**: Verification that `tools` option is passed to SDK
+7. **MCP Server Integration**: Verification that `mcpServers` option is passed to SDK
+
+### Reference Patterns
+
+**Mock-Agent Integration Tests (`mock-agent.isospec.ts:35-80`):**
 ```typescript
-const mockedRunAgentUnion = vi.fn();
-mock.module("../agent/runner", () => ({
-  runAgentUnion: mockedRunAgentUnion,
-  getAgentConfigUnion: mockedGetAgentConfigUnion,
-}));
-```
+// Pattern: Test agent behavior without real API calls
+describe("Test 19: Basic mock-agent run", () => {
+  it("logs simulation message, outputs emoji lines, and includes completion signal", async () => {
+    const stdoutChunks: string[] = [];
+    const options: RunAgentOptions = {
+      config,
+      cwd: tempDir,
+      prompt: "test prompt",
+      logger: mockLogger,
+      mockAgent: true,  // <-- Key flag
+      onStdoutChunk: (chunk) => stdoutChunks.push(chunk),
+    };
 
-The `agent.test.ts:332-362` tests SDK mode via dry-run:
-```typescript
-it("dry-run mode works with SDK mode", async () => {
-  const config: AgentConfig = {
-    mode: "sdk",
-    // ...
-  };
-  const result = await runAgent(options);
-  expect(result.success).toBe(true);
+    const result = await runAgent(options);
+
+    expect(result.success).toBe(true);
+    expect(stdoutChunks.join("")).toContain(completionSignal);
+  });
 });
 ```
 
-### Integration Points
+**Dry-Run Integration Tests (`dry-run.isospec.ts:237-265`):**
+```typescript
+// Pattern: Test dry-run prevents mutations while still logging
+describe("Test 15: Agent dry-run (no spawn)", () => {
+  it("logs dry-run info and returns success without spawning agent", async () => {
+    const result = await runAgent({
+      config: agentConfig,
+      cwd: tempDir,
+      prompt: "Test prompt for agent",
+      logger,
+      dryRun: true,
+    });
 
-The SDK runners are invoked through `runAgentUnion()` in `runner.ts:389-493`. Each phase in `workflow/itemWorkflow.ts` calls this function:
+    expect(result.success).toBe(true);
+    expect(result.output).toBe("[dry-run] No output");
+  });
+});
+```
 
-- Research phase: Calls with `phase: "research"` for read-only tools
-- Plan phase: Calls with `phase: "plan"` and `mcpServers` for save_prd
-- Implement phase: Calls with `phase: "implement"` and `mcpServers` for update_story_status
-- PR phase: Calls with `phase: "pr"` for git operations
+**SDK Mode Feature Parity Checklist (`integration/README.md:69-80`):**
+```markdown
+- [ ] Process mode: dry-run works
+- [ ] SDK mode: dry-run works
+- [ ] Process mode: mock-agent works
+- [ ] SDK mode: mock-agent works
+- [ ] Process mode: timeout handling
+- [ ] SDK mode: timeout handling
+- [ ] Process mode: error handling
+- [ ] SDK mode: error handling
+- [ ] Config schema validates both modes
+- [ ] Prompt templates render for both modes
+```
 
 ## Technical Considerations
 
 ### Dependencies
 
-- `@anthropic-ai/claude-agent-sdk` (v0.2.7) - The underlying SDK that must be mocked
-- `bun:test` - Test framework providing `mock`, `describe`, `it`, `expect`, `beforeEach`, `afterEach`, `vi`
-- Tests require mocking at the `query` function level to simulate SDK responses
+**Test Framework:**
+- `bun:test` - Built-in test runner (already used in project)
+- `vi` / `mock` - Vitest mocking utilities (already used in `*.isospec.ts` tests)
+
+**Modules to Mock:**
+- `@anthropic-ai/claude-agent-sdk` - Mock the `query()` function to return controlled message sequences
+- `src/agent/env.js` - Mock `buildSdkEnv()` to avoid real credential resolution
+- `src/agent/runner.js` - Mock `registerSdkController()`/`unregisterSdkController()` for cleanup verification
+- No new dependencies required
+
+### SDK Message Types
+
+From `amp-sdk-runner.ts` `formatSdkMessage()` (lines 295-328):
+
+```typescript
+// Message types to simulate in tests:
+type SdkMessage =
+  | { type: "assistant"; message?: { content: ContentBlock[] }; content?: ContentBlock[] }
+  | { type: "tool_result"; result?: string; content?: string; tool_use_id?: string }
+  | { type: "result"; result?: string; subtype?: string }
+  | { type: "error"; message?: string };
+
+type ContentBlock =
+  | { type: "text"; text: string }
+  | { type: "tool_use"; id: string; name: string; input: Record<string, unknown> };
+```
+
+### Agent Event Types
+
+From `src/tui/agentEvents.ts` (referenced in SDK runners):
+
+```typescript
+export type AgentEvent =
+  | { type: "assistant_text"; text: string }
+  | { type: "tool_started"; toolUseId: string; toolName: string; input: Record<string, unknown> }
+  | { type: "tool_result"; toolUseId: string; result: string }
+  | { type: "run_result"; subtype?: string }
+  | { type: "error"; message: string };
+```
 
 ### Patterns to Follow
 
-1. **Module mocking pattern** (from `workflow.test.ts:26-31`):
-   ```typescript
-   const mockedQuery = vi.fn();
-   mock.module("@anthropic-ai/claude-agent-sdk", () => ({
-     query: mockedQuery,
-   }));
-   ```
+1. **Module Mocking**: Use `mock.module()` to replace `@anthropic-ai/claude-agent-sdk` before importing the runner
+2. **Async Iterator Mocking**: Mock `query()` to return an async generator that yields controlled messages
+3. **Callback Verification**: Capture callbacks in arrays and verify contents after test completion
+4. **Error Simulation**: Mock `query()` to throw specific errors for error handling tests
+5. **Cleanup**: Use `beforeEach`/`afterEach` for temp directory and mock cleanup
 
-2. **Async generator mock for streaming** - The SDK `query()` returns an async generator:
-   ```typescript
-   async function* mockQueryGenerator(messages: any[]) {
-     for (const msg of messages) {
-       yield msg;
-     }
-   }
-   ```
+### Tool Allowlist Verification
 
-3. **Mock logger pattern** (from `amp-sdk-runner.test.ts:6-14`):
-   ```typescript
-   function createMockLogger(): Logger {
-     return {
-       debug: mock(() => {}),
-       info: mock(() => {}),
-       warn: mock(() => {}),
-       error: mock(() => {}),
-       json: mock(() => {}),
-     };
-   }
-   ```
+The SDK options construction in `amp-sdk-runner.ts` (lines 103-114):
 
-4. **Temp directory pattern** (from `workflow.test.ts:288-295`):
-   ```typescript
-   beforeEach(async () => {
-     tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "wreckit-test-"));
-   });
-   afterEach(async () => {
-     await fs.rm(tempDir, { recursive: true, force: true });
-   });
-   ```
+```typescript
+const sdkOptions: any = {
+  cwd,
+  permissionMode: "bypassPermissions",
+  allowDangerouslySkipPermissions: true,
+  abortController,
+  env: sdkEnv,
+  ...(options.mcpServers && { mcpServers: options.mcpServers }),
+  ...(effectiveTools && { tools: effectiveTools }),  // <-- Tool allowlist
+};
+```
 
-5. **Test naming convention**: `*.test.ts` for unit tests, `*.isospec.ts` for isolated/integration tests
+Tests should verify that:
+1. `tools` option is passed when `allowedTools` or `phase` is specified
+2. `tools` option is NOT passed when neither is specified
+3. Correct tools are passed for each phase (e.g., `research` phase -> `["Read", "Write", "Glob", "Grep"]`)
 
-### What Integration Tests Should Cover
+### Phase-Based Tool Allowlists
 
-Based on `specs/008-agent-runtime.md:46-105` and the implementation:
+From `toolAllowlist.ts:57-117`:
 
-1. **SDK Message Handling**:
-   - `formatSdkMessage()` for each message type: assistant (text/tool_use), tool_result, result, error
-   - `emitAgentEventsFromSdkMessage()` for TUI event emission
-
-2. **Error Handling Categories** (from `handleSdkError()` lines 186-293):
-   - Authentication errors (401, "API key", "Unauthorized")
-   - Rate limit errors (429, "rate limit", "too many requests")
-   - Context window errors ("context", "tokens", "too large")
-   - Network errors (ECONNREFUSED, ENOTFOUND, "connection")
-   - Generic errors (fallback case)
-
-3. **Timeout and Cancellation**:
-   - AbortController cancellation triggers timeout result
-   - Timeout cleanup via `unregisterSdkController()`
-
-4. **Tool Allowlist Enforcement**:
-   - Phase-specific allowlist passed to SDK `tools` option
-   - Explicit `allowedTools` overrides phase
-   - Empty allowlist when neither specified
-
-5. **MCP Server Integration**:
-   - `mcpServers` option passed through to SDK
-   - Tool calls routed to MCP server handlers
-
-6. **Event Emission**:
-   - `onAgentEvent` callbacks receive correct event types
-   - `onStdoutChunk`/`onStderrChunk` receive formatted output
+| Phase | Allowed Tools |
+|-------|---------------|
+| `idea` | `mcp__wreckit__save_parsed_ideas`, `mcp__wreckit__save_interview_ideas` |
+| `research` | `Read`, `Write`, `Glob`, `Grep` |
+| `plan` | `Read`, `Write`, `Edit`, `Glob`, `Grep`, `mcp__wreckit__save_prd` |
+| `implement` | `Read`, `Write`, `Edit`, `Glob`, `Grep`, `Bash`, `mcp__wreckit__update_story_status` |
+| `pr` | `Read`, `Glob`, `Grep`, `Bash` |
+| `complete` | `Read`, `Glob`, `Grep`, `mcp__wreckit__complete` |
+| `strategy` | `Read`, `Write`, `Glob`, `Grep` |
 
 ## Risks and Mitigations
 
 | Risk | Impact | Mitigation |
 |------|--------|------------|
-| SDK mock complexity (async generator) | Medium | Create reusable mock generator factory with common message types |
-| Tests flaky due to timing | Medium | Use deterministic mocks; avoid real setTimeout; mock timers if needed |
-| Code duplication across three SDK tests | Low | Create shared test helpers and fixture generators |
-| SDK API changes break mocks | Medium | Pin SDK version in tests; test against SDK type definitions |
-| Missing edge cases in error handling | Medium | Base test cases on actual error patterns in `handleSdkError()` |
-| Mock leakage between tests | Low | Reset mocks in `beforeEach`; use isolated module imports |
+| SDK mock doesn't match real SDK behavior | High | Study `@anthropic-ai/claude-agent-sdk` message format; update mock when SDK version changes |
+| Mocking prevents catching real SDK bugs | Medium | Keep existing dry-run tests; add manual testing guidance in README |
+| Tests become flaky due to async timing | Medium | Use deterministic async generators; avoid `setTimeout` in mocks; use `vi.useFakeTimers()` |
+| Error handling paths differ between SDKs | Low | All three runners have identical error handling code; test one thoroughly, spot-check others |
+| MCP server integration not testable | Medium | Mock MCP server factory; verify `mcpServers` option is passed through |
+| Three near-identical test files | Low | Create shared test utilities; consider parameterized tests for common cases |
+| Module mocking order-dependent | Medium | Place mock.module() calls before imports; isolate tests in separate files if needed |
 
 ## Recommended Approach
 
-### Phase 1: Create Shared Test Infrastructure
+### Phase 1: Create Test Infrastructure
 
-Create `src/__tests__/sdk-integration/shared/` with:
+Create a shared test helper module `src/__tests__/sdk-test-helpers.ts` with:
 
-1. **`mock-sdk.ts`** - Mock SDK query generator:
-   ```typescript
-   export function createMockQuery(messages: SdkMessage[]) {
-     return async function* mockQuery() {
-       for (const msg of messages) yield msg;
-     };
-   }
+1. **Mock SDK Query Factory**: Creates async generators that yield controlled message sequences
+2. **Mock Logger Factory**: Standard mock logger pattern (already exists in each test file)
+3. **Sample Message Fixtures**: Pre-defined message sequences for common scenarios
+4. **Callback Capture Utilities**: Helpers to capture and verify callback invocations
+5. **Error Fixture Factories**: Pre-defined error objects for each error category
+
+### Phase 2: Implement Integration Tests
+
+Create three integration test files:
+- `src/__tests__/amp-sdk-runner.integration.test.ts`
+- `src/__tests__/codex-sdk-runner.integration.test.ts`
+- `src/__tests__/opencode-sdk-runner.integration.test.ts`
+
+Each file should test:
+
+**Test Suite 1: Message Streaming (Tests 1-3)**
+1. `onStdoutChunk` receives formatted text for assistant messages
+2. `onStdoutChunk` receives tool call formatted output (with JSON input)
+3. `onStderrChunk` receives error messages
+
+**Test Suite 2: Event Emission (Tests 4-8)**
+4. Emits `assistant_text` event for text content blocks
+5. Emits `tool_started` event for tool_use content blocks
+6. Emits `tool_result` event for tool result messages
+7. Emits `run_result` event for result messages
+8. Emits `error` event for error messages
+
+**Test Suite 3: Error Handling (Tests 9-13)**
+9. Auth error (401/API key) produces helpful credential guidance
+10. Rate limit error (429) produces retry guidance
+11. Context error (tokens) produces scope reduction guidance
+12. Network error (ECONNREFUSED) produces connectivity guidance
+13. Generic error includes error message in output
+
+**Test Suite 4: Tool Allowlist Enforcement (Tests 14-17)**
+14. `tools` option passed to SDK when `allowedTools` specified
+15. `tools` option passed to SDK when `phase` specified
+16. `tools` option NOT passed when neither specified
+17. Correct phase-specific tools passed for each phase
+
+**Test Suite 5: Timeout and Abort (Tests 18-20)**
+18. Timeout triggers abort controller after `timeoutSeconds`
+19. Aborted run returns `timedOut: true` and `success: false`
+20. Cleanup runs after abort (unregisterSdkController called)
+
+**Test Suite 6: MCP Server Integration (Test 21)**
+21. `mcpServers` option passed through to SDK
+
+### Phase 3: Verify Test Coverage
+
+Run tests and verify:
+1. All three SDK runners pass all integration tests
+2. Test results match across runners (they should be identical)
+3. No regressions in existing unit tests
+
+### Phase 4: Update Documentation
+
+1. Update `ROADMAP.md` line 25 to mark objective complete:
+   ```markdown
+   - [x] Add integration tests for each experimental SDK
    ```
 
-2. **`mock-messages.ts`** - Message factories:
-   ```typescript
-   export function createAssistantTextMessage(text: string);
-   export function createAssistantToolUseMessage(name: string, input: object);
-   export function createToolResultMessage(result: string);
-   export function createResultMessage(result: string);
-   export function createErrorMessage(message: string);
-   ```
+2. Update `src/__tests__/integration/README.md` with integration test instructions
 
-3. **`test-helpers.ts`** - Common utilities:
-   ```typescript
-   export function createMockLogger(): Logger;
-   export function createAmpConfig(): AmpSdkAgentConfig;
-   export function createCodexConfig(): CodexSdkAgentConfig;
-   export function createOpenCodeConfig(): OpenCodeSdkAgentConfig;
-   ```
+3. Update `package.json` test script if tests need to run in a specific order
 
-### Phase 2: Implement Integration Tests for Each SDK
+## Implementation Details
 
-For each SDK, create `src/__tests__/sdk-integration/<sdk>-integration.test.ts`:
+### Mock SDK Query Function
 
 ```typescript
-describe("<SDK> Integration", () => {
-  describe("message handling", () => {
-    it("formats assistant text messages correctly");
-    it("formats assistant tool_use messages correctly");
-    it("formats tool_result messages correctly");
-    it("formats result messages correctly");
-    it("formats error messages correctly");
-  });
+// src/__tests__/sdk-test-helpers.ts
 
-  describe("error handling", () => {
-    it("handles authentication errors with helpful message");
-    it("handles rate limit errors");
-    it("handles context window errors");
-    it("handles network errors");
-    it("handles generic errors");
-  });
+import { vi } from "bun:test";
+import type { Logger } from "../logging";
 
-  describe("tool allowlist", () => {
-    it("passes phase-specific tools to SDK");
-    it("prefers explicit allowedTools over phase");
-    it("passes no tools when unrestricted");
-  });
+// Capture options passed to SDK for verification
+export let capturedSdkOptions: any = null;
 
-  describe("event emission", () => {
-    it("emits assistant_text events for text blocks");
-    it("emits tool_started events for tool_use blocks");
-    it("emits tool_result events");
-    it("emits run_result events");
-    it("emits error events");
-  });
+// Factory to create mock query that yields provided messages
+export function createMockQueryGenerator(messages: any[]) {
+  return async function* (args: { prompt: string; options: any }) {
+    capturedSdkOptions = args.options;
+    for (const msg of messages) {
+      yield msg;
+    }
+  };
+}
 
-  describe("timeout and cancellation", () => {
-    it("cancels via AbortController on timeout");
-    it("cleans up controller after completion");
-    it("returns timeout result when aborted");
-  });
+// Factory to create mock query that throws an error
+export function createMockQueryError(error: Error) {
+  return async function* () {
+    throw error;
+  };
+}
 
-  describe("MCP integration", () => {
-    it("passes mcpServers option to SDK");
-    it("integrates with wreckit MCP server");
-  });
-});
-```
-
-### Phase 3: Add Runner Dispatch Tests
-
-Create `src/__tests__/sdk-integration/runner-dispatch.test.ts`:
-
-```typescript
-describe("runAgentUnion SDK dispatch", () => {
-  it("dispatches amp_sdk to runAmpSdkAgent");
-  it("dispatches codex_sdk to runCodexSdkAgent");
-  it("dispatches opencode_sdk to runOpenCodeSdkAgent");
-  it("passes all options through to SDK runner");
-});
+export function resetCapturedOptions() {
+  capturedSdkOptions = null;
+}
 ```
 
 ### Test File Structure
 
-```
-src/__tests__/sdk-integration/
-  shared/
-    mock-sdk.ts           # Mock SDK query generator
-    mock-messages.ts      # Message factory functions
-    test-helpers.ts       # Common test utilities
-  amp-integration.test.ts     # Amp SDK integration tests
-  codex-integration.test.ts   # Codex SDK integration tests
-  opencode-integration.test.ts # OpenCode SDK integration tests
-  runner-dispatch.test.ts     # runAgentUnion dispatch tests
+```typescript
+// src/__tests__/amp-sdk-runner.integration.test.ts
+
+import { describe, it, expect, beforeEach, afterEach, vi, mock } from "bun:test";
+import * as fs from "node:fs/promises";
+import * as path from "node:path";
+import * as os from "node:os";
+import type { Logger } from "../logging";
+import type { AmpSdkAgentConfig } from "../schemas";
+import type { AgentEvent } from "../tui/agentEvents";
+
+// Mock setup - must be before runner import
+let mockQueryImpl: any = null;
+let capturedSdkOptions: any = null;
+
+mock.module("@anthropic-ai/claude-agent-sdk", () => ({
+  query: vi.fn((args: any) => {
+    capturedSdkOptions = args.options;
+    return mockQueryImpl ? mockQueryImpl() : (async function* () {})();
+  }),
+}));
+
+mock.module("../agent/env.js", () => ({
+  buildSdkEnv: vi.fn(async () => ({})),
+}));
+
+const mockRegister = vi.fn();
+const mockUnregister = vi.fn();
+mock.module("../agent/runner.js", () => ({
+  registerSdkController: mockRegister,
+  unregisterSdkController: mockUnregister,
+}));
+
+// Import after mocks
+const { runAmpSdkAgent } = await import("../agent/amp-sdk-runner");
+
+describe("Amp SDK Runner Integration Tests", () => {
+  let tempDir: string;
+  let mockLogger: Logger;
+
+  beforeEach(async () => {
+    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "amp-sdk-test-"));
+    mockLogger = {
+      debug: vi.fn(),
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+      json: vi.fn(),
+    };
+    capturedSdkOptions = null;
+    mockQueryImpl = null;
+    vi.clearAllMocks();
+  });
+
+  afterEach(async () => {
+    await fs.rm(tempDir, { recursive: true, force: true });
+  });
+
+  describe("message streaming", () => {
+    it("streams assistant text to onStdoutChunk", async () => {
+      const stdoutChunks: string[] = [];
+      mockQueryImpl = async function* () {
+        yield { type: "assistant", content: [{ type: "text", text: "Hello world" }] };
+        yield { type: "result", result: "Done" };
+      };
+
+      await runAmpSdkAgent({
+        config: { kind: "amp_sdk" },
+        cwd: tempDir,
+        prompt: "test",
+        logger: mockLogger,
+        onStdoutChunk: (chunk) => stdoutChunks.push(chunk),
+      });
+
+      expect(stdoutChunks.join("")).toContain("Hello world");
+    });
+
+    // ... more tests
+  });
+});
 ```
 
-### Update Test Script
+### Shared Test Utilities
 
-Add to `package.json` scripts:
-```json
-{
-  "test:sdk": "bun test ./src/__tests__/sdk-integration/",
-  "test": "... && bun test ./src/__tests__/sdk-integration/*.test.ts"
+```typescript
+// src/__tests__/sdk-test-helpers.ts
+
+import { vi } from "bun:test";
+import type { Logger } from "../logging";
+
+export function createMockLogger(): Logger {
+  return {
+    debug: vi.fn(),
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    json: vi.fn(),
+  };
+}
+
+export function createMessageFixtures() {
+  return {
+    textMessage: {
+      type: "assistant",
+      content: [{ type: "text", text: "Hello, world!" }],
+    },
+    toolUseMessage: {
+      type: "assistant",
+      content: [{
+        type: "tool_use",
+        id: "tool-123",
+        name: "Read",
+        input: { file_path: "/test/file.ts" },
+      }],
+    },
+    toolResultMessage: {
+      type: "tool_result",
+      tool_use_id: "tool-123",
+      result: "File contents here",
+    },
+    resultMessage: {
+      type: "result",
+      result: "Task completed",
+      subtype: "success",
+    },
+    errorMessage: {
+      type: "error",
+      message: "Something went wrong",
+    },
+  };
+}
+
+export function createErrorFixtures() {
+  return {
+    authError: new Error("authentication failed: 401 Unauthorized"),
+    rateLimitError: new Error("rate limit exceeded: 429 Too Many Requests"),
+    contextError: new Error("maximum context length exceeded"),
+    networkError: new Error("ECONNREFUSED: Connection refused"),
+    genericError: new Error("Unknown error occurred"),
+  };
+}
+
+export function createAmpConfig() {
+  return { kind: "amp_sdk" as const };
+}
+
+export function createCodexConfig() {
+  return { kind: "codex_sdk" as const, model: "codex-1" };
+}
+
+export function createOpenCodeConfig() {
+  return { kind: "opencode_sdk" as const };
 }
 ```
 
+## Files to Create/Modify
+
+| File | Action | Description |
+|------|--------|-------------|
+| `src/__tests__/sdk-test-helpers.ts` | **Create** | Shared test helpers for SDK integration tests |
+| `src/__tests__/amp-sdk-runner.integration.test.ts` | **Create** | Integration tests for Amp SDK runner |
+| `src/__tests__/codex-sdk-runner.integration.test.ts` | **Create** | Integration tests for Codex SDK runner |
+| `src/__tests__/opencode-sdk-runner.integration.test.ts` | **Create** | Integration tests for OpenCode SDK runner |
+| `src/__tests__/integration/README.md` | **Modify** | Add integration test instructions |
+| `ROADMAP.md:25` | **Modify** | Mark objective as complete `[x]` |
+| `package.json:30` | **Modify** | Add integration tests to test script (if running separately) |
+
 ## Open Questions
 
-1. **Should tests require real API credentials for live testing?**
-   - Recommendation: No. All tests should use mocked SDK responses for CI reliability. Optional live tests could be added with skip conditions for local verification.
+1. **Test Isolation**: Should integration tests run separately from unit tests? The current `package.json` test script runs tests in specific order due to module mocking. Integration tests with SDK mocking may need similar isolation.
 
-2. **Should we test SDK/process mode fallback?**
-   - This is only relevant for `claude_sdk` which has fallback behavior. Experimental SDKs don't have fallback, so not applicable.
+2. **Coverage Threshold**: What level of code coverage is required? The runners have ~370 lines each, but much is duplicated across runners. Should we aim for 80%+ coverage on one runner and verify the others pass the same tests?
 
-3. **How to test AbortController timeout accurately?**
-   - Use short timeout (e.g., 10ms) in tests and mock the SDK to delay, or use `vi.useFakeTimers()` to control time progression.
+3. **CI Runtime**: Will mocking the SDK significantly change test runtime? Current tests run quickly because dry-run mode exits early. Integration tests with async generators may be slower.
 
-4. **How detailed should streaming tests be?**
-   - At minimum, verify callbacks are invoked with correct event types. Detailed content verification may be fragile.
+4. **Manual Testing**: Should the integration tests completely replace manual testing, or should we keep the manual testing guide in `README.md`? Manual testing catches real SDK version compatibility issues that mocked tests can't detect.
 
-5. **Should MCP server integration be tested here or separately?**
-   - The MCP server has its own tests in `ideas-mcp-server.test.ts`. Integration tests should verify the `mcpServers` option is passed correctly; detailed MCP behavior testing is out of scope.
+5. **Error Message Verification**: How strictly should we verify error message content? The error handling includes long multi-line help text. Should tests verify exact content or just key phrases?
 
-6. **Should we verify behavior parity between all three experimental SDKs?**
-   - Currently all three use identical code paths. Consider parameterized/table-driven tests that run the same assertions against all three runners.
+6. **Parameterized vs. Separate Tests**: Should we create one parameterized test file that runs the same tests against all three runners, or three separate files? Parameterized tests reduce duplication but may be harder to debug.
+
+## References
+
+- Existing unit tests: `src/__tests__/amp-sdk-runner.test.ts`, `src/__tests__/codex-sdk-runner.test.ts`, `src/__tests__/opencode-sdk-runner.test.ts`
+- Mock-agent test pattern: `src/__tests__/edge-cases/mock-agent.isospec.ts:35-80`
+- Dry-run test pattern: `src/__tests__/edge-cases/dry-run.isospec.ts:237-265`
+- Integration test pattern: `src/__tests__/integration/idempotent.test.ts`
+- SDK runners: `src/agent/amp-sdk-runner.ts`, `src/agent/codex-sdk-runner.ts`, `src/agent/opencode-sdk-runner.ts`
+- Tool allowlist definitions: `src/agent/toolAllowlist.ts:57-117`
+- Workflow integration: `src/workflow/itemWorkflow.ts:248-261`
+- Agent dispatch: `src/agent/runner.ts:443-489`
+- Milestone context: `ROADMAP.md:16-26` ([M2] Finish Experimental SDK Integrations)
+- Test framework docs: Bun test documentation

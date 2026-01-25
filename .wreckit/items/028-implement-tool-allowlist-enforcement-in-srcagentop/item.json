@@ -3,17 +3,21 @@
   "id": "028-implement-tool-allowlist-enforcement-in-srcagentop",
   "title": "Implement tool allowlist enforcement in `src/agent/opencode-sdk-runner.ts`",
   "section": "roadmap",
-  "state": "implementing",
+  "state": "done",
   "overview": "From milestone [M2] Finish Experimental SDK Integrations\n\n**Motivation:** Strategic milestone: Finish Experimental SDK Integrations",
-  "branch": null,
-  "pr_url": null,
-  "pr_number": null,
-  "last_error": "Git pre-flight check failed:\n\n• There are uncommitted changes in the working directory\n    Run `git stash` to temporarily save changes\n    Or run `git commit -am \"message\"` to commit changes\n    Or run `git checkout -- .` to discard changes (destructive)",
+  "branch": "wreckit/028-implement-tool-allowlist-enforcement-in-srcagentop",
+  "pr_url": "https://github.com/jmanhype/wreckit/pull/7",
+  "pr_number": 7,
+  "last_error": null,
   "created_at": "2026-01-24T14:10:12.333Z",
-  "updated_at": "2026-01-24T23:04:10.374Z",
+  "updated_at": "2026-01-24T23:51:40.917Z",
   "motivation": "Strategic milestone: Finish Experimental SDK Integrations",
   "depends_on": [
     "027-implement-tool-allowlist-enforcement-in-srcagentco"
   ],
-  "campaign": "M2"
+  "campaign": "M2",
+  "completed_at": "2026-01-24T23:51:40.917Z",
+  "merged_at": "2026-01-24T23:47:52Z",
+  "merge_commit_sha": "96305c34a559d9796c2e981040919b6b92544ff2",
+  "checks_passed": null
 }

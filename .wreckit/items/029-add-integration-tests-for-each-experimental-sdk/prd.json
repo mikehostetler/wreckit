@@ -17,7 +17,7 @@
         "Tests pass: bun test src/__tests__/sdk-integration/amp-sdk.integration.test.ts"
       ],
       "priority": 1,
-      "status": "pending",
+      "status": "done",
       "notes": "Establishes the testing pattern for other SDKs. Mock the query function to return async generators of controlled messages."
     },
     {
@@ -32,7 +32,7 @@
         "Tests pass: bun test src/__tests__/sdk-integration/codex-sdk.integration.test.ts"
       ],
       "priority": 2,
-      "status": "pending",
+      "status": "done",
       "notes": "Mirror Amp SDK test structure. Codex SDK runner is nearly identical but may diverge in future."
     },
     {
@@ -47,7 +47,7 @@
         "Tests pass: bun test src/__tests__/sdk-integration/opencode-sdk.integration.test.ts"
       ],
       "priority": 2,
-      "status": "pending",
+      "status": "done",
       "notes": "Complete the integration test coverage for all experimental SDKs."
     },
     {
@@ -60,7 +60,7 @@
         "No existing tests broken by addition"
       ],
       "priority": 3,
-      "status": "pending",
+      "status": "done",
       "notes": "Add to the end of the test script chain. Use pattern: && bun test src/__tests__/sdk-integration/*.integration.test.ts"
     }
   ]
