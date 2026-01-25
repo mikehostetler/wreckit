@@ -5,6 +5,7 @@ export {
   runPhaseResearch,
   runPhasePlan,
   runPhaseImplement,
+  runPhaseCritique,
   runPhasePr,
   runPhaseComplete,
   getNextPhase,

@@ -197,3 +197,23 @@ export type CodexSdkAgentConfig = z.infer<typeof CodexSdkAgentSchema>;
 export type OpenCodeSdkAgentConfig = z.infer<typeof OpenCodeSdkAgentSchema>;
 export type AgentConfigUnion = z.infer<typeof AgentConfigUnionSchema>;
 export type BatchProgress = z.infer<typeof BatchProgressSchema>;
+
+// Backup manifest schemas for doctor --fix
+export const BackupFileEntrySchema = z.object({
+  original_path: z.string(), // Relative path from repo root
+  backup_path: z.string(), // Relative path within backup session dir
+  operation: z.enum(["modified", "deleted"]),
+  diagnostic_code: z.string(),
+  item_id: z.string().nullable(),
+});
+
+export const BackupManifestSchema = z.object({
+  schema_version: z.literal(1),
+  session_id: z.string(),
+  created_at: z.string(),
+  reason: z.literal("doctor-fix"),
+  files: z.array(BackupFileEntrySchema),
+});
+
+export type BackupFileEntry = z.infer<typeof BackupFileEntrySchema>;
+export type BackupManifest = z.infer<typeof BackupManifestSchema>;

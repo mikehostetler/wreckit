@@ -11,6 +11,7 @@ import {
   runPhaseResearch,
   runPhasePlan,
   runPhaseImplement,
+  runPhaseCritique,
   runPhasePr,
   runPhaseComplete,
   getNextPhase,
@@ -44,6 +45,7 @@ async function phaseArtifactsExist(
       return planExists && prdExists;
     }
     case "implement":
+    case "critique":
     case "pr":
     case "complete":
       return false;
@@ -96,6 +98,7 @@ export async function runCommand(
     research: runPhaseResearch,
     plan: runPhasePlan,
     implement: runPhaseImplement,
+    critique: runPhaseCritique,
     pr: runPhasePr,
     complete: runPhaseComplete,
   };
@@ -144,6 +147,7 @@ export async function runCommand(
       research: "researched",
       plan: "planned", 
       implement: "implementing",
+      critique: "critique",
       pr: "in_pr",
       complete: "done",
     };

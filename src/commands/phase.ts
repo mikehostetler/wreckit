@@ -8,6 +8,7 @@ import {
   runPhaseResearch,
   runPhasePlan,
   runPhaseImplement,
+  runPhaseCritique,
   runPhasePr,
   runPhaseComplete,
   type PhaseResult,
@@ -15,7 +16,7 @@ import {
 } from "../workflow";
 import { formatDryRunPhase } from "./dryRunFormatter";
 
-export type Phase = "research" | "plan" | "implement" | "pr" | "complete";
+export type Phase = "research" | "plan" | "implement" | "critique" | "pr" | "complete";
 
 export interface PhaseOptions {
   force?: boolean;
@@ -62,8 +63,14 @@ const PHASE_CONFIG: Record<
     skipIfInTarget: false,
     runFn: runPhaseImplement,
   },
+  critique: {
+    requiredState: ["implementing", "critique"],
+    targetState: "critique",
+    skipIfInTarget: true,
+    runFn: runPhaseCritique,
+  },
   pr: {
-    requiredState: "implementing",
+    requiredState: "critique",
     targetState: "in_pr",
     skipIfInTarget: true,
     runFn: runPhasePr,
@@ -118,6 +125,7 @@ function isInvalidTransition(
     "researched",
     "planned",
     "implementing",
+    "critique",
     "in_pr",
     "done",
   ];
