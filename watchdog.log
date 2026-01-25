@@ -8631,3 +8631,1199 @@ Running next item...
 [34mDEBUG[39m: [36mRunning: git rev-parse --abbrev-ref HEAD[39m
 [34mDEBUG[39m: [36mRunning: git status --porcelain[39m
 [34mDEBUG[39m: [36mRunning: git add -A[39m
+[34mDEBUG[39m: [36mRunning: git commit -m feat(029-add-integration-tests-for-each-experimental-sdk): implement Add integration tests for each experimental SDK[39m
+[34mDEBUG[39m: [36mRunning: git symbolic-ref --quiet HEAD[39m
+[34mDEBUG[39m: [36mRunning: git status --porcelain[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Git pre-flight check failed:
+
+• There are uncommitted changes in the working directory
+    Run `git stash` to temporarily save changes
+    Or run `git commit -am "message"` to commit changes
+    Or run `git checkout -- .` to discard changes (destructive)[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Git pre-flight check failed:
+
+• There are uncommitted changes in the working directory
+    Run `git stash` to temporarily save changes
+    Or run `git commit -am "message"` to commit changes
+    Or run `git checkout -- .` to discard changes (destructive)[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+Running next item...
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+Running next item...
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+Running next item...
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+Running next item...
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+Running next item...
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+Running next item...
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+Running next item...
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+Running next item...
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+Running next item...
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+Running next item...
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning complete phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 8 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mSkipping plan phase (artifacts exist, use --force to regenerate)[39m
+[32mINFO[39m: [36mPlan already exists for 029-add-integration-tests-for-each-experimental-sdk, skipping[39m
+[32mINFO[39m: [36mRunning implement phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mImplementing story US-005 (iteration 1/100)[39m
+[34mDEBUG[39m: [36mRunning: git status --porcelain[39m
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+
+```tool
+Read
+{
+  "file_path": "/Users/speed/wreckit/.wreckit/items/029-add-integration-tests-for-each-experimental-sdk/prd.json"
+}
+```
+
+```tool
+Read
+{
+  "file_path": "/Users/speed/wreckit/ROADMAP.md"
+}
+```
+Running next item...
+
+```tool
+Read
+{
+  "file_path": "/Users/speed/wreckit/src/__tests__/integration/README.md"
+}
+```
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Now I can see the current state. Two user stories are pending:
+- **US-005** (priority 1): Update ROADMAP.md to mark integration tests objective complete  
+- **US-006** (priority 2): Update integration README with SDK test documentation
+
+Let me start with US-005 (highest priority) - updating the ROADMAP.md to mark the integration tests objective as complete.
+```tool
+Edit
+{
+  "replace_all": false,
+  "file_path": "/Users/speed/wreckit/ROADMAP.md",
+  "old_string": "- [ ] Add integration tests for each experimental SDK",
+  "new_string": "- [x] Add integration tests for each experimental SDK"
+}
+```
+Running next item...
+Now let me update the integration README with SDK test documentation (US-006):[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+
+```tool
+Edit
+{
+  "replace_all": false,
+  "file_path": "/Users/speed/wreckit/src/__tests__/integration/README.md",
+  "old_string": "2. **Integration tests**:\n   - Run `npm test` to execute all tests\n   - Tests use shell commands for process mode\n   - SDK mode uses mock implementations to avoid API calls",
+  "new_string": "2. **Integration tests**:\n   - Run `npm test` to execute all tests\n   - Tests use shell commands for process mode\n   - SDK mode uses mock implementations to avoid API calls\n\n3. **SDK Integration tests** (`src/__tests__/sdk-integration/*.integration.test.ts`):\n   - Tests for Amp, Codex, and OpenCode experimental SDK runners\n   - Mock-based testing (no API credentials required)\n   - Covers: message formatting, event emission, error handling, SDK options\n   - Run with: `bun test ./src/__tests__/sdk-integration/*.integration.test.ts`"
+}
+```
+Running next item...
+Now let me verify the changes and run the SDK integration tests to ensure everything works:[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+
+```tool
+Bash
+{
+  "command": "cd /Users/speed/wreckit && git diff ROADMAP.md",
+  "description": "Show git diff for ROADMAP.md"
+}
+```
+
+```tool
+Bash
+{
+  "command": "cd /Users/speed/wreckit && git diff src/__tests__/integration/README.md",
+  "description": "Show git diff for integration README.md"
+}
+```
+
+```tool
+Bash
+{
+  "command": "cd /Users/speed/wreckit && bun test ./src/__tests__/sdk-integration/*.integration.test.ts 2>&1 | head -100",
+  "description": "Run SDK integration tests to verify they pass"
+}
+```
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+
+```tool
+Read
+{
+  "file_path": "/tmp/claude/-Users-speed-wreckit--wreckit-items-029-add-integration-tests-for-each-experimental-sdk/tasks/badd5d9.output"
+}
+```
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+
+```tool
+Read
+{
+  "file_path": "/tmp/claude/-Users-speed-wreckit--wreckit-items-029-add-integration-tests-for-each-experimental-sdk/tasks/badd5d9.output",
+  "offset": 100
+}
+```
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+The test output was truncated. Let me check if the tests completed successfully:
+```tool
+Bash
+{
+  "command": "cd /Users/speed/wreckit && bun test ./src/__tests__/sdk-integration/*.integration.test.ts 2>&1 | tail -20",
+  "description": "Check final test results for SDK integration tests"
+}
+```
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+All 81 SDK integration tests pass. Now let me commit the changes:
+```tool
+Bash
+{
+  "command": "cd /Users/speed/wreckit && git status",
+  "description": "Check git status"
+}
+```
+
+```tool
+Bash
+{
+  "command": "cd /Users/speed/wreckit && git log --oneline -5",
+  "description": "Show recent commit messages for style"
+}
+```
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+
+```tool
+Bash
+{
+  "command": "cd /Users/speed/wreckit && git add ROADMAP.md src/__tests__/integration/README.md && git commit -m \"$(cat <<'EOF'\ndocs: mark SDK integration tests objective complete in ROADMAP\n\nUpdate ROADMAP.md to show integration tests for experimental SDKs are\ncomplete. Also add SDK integration test documentation to the integration\nREADME describing test coverage and run commands.\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n)\"",
+  "description": "Commit ROADMAP and README documentation updates"
+}
+```
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Now let me update the story statuses in the PRD:
+```tool
+mcp__wreckit__update_story_status
+{
+  "story_id": "US-005",
+  "status": "done"
+}
+```
+
+```tool
+mcp__wreckit__update_story_status
+{
+  "story_id": "US-006",
+  "status": "done"
+}
+```
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Let me update the progress log and verify all stories are done:
+```tool
+Read
+{
+  "file_path": "/Users/speed/wreckit/.wreckit/items/029-add-integration-tests-for-each-experimental-sdk/progress.log"
+}
+```
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+
+```tool
+Edit
+{
+  "replace_all": false,
+  "file_path": "/Users/speed/wreckit/.wreckit/items/029-add-integration-tests-for-each-experimental-sdk/progress.log",
+  "old_string": "Implementation verified complete.\n[2026-01-25T00:03:57.147Z] Completed iteration 1 for story US-001",
+  "new_string": "Implementation verified complete.\n[2026-01-25T00:03:57.147Z] Completed iteration 1 for story US-001\n\n## Documentation Updates - 2025-01-25\n\n### US-005: Update ROADMAP.md to mark integration tests objective complete\n- **Status**: Done\n- **Commit**: 97cb54d\n- Changed checkbox from `[ ]` to `[x]` on line 25\n- Git diff shows only the checkbox change (plus README addition)\n\n### US-006: Update integration README with SDK test documentation\n- **Status**: Done\n- **Commit**: 97cb54d\n- Added section 3 \"SDK Integration tests\" to `src/__tests__/integration/README.md`\n- Documents test file paths, coverage areas, and run command\n\n### All Stories Complete\nAll 6 user stories have been implemented:\n- US-001: Amp SDK integration tests - DONE\n- US-002: Codex SDK integration tests - DONE\n- US-003: OpenCode SDK integration tests - DONE\n- US-004: Package.json test script update - DONE\n- US-005: ROADMAP.md milestone update - DONE\n- US-006: Integration README documentation - DONE\n\nItem 029-add-integration-tests-for-each-experimental-sdk is complete."
+}
+```
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Let me verify all stories are now marked as done:
+```tool
+Read
+{
+  "file_path": "/Users/speed/wreckit/.wreckit/items/029-add-integration-tests-for-each-experimental-sdk/prd.json"
+}
+```
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+The prd.json still shows US-005 and US-006 as pending. This appears to be the source of truth that wasn't updated by the MCP tool. Let me manually update it:Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mPhase pr failed for 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+
+```tool
+Edit
+{
+  "replace_all": false,
+  "file_path": "/Users/speed/wreckit/.wreckit/items/029-add-integration-tests-for-each-experimental-sdk/prd.json",
+  "old_string": "    {\n      \"id\": \"US-005\",\n      \"title\": \"Update ROADMAP.md to mark integration tests objective complete\",\n      \"acceptance_criteria\": [\n        \"ROADMAP.md line 25 shows [x] Add integration tests for each experimental SDK\",\n        \"Git diff shows only the checkbox change from [ ] to [x]\",\n        \"Milestone [M2] objectives list is accurate\"\n      ],\n      \"priority\": 1,\n      \"status\": \"pending\",\n      \"notes\": \"Simple documentation update to mark the objective as complete.\"\n    },\n    {\n      \"id\": \"US-006\",\n      \"title\": \"Update integration README with SDK test documentation\",\n      \"acceptance_criteria\": [\n        \"src/__tests__/integration/README.md documents SDK integration tests\",\n        \"Includes path to test files: src/__tests__/sdk-integration/*.integration.test.ts\",\n        \"Describes what the tests cover: message formatting, event emission, error handling, SDK options\",\n        \"Includes run command: bun test ./src/__tests__/sdk-integration/*.integration.test.ts\"\n      ],\n      \"priority\": 2,\n      \"status\": \"pending\",\n      \"notes\": \"Add a new section to the existing integration test README.\"\n    }",
+  "new_string": "    {\n      \"id\": \"US-005\",\n      \"title\": \"Update ROADMAP.md to mark integration tests objective complete\",\n      \"acceptance_criteria\": [\n        \"ROADMAP.md line 25 shows [x] Add integration tests for each experimental SDK\",\n        \"Git diff shows only the checkbox change from [ ] to [x]\",\n        \"Milestone [M2] objectives list is accurate\"\n      ],\n      \"priority\": 1,\n      \"status\": \"done\",\n      \"notes\": \"Simple documentation update to mark the objective as complete.\"\n    },\n    {\n      \"id\": \"US-006\",\n      \"title\": \"Update integration README with SDK test documentation\",\n      \"acceptance_criteria\": [\n        \"src/__tests__/integration/README.md documents SDK integration tests\",\n        \"Includes path to test files: src/__tests__/sdk-integration/*.integration.test.ts\",\n        \"Describes what the tests cover: message formatting, event emission, error handling, SDK options\",\n        \"Includes run command: bun test ./src/__tests__/sdk-integration/*.integration.test.ts\"\n      ],\n      \"priority\": 2,\n      \"status\": \"done\",\n      \"notes\": \"Add a new section to the existing integration test README.\"\n    }"
+}
+```
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: git show-ref --verify --quiet refs/heads/wreckit/029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mBranch wreckit/029-add-integration-tests-for-each-experimental-sdk exists, switching to it[39m
+[34mDEBUG[39m: [36mRunning: git checkout wreckit/029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: git rev-parse --abbrev-ref HEAD[39m
+[34mDEBUG[39m: [36mRunning: git status --porcelain[39m
+[34mDEBUG[39m: [36mRunning: git add -A[39m

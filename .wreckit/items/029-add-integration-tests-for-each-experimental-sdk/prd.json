@@ -62,6 +62,31 @@
       "priority": 3,
       "status": "done",
       "notes": "Add to the end of the test script chain. Use pattern: && bun test src/__tests__/sdk-integration/*.integration.test.ts"
+    },
+    {
+      "id": "US-005",
+      "title": "Update ROADMAP.md to mark integration tests objective complete",
+      "acceptance_criteria": [
+        "ROADMAP.md line 25 shows [x] Add integration tests for each experimental SDK",
+        "Git diff shows only the checkbox change from [ ] to [x]",
+        "Milestone [M2] objectives list is accurate"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Simple documentation update to mark the objective as complete."
+    },
+    {
+      "id": "US-006",
+      "title": "Update integration README with SDK test documentation",
+      "acceptance_criteria": [
+        "src/__tests__/integration/README.md documents SDK integration tests",
+        "Includes path to test files: src/__tests__/sdk-integration/*.integration.test.ts",
+        "Describes what the tests cover: message formatting, event emission, error handling, SDK options",
+        "Includes run command: bun test ./src/__tests__/sdk-integration/*.integration.test.ts"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Add a new section to the existing integration test README."
     }
   ]
 }

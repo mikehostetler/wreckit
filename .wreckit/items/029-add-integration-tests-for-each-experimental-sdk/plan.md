@@ -2,520 +2,240 @@
 
 ## Overview
 
-This plan implements comprehensive integration tests for the three experimental SDK runners (Amp, Codex, OpenCode) to complete milestone [M2] Finish Experimental SDK Integrations. Currently, each runner has only dry-run unit tests that bypass actual SDK interaction. The new integration tests will verify SDK message handling, error handling, event emission, tool allowlist enforcement, and SDK options passthrough using mocked SDK responses.
+This item adds integration tests for the three experimental SDK runners (Amp, Codex, OpenCode) to verify their behavior beyond the existing unit tests that only cover dry-run mode. Integration tests are needed to verify message streaming, event emission, error handling, tool allowlist enforcement, and SDK option passing without requiring actual API credentials.
 
 ## Current State Analysis
 
-### Existing Tests (Unit Tests Only)
+### Integration Tests Already Implemented
 
-The experimental SDK runners each have unit tests in:
-- `src/__tests__/amp-sdk-runner.test.ts` (lines 1-131)
-- `src/__tests__/codex-sdk-runner.test.ts` (lines 1-129)
-- `src/__tests__/opencode-sdk-runner.test.ts` (lines 1-128)
+The integration tests for all three experimental SDK runners **have been fully implemented**:
 
-These tests only cover:
-1. **Dry-run mode**: Returns early before SDK interaction (lines 29-62 in each)
-2. **Tool allowlist resolution**: Tests `getEffectiveToolAllowlist` logic (lines 65-130 in each)
+| Test File | Location | Lines | Status |
+|-----------|----------|-------|--------|
+| Amp SDK Integration | `src/__tests__/sdk-integration/amp-sdk.integration.test.ts` | 669 | Complete |
+| Codex SDK Integration | `src/__tests__/sdk-integration/codex-sdk.integration.test.ts` | 681 | Complete |
+| OpenCode SDK Integration | `src/__tests__/sdk-integration/opencode-sdk.integration.test.ts` | 687 | Complete |
 
-### What's Missing
+### Test Coverage Summary
 
-The existing tests use `dryRun: true` which bypasses all SDK interaction. The following are NOT tested:
-1. `formatSdkMessage` function (lines 295-328 in each runner)
-2. `emitAgentEventsFromSdkMessage` function (lines 330-371 in each runner)
-3. `handleSdkError` function (lines 186-293 in each runner)
-4. Message streaming loop behavior (lines 117-147)
-5. SDK options passthrough (mcpServers, tools, cwd, permissionMode)
+Each integration test file covers:
+
+1. **Message Formatting** (5 tests)
+   - Assistant text messages
+   - Assistant tool_use messages
+   - Tool result messages
+   - Result messages
+   - Error messages
+
+2. **Event Emission** (5 tests)
+   - `assistant_text` events
+   - `tool_started` events
+   - `tool_result` events
+   - `run_result` events
+   - `error` events
+
+3. **Error Handling** (9 tests)
+   - Authentication errors (401, Invalid API key)
+   - Rate limit errors (429)
+   - Context window errors (token limits)
+   - Network errors (ECONNREFUSED, ENOTFOUND)
+   - Generic errors
+
+4. **Stdout/Stderr Callback Routing** (2 tests)
+   - Non-error messages to stdout
+   - Error messages to stderr
+
+5. **Successful Completion** (3 tests)
+   - Accumulated output
+   - Prompt passing
+   - cwd option passing
+
+6. **SDK Options** (3 tests)
+   - mcpServers option
+   - tools option (allowedTools)
+   - bypassPermissions mode
+
+### Test Infrastructure
+
+The tests use Bun's test framework with:
+- `mock.module()` to mock `@anthropic-ai/claude-agent-sdk`
+- `mock.module()` to mock `buildSdkEnv` for filesystem isolation
+- `vi.fn()` for mock query implementations
+- Async generators for controlled message sequences
+
+### Package.json Test Script
+
+The test script at `package.json:30` already includes the integration tests:
+```bash
+bun test ./src/__tests__/sdk-integration/*.integration.test.ts
+```
 
 ### Key Discoveries
 
-- **SDK Import**: All three runners import `query` from `@anthropic-ai/claude-agent-sdk` (line 1)
-- **Runner Structure**: Near-identical implementations (372 lines each), differing only in type names and error messages
-- **Message Types**: SDK returns messages of types: `assistant`, `tool_result`, `result`, `error` (lines 297-327)
-- **Event Types**: Emits AgentEvent types: `assistant_text`, `tool_started`, `tool_result`, `run_result`, `error` (src/tui/agentEvents.ts:1-7)
-- **Error Categories**: Auth (401), rate limit (429), context, network, generic (lines 196-292)
-- **Testing Pattern**: Project uses `mock.module()` for module mocking, `vi.fn()` for function mocks (see workflow.test.ts:12-31)
+- **Already Complete**: All integration test files exist and are fully implemented with comprehensive test coverage
+- **Pattern Followed**: Tests follow the established mock pattern from research recommendations (mock SDK at query level)
+- **No API Required**: Tests mock the SDK entirely, requiring no API credentials
+- **ROADMAP Outdated**: The ROADMAP.md line 25 still shows `[ ]` instead of `[x]` for this objective
 
 ## Desired End State
 
-Each experimental SDK runner will have integration tests that:
-1. **Verify message handling** - Each message type (assistant, tool_result, result, error) is correctly formatted and routed
-2. **Verify error categorization** - Each error category returns appropriate user-facing messages
-3. **Verify event emission** - Correct AgentEvent types emitted for TUI consumption
-4. **Verify tool allowlist** - Phase-based and explicit allowlist passed to SDK correctly
-5. **Verify SDK options passthrough** - `mcpServers`, `cwd`, `permissionMode` passed correctly
+The milestone objective should be marked complete in ROADMAP.md after verifying:
 
-### Verification
+1. All integration tests pass: `bun test ./src/__tests__/sdk-integration/*.integration.test.ts`
+2. Tests cover the required scenarios per research recommendations
+3. ROADMAP.md is updated to reflect completion
 
-The tests are complete when:
-- `bun test src/__tests__/sdk-integration/` passes
-- All error categories have dedicated test cases
-- All message types have formatting tests
-- Event emission is verified for each message type
-- SDK options passthrough is verified
-- No API credentials required (all SDK calls mocked)
+### Success Verification
+
+Run the integration test suite:
+```bash
+bun test ./src/__tests__/sdk-integration/*.integration.test.ts
+```
+
+Expected: All 27 tests per SDK (81 total) should pass.
 
 ## What We're NOT Doing
 
-1. **Live API tests** - All tests use mocked SDK responses for CI reliability
-2. **MCP server behavior tests** - MCP has its own tests; we only verify `mcpServers` option is passed
-3. **SDK internal testing** - We test our wrapper code, not the SDK itself
-4. **Refactoring SDK runners** - The runners work; we're adding tests, not changing implementation
-5. **Parameterized/shared tests across SDKs** - Each SDK gets its own test file for clarity, even if similar
-6. **Performance testing** - No benchmarks or load tests
-
-## Implementation Approach
-
-### Strategy: Module-Level Mocking
-
-We will mock the `@anthropic-ai/claude-agent-sdk` module using Bun's `mock.module()` API, replacing the `query` function with an async generator that yields controlled messages. This approach:
-
-1. Tests the actual runner code paths (not bypassed by dry-run)
-2. Avoids network calls and authentication requirements
-3. Allows precise control over message sequences
-4. Enables testing of error scenarios
-
-### Test Organization
-
-Create integration tests in `src/__tests__/sdk-integration/` with one file per SDK:
-- `amp-sdk.integration.test.ts`
-- `codex-sdk.integration.test.ts`
-- `opencode-sdk.integration.test.ts`
-
-Each file follows the same structure but tests the specific runner to allow for future SDK divergence.
+1. **NOT adding new tests** - Tests are already implemented and comprehensive
+2. **NOT adding live/API tests** - The mock-based approach is sufficient for CI
+3. **NOT creating shared test utilities** - Each file is self-contained (acceptable duplication for test isolation)
+4. **NOT modifying SDK runners** - Runners are already complete from previous items (026, 027, 028)
 
 ---
 
-## Phase 1: Create Amp SDK Integration Tests
+## Phase 1: Verify Test Execution
 
 ### Overview
 
-Create the first integration test file for the Amp SDK runner. This establishes the pattern for the other two SDKs.
+Run the existing integration tests to confirm they pass and provide adequate coverage.
 
 ### Changes Required:
 
-#### 1. Create Amp SDK Integration Test File
+No code changes required. This phase is verification only.
 
-**File**: `src/__tests__/sdk-integration/amp-sdk.integration.test.ts`
+### Success Criteria:
 
-```typescript
-import { describe, it, expect, mock, beforeEach, afterEach, vi } from "bun:test";
-import type { Logger } from "../../logging";
-import type { AmpSdkAgentConfig } from "../../schemas";
-import type { AgentEvent } from "../../tui/agentEvents";
+#### Automated Verification:
+- [ ] Integration tests pass: `bun test ./src/__tests__/sdk-integration/*.integration.test.ts`
+- [ ] No test failures or skipped tests
+- [ ] All three SDK runners tested (amp, codex, opencode)
 
-// Mock SDK message types for testing
-interface MockSdkMessage {
-  type: "assistant" | "tool_result" | "result" | "error";
-  message?: { content: any[] };
-  content?: any[];
-  result?: string;
-  tool_use_id?: string;
-  subtype?: string;
-}
+#### Manual Verification:
+- [ ] Review test output to confirm all test suites run
+- [ ] Confirm tests cover: message formatting, event emission, error handling, callback routing, SDK options
 
-// Create async generator for mock SDK query
-function createMockQuery(messages: MockSdkMessage[]) {
-  return async function* mockQuery(_opts: any): AsyncGenerator<MockSdkMessage> {
-    for (const msg of messages) {
-      yield msg;
-    }
-  };
-}
+**Note**: Complete automated verification, then pause for manual confirmation before proceeding.
 
-// Mock the SDK module
-const mockedQuery = vi.fn();
+---
 
-mock.module("@anthropic-ai/claude-agent-sdk", () => ({
-  query: mockedQuery,
-}));
+## Phase 2: Update ROADMAP
 
-// Import after mocking
-const { runAmpSdkAgent } = await import("../../agent/amp-sdk-runner");
+### Overview
 
-function createMockLogger(): Logger {
-  return {
-    debug: vi.fn(),
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
-    json: vi.fn(),
-  };
-}
+Mark the integration test objective as complete in ROADMAP.md.
 
-function createDefaultConfig(): AmpSdkAgentConfig {
-  return {
-    kind: "amp_sdk",
-  };
-}
+### Changes Required:
 
-describe("Amp SDK Integration", () => {
-  let mockLogger: Logger;
+#### 1. ROADMAP.md
+**File**: `ROADMAP.md`
+**Line**: 25
+**Changes**: Change checkbox from `[ ]` to `[x]`
 
-  beforeEach(() => {
-    mockLogger = createMockLogger();
-    vi.clearAllMocks();
-  });
+```markdown
+# Before
+- [ ] Add integration tests for each experimental SDK
 
-  describe("message formatting", () => {
-    it("formats assistant text messages", async () => {
-      const messages: MockSdkMessage[] = [
-        { type: "assistant", content: [{ type: "text", text: "Hello world" }] },
-        { type: "result", result: "done" },
-      ];
-      mockedQuery.mockImplementation(createMockQuery(messages));
-
-      const result = await runAmpSdkAgent({
-        config: createDefaultConfig(),
-        cwd: "/tmp/test",
-        prompt: "test",
-        logger: mockLogger,
-      });
-
-      expect(result.success).toBe(true);
-      expect(result.output).toContain("Hello world");
-    });
-
-    it("formats assistant tool_use messages", async () => {
-      const messages: MockSdkMessage[] = [
-        { type: "assistant", content: [{ type: "tool_use", id: "t1", name: "Read", input: { file_path: "/test" } }] },
-        { type: "result", result: "" },
-      ];
-      mockedQuery.mockImplementation(createMockQuery(messages));
-
-      const result = await runAmpSdkAgent({
-        config: createDefaultConfig(),
-        cwd: "/tmp/test",
-        prompt: "test",
-        logger: mockLogger,
-      });
-
-      expect(result.success).toBe(true);
-      expect(result.output).toContain("Read");
-      expect(result.output).toContain("file_path");
-    });
-
-    // Additional tests for tool_result, result, error messages...
-  });
-
-  describe("event emission", () => {
-    it("emits assistant_text events", async () => {
-      const messages: MockSdkMessage[] = [
-        { type: "assistant", content: [{ type: "text", text: "Thinking..." }] },
-        { type: "result", result: "" },
-      ];
-      mockedQuery.mockImplementation(createMockQuery(messages));
-
-      const events: AgentEvent[] = [];
-      await runAmpSdkAgent({
-        config: createDefaultConfig(),
-        cwd: "/tmp/test",
-        prompt: "test",
-        logger: mockLogger,
-        onAgentEvent: (event) => events.push(event),
-      });
-
-      const textEvent = events.find(e => e.type === "assistant_text");
-      expect(textEvent).toBeDefined();
-      expect((textEvent as any).text).toBe("Thinking...");
-    });
-
-    it("emits tool_started events for tool_use blocks", async () => {
-      const messages: MockSdkMessage[] = [
-        { type: "assistant", content: [{ type: "tool_use", id: "t1", name: "Read", input: {} }] },
-        { type: "result", result: "" },
-      ];
-      mockedQuery.mockImplementation(createMockQuery(messages));
-
-      const events: AgentEvent[] = [];
-      await runAmpSdkAgent({
-        config: createDefaultConfig(),
-        cwd: "/tmp/test",
-        prompt: "test",
-        logger: mockLogger,
-        onAgentEvent: (event) => events.push(event),
-      });
-
-      const toolEvent = events.find(e => e.type === "tool_started");
-      expect(toolEvent).toBeDefined();
-      expect((toolEvent as any).toolName).toBe("Read");
-    });
-
-    // Additional event emission tests...
-  });
-
-  describe("error handling", () => {
-    it("handles authentication errors with helpful message", async () => {
-      mockedQuery.mockImplementation(async function* () {
-        throw new Error("401 Unauthorized");
-      });
-
-      const result = await runAmpSdkAgent({
-        config: createDefaultConfig(),
-        cwd: "/tmp/test",
-        prompt: "test",
-        logger: mockLogger,
-      });
-
-      expect(result.success).toBe(false);
-      expect(result.output).toContain("Authentication Error");
-      expect(result.output).toContain("ANTHROPIC_API_KEY");
-    });
-
-    it("handles rate limit errors", async () => {
-      mockedQuery.mockImplementation(async function* () {
-        throw new Error("429 rate limit exceeded");
-      });
-
-      const result = await runAmpSdkAgent({
-        config: createDefaultConfig(),
-        cwd: "/tmp/test",
-        prompt: "test",
-        logger: mockLogger,
-      });
-
-      expect(result.success).toBe(false);
-      expect(result.output).toContain("Rate limit");
-    });
-
-    // Additional error handling tests for context, network, generic...
-  });
-
-  describe("tool allowlist", () => {
-    it("passes phase-specific tools to SDK", async () => {
-      mockedQuery.mockImplementation(createMockQuery([{ type: "result", result: "" }]));
-
-      await runAmpSdkAgent({
-        config: createDefaultConfig(),
-        cwd: "/tmp/test",
-        prompt: "test",
-        logger: mockLogger,
-        phase: "research",
-      });
-
-      expect(mockedQuery).toHaveBeenCalled();
-      const callArgs = mockedQuery.mock.calls[0][0];
-      expect(callArgs.options.tools).toContain("Read");
-      expect(callArgs.options.tools).toContain("Glob");
-    });
-
-    it("prefers explicit allowedTools over phase", async () => {
-      mockedQuery.mockImplementation(createMockQuery([{ type: "result", result: "" }]));
-
-      await runAmpSdkAgent({
-        config: createDefaultConfig(),
-        cwd: "/tmp/test",
-        prompt: "test",
-        logger: mockLogger,
-        phase: "implement",
-        allowedTools: ["Read"],
-      });
-
-      const callArgs = mockedQuery.mock.calls[0][0];
-      expect(callArgs.options.tools).toEqual(["Read"]);
-    });
-  });
-
-  describe("SDK options passthrough", () => {
-    it("passes mcpServers option to SDK", async () => {
-      mockedQuery.mockImplementation(createMockQuery([{ type: "result", result: "" }]));
-      const mcpServers = { wreckit: { command: "test" } };
-
-      await runAmpSdkAgent({
-        config: createDefaultConfig(),
-        cwd: "/tmp/test",
-        prompt: "test",
-        logger: mockLogger,
-        mcpServers,
-      });
-
-      const callArgs = mockedQuery.mock.calls[0][0];
-      expect(callArgs.options.mcpServers).toBe(mcpServers);
-    });
-
-    it("passes cwd and permissionMode to SDK", async () => {
-      mockedQuery.mockImplementation(createMockQuery([{ type: "result", result: "" }]));
-
-      await runAmpSdkAgent({
-        config: createDefaultConfig(),
-        cwd: "/custom/path",
-        prompt: "test",
-        logger: mockLogger,
-      });
-
-      const callArgs = mockedQuery.mock.calls[0][0];
-      expect(callArgs.options.cwd).toBe("/custom/path");
-      expect(callArgs.options.permissionMode).toBe("bypassPermissions");
-    });
-  });
-});
+# After
+- [x] Add integration tests for each experimental SDK
 ```
 
 ### Success Criteria:
 
 #### Automated Verification:
-- [ ] Tests pass: `bun test src/__tests__/sdk-integration/amp-sdk.integration.test.ts`
-- [ ] Type checking passes: `bun run build` (includes type check)
-- [ ] No lint errors in new file
+- [ ] ROADMAP.md contains `[x] Add integration tests for each experimental SDK`
+- [ ] Git diff shows only the checkbox change
 
 #### Manual Verification:
-- [ ] Test covers all 5 message types (assistant/text, assistant/tool_use, tool_result, result, error)
-- [ ] Test covers all 5 error categories (auth, rate-limit, context, network, generic)
-- [ ] Test covers event emission for all AgentEvent types
-- [ ] No API credentials required to run tests
+- [ ] Review ROADMAP.md to confirm milestone status is accurate
+- [ ] Confirm no other changes were made accidentally
 
-**Note**: Complete all automated verification, then pause for manual confirmation before proceeding to next phase.
+**Note**: Complete automated verification, then pause for manual confirmation before proceeding.
 
 ---
 
-## Phase 2: Create Codex SDK Integration Tests
+## Phase 3: Update Integration README
 
 ### Overview
 
-Create integration tests for the Codex SDK runner, following the pattern established in Phase 1.
+Update the integration test documentation to reflect that SDK integration tests are now available.
 
 ### Changes Required:
 
-#### 1. Create Codex SDK Integration Test File
+#### 1. Integration README
+**File**: `src/__tests__/integration/README.md`
+**Changes**: Add section documenting SDK integration tests
 
-**File**: `src/__tests__/sdk-integration/codex-sdk.integration.test.ts`
+Add after line 67 (after "SDK mode uses mock implementations to avoid API calls"):
 
-This file follows the same structure as `amp-sdk.integration.test.ts` but imports and tests `runCodexSdkAgent` from `../../agent/codex-sdk-runner`.
-
-Key differences:
-- Import `CodexSdkAgentConfig` instead of `AmpSdkAgentConfig`
-- Create config with `kind: "codex_sdk"` and optional `model: "codex-1"`
-- Error messages reference "Codex SDK" instead of "Amp SDK"
-
-### Success Criteria:
-
-#### Automated Verification:
-- [ ] Tests pass: `bun test src/__tests__/sdk-integration/codex-sdk.integration.test.ts`
-- [ ] Type checking passes: `bun run build`
-- [ ] No lint errors in new file
-
-#### Manual Verification:
-- [ ] Test structure mirrors Amp SDK tests
-- [ ] Error messages correctly reference "Codex SDK"
-- [ ] All message types and error categories covered
-
----
-
-## Phase 3: Create OpenCode SDK Integration Tests
-
-### Overview
-
-Create integration tests for the OpenCode SDK runner, completing the integration test coverage for all experimental SDKs.
-
-### Changes Required:
-
-#### 1. Create OpenCode SDK Integration Test File
-
-**File**: `src/__tests__/sdk-integration/opencode-sdk.integration.test.ts`
-
-This file follows the same structure as the previous two but imports and tests `runOpenCodeSdkAgent` from `../../agent/opencode-sdk-runner`.
-
-Key differences:
-- Import `OpenCodeSdkAgentConfig` instead
-- Create config with `kind: "opencode_sdk"`
-- Error messages reference "OpenCode SDK"
-
-### Success Criteria:
-
-#### Automated Verification:
-- [ ] Tests pass: `bun test src/__tests__/sdk-integration/opencode-sdk.integration.test.ts`
-- [ ] Type checking passes: `bun run build`
-- [ ] No lint errors in new file
-
-#### Manual Verification:
-- [ ] Test structure mirrors previous SDK tests
-- [ ] Error messages correctly reference "OpenCode SDK"
-- [ ] All message types and error categories covered
-
----
-
-## Phase 4: Update Package.json Test Script
-
-### Overview
-
-Add the new integration tests to the project's test script so they run as part of `bun test`.
-
-### Changes Required:
-
-#### 1. Update test script in package.json
-
-**File**: `package.json`
-
-Add the SDK integration tests to the test script. The current test script runs tests in groups; add a new group for SDK integration tests.
-
-Current test script pattern (line 30):
-```json
-"test": "bun test --preload ... && bun test ... && bun test ..."
-```
-
-Add to end:
-```json
-&& bun test src/__tests__/sdk-integration/*.integration.test.ts
+```markdown
+3. **SDK Integration tests** (`src/__tests__/sdk-integration/*.integration.test.ts`):
+   - Tests for Amp, Codex, and OpenCode experimental SDK runners
+   - Mock-based testing (no API credentials required)
+   - Covers: message formatting, event emission, error handling, SDK options
+   - Run with: `bun test ./src/__tests__/sdk-integration/*.integration.test.ts`
 ```
 
 ### Success Criteria:
 
 #### Automated Verification:
-- [ ] Full test suite passes: `bun test`
-- [ ] SDK integration tests included in full run
-- [ ] Build succeeds: `bun run build`
+- [ ] README.md contains documentation for SDK integration tests
+- [ ] File path `./src/__tests__/sdk-integration/` is mentioned
 
 #### Manual Verification:
-- [ ] `bun test` output shows SDK integration tests running
-- [ ] No tests skipped or erroring due to missing credentials
+- [ ] Documentation is clear and accurate
+- [ ] Instructions match actual test execution
 
 ---
 
 ## Testing Strategy
 
-### Unit Tests (Existing)
-- Dry-run mode behavior
-- Tool allowlist resolution logic
-- Config type validation
+### Unit Tests
+- Existing: `src/__tests__/{amp,codex,opencode}-sdk-runner.test.ts`
+- Coverage: Dry-run mode, getEffectiveToolAllowlist resolution
 
-### Integration Tests (New - This Item)
-- SDK message formatting (`formatSdkMessage`)
-- Agent event emission (`emitAgentEventsFromSdkMessage`)
-- Error categorization and messaging (`handleSdkError`)
-- Timeout/abort controller behavior
-- Output routing (stdout vs stderr callbacks)
-- Successful completion with output accumulation
+### Integration Tests
+- Location: `src/__tests__/sdk-integration/*.integration.test.ts`
+- Coverage: SDK message handling, event emission, error categories, SDK option passing
+- Approach: Mock SDK at query level, no API credentials required
 
 ### Manual Testing Steps
 
-1. **Verify tests run without credentials**:
-   ```bash
-   unset ANTHROPIC_API_KEY
-   bun test src/__tests__/sdk-integration/
-   ```
-   Should pass (all SDK calls are mocked).
-
-2. **Verify test coverage**:
-   ```bash
-   bun test src/__tests__/sdk-integration/ --coverage
-   ```
-   Confirm formatSdkMessage, emitAgentEventsFromSdkMessage, handleSdkError have high coverage.
-
-3. **Verify no regressions**:
+1. Run the full test suite:
    ```bash
    bun test
    ```
-   Full test suite should pass.
+
+2. Run only SDK integration tests:
+   ```bash
+   bun test ./src/__tests__/sdk-integration/*.integration.test.ts
+   ```
+
+3. Verify test count matches expectations:
+   - Amp SDK: ~27 tests
+   - Codex SDK: ~27 tests
+   - OpenCode SDK: ~27 tests
+   - Total: ~81 tests
 
 ## Migration Notes
 
-No migration needed - these are new test files that don't affect existing functionality.
+None required. This item is verification and documentation only.
 
 ## References
 
 - Research: `/Users/speed/wreckit/.wreckit/items/029-add-integration-tests-for-each-experimental-sdk/research.md`
-- Amp SDK Runner: `src/agent/amp-sdk-runner.ts` (lines 1-372)
-- Codex SDK Runner: `src/agent/codex-sdk-runner.ts` (lines 1-372)
-- OpenCode SDK Runner: `src/agent/opencode-sdk-runner.ts` (lines 1-372)
-- Existing Amp Unit Tests: `src/__tests__/amp-sdk-runner.test.ts` (lines 1-131)
-- AgentEvent Types: `src/tui/agentEvents.ts` (lines 1-7)
-- Test Patterns: `src/__tests__/workflow.test.ts` (mock.module usage lines 26-31, 84-120)
+- Integration tests: `src/__tests__/sdk-integration/amp-sdk.integration.test.ts:1-669`
+- Integration tests: `src/__tests__/sdk-integration/codex-sdk.integration.test.ts:1-681`
+- Integration tests: `src/__tests__/sdk-integration/opencode-sdk.integration.test.ts:1-687`
+- ROADMAP milestone: `ROADMAP.md:16-26` ([M2] Finish Experimental SDK Integrations)
+- Package.json test script: `package.json:30`
+- SDK runners: `src/agent/{amp,codex,opencode}-sdk-runner.ts`
