@@ -17349,3 +17349,29 @@ Edit
 }
 ```
 [34mDEBUG[39m: [36mRunning: git add -A[39m
+[34mDEBUG[39m: [36mRunning: git commit -m feat(031-fix-silent-read-errors-in-artifact-detection-specs): implement Fix silent read errors in artifact detection (specs 002, 010 Gap: errors swallowed)[39m
+[34mDEBUG[39m: [36mRunning: git symbolic-ref --quiet HEAD[39m
+[34mDEBUG[39m: [36mRunning: git status --porcelain[39m
+[31mERROR[39m: [36mPhase pr failed for 031-fix-silent-read-errors-in-artifact-detection-specs: Git pre-flight check failed:
+
+• There are uncommitted changes in the working directory
+    Run `git stash` to temporarily save changes
+    Or run `git commit -am "message"` to commit changes
+    Or run `git checkout -- .` to discard changes (destructive)[39m
+[31mERROR[39m: [36mFailed 031-fix-silent-read-errors-in-artifact-detection-specs: Git pre-flight check failed:
+
+• There are uncommitted changes in the working directory
+    Run `git stash` to temporarily save changes
+    Or run `git commit -am "message"` to commit changes
+    Or run `git checkout -- .` to discard changes (destructive)[39m
+[31mERROR[39m: [36mFailed: 031-fix-silent-read-errors-in-artifact-detection-specs[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 031-fix-silent-read-errors-in-artifact-detection-specs[39m
+[32mINFO[39m: [36mRunning pr phase on 031-fix-silent-read-errors-in-artifact-detection-specs[39m
+[34mDEBUG[39m: [36mRunning: git show-ref --verify --quiet refs/heads/wreckit/031-fix-silent-read-errors-in-artifact-detection-specs[39m
+[32mINFO[39m: [36mBranch wreckit/031-fix-silent-read-errors-in-artifact-detection-specs exists, switching to it[39m
+[34mDEBUG[39m: [36mRunning: git checkout wreckit/031-fix-silent-read-errors-in-artifact-detection-specs[39m
+[34mDEBUG[39m: [36mRunning: git rev-parse --abbrev-ref HEAD[39m
+[34mDEBUG[39m: [36mRunning: git status --porcelain[39m
+[34mDEBUG[39m: [36mRunning: git add -A[39m
