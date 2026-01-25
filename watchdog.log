@@ -8303,3 +8303,32 @@ Edit
   "new_string": "\"status\": \"done\",\n      \"notes\": \"Add to the end of the test script chain in package.json line 30.\""
 }
 ```
+Now let me verify the PRD is correctly updated:
+```tool
+Read
+{
+  "file_path": "/Users/speed/wreckit/.wreckit/items/029-add-integration-tests-for-each-experimental-sdk/prd.json"
+}
+```
+Running next item...
+All 4 stories are now marked as "done". Let me verify the complete implementation:
+
+1. **US-001**: Amp SDK integration tests - ✅ 27 tests pass
+2. **US-002**: Codex SDK integration tests - ✅ 27 tests pass
+3. **US-003**: OpenCode SDK integration tests - ✅ 27 tests pass
+4. **US-004**: Package.json test script includes SDK integration tests - ✅ Already included
+```tool
+Bash
+{
+  "command": "cd /Users/speed/wreckit && ls -la src/__tests__/sdk-integration/",
+  "description": "List SDK integration test files"
+}
+```
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: git show-ref --verify --quiet refs/heads/wreckit/029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mBranch wreckit/029-add-integration-tests-for-each-experimental-sdk exists, switching to it[39m
+[34mDEBUG[39m: [36mRunning: git checkout wreckit/029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: git rev-parse --abbrev-ref HEAD[39m
+[34mDEBUG[39m: [36mRunning: git status --porcelain[39m
+[34mDEBUG[39m: [36mRunning: git add -A[39m
