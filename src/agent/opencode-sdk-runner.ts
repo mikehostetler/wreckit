@@ -59,24 +59,32 @@ export async function runOpenCodeSdkAgent(
 
     // Real OpenCode SDK usage
     const client = createOpencodeClient({
-      apiKey: sdkEnv.OPENCODE_API_KEY || process.env.OPENCODE_API_KEY,
-      baseUrl: sdkEnv.OPENCODE_BASE_URL
+      baseUrl: sdkEnv.OPENCODE_BASE_URL,
+      // API Key is automatically picked up from process.env.OPENCODE_API_KEY
+      // or we can pass it if the types allow, but let's rely on standard env var behavior first.
     });
 
-    const stream = await client.run({
-      prompt,
-      cwd,
-      tools: effectiveTools, // Pass allowlist
-      stream: true,
-      abortSignal: abortController.signal
-    });
-
-    for await (const chunk of stream) {
-      // Assuming string chunk or object with content
-      const text = typeof chunk === 'string' ? chunk : (chunk as any).content || "";
-      output += text;
-      if (onStdoutChunk) onStdoutChunk(text);
+    const sessionResult = await client.session.create();
+    
+    if (sessionResult.error) {
+       throw new Error(`Failed to create OpenCode session: ${String(sessionResult.error)}`);
     }
+    
+    const session = sessionResult.data;
+    if (!session) {
+       throw new Error("OpenCode session creation returned no data");
+    }
+
+    // Cast to any because TS definitions seem to be missing 'prompt' despite runtime existence
+    const response = await (session as any).prompt({
+      text: prompt,
+      tools: effectiveTools, // Pass allowlist
+    });
+
+    // Handle response
+    const text = typeof response === 'string' ? response : (response as any).content || JSON.stringify(response);
+    output = text;
+    if (onStdoutChunk) onStdoutChunk(text);
 
     return {
       success: true,

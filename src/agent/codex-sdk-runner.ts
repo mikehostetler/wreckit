@@ -62,19 +62,13 @@ export async function runCodexSdkAgent(
       apiKey: sdkEnv.CODEX_API_KEY || process.env.CODEX_API_KEY || process.env.OPENAI_API_KEY
     });
 
-    // Assuming standard OpenAI-like interface
-    const response = await client.chat.completions.create({
-      model: options.config.model || "codex-1",
-      messages: [{ role: "user", content: prompt }],
-      stream: true,
-      tools: effectiveTools as any // Type cast if necessary until validated
-    });
+    const thread = await client.startThread();
 
-    for await (const chunk of response) {
-      const text = chunk.choices[0]?.delta?.content || "";
-      output += text;
-      if (onStdoutChunk) onStdoutChunk(text);
-    }
+    // Use non-streaming run for simplicity and type safety
+    const result = await thread.run(prompt);
+
+    output = (result as any).text || (result as any).content || "";
+    if (onStdoutChunk) onStdoutChunk(output);
 
     return {
       success: true,

@@ -60,18 +60,15 @@ export async function runAmpSdkAgent(
     // Execute Amp Agent
     const result = await execute({
       prompt,
-      env: sdkEnv,
-      tools: effectiveTools, // Pass allowlist if supported
-      onChunk: (chunk: string) => {
-        output += chunk;
-        if (onStdoutChunk) onStdoutChunk(chunk);
-      },
       signal: abortController.signal
     });
 
+    output = typeof result === 'string' ? result : JSON.stringify(result);
+    if (onStdoutChunk) onStdoutChunk(output);
+
     return {
       success: true,
-      output: typeof result === 'string' ? result : output,
+      output,
       timedOut: false,
       exitCode: 0,
       completionDetected: true,
