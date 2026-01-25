@@ -5,59 +5,18 @@
   "user_stories": [
     {
       "id": "US-001",
-      "title": "Display backup session ID in CLI output after fixes applied",
+      "title": "Update spec 010 to mark Gap 3 as fixed",
       "acceptance_criteria": [
-        "doctorCommand() extracts backupSessionId from runDoctor() result",
-        "When backupSessionId is set, output shows 'Backup created: .wreckit/backups/<session-id>/'",
-        "Backup message appears after 'Fixed X issue(s)' summary",
-        "No backup message when backupSessionId is null"
+        "Gap 3 section in specs/010-doctor.md shows 'FIXED' status with checkmark emoji",
+        "Original text struck through with ~~ markdown",
+        "Implementation details describe backup storage location (.wreckit/backups/<timestamp>/)",
+        "Retention policy documented (keeps last 10 sessions)",
+        "References to source files included (src/fs/backup.ts, src/doctor.ts:588-760)",
+        "Format is consistent with Gap 1 which is already marked as fixed"
       ],
       "priority": 1,
       "status": "pending",
-      "notes": "Phase 1: CLI Output Enhancement - line 39 update and new console.log after line 87"
-    },
-    {
-      "id": "US-002",
-      "title": "Add comprehensive unit tests for backup module",
-      "acceptance_criteria": [
-        "New test file src/__tests__/backup.test.ts created",
-        "Tests for createSessionId() verify ISO format with safe characters",
-        "Tests for createBackupSession() verify directory creation",
-        "Tests for backupFile() verify file copying, null for non-existent, path preservation",
-        "Tests for finalizeBackupSession() verify manifest schema",
-        "Tests for listBackupSessions() verify empty array and newest-first sorting",
-        "Tests for cleanupOldBackups() verify retention policy (keeps N newest)",
-        "Tests for removeEmptyBackupSession() verify directory removal",
-        "All tests pass: bun test src/__tests__/backup.test.ts"
-      ],
-      "priority": 2,
-      "status": "pending",
-      "notes": "Phase 2: Backup Module Unit Tests - comprehensive coverage for all backup functions"
-    },
-    {
-      "id": "US-003",
-      "title": "Add doctor integration tests for backup scenarios",
-      "acceptance_criteria": [
-        "Test verifies backup created for INDEX_STALE fix with manifest",
-        "Test verifies backup preserves original batch-progress.json content before deletion",
-        "Test verifies no backup session for MISSING_PROMPTS fix (backupSessionId is null)",
-        "All new tests pass: bun test src/__tests__/doctor.test.ts"
-      ],
-      "priority": 2,
-      "status": "pending",
-      "notes": "Phase 3: Doctor Test Enhancement - additional integration test coverage"
-    },
-    {
-      "id": "US-004",
-      "title": "Update spec 010 to mark Gap 3 as fixed",
-      "acceptance_criteria": [
-        "Gap 3 section in specs/010-doctor.md shows 'FIXED' status",
-        "Implementation details describe backup storage location and retention",
-        "Format is consistent with Gap 1 which is already marked as fixed"
-      ],
-      "priority": 3,
-      "status": "pending",
-      "notes": "Phase 4: Documentation Update - mark Gap 3 as complete in specification"
+      "notes": "The backup mechanism is fully implemented. Only spec documentation needs updating. See src/fs/backup.ts (190 lines), src/doctor.ts:588-760, src/__tests__/backup.test.ts (467 lines), src/__tests__/doctor.test.ts:676-929."
     }
   ]
 }

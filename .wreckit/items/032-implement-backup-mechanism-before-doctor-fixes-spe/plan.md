@@ -1,4 +1,4 @@
-# Implement Backup Mechanism Before Doctor Fixes (spec 010 Gap 3) Implementation Plan
+# Implement backup mechanism before doctor fixes (spec 010 Gap 3) Implementation Plan
 
 ## Overview
 
