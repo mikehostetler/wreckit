@@ -5,117 +5,59 @@
   "user_stories": [
     {
       "id": "US-001",
-      "title": "Add backup infrastructure (schemas, paths, module)",
+      "title": "Display backup session ID in CLI output after fixes applied",
       "acceptance_criteria": [
-        "Path helpers exist: getBackupsDir(), getBackupSessionDir(), getBackupManifestPath()",
-        "BackupFileEntrySchema and BackupManifestSchema defined in schemas.ts",
-        "New backup.ts module exports: createSessionId, createBackupSession, backupFile, finalizeBackupSession, listBackupSessions, cleanupOldBackups, removeEmptyBackupSession",
-        "createSessionId() returns ISO timestamp with safe characters (no colons/periods)",
-        "Type checking passes with new types"
+        "doctorCommand() extracts backupSessionId from runDoctor() result",
+        "When backupSessionId is set, output shows 'Backup created: .wreckit/backups/<session-id>/'",
+        "Backup message appears after 'Fixed X issue(s)' summary",
+        "No backup message when backupSessionId is null"
       ],
       "priority": 1,
-      "status": "done",
-      "notes": "Phase 1: Foundation for backup functionality"
+      "status": "pending",
+      "notes": "Phase 1: CLI Output Enhancement - line 39 update and new console.log after line 87"
     },
     {
       "id": "US-002",
-      "title": "Integrate backup with doctor STATE_FILE_MISMATCH fix",
+      "title": "Add comprehensive unit tests for backup module",
       "acceptance_criteria": [
-        "Before modifying item.json, backupFile() is called to preserve original",
-        "If backup fails, fix is not applied and error message returned",
-        "FixResult includes backup info with sessionId and filePath",
-        "Backup file contains exact original content",
-        "Backup preserves relative path structure (items/xxx/item.json)"
+        "New test file src/__tests__/backup.test.ts created",
+        "Tests for createSessionId() verify ISO format with safe characters",
+        "Tests for createBackupSession() verify directory creation",
+        "Tests for backupFile() verify file copying, null for non-existent, path preservation",
+        "Tests for finalizeBackupSession() verify manifest schema",
+        "Tests for listBackupSessions() verify empty array and newest-first sorting",
+        "Tests for cleanupOldBackups() verify retention policy (keeps N newest)",
+        "Tests for removeEmptyBackupSession() verify directory removal",
+        "All tests pass: bun test src/__tests__/backup.test.ts"
       ],
-      "priority": 1,
-      "status": "done",
-      "notes": "Phase 2: Most critical fix type - state cannot be regenerated"
+      "priority": 2,
+      "status": "pending",
+      "notes": "Phase 2: Backup Module Unit Tests - comprehensive coverage for all backup functions"
     },
     {
       "id": "US-003",
-      "title": "Integrate backup with doctor batch-progress deletion fixes",
+      "title": "Add doctor integration tests for backup scenarios",
       "acceptance_criteria": [
-        "Before deleting batch-progress.json, backupFile() is called",
-        "Backup entry has operation type 'deleted'",
-        "If file already missing, backup gracefully returns null (not an error)",
-        "FixResult includes backup info when backup created"
+        "Test verifies backup created for INDEX_STALE fix with manifest",
+        "Test verifies backup preserves original batch-progress.json content before deletion",
+        "Test verifies no backup session for MISSING_PROMPTS fix (backupSessionId is null)",
+        "All new tests pass: bun test src/__tests__/doctor.test.ts"
       ],
-      "priority": 1,
-      "status": "done",
-      "notes": "Phase 2: STALE_BATCH_PROGRESS and BATCH_PROGRESS_CORRUPT fixes"
-    },
-    {
-      "id": "US-003a",
-      "title": "Integrate backup with doctor INDEX_STALE fix",
-      "acceptance_criteria": [
-        "Before regenerating index.json, backupFile() is called if file exists",
-        "Backup entry has operation type 'modified'",
-        "If index.json doesn't exist, backup gracefully returns null (not an error)",
-        "FixResult includes backup info when backup created"
-      ],
-      "priority": 1,
-      "status": "done",
-      "notes": "Phase 2: INDEX_STALE fix - backup for completeness per conservative repair principle"
+      "priority": 2,
+      "status": "pending",
+      "notes": "Phase 3: Doctor Test Enhancement - additional integration test coverage"
     },
     {
       "id": "US-004",
-      "title": "Backup session management and cleanup",
+      "title": "Update spec 010 to mark Gap 3 as fixed",
       "acceptance_criteria": [
-        "Backup session created at start of applyFixes() if fixable diagnostics exist",
-        "Manifest written with finalizeBackupSession() after all backups complete",
-        "Empty sessions removed with removeEmptyBackupSession()",
-        "Old backups cleaned up (keep 10 most recent) via cleanupOldBackups()",
-        "DoctorResult includes backupSessionId when backups created"
+        "Gap 3 section in specs/010-doctor.md shows 'FIXED' status",
+        "Implementation details describe backup storage location and retention",
+        "Format is consistent with Gap 1 which is already marked as fixed"
       ],
-      "priority": 1,
-      "status": "done",
-      "notes": "Phase 2: Session lifecycle management"
-    },
-    {
-      "id": "US-005",
-      "title": "Update CLI output to show backup location",
-      "acceptance_criteria": [
-        "After fixes applied, output shows 'Backup created: .wreckit/backups/<session-id>/'",
-        "Backup message appears only when backupSessionId is set",
-        "Backup message appears after fix summary but before final count"
-      ],
-      "priority": 2,
-      "status": "done",
-      "notes": "Phase 3: User-facing feedback"
-    },
-    {
-      "id": "US-006",
-      "title": "Add backup module unit tests",
-      "acceptance_criteria": [
-        "Tests for createSessionId() format validation",
-        "Tests for createBackupSession() directory creation",
-        "Tests for backupFile() content copying and path preservation",
-        "Tests for finalizeBackupSession() manifest writing",
-        "Tests for listBackupSessions() sorting (newest first)",
-        "Tests for cleanupOldBackups() retention policy",
-        "Tests for removeEmptyBackupSession() cleanup"
-      ],
-      "priority": 2,
-      "status": "done",
-      "notes": "Phase 4: Test coverage for backup module"
-    },
-    {
-      "id": "US-007",
-      "title": "Add doctor integration tests for backup",
-      "acceptance_criteria": [
-        "Test: backup created before STATE_FILE_MISMATCH fix",
-        "Test: backup created before batch-progress deletion",
-        "Test: backup created before INDEX_STALE fix (if index exists)",
-        "Test: no backup for MISSING_PROMPTS fix (creation only)",
-        "Test: backup manifest contains correct file entries",
-        "Test: FixResult includes backup info when applicable",
-        "Test: fixes NOT applied if backup creation fails (permission error)",
-        "Test: old backups cleaned up after successful fix (keep 10)",
-        "Existing doctor tests updated to handle new return type"
-      ],
-      "priority": 2,
-      "status": "done",
-      "notes": "Phase 4: Test coverage for doctor integration"
+      "priority": 3,
+      "status": "pending",
+      "notes": "Phase 4: Documentation Update - mark Gap 3 as complete in specification"
     }
   ]
 }
