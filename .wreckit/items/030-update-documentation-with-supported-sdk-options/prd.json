@@ -12,7 +12,7 @@
         "Grep command 'grep \"[x] Update documentation\" ROADMAP.md' returns a match"
       ],
       "priority": 1,
-      "status": "pending",
+      "status": "done",
       "notes": "Single-line change to mark the milestone objective as complete. All documentation already exists in README.md, MIGRATION.md, and AGENTS.md from previous work."
     },
     {
@@ -24,7 +24,7 @@
         "Experimental SDKs are clearly labeled with a note about experimental status"
       ],
       "priority": 2,
-      "status": "pending",
+      "status": "done",
       "notes": "Verification only - documentation already exists. Cross-reference with src/schemas.ts:50-62 to confirm accuracy."
     },
     {
@@ -36,7 +36,7 @@
         "Section includes note that all SDK modes share the same environment variable resolution"
       ],
       "priority": 3,
-      "status": "pending",
+      "status": "done",
       "notes": "Verification only - documentation already exists. Confirm tables match schema definitions in src/schemas.ts."
     },
     {
@@ -48,7 +48,7 @@
         "Reference to README.md for configuration examples is present"
       ],
       "priority": 4,
-      "status": "pending",
+      "status": "done",
       "notes": "Verification only - documentation already exists. Confirm developer guidelines are accurate."
     }
   ]

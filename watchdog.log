@@ -10501,3 +10501,746 @@ Read
   "file_path": "/Users/speed/wreckit/.wreckit/items/030-update-documentation-with-supported-sdk-options/progress.log"
 }
 ```
+
+```tool
+Edit
+{
+  "replace_all": false,
+  "file_path": "/Users/speed/wreckit/.wreckit/items/030-update-documentation-with-supported-sdk-options/progress.log",
+  "old_string": "Build verification: `bun run build` passes\n[2026-01-25T00:53:28.151Z] Completed iteration 1 for story US-001\n[2026-01-25T00:53:28.626Z] Completed iteration 1 for story US-001",
+  "new_string": "Build verification: `bun run build` passes\n\n## 2025-01-25 - Implementation Complete\n\n### Final Status\nAll four user stories completed:\n- US-001: ✓ README.md experimental SDK documentation\n- US-002: ✓ MIGRATION.md experimental SDK configuration reference\n- US-003: ✓ AGENTS.md updated with kind format and agent kinds table\n- US-004: ✓ CHANGELOG.md entry for experimental SDK documentation\n\n### Minor Fix Applied\n- Fixed AGENTS.md line 108: Changed bare \"See README.md\" to proper markdown link\n- Fixed AGENTS.md line 112: Updated legacy `agent.mode: \"sdk\"` reference to mention all SDK modes\n\n### Milestone M2 Status\nThis was the final item in milestone M2 (Finish Experimental SDK Integrations).\nAll five M2 objectives are now complete:\n1. [x] Implement tool allowlist enforcement for Amp SDK\n2. [x] Implement tool allowlist enforcement for Codex SDK\n3. [x] Implement tool allowlist enforcement for OpenCode SDK\n4. [x] Add integration tests for each experimental SDK\n5. [x] Update documentation with supported SDK options"
+}
+```
+
+```tool
+Read
+{
+  "file_path": "/Users/speed/wreckit/.wreckit/items/030-update-documentation-with-supported-sdk-options/progress.log"
+}
+```
+
+```tool
+Edit
+{
+  "replace_all": false,
+  "file_path": "/Users/speed/wreckit/.wreckit/items/030-update-documentation-with-supported-sdk-options/progress.log",
+  "old_string": "[2026-01-25T00:53:28.151Z] Completed iteration 1 for story US-001\n[2026-01-25T00:53:28.626Z] Completed iteration 1 for story US-001\n[2026-01-25T00:56:07.465Z] Completed iteration 1 for story US-001",
+  "new_string": "[2026-01-25T00:53:28.151Z] Completed iteration 1 for story US-001\n[2026-01-25T00:53:28.626Z] Completed iteration 1 for story US-001\n[2026-01-25T00:56:07.465Z] Completed iteration 1 for story US-001\n\n## 2025-01-25 - Implementation Complete\n\n### Final Status\nAll four user stories completed:\n- US-001: Done - README.md experimental SDK documentation\n- US-002: Done - MIGRATION.md experimental SDK configuration reference\n- US-003: Done - AGENTS.md updated with kind format and agent kinds table\n- US-004: Done - CHANGELOG.md entry for experimental SDK documentation\n\n### Minor Fix Applied During This Session\n- Fixed AGENTS.md line 108: Changed bare \"See README.md\" to proper markdown link\n- Fixed AGENTS.md line 112: Updated legacy `agent.mode: \"sdk\"` reference to mention all SDK modes\n\n### Milestone M2 Status\nThis was the final item in milestone M2 (Finish Experimental SDK Integrations).\nAll five M2 objectives are now complete:\n1. [x] Implement tool allowlist enforcement for Amp SDK\n2. [x] Implement tool allowlist enforcement for Codex SDK\n3. [x] Implement tool allowlist enforcement for OpenCode SDK\n4. [x] Add integration tests for each experimental SDK\n5. [x] Update documentation with supported SDK options"
+}
+```
+All user stories are complete. Let me verify the prd.json status:
+```tool
+Read
+{
+  "file_path": "/Users/speed/wreckit/.wreckit/items/030-update-documentation-with-supported-sdk-options/prd.json"
+}
+```
+All four user stories have status "done". The implementation is complete:
+
+- **US-001**: Done - README.md has table, examples, experimental warning, MIGRATION.md link
+- **US-002**: Done - MIGRATION.md has Experimental SDK section with tables and examples  
+- **US-003**: Done - AGENTS.md uses kind format with all agent kinds in table
+- **US-004**: Done - CHANGELOG.md has Added entry for experimental SDK documentation
+
+<promise>COMPLETE</promise>All four user stories have status "done". The implementation is complete:
+
+- **US-001**: Done - README.md has table, examples, experimental warning, MIGRATION.md link
+- **US-002**: Done - MIGRATION.md has Experimental SDK section with tables and examples  
+- **US-003**: Done - AGENTS.md uses kind format with all agent kinds in table
+- **US-004**: Done - CHANGELOG.md has Added entry for experimental SDK documentation
+
+<promise>COMPLETE</promise>[34mDEBUG[39m: [36mRunning: git status --porcelain[39m
+[32mINFO[39m: [36mStory US-001 changed 1 file(s): M .wreckit/items/030-update-documentation-with-supported-sdk-options/item.json[39m
+[32mINFO[39m: [36mStory US-001 marked as 'done' via MCP[39m
+[32mINFO[39m: [36mStory US-002 marked as 'done' via MCP[39m
+[32mINFO[39m: [36mStory US-003 marked as 'done' via MCP[39m
+[32mINFO[39m: [36mStory US-004 marked as 'done' via MCP[39m
+[32mINFO[39m: [36mCompleted implement phase: planned → in_pr[39m
+[32mINFO[39m: [36mRunning complete phase on 030-update-documentation-with-supported-sdk-options[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 9 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning complete phase on 030-update-documentation-with-supported-sdk-options[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 9 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+Running next item...
+[31mERROR[39m: [36mPhase complete failed for 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning complete phase on 030-update-documentation-with-supported-sdk-options[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 9 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning complete phase on 030-update-documentation-with-supported-sdk-options[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 9 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+Running next item...
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning complete phase on 030-update-documentation-with-supported-sdk-options[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 9 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning complete phase on 030-update-documentation-with-supported-sdk-options[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 9 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+Running next item...
+[31mERROR[39m: [36mPhase complete failed for 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning complete phase on 030-update-documentation-with-supported-sdk-options[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 9 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning complete phase on 030-update-documentation-with-supported-sdk-options[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 9 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning complete phase on 030-update-documentation-with-supported-sdk-options[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 9 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning complete phase on 030-update-documentation-with-supported-sdk-options[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 9 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning complete phase on 030-update-documentation-with-supported-sdk-options[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 9 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning complete phase on 030-update-documentation-with-supported-sdk-options[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 9 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning complete phase on 030-update-documentation-with-supported-sdk-options[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 9 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning complete phase on 030-update-documentation-with-supported-sdk-options[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 9 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning complete phase on 030-update-documentation-with-supported-sdk-options[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 9 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning complete phase on 030-update-documentation-with-supported-sdk-options[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 9 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning complete phase on 030-update-documentation-with-supported-sdk-options[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 9 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+[31mERROR[39m: [36mPhase complete failed for 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning complete phase on 030-update-documentation-with-supported-sdk-options[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 9 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning complete phase on 030-update-documentation-with-supported-sdk-options[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 9 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+[31mERROR[39m: [36mPhase complete failed for 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning complete phase on 030-update-documentation-with-supported-sdk-options[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 9 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning complete phase on 030-update-documentation-with-supported-sdk-options[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 9 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+[31mERROR[39m: [36mPhase complete failed for 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning complete phase on 030-update-documentation-with-supported-sdk-options[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 9 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning complete phase on 030-update-documentation-with-supported-sdk-options[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 9 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+[31mERROR[39m: [36mPhase complete failed for 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning complete phase on 030-update-documentation-with-supported-sdk-options[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 9 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning complete phase on 030-update-documentation-with-supported-sdk-options[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 9 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+[31mERROR[39m: [36mPhase complete failed for 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning complete phase on 030-update-documentation-with-supported-sdk-options[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 9 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning complete phase on 030-update-documentation-with-supported-sdk-options[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 9 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+[31mERROR[39m: [36mPhase complete failed for 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning complete phase on 030-update-documentation-with-supported-sdk-options[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 9 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning complete phase on 030-update-documentation-with-supported-sdk-options[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 9 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+[31mERROR[39m: [36mPhase complete failed for 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning complete phase on 030-update-documentation-with-supported-sdk-options[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 9 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning complete phase on 030-update-documentation-with-supported-sdk-options[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 9 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+[31mERROR[39m: [36mPhase complete failed for 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning complete phase on 030-update-documentation-with-supported-sdk-options[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 9 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning complete phase on 030-update-documentation-with-supported-sdk-options[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 9 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+[31mERROR[39m: [36mPhase complete failed for 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning complete phase on 030-update-documentation-with-supported-sdk-options[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 9 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning complete phase on 030-update-documentation-with-supported-sdk-options[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 9 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+[31mERROR[39m: [36mPhase complete failed for 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning complete phase on 030-update-documentation-with-supported-sdk-options[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 9 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning complete phase on 030-update-documentation-with-supported-sdk-options[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 9 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+[31mERROR[39m: [36mPhase complete failed for 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning complete phase on 030-update-documentation-with-supported-sdk-options[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 9 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning complete phase on 030-update-documentation-with-supported-sdk-options[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 9 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+[31mERROR[39m: [36mPhase complete failed for 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning complete phase on 030-update-documentation-with-supported-sdk-options[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 9 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning complete phase on 030-update-documentation-with-supported-sdk-options[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 9 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+[31mERROR[39m: [36mPhase complete failed for 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning complete phase on 030-update-documentation-with-supported-sdk-options[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 9 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning complete phase on 030-update-documentation-with-supported-sdk-options[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 9 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+[31mERROR[39m: [36mPhase complete failed for 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning complete phase on 030-update-documentation-with-supported-sdk-options[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 9 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning complete phase on 030-update-documentation-with-supported-sdk-options[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 9 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+[31mERROR[39m: [36mPhase complete failed for 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning complete phase on 030-update-documentation-with-supported-sdk-options[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 9 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning complete phase on 030-update-documentation-with-supported-sdk-options[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 9 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+[31mERROR[39m: [36mPhase complete failed for 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning complete phase on 030-update-documentation-with-supported-sdk-options[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 9 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning complete phase on 030-update-documentation-with-supported-sdk-options[39m
+[34mDEBUG[39m: [36mRunning: gh pr view 9 --json state,baseRefName,headRefName,mergeCommit,mergedAt,statusCheckRollup[39m
+[31mERROR[39m: [36mPhase complete failed for 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+[31mERROR[39m: [36mPhase complete failed for 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: PR not merged yet[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning pr phase on 030-update-documentation-with-supported-sdk-options[39m
+[31mERROR[39m: [36mPhase pr failed for 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning pr phase on 030-update-documentation-with-supported-sdk-options[39m
+[31mERROR[39m: [36mPhase pr failed for 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning pr phase on 030-update-documentation-with-supported-sdk-options[39m
+[31mERROR[39m: [36mPhase pr failed for 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning pr phase on 030-update-documentation-with-supported-sdk-options[39m
+[31mERROR[39m: [36mPhase pr failed for 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning pr phase on 030-update-documentation-with-supported-sdk-options[39m
+[31mERROR[39m: [36mPhase pr failed for 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning pr phase on 030-update-documentation-with-supported-sdk-options[39m
+[31mERROR[39m: [36mPhase pr failed for 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning pr phase on 030-update-documentation-with-supported-sdk-options[39m
+[31mERROR[39m: [36mPhase pr failed for 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning pr phase on 030-update-documentation-with-supported-sdk-options[39m
+[31mERROR[39m: [36mPhase pr failed for 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning pr phase on 030-update-documentation-with-supported-sdk-options[39m
+[31mERROR[39m: [36mPhase pr failed for 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning pr phase on 030-update-documentation-with-supported-sdk-options[39m
+[31mERROR[39m: [36mPhase pr failed for 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning pr phase on 030-update-documentation-with-supported-sdk-options[39m
+[31mERROR[39m: [36mPhase pr failed for 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning pr phase on 030-update-documentation-with-supported-sdk-options[39m
+[31mERROR[39m: [36mPhase pr failed for 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning pr phase on 030-update-documentation-with-supported-sdk-options[39m
+[31mERROR[39m: [36mPhase pr failed for 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning pr phase on 030-update-documentation-with-supported-sdk-options[39m
+[31mERROR[39m: [36mPhase pr failed for 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning pr phase on 030-update-documentation-with-supported-sdk-options[39m
+[31mERROR[39m: [36mPhase pr failed for 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning pr phase on 030-update-documentation-with-supported-sdk-options[39m
+[31mERROR[39m: [36mPhase pr failed for 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning pr phase on 030-update-documentation-with-supported-sdk-options[39m
+[31mERROR[39m: [36mPhase pr failed for 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning pr phase on 030-update-documentation-with-supported-sdk-options[39m
+[31mERROR[39m: [36mPhase pr failed for 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning pr phase on 030-update-documentation-with-supported-sdk-options[39m
+[31mERROR[39m: [36mPhase pr failed for 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning pr phase on 030-update-documentation-with-supported-sdk-options[39m
+[31mERROR[39m: [36mPhase pr failed for 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning pr phase on 030-update-documentation-with-supported-sdk-options[39m
+[31mERROR[39m: [36mPhase pr failed for 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning pr phase on 030-update-documentation-with-supported-sdk-options[39m
+[31mERROR[39m: [36mPhase pr failed for 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning pr phase on 030-update-documentation-with-supported-sdk-options[39m
+[31mERROR[39m: [36mPhase pr failed for 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning pr phase on 030-update-documentation-with-supported-sdk-options[39m
+[31mERROR[39m: [36mPhase pr failed for 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning pr phase on 030-update-documentation-with-supported-sdk-options[39m
+[31mERROR[39m: [36mPhase pr failed for 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning pr phase on 030-update-documentation-with-supported-sdk-options[39m
+[31mERROR[39m: [36mPhase pr failed for 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning pr phase on 030-update-documentation-with-supported-sdk-options[39m
+[31mERROR[39m: [36mPhase pr failed for 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning pr phase on 030-update-documentation-with-supported-sdk-options[39m
+[31mERROR[39m: [36mPhase pr failed for 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning pr phase on 030-update-documentation-with-supported-sdk-options[39m
+[31mERROR[39m: [36mPhase pr failed for 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning pr phase on 030-update-documentation-with-supported-sdk-options[39m
+[31mERROR[39m: [36mPhase pr failed for 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning pr phase on 030-update-documentation-with-supported-sdk-options[39m
+[31mERROR[39m: [36mPhase pr failed for 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning pr phase on 030-update-documentation-with-supported-sdk-options[39m
+[31mERROR[39m: [36mPhase pr failed for 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning pr phase on 030-update-documentation-with-supported-sdk-options[39m
+[31mERROR[39m: [36mPhase pr failed for 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning pr phase on 030-update-documentation-with-supported-sdk-options[39m
+[31mERROR[39m: [36mPhase pr failed for 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning pr phase on 030-update-documentation-with-supported-sdk-options[39m
+[31mERROR[39m: [36mPhase pr failed for 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning pr phase on 030-update-documentation-with-supported-sdk-options[39m
+[31mERROR[39m: [36mPhase pr failed for 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning pr phase on 030-update-documentation-with-supported-sdk-options[39m
+[31mERROR[39m: [36mPhase pr failed for 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning pr phase on 030-update-documentation-with-supported-sdk-options[39m
+[31mERROR[39m: [36mPhase pr failed for 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning pr phase on 030-update-documentation-with-supported-sdk-options[39m
+[31mERROR[39m: [36mPhase pr failed for 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning pr phase on 030-update-documentation-with-supported-sdk-options[39m
+[31mERROR[39m: [36mPhase pr failed for 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning pr phase on 030-update-documentation-with-supported-sdk-options[39m
+[31mERROR[39m: [36mPhase pr failed for 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed 030-update-documentation-with-supported-sdk-options: Not all stories are done[39m
+[31mERROR[39m: [36mFailed: 030-update-documentation-with-supported-sdk-options[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mRunning pr phase on 030-update-documentation-with-supported-sdk-options[39m
+[34mDEBUG[39m: [36mRunning: git show-ref --verify --quiet refs/heads/wreckit/030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mBranch wreckit/030-update-documentation-with-supported-sdk-options exists, switching to it[39m
+[34mDEBUG[39m: [36mRunning: git checkout wreckit/030-update-documentation-with-supported-sdk-options[39m
+[34mDEBUG[39m: [36mRunning: git rev-parse --abbrev-ref HEAD[39m
+[34mDEBUG[39m: [36mRunning: git status --porcelain[39m
+[34mDEBUG[39m: [36mRunning: git add -A[39m
