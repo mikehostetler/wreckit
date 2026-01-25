@@ -2,106 +2,118 @@
 
 ## Overview
 
-Update wreckit's documentation to include the three experimental SDK backends (`amp_sdk`, `codex_sdk`, `opencode_sdk`) that were added as part of milestone [M2] Finish Experimental SDK Integrations. The documentation currently covers only `process` and `claude_sdk` modes despite all five agent kinds being fully implemented and tested.
+This is the final item in milestone M2 (Finish Experimental SDK Integrations). The preceding items (026-029) have implemented tool allowlist enforcement for all experimental SDKs and added integration tests. Now we need to update the user-facing documentation to reflect the full set of supported SDK options.
 
-## Current State
+**Goal:** Document the three experimental SDK modes (`amp_sdk`, `codex_sdk`, `opencode_sdk`) alongside the existing `claude_sdk` and `process` modes, and mark the M2 milestone objective as complete.
 
-### What Exists
+## Current State Analysis
 
-The codebase has full support for five agent backends via a discriminated union configuration system:
+### What Exists Now
 
-| Agent Kind | Schema Location | Runner Implementation | Documentation |
-|------------|-----------------|----------------------|---------------|
-| `process` | `src/schemas.ts:36-41` | `src/agent/runner.ts` | README.md, MIGRATION.md |
-| `claude_sdk` | `src/schemas.ts:43-48` | `src/agent/claude-sdk-runner.ts` | README.md, MIGRATION.md |
-| `amp_sdk` | `src/schemas.ts:50-53` | `src/agent/amp-sdk-runner.ts` | **Missing** |
-| `codex_sdk` | `src/schemas.ts:55-58` | `src/agent/codex-sdk-runner.ts` | **Missing** |
-| `opencode_sdk` | `src/schemas.ts:60-62` | `src/agent/opencode-sdk-runner.ts` | **Missing** |
+1. **Schema Definitions** (`src/schemas.ts:36-70`):
+   - All five agent backends are fully defined and implemented
+   - `ProcessAgentSchema`: `kind: "process"` with command, args, completion_signal
+   - `ClaudeSdkAgentSchema`: `kind: "claude_sdk"` with model, max_tokens, tools
+   - `AmpSdkAgentSchema`: `kind: "amp_sdk"` with optional model
+   - `CodexSdkAgentSchema`: `kind: "codex_sdk"` with model (default: "codex-1")
+   - `OpenCodeSdkAgentSchema`: `kind: "opencode_sdk"` with no additional options
+
+2. **SDK Runners** - All fully implemented with tool allowlist enforcement:
+   - `src/agent/amp-sdk-runner.ts` - Amp SDK runner
+   - `src/agent/codex-sdk-runner.ts` - Codex SDK runner
+   - `src/agent/opencode-sdk-runner.ts` - OpenCode SDK runner
+
+3. **Integration Tests** (`src/__tests__/sdk-integration/`):
+   - `amp-sdk.integration.test.ts`
+   - `codex-sdk.integration.test.ts`
+   - `opencode-sdk.integration.test.ts`
+
+4. **CHANGELOG.md** - Already has entry for experimental SDK documentation (lines 10-14)
+
+5. **Current Documentation Coverage:**
+
+   | SDK Backend | README.md | MIGRATION.md | AGENTS.md |
+   |-------------|-----------|--------------|-----------|
+   | `process` | Documented (lines 184-206) | Documented (lines 109-161) | Uses legacy format (line 88) |
+   | `claude_sdk` | Documented (lines 167-179) | Documented (lines 138-175) | Uses legacy format (line 88) |
+   | `amp_sdk` | **Missing** | **Missing** | **Missing** |
+   | `codex_sdk` | **Missing** | **Missing** | **Missing** |
+   | `opencode_sdk` | **Missing** | **Missing** | **Missing** |
+
+6. **ROADMAP.md** - Line 26 has unchecked objective: `- [ ] Update documentation with supported SDK options`
 
 ### Key Discoveries
 
-1. **All SDK runners share identical behavior** (`src/agent/amp-sdk-runner.ts:1-372`, `src/agent/codex-sdk-runner.ts:1-372`, `src/agent/opencode-sdk-runner.ts:1-372`):
-   - Same `@anthropic-ai/claude-agent-sdk` query API
-   - Same environment resolution via `buildSdkEnv()`
-   - Same error handling categories (auth, rate limit, context, network)
-   - Same 3600 second default timeout
-   - Same `bypassPermissions` mode
+- **All SDKs use the same underlying SDK**: All experimental SDK runners import from `@anthropic-ai/claude-agent-sdk` (`src/agent/amp-sdk-runner.ts:1`)
+- **Same environment resolution**: All SDKs use `buildSdkEnv()` from `src/agent/env.ts` (line 95 in each runner)
+- **Same permission mode**: All use `bypassPermissions` with `allowDangerouslySkipPermissions: true` (lines 106-107)
+- **Same default timeout**: 3600 seconds (line 79 in each runner)
+- **Phase-based tool allowlists**: All SDKs use `getAllowedToolsForPhase()` from `src/agent/toolAllowlist.ts`
+- **README.md uses legacy `mode` format**: Lines 173-178 show `mode: "sdk"` instead of `kind: "claude_sdk"`
 
-2. **Configuration differences** are minimal:
-   - `amp_sdk`: Optional `model` override
-   - `codex_sdk`: Required `model` with default `"codex-1"`
-   - `opencode_sdk`: No configuration options (simplest)
+### Decisions Made
 
-3. **README.md structure** (lines 163-208) has clear subsections pattern:
-   - "SDK Mode (Recommended)" with JSON example
-   - "Process Mode (Default)" with Amp and Claude CLI examples
-
-4. **MIGRATION.md structure** (lines 107-175) has configuration reference pattern:
-   - Legacy vs new format examples
-   - Environment variable documentation
-   - Troubleshooting section
-
-5. **Documentation uses legacy `mode` terminology** in some places but code uses `kind` discriminator. README.md line 173-178 shows old `mode: "sdk"` format.
+1. **Update to `kind` format**: Convert README.md SDK examples from legacy `mode` to new `kind` format
+2. **Document as "Experimental"**: Keep the experimental designation as noted in research
+3. **Same auth for all SDKs**: Document that all use identical environment variable resolution
+4. **No fallback for experimental**: Only `claude_sdk` has fallback - document this limitation
+5. **CHANGELOG already done**: Skip Phase 4 since entry already exists
 
 ## Desired End State
 
-### Documentation Coverage
+After this item is complete:
 
-| Agent Kind | README.md | MIGRATION.md | AGENTS.md | CHANGELOG.md |
-|------------|-----------|--------------|-----------|--------------|
-| `process` | Documented | Documented | Updated | Existing |
-| `claude_sdk` | Documented | Documented | Updated | Existing |
-| `amp_sdk` | **Added** | **Added** | **Added** | **Added** |
-| `codex_sdk` | **Added** | **Added** | **Added** | **Added** |
-| `opencode_sdk` | **Added** | **Added** | **Added** | **Added** |
+1. **README.md** contains updated "Agent Options" section with all five agent kinds using `kind` format
+2. **MIGRATION.md** contains "Experimental SDK Modes" section after line 175
+3. **AGENTS.md** contains updated config example with `kind` format and agent kinds table
+4. **ROADMAP.md** line 26 is marked complete: `[x] Update documentation with supported SDK options`
 
-### Verification Criteria
-
-1. All five agent kinds documented with configuration examples
-2. Users can find and understand experimental SDK options
-3. Environment variable resolution documented as shared across all SDK modes
-4. "Experimental" label clearly communicated
-5. No broken internal links or inconsistent terminology
+### Verification Criteria:
+- All five agent `kind` values are documented in README.md with examples
+- All configuration examples use `kind` format (not legacy `mode`)
+- Configuration examples are syntactically valid JSON
+- Experimental status is clearly communicated
+- ROADMAP.md milestone M2 objective is checked off
 
 ## What We're NOT Doing
 
-1. **NOT updating `wreckit sdk-info` command** - This is a separate feature request
-2. **NOT adding new configuration options** to experimental SDK schemas
-3. **NOT changing any code behavior** - Documentation only
-4. **NOT creating tutorials** - Reference documentation only
-5. **NOT documenting specific use cases** for each SDK (not enough product guidance)
-6. **NOT migrating legacy `mode` syntax** in existing docs to `kind` syntax universally (only adding new `kind`-based examples)
+- **NOT updating `wreckit sdk-info`** to list SDK backends (out of scope)
+- **NOT documenting fallback behavior for experimental SDKs** (they don't have it)
+- **NOT adding use-case guidance** (all currently use same SDK under the hood)
+- **NOT documenting model-specific features** (no differentiation exists yet)
+- **NOT creating new documentation files** (only updating existing ones)
+- **NOT updating CHANGELOG.md** (entry already exists at lines 10-14)
 
 ## Implementation Approach
 
-The documentation update follows a layered approach:
-1. **README.md** - Add user-facing quick reference for all SDK options
-2. **MIGRATION.md** - Add detailed configuration reference for experimental SDKs
-3. **AGENTS.md** - Update developer reference with all agent kinds
-4. **CHANGELOG.md** - Add changelog entry for experimental SDK documentation
+This is a documentation-only task. Changes are additive and non-breaking.
+
+**Strategy:**
+1. Update README.md with experimental SDK section and convert to `kind` format (user-facing primary doc)
+2. Update MIGRATION.md with configuration reference (migration/troubleshooting doc)
+3. Update AGENTS.md with SDK backend list and `kind` format (developer guidelines)
+4. Update ROADMAP.md to mark objective complete (project tracking)
+
+All changes are independent and can be verified individually.
 
 ---
 
-## Phase 1: Update README.md with Experimental SDK Documentation
+## Phase 1: Update README.md
 
 ### Overview
+Add documentation for experimental SDK modes and convert existing examples from legacy `mode` format to new `kind` format.
 
-Expand the "Agent Options" section (lines 163-208) to include all five agent kinds with clear configuration examples and a comparison table.
+### Changes Required:
 
-### Changes Required
-
-#### 1. README.md Agent Options Section
+#### 1. Update Agent Options Section
 **File**: `README.md`
-**Lines**: 163-208
+**Location**: Lines 163-208
 **Changes**:
-- Update "SDK Mode (Recommended)" to use new `kind: "claude_sdk"` format
-- Add "Experimental SDK Modes" subsection after SDK Mode section
-- Add comparison table of all agent options
-- Keep existing Process Mode examples
+- Convert SDK Mode example from `mode: "sdk"` to `kind: "claude_sdk"` format
+- Add experimental SDK section with amp_sdk, codex_sdk, opencode_sdk examples
+- Update Process Mode examples to use `kind: "process"` format
 
-**Updated Content:**
-
-Replace lines 163-208 with expanded section:
+**Replace lines 163-208 with:**
 
 ```markdown
 ### Agent Options
@@ -117,8 +129,7 @@ Wreckit supports multiple agent execution backends:
 | `process` | External CLI process | command, args, completion_signal |
 
 #### Claude SDK Mode (Recommended)
-
-Uses the Claude Agent SDK directly for best performance and error handling:
+Uses the Claude Agent SDK directly for better performance and error handling:
 
 ```json
 {
@@ -132,7 +143,7 @@ Uses the Claude Agent SDK directly for best performance and error handling:
 
 #### Experimental SDK Modes
 
-Wreckit also supports experimental SDK integrations. These use the same underlying SDK infrastructure and share authentication/environment variable resolution with `claude_sdk`.
+Wreckit supports experimental SDK integrations. These use the same underlying SDK infrastructure and share authentication/environment variable resolution with `claude_sdk`.
 
 > **Note:** Experimental SDKs may have API changes in future releases.
 
@@ -166,10 +177,9 @@ Wreckit also supports experimental SDK integrations. These use the same underlyi
 ```
 
 #### Process Mode
+Spawns an external CLI process (backward compatible):
 
-Spawns an external CLI process (for backward compatibility or custom agents):
-
-**Amp CLI:**
+**Amp:**
 ```json
 {
   "agent": {
@@ -181,7 +191,7 @@ Spawns an external CLI process (for backward compatibility or custom agents):
 }
 ```
 
-**Claude CLI:**
+**Claude:**
 ```json
 {
   "agent": {
@@ -193,42 +203,41 @@ Spawns an external CLI process (for backward compatibility or custom agents):
 }
 ```
 
-See [MIGRATION.md](./MIGRATION.md) for detailed configuration and environment variable documentation.
+See [MIGRATION.md](./MIGRATION.md) for detailed migration guide.
 ```
 
-### Success Criteria
+### Success Criteria:
 
 #### Automated Verification:
-- [ ] No build errors: `bun run build`
-- [ ] Type checking passes: `bun run typecheck`
+- [ ] Build succeeds: `bun run build`
 - [ ] Linting passes: `bun run lint`
 
 #### Manual Verification:
-- [ ] README.md renders correctly in GitHub preview
+- [ ] README.md renders correctly in GitHub/VS Code preview
 - [ ] All JSON examples are valid JSON
-- [ ] Table renders correctly
-- [ ] Links to MIGRATION.md work
+- [ ] Table renders correctly with all 5 agent kinds
+- [ ] Link to MIGRATION.md works
 
-**Note**: Complete all automated verification, then pause for manual confirmation before proceeding to next phase.
+**Note**: Complete all verification before proceeding to next phase.
 
 ---
 
-## Phase 2: Update MIGRATION.md with Experimental SDK Configuration Reference
+## Phase 2: Update MIGRATION.md
 
 ### Overview
+Add configuration reference for experimental SDK modes after the "Default Configuration" section.
 
-Add a new section documenting experimental SDK configuration, including schema details and switching between SDK modes.
+### Changes Required:
 
-### Changes Required
-
-#### 1. MIGRATION.md - Add Experimental SDKs Section
+#### 1. Add Experimental SDK Modes Section
 **File**: `MIGRATION.md`
-**Location**: After "Configuration Reference" section (after line 186)
-**Changes**: Add new section "Experimental SDK Modes"
+**Location**: After line 175 (after Default Configuration section, before "### Config Migration Rules")
+**Changes**: Insert new section with configuration reference for all three experimental SDKs
 
-**New Content to Insert:**
+**Insert after line 175:**
 
 ```markdown
+
 ### Experimental SDK Modes
 
 Wreckit supports experimental SDK backends for specialized use cases. All experimental SDKs:
@@ -238,7 +247,8 @@ Wreckit supports experimental SDK backends for specialized use cases. All experi
 - Have the same error handling and timeout behavior (3600 seconds default)
 - Support MCP servers and tool restrictions
 
-> **Note:** These SDKs are marked experimental and may have API changes in future releases.
+> **Note:** Experimental SDKs do not have automatic fallback to process mode.
+> If authentication fails, the operation will fail (not fall back to CLI).
 
 #### Amp SDK
 
@@ -317,40 +327,40 @@ To switch from `claude_sdk` to an experimental SDK, change the `kind` field:
 ```
 
 All SDK modes use the same credential resolution. Run `wreckit sdk-info` to verify your configuration.
+
 ```
 
-### Success Criteria
+### Success Criteria:
 
 #### Automated Verification:
-- [ ] No build errors: `bun run build`
+- [ ] Build succeeds: `bun run build`
 - [ ] Linting passes: `bun run lint`
 
 #### Manual Verification:
-- [ ] MIGRATION.md renders correctly in GitHub preview
+- [ ] MIGRATION.md renders correctly
 - [ ] All JSON examples are valid JSON
 - [ ] Tables render correctly
 - [ ] Section links work within document
 
-**Note**: Complete all automated verification, then pause for manual confirmation before proceeding to next phase.
+**Note**: Complete all verification before proceeding to next phase.
 
 ---
 
-## Phase 3: Update AGENTS.md with All Agent Kinds
+## Phase 3: Update AGENTS.md
 
 ### Overview
+Update developer guidelines with current `kind` format and add agent backends reference.
 
-Update the developer-facing AGENTS.md to list all five agent kinds in the architecture and configuration sections.
+### Changes Required:
 
-### Changes Required
-
-#### 1. AGENTS.md - Update Config Section
+#### 1. Update Config Section
 **File**: `AGENTS.md`
-**Lines**: 79-93
-**Changes**: Update the config example to show `kind`-based format and list all options
+**Location**: Lines 79-93
+**Changes**:
+- Update config example to use `kind: "claude_sdk"` instead of legacy format
+- Add "Agent Kind Options" table after the config example
 
-**Updated Content:**
-
-Replace lines 79-93:
+**Replace lines 79-93 with:**
 
 ```markdown
 ## Config
@@ -382,106 +392,98 @@ Replace lines 79-93:
 | `opencode_sdk` | OpenCode SDK (experimental) |
 | `process` | External CLI process |
 
-See README.md for configuration examples for each kind.
+See [README.md](./README.md#agent-options) for configuration examples for each kind.
 ```
 
-### Success Criteria
+### Success Criteria:
 
 #### Automated Verification:
-- [ ] No build errors: `bun run build`
+- [ ] Build succeeds: `bun run build`
 - [ ] Linting passes: `bun run lint`
 
 #### Manual Verification:
-- [ ] AGENTS.md renders correctly in GitHub preview
+- [ ] AGENTS.md renders correctly
 - [ ] JSON example is valid
-- [ ] Table renders correctly
+- [ ] Table lists all five agent kinds
 
-**Note**: Complete all automated verification, then pause for manual confirmation before proceeding to next phase.
+**Note**: Complete all verification before proceeding to next phase.
 
 ---
 
-## Phase 4: Update CHANGELOG.md with Experimental SDK Entry
+## Phase 4: Update ROADMAP.md
 
 ### Overview
+Mark the documentation objective as complete in milestone M2.
 
-Add a changelog entry documenting the experimental SDK support.
+### Changes Required:
 
-### Changes Required
+#### 1. Mark Objective Complete
+**File**: `ROADMAP.md`
+**Location**: Line 26
+**Changes**: Change checkbox from unchecked to checked
 
-#### 1. CHANGELOG.md - Add Entry to [Unreleased]
-**File**: `CHANGELOG.md`
-**Location**: Under `## [Unreleased]` section (after line 8)
-**Changes**: Add new "Added" section for experimental SDK documentation
-
-**New Content:**
-
+**Before:**
 ```markdown
-### Added
-- Documentation for experimental SDK modes (`amp_sdk`, `codex_sdk`, `opencode_sdk`)
-  - All experimental SDKs share authentication and environment variable resolution with `claude_sdk`
-  - See README.md "Experimental SDK Modes" section for configuration examples
-  - See MIGRATION.md "Experimental SDK Modes" section for detailed reference
+- [ ] Update documentation with supported SDK options
 ```
 
-### Success Criteria
+**After:**
+```markdown
+- [x] Update documentation with supported SDK options
+```
+
+### Success Criteria:
 
 #### Automated Verification:
-- [ ] No build errors: `bun run build`
-- [ ] Linting passes: `bun run lint`
+- [ ] Build succeeds: `bun run build`
 
 #### Manual Verification:
-- [ ] CHANGELOG.md renders correctly
-- [ ] Entry follows Keep a Changelog format
-
-**Note**: Complete all automated verification, then pause for manual confirmation.
+- [ ] All five M2 objectives are now marked `[x]`
+- [ ] Milestone M2 can be considered complete
 
 ---
 
 ## Testing Strategy
 
-### Unit Tests
-- N/A - Documentation changes only, no code changes
+### Documentation Validation:
+- All JSON examples should parse without error
+- Markdown renders correctly (no broken links, tables)
+- Configuration examples match actual schema definitions in `src/schemas.ts:50-62`
 
-### Integration Tests
-- N/A - Documentation changes only, no code changes
+### Cross-Reference Verification:
+- README.md examples match MIGRATION.md configuration reference
+- AGENTS.md table matches schema definitions
+- All documentation references same set of `kind` values
 
-### Manual Testing Steps
-
-1. **Verify README.md rendering:**
-   - Open README.md in GitHub preview (or VS Code markdown preview)
-   - Verify table renders with all 5 agent kinds
-   - Verify all JSON code blocks are syntax highlighted
-   - Verify link to MIGRATION.md works
-
-2. **Verify MIGRATION.md rendering:**
-   - Open MIGRATION.md in preview
-   - Verify new "Experimental SDK Modes" section appears
-   - Verify tables render correctly
-   - Verify JSON examples are valid
-
-3. **Verify AGENTS.md rendering:**
-   - Open AGENTS.md in preview
-   - Verify config example uses `kind: "claude_sdk"` format
-   - Verify agent kinds table renders
-
-4. **Verify CHANGELOG.md rendering:**
-   - Open CHANGELOG.md in preview
-   - Verify new entry under [Unreleased]
-   - Verify format matches existing entries
-
-5. **Cross-reference accuracy:**
-   - Verify `src/schemas.ts` agent schemas match documented options
-   - Verify default values in docs match schema defaults
+### Manual Testing Steps:
+1. Open README.md in GitHub/VS Code preview and verify:
+   - Table renders with all 5 agent kinds
+   - All JSON code blocks are syntax highlighted
+   - Link to MIGRATION.md works
+2. Open MIGRATION.md and verify:
+   - "Experimental SDK Modes" section appears after "Default Configuration"
+   - Tables render correctly
+   - JSON examples are valid
+3. Open AGENTS.md and verify:
+   - Config example uses `kind: "claude_sdk"` format
+   - Agent kinds table renders with all 5 options
+4. Open ROADMAP.md and verify:
+   - All M2 objectives are marked `[x]`
 
 ## Migration Notes
 
-N/A - Documentation changes only. No data migration required.
+Not applicable - this is documentation-only and does not affect runtime behavior.
 
 ## References
 
 - Research: `/Users/speed/wreckit/.wreckit/items/030-update-documentation-with-supported-sdk-options/research.md`
 - Schema definitions: `src/schemas.ts:36-70`
-- Agent dispatch: `src/agent/runner.ts:389-493`
-- Amp SDK runner: `src/agent/amp-sdk-runner.ts:1-372`
-- Codex SDK runner: `src/agent/codex-sdk-runner.ts:1-372`
-- OpenCode SDK runner: `src/agent/opencode-sdk-runner.ts:1-372`
+- Amp SDK runner: `src/agent/amp-sdk-runner.ts`
+- Codex SDK runner: `src/agent/codex-sdk-runner.ts`
+- OpenCode SDK runner: `src/agent/opencode-sdk-runner.ts`
+- Tool allowlists: `src/agent/toolAllowlist.ts:57-117`
+- Integration tests: `src/__tests__/sdk-integration/*.integration.test.ts`
+- Current README.md: lines 163-208
+- Current MIGRATION.md: lines 107-175
+- Current AGENTS.md: lines 79-93
+- Current ROADMAP.md: line 26

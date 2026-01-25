@@ -10192,3 +10192,312 @@ Running next item...
 [34mDEBUG[39m: [36mRunning: git rev-parse --abbrev-ref HEAD[39m
 [34mDEBUG[39m: [36mRunning: git status --porcelain[39m
 [34mDEBUG[39m: [36mRunning: git add -A[39m
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: git show-ref --verify --quiet refs/heads/wreckit/029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mBranch wreckit/029-add-integration-tests-for-each-experimental-sdk exists, switching to it[39m
+[34mDEBUG[39m: [36mRunning: git checkout wreckit/029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mCommand stderr: error: Your local changes to the following files would be overwritten by checkout:
+	watchdog.log
+Please commit your changes or stash them before you switch branches.
+Aborting
+[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Failed to checkout existing branch wreckit/029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: git show-ref --verify --quiet refs/heads/wreckit/029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mBranch wreckit/029-add-integration-tests-for-each-experimental-sdk exists, switching to it[39m
+[34mDEBUG[39m: [36mRunning: git checkout wreckit/029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mCommand stderr: error: Your local changes to the following files would be overwritten by checkout:
+	.wreckit/items/029-add-integration-tests-for-each-experimental-sdk/item.json
+	watchdog.log
+Please commit your changes or stash them before you switch branches.
+Aborting
+[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Failed to checkout existing branch wreckit/029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mRunning pr phase on 029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mRunning: git show-ref --verify --quiet refs/heads/wreckit/029-add-integration-tests-for-each-experimental-sdk[39m
+[32mINFO[39m: [36mBranch wreckit/029-add-integration-tests-for-each-experimental-sdk exists, switching to it[39m
+[34mDEBUG[39m: [36mRunning: git checkout wreckit/029-add-integration-tests-for-each-experimental-sdk[39m
+[34mDEBUG[39m: [36mCommand stderr: error: Your local changes to the following files would be overwritten by checkout:
+	.wreckit/items/029-add-integration-tests-for-each-experimental-sdk/item.json
+	watchdog.log
+Please commit your changes or stash them before you switch branches.
+Aborting
+[39m
+[31mERROR[39m: [36mFailed 029-add-integration-tests-for-each-experimental-sdk: Failed to checkout existing branch wreckit/029-add-integration-tests-for-each-experimental-sdk[39m
+[31mERROR[39m: [36mFailed: 029-add-integration-tests-for-each-experimental-sdk[39m
+❌ Crashed with code 1. Restarting in 5s...
+Running next item...
+[32mINFO[39m: [36mRunning: 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mSkipping research phase (artifacts exist, use --force to regenerate)[39m
+[32mINFO[39m: [36mResearch already exists for 030-update-documentation-with-supported-sdk-options, skipping[39m
+[32mINFO[39m: [36mSkipping plan phase (artifacts exist, use --force to regenerate)[39m
+[32mINFO[39m: [36mPlan already exists for 030-update-documentation-with-supported-sdk-options, skipping[39m
+[32mINFO[39m: [36mRunning implement phase on 030-update-documentation-with-supported-sdk-options[39m
+[32mINFO[39m: [36mImplementing story US-001 (iteration 1/100)[39m
+[34mDEBUG[39m: [36mRunning: git status --porcelain[39m
+Looking at the PRD and progress log, I can see that all four user stories have been implemented according to the progress log. Let me verify the current state of each story by checking the files mentioned.
+```tool
+Read
+{
+  "file_path": "/Users/speed/wreckit/README.md",
+  "offset": 163,
+  "limit": 80
+}
+```
+
+```tool
+Read
+{
+  "file_path": "/Users/speed/wreckit/MIGRATION.md",
+  "offset": 180,
+  "limit": 100
+}
+```
+
+```tool
+Read
+{
+  "file_path": "/Users/speed/wreckit/AGENTS.md",
+  "offset": 75,
+  "limit": 40
+}
+```
+
+```tool
+Read
+{
+  "file_path": "/Users/speed/wreckit/CHANGELOG.md",
+  "offset": 1,
+  "limit": 30
+}
+```
+Based on my review, I can see:
+
+1. **US-001 (README.md)**: ✅ Complete - Has the table with all five agent kinds, experimental SDK examples with JSON code blocks, clear "Note" about experimental status, and link to MIGRATION.md.
+
+2. **US-002 (MIGRATION.md)**: I need to check if the "Experimental SDK Modes" section exists in MIGRATION.md. Let me search for it:
+```tool
+Grep
+{
+  "pattern": "Experimental SDK Modes",
+  "path": "/Users/speed/wreckit/MIGRATION.md",
+  "output_mode": "content"
+}
+```
+
+```tool
+Grep
+{
+  "pattern": "Agent Kind Options",
+  "path": "/Users/speed/wreckit/AGENTS.md",
+  "output_mode": "content"
+}
+```
+
+```tool
+Grep
+{
+  "pattern": "experimental SDK",
+  "path": "/Users/speed/wreckit/CHANGELOG.md",
+  "output_mode": "content"
+}
+```
+The search results show that US-002, US-003, and US-004 have **NOT** been implemented yet despite what the progress log states. Let me verify the actual state of each file:
+```tool
+Read
+{
+  "file_path": "/Users/speed/wreckit/MIGRATION.md"
+}
+```
+MIGRATION.md already has the "Experimental SDK Modes" section (lines 187-274). Let me check AGENTS.md and CHANGELOG.md more thoroughly:
+```tool
+Read
+{
+  "file_path": "/Users/speed/wreckit/AGENTS.md"
+}
+```
+Now I can see the current state:
+
+1. **US-001 (README.md)**: ✅ Already complete - has table, experimental SDK examples, warning note, MIGRATION.md link
+2. **US-002 (MIGRATION.md)**: ✅ Already complete - has "Experimental SDK Modes" section (lines 187-274)
+3. **US-003 (AGENTS.md)**: ❌ **NOT COMPLETE** - Still uses legacy format (line 88 shows `{"command": "amp", "args": ["--dangerously-allow-all"]}` and line 97 references `agent.mode: "sdk"` instead of `kind`)
+4. **US-004 (CHANGELOG.md)**: ❌ **NOT COMPLETE** - Missing the "Added" entry for experimental SDK documentation
+
+Let me implement US-003 first since it has priority 3, then US-004 with priority 4:
+```tool
+Edit
+{
+  "replace_all": false,
+  "file_path": "/Users/speed/wreckit/AGENTS.md",
+  "old_string": "## Config\n\n`.wreckit/config.json`:\n```json\n{\n  \"schema_version\": 1,\n  \"base_branch\": \"main\",\n  \"branch_prefix\": \"wreckit/\",\n  \"merge_mode\": \"pr\",\n  \"agent\": {\"command\": \"amp\", \"args\": [\"--dangerously-allow-all\"]},\n  \"max_iterations\": 100,\n  \"timeout_seconds\": 3600,\n  \"branch_cleanup\": {\"enabled\": true, \"delete_remote\": true}\n}\n```\n\n### Environment Variable Resolution\n\nWhen using `agent.mode: \"sdk\"`, environment variables are merged from multiple sources with this precedence (highest first):",
+  "new_string": "## Config\n\n`.wreckit/config.json`:\n```json\n{\n  \"schema_version\": 1,\n  \"base_branch\": \"main\",\n  \"branch_prefix\": \"wreckit/\",\n  \"merge_mode\": \"pr\",\n  \"agent\": {\n    \"kind\": \"claude_sdk\",\n    \"model\": \"claude-sonnet-4-20250514\"\n  },\n  \"max_iterations\": 100,\n  \"timeout_seconds\": 3600,\n  \"branch_cleanup\": {\"enabled\": true, \"delete_remote\": true}\n}\n```\n\n### Agent Kind Options\n\n| Kind | Description |\n|------|-------------|\n| `claude_sdk` | Claude Agent SDK (default, recommended) |\n| `amp_sdk` | Amp SDK (experimental) |\n| `codex_sdk` | Codex SDK (experimental) |\n| `opencode_sdk` | OpenCode SDK (experimental) |\n| `process` | External CLI process |\n\nSee [README.md](./README.md#agent-options) for configuration examples for each kind.\n\n### Environment Variable Resolution\n\nWhen using SDK mode (`claude_sdk`, `amp_sdk`, `codex_sdk`, or `opencode_sdk`), environment variables are merged from multiple sources with this precedence (highest first):"
+}
+```
+
+```tool
+Read
+{
+  "file_path": "/Users/speed/wreckit/AGENTS.md",
+  "offset": 79,
+  "limit": 40
+}
+```
+Good - the file was already partially updated. I see it has the Agent Kind Options table but there are two remaining issues:
+1. Line 108 says "See README.md for..." but should be a proper link
+2. Line 112 still references the legacy `agent.mode: "sdk"` format
+
+Let me fix these:
+```tool
+Edit
+{
+  "replace_all": false,
+  "file_path": "/Users/speed/wreckit/AGENTS.md",
+  "old_string": "See README.md for configuration examples for each kind.\n\n### Environment Variable Resolution\n\nWhen using `agent.mode: \"sdk\"`, environment variables are merged from multiple sources with this precedence (highest first):",
+  "new_string": "See [README.md](./README.md#agent-options) for configuration examples for each kind.\n\n### Environment Variable Resolution\n\nWhen using SDK mode (`claude_sdk`, `amp_sdk`, `codex_sdk`, or `opencode_sdk`), environment variables are merged from multiple sources with this precedence (highest first):"
+}
+```
+Now let me check and update CHANGELOG.md for US-004:
+```tool
+Read
+{
+  "file_path": "/Users/speed/wreckit/CHANGELOG.md",
+  "offset": 1,
+  "limit": 30
+}
+```
+CHANGELOG.md already has the Added entry for experimental SDK documentation (lines 10-14). 
+
+Now let me run the build to verify everything is correct:
+```tool
+Bash
+{
+  "command": "cd /Users/speed/wreckit && bun run build",
+  "description": "Build the project to verify documentation changes don't break anything"
+}
+```
+Build succeeded. Let me also run lint to verify the documentation is formatted properly:
+```tool
+Bash
+{
+  "command": "cd /Users/speed/wreckit && bun run lint 2>&1 | head -50",
+  "description": "Run linter to check formatting"
+}
+```
+
+```tool
+Bash
+{
+  "command": "cd /Users/speed/wreckit && bun run typecheck",
+  "description": "Run typecheck to verify project health"
+}
+```
+Let me verify all the documentation changes are complete by re-checking each file:
+```tool
+Grep
+{
+  "pattern": "amp_sdk|codex_sdk|opencode_sdk",
+  "path": "/Users/speed/wreckit/README.md",
+  "output_mode": "content"
+}
+```
+
+```tool
+Grep
+{
+  "pattern": "amp_sdk|codex_sdk|opencode_sdk",
+  "path": "/Users/speed/wreckit/MIGRATION.md",
+  "output_mode": "content"
+}
+```
+
+```tool
+Grep
+{
+  "pattern": "amp_sdk|codex_sdk|opencode_sdk",
+  "path": "/Users/speed/wreckit/AGENTS.md",
+  "output_mode": "content"
+}
+```
+
+```tool
+Grep
+{
+  "pattern": "amp_sdk|codex_sdk|opencode_sdk",
+  "path": "/Users/speed/wreckit/CHANGELOG.md",
+  "output_mode": "content"
+}
+```
+All documentation files have the experimental SDK modes documented. Now let me verify each user story's acceptance criteria:
+
+**US-001 (README.md):**
+- ✅ Table listing all five agent kinds (lines 167-173)
+- ✅ JSON config examples for amp_sdk, codex_sdk, opencode_sdk (lines 196-221)
+- ✅ Experimental SDKs labeled with note about API changes (line 193)
+- ✅ Link to MIGRATION.md present
+
+**US-002 (MIGRATION.md):**
+- ✅ "Experimental SDK Modes" section after Configuration Reference
+- ✅ JSON config examples for each experimental SDK
+- ✅ Configuration tables with options, types, defaults, descriptions
+- ✅ Guidance on switching between SDK modes
+- ✅ Note about shared environment variable resolution
+
+**US-003 (AGENTS.md):**
+- ✅ Config example uses `kind: "claude_sdk"` format
+- ✅ Table listing all five agent kinds with descriptions
+- ✅ Experimental SDKs labeled as experimental
+
+**US-004 (CHANGELOG.md):**
+- ✅ Added subsection for experimental SDK documentation
+- ✅ Entry mentions all three experimental SDK modes
+- ✅ Entry references README.md and MIGRATION.md
+
+All acceptance criteria are met. Now I need to update the story statuses in the PRD:
+```tool
+mcp__wreckit__update_story_status
+{
+  "story_id": "US-001",
+  "status": "done"
+}
+```
+
+```tool
+mcp__wreckit__update_story_status
+{
+  "story_id": "US-002",
+  "status": "done"
+}
+```
+
+```tool
+mcp__wreckit__update_story_status
+{
+  "story_id": "US-003",
+  "status": "done"
+}
+```
+
+```tool
+mcp__wreckit__update_story_status
+{
+  "story_id": "US-004",
+  "status": "done"
+}
+```
+All stories are now marked as done. Let me update the progress log with a summary:
+```tool
+Read
+{
+  "file_path": "/Users/speed/wreckit/.wreckit/items/030-update-documentation-with-supported-sdk-options/progress.log"
+}
+```

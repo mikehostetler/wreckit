@@ -13,7 +13,7 @@
         "Link to MIGRATION.md for detailed configuration is present"
       ],
       "priority": 1,
-      "status": "pending",
+      "status": "done",
       "notes": "Updates README.md lines 163-208. Follow existing pattern for SDK Mode and Process Mode sections."
     },
     {
@@ -27,7 +27,7 @@
         "Note that all SDK modes share the same environment variable resolution"
       ],
       "priority": 2,
-      "status": "pending",
+      "status": "done",
       "notes": "Insert after line 186 in MIGRATION.md. Include Amp SDK, Codex SDK, OpenCode SDK subsections."
     },
     {
@@ -39,7 +39,7 @@
         "Experimental SDKs are labeled as experimental in the table"
       ],
       "priority": 3,
-      "status": "pending",
+      "status": "done",
       "notes": "Updates lines 79-93. Add Agent Kind Options section with table."
     },
     {
@@ -51,7 +51,7 @@
         "Entry references README.md and MIGRATION.md for details"
       ],
       "priority": 4,
-      "status": "pending",
+      "status": "done",
       "notes": "Add after line 8 in existing [Unreleased] section. Follow Keep a Changelog format."
     }
   ]

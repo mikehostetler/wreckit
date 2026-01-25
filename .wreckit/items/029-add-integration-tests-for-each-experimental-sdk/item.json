@@ -3,17 +3,21 @@
   "id": "029-add-integration-tests-for-each-experimental-sdk",
   "title": "Add integration tests for each experimental SDK",
   "section": "roadmap",
-  "state": "implementing",
+  "state": "done",
   "overview": "From milestone [M2] Finish Experimental SDK Integrations\n\n**Motivation:** Strategic milestone: Finish Experimental SDK Integrations",
-  "branch": null,
-  "pr_url": null,
-  "pr_number": null,
-  "last_error": "Git pre-flight check failed:\n\n• There are uncommitted changes in the working directory\n    Run `git stash` to temporarily save changes\n    Or run `git commit -am \"message\"` to commit changes\n    Or run `git checkout -- .` to discard changes (destructive)",
+  "branch": "wreckit/029-add-integration-tests-for-each-experimental-sdk",
+  "pr_url": "https://github.com/jmanhype/wreckit/pull/8",
+  "pr_number": 8,
+  "last_error": null,
   "created_at": "2026-01-24T14:10:12.333Z",
-  "updated_at": "2026-01-25T00:11:17.077Z",
+  "updated_at": "2026-01-25T00:55:14.304Z",
   "motivation": "Strategic milestone: Finish Experimental SDK Integrations",
   "depends_on": [
     "028-implement-tool-allowlist-enforcement-in-srcagentop"
   ],
-  "campaign": "M2"
+  "campaign": "M2",
+  "completed_at": "2026-01-25T00:55:14.304Z",
+  "merged_at": "2026-01-25T00:43:45Z",
+  "merge_commit_sha": "03cdda216543b3620c897929251ad01656dced14",
+  "checks_passed": null
 }
