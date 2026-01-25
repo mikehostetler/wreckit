@@ -36,7 +36,7 @@ export async function doctorCommand(
   const root = findRootFromOptions(options);
   const result = await runDoctor(root, { fix: options.fix }, logger);
 
-  const { diagnostics, fixes } = result;
+  const { diagnostics, fixes, backupSessionId } = result;
 
   if (diagnostics.length === 0) {
     console.log("✓ No issues found");
@@ -85,6 +85,12 @@ export async function doctorCommand(
     const failedCount = fixes.length - fixedCount;
     console.log("");
     console.log(`Fixed ${fixedCount} issue(s), ${failedCount} failed`);
+
+    // Show backup session info
+    if (backupSessionId) {
+      console.log("");
+      console.log(`Backup created: .wreckit/backups/${backupSessionId}/`);
+    }
   } else if (
     diagnostics.some((d) => d.fixable) &&
     !options.fix
