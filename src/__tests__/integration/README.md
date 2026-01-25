@@ -66,6 +66,12 @@ The test suite includes:
    - Tests use shell commands for process mode
    - SDK mode uses mock implementations to avoid API calls
 
+3. **SDK Integration tests** (`src/__tests__/sdk-integration/*.integration.test.ts`):
+   - Tests for Amp, Codex, and OpenCode experimental SDK runners
+   - Mock-based testing (no API credentials required)
+   - Covers: message formatting, event emission, error handling, SDK options
+   - Run with: `bun test ./src/__tests__/sdk-integration/*.integration.test.ts`
+
 ## Verification Checklist
 
 - [ ] Process mode: dry-run works
