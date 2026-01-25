@@ -15703,3 +15703,82 @@ All 124 tests pass. The implementation is complete.
 [34mDEBUG[39m: [36mRunning: git rev-parse --abbrev-ref HEAD[39m
 [34mDEBUG[39m: [36mRunning: git status --porcelain[39m
 [34mDEBUG[39m: [36mRunning: git add -A[39m
+[34mDEBUG[39m: [36mRunning: git commit -m feat(031-fix-silent-read-errors-in-artifact-detection-specs): implement Fix silent read errors in artifact detection (specs 002, 010 Gap: errors swallowed)[39m
+[34mDEBUG[39m: [36mRunning: git symbolic-ref --quiet HEAD[39m
+[34mDEBUG[39m: [36mRunning: git status --porcelain[39m
+[31mERROR[39m: [36mPhase pr failed for 031-fix-silent-read-errors-in-artifact-detection-specs: Git pre-flight check failed:
+
+• There are uncommitted changes in the working directory
+    Run `git stash` to temporarily save changes
+    Or run `git commit -am "message"` to commit changes
+    Or run `git checkout -- .` to discard changes (destructive)[39m
+[31mERROR[39m: [36mFailed 031-fix-silent-read-errors-in-artifact-detection-specs: Git pre-flight check failed:
+
+• There are uncommitted changes in the working directory
+    Run `git stash` to temporarily save changes
+    Or run `git commit -am "message"` to commit changes
+    Or run `git checkout -- .` to discard changes (destructive)[39m
+[31mERROR[39m: [36mFailed: 031-fix-silent-read-errors-in-artifact-detection-specs[39m
+❌ Crashed with code 1. Restarting in 5s...
+All 14 user stories are marked as "done". The implementation is complete.
+
+<promise>COMPLETE</promise>
+
+## Summary
+
+All 14 user stories for fixing silent read errors in artifact detection have been implemented:
+
+### Key Changes:
+1. **Error Infrastructure** (US-001, US-002): Added `ArtifactReadError` class and `checkPathAccess`/`tryReadFile` utilities that distinguish between ENOENT (file not found) and permission/I/O errors
+2. **Doctor Diagnostics** (US-003, US-010, US-014): Updated doctor to report `ARTIFACT_UNREADABLE` diagnostic when artifacts exist but cannot be read
+3. **Workflow Helpers** (US-004, US-005, US-006): Updated `readFileIfExists`, `loadPrdSafe`, and `buildValidationContext` to throw on permission errors
+4. **Command Updates** (US-007, US-012): Updated status and show commands to handle/report read errors
+5. **Indexing** (US-008, US-009): Updated `getItem` and `itemExists` to properly handle permission errors
+6. **Batch Progress** (US-013): Updated `readBatchProgress` to throw on permission errors
+7. **Tests** (US-011): Added comprehensive tests for all new error-aware utilities
+
+### Test Results:
+- 129 tests pass across 6 test files
+- Build succeedsAll 14 user stories are marked as "done". The implementation is complete.
+
+<promise>COMPLETE</promise>
+
+## Summary
+
+All 14 user stories for fixing silent read errors in artifact detection have been implemented:
+
+### Key Changes:
+1. **Error Infrastructure** (US-001, US-002): Added `ArtifactReadError` class and `checkPathAccess`/`tryReadFile` utilities that distinguish between ENOENT (file not found) and permission/I/O errors
+2. **Doctor Diagnostics** (US-003, US-010, US-014): Updated doctor to report `ARTIFACT_UNREADABLE` diagnostic when artifacts exist but cannot be read
+3. **Workflow Helpers** (US-004, US-005, US-006): Updated `readFileIfExists`, `loadPrdSafe`, and `buildValidationContext` to throw on permission errors
+4. **Command Updates** (US-007, US-012): Updated status and show commands to handle/report read errors
+5. **Indexing** (US-008, US-009): Updated `getItem` and `itemExists` to properly handle permission errors
+6. **Batch Progress** (US-013): Updated `readBatchProgress` to throw on permission errors
+7. **Tests** (US-011): Added comprehensive tests for all new error-aware utilities
+
+### Test Results:
+- 129 tests pass across 6 test files
+- Build succeeds[34mDEBUG[39m: [36mRunning: git status --porcelain[39m
+[32mINFO[39m: [36mStory US-001 changed 1 file(s): M .wreckit/items/031-fix-silent-read-errors-in-artifact-detection-specs/item.json[39m
+[32mINFO[39m: [36mStory US-001 marked as 'done' via MCP[39m
+[32mINFO[39m: [36mStory US-002 marked as 'done' via MCP[39m
+[32mINFO[39m: [36mStory US-003 marked as 'done' via MCP[39m
+[32mINFO[39m: [36mStory US-004 marked as 'done' via MCP[39m
+[32mINFO[39m: [36mStory US-005 marked as 'done' via MCP[39m
+[32mINFO[39m: [36mStory US-006 marked as 'done' via MCP[39m
+[32mINFO[39m: [36mStory US-007 marked as 'done' via MCP[39m
+[32mINFO[39m: [36mStory US-008 marked as 'done' via MCP[39m
+[32mINFO[39m: [36mStory US-009 marked as 'done' via MCP[39m
+[32mINFO[39m: [36mStory US-010 marked as 'done' via MCP[39m
+[32mINFO[39m: [36mStory US-011 marked as 'done' via MCP[39m
+[32mINFO[39m: [36mStory US-012 marked as 'done' via MCP[39m
+[32mINFO[39m: [36mStory US-013 marked as 'done' via MCP[39m
+[32mINFO[39m: [36mStory US-014 marked as 'done' via MCP[39m
+[32mINFO[39m: [36mCompleted implement phase: planned → implementing[39m
+[32mINFO[39m: [36mRunning pr phase on 031-fix-silent-read-errors-in-artifact-detection-specs[39m
+[34mDEBUG[39m: [36mRunning: git show-ref --verify --quiet refs/heads/wreckit/031-fix-silent-read-errors-in-artifact-detection-specs[39m
+[32mINFO[39m: [36mBranch wreckit/031-fix-silent-read-errors-in-artifact-detection-specs exists, switching to it[39m
+[34mDEBUG[39m: [36mRunning: git checkout wreckit/031-fix-silent-read-errors-in-artifact-detection-specs[39m
+[34mDEBUG[39m: [36mRunning: git rev-parse --abbrev-ref HEAD[39m
+[34mDEBUG[39m: [36mRunning: git status --porcelain[39m
+[34mDEBUG[39m: [36mRunning: git add -A[39m
