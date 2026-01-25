@@ -1,4 +1,4 @@
-import { AmpClient } from "@sourcegraph/amp-sdk";
+import { execute } from "@sourcegraph/amp-sdk";
 import type { Logger } from "../logging";
 import type { AgentResult } from "./runner";
 import { registerSdkController, unregisterSdkController } from "./runner.js";
@@ -34,7 +34,7 @@ function getEffectiveToolAllowlist(options: AmpRunAgentOptions): string[] | unde
 export async function runAmpSdkAgent(
   options: AmpRunAgentOptions
 ): Promise<AgentResult> {
-  const { cwd, prompt, logger, dryRun, onStdoutChunk, onStderrChunk, onAgentEvent } = options;
+  const { cwd, prompt, logger, dryRun, onStdoutChunk } = options;
 
   if (dryRun) {
     logger.info("[dry-run] Would run Amp SDK agent");
@@ -55,28 +55,23 @@ export async function runAmpSdkAgent(
     const sdkEnv = await buildSdkEnv({ cwd, logger });
     const effectiveTools = getEffectiveToolAllowlist(options);
 
-    // Real Amp SDK usage
-    const client = new AmpClient({
-      apiKey: sdkEnv.AMP_API_KEY || process.env.AMP_API_KEY,
-      baseUrl: sdkEnv.AMP_BASE_URL
-    });
+    logger.info("Executing Amp SDK...");
 
-    const stream = await client.chat.completions.create({
-      messages: [{ role: "user", content: prompt }],
-      tools: effectiveTools, // Pass allowlist
-      stream: true,
-      abortSignal: abortController.signal
+    // Execute Amp Agent
+    const result = await execute({
+      prompt,
+      env: sdkEnv,
+      tools: effectiveTools, // Pass allowlist if supported
+      onChunk: (chunk: string) => {
+        output += chunk;
+        if (onStdoutChunk) onStdoutChunk(chunk);
+      },
+      signal: abortController.signal
     });
-
-    for await (const chunk of stream) {
-      const text = chunk.delta?.content || "";
-      output += text;
-      if (onStdoutChunk) onStdoutChunk(text);
-    }
 
     return {
       success: true,
-      output,
+      output: typeof result === 'string' ? result : output,
       timedOut: false,
       exitCode: 0,
       completionDetected: true,

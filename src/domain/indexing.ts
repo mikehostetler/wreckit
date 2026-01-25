@@ -56,7 +56,15 @@ export async function scanItems(root: string): Promise<Item[]> {
   let entries: string[];
   try {
     entries = await fs.readdir(itemsDir);
-  } catch {
+  } catch (err) {
+    // ENOENT means items directory doesn't exist yet - expected case
+    if ((err as NodeJS.ErrnoException).code === "ENOENT") {
+      return [];
+    }
+    // Permission or I/O errors should warn, not silently return empty
+    console.warn(
+      `Warning: Cannot read items directory ${itemsDir}: ${err instanceof Error ? err.message : String(err)}`
+    );
     return [];
   }
 

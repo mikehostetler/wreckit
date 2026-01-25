@@ -24,6 +24,11 @@ import { scanItems } from "./commands/status";
 import { initPromptTemplates } from "./prompts";
 import { writeItem, writeIndex, readItem, clearBatchProgress } from "./fs/json";
 import { validateStoryQuality } from "./domain/validation";
+import {
+  FileNotFoundError,
+  InvalidJsonError,
+  SchemaValidationError,
+} from "./errors";
 
 /**
  * Detect circular dependencies using DFS.
@@ -101,8 +106,18 @@ async function diagnoseDependencies(root: string): Promise<Diagnostic[]> {
     itemDirs = entries
       .filter((e) => e.isDirectory() && /^\d{3}-/.test(e.name))
       .map((e) => e.name);
-  } catch {
-    return [];
+  } catch (err) {
+    // ENOENT is expected (no items yet), other errors should report
+    if ((err as NodeJS.ErrnoException).code !== "ENOENT") {
+      diagnostics.push({
+        itemId: null,
+        severity: "warning",
+        code: "ITEMS_DIR_UNREADABLE",
+        message: `Cannot read items directory: ${err instanceof Error ? err.message : String(err)}`,
+        fixable: false,
+      });
+    }
+    return diagnostics;
   }
 
   const items: Item[] = [];
@@ -110,8 +125,15 @@ async function diagnoseDependencies(root: string): Promise<Diagnostic[]> {
     try {
       const item = await readItem(path.join(itemsDir, dir));
       items.push(item);
-    } catch {
-      // Skip invalid
+    } catch (err) {
+      // Expected errors: skip silently (consistent with scanItems pattern)
+      if (err instanceof FileNotFoundError) continue;
+      if (err instanceof InvalidJsonError) continue;
+      if (err instanceof SchemaValidationError) continue;
+      // Unexpected errors: warn
+      console.warn(
+        `Warning: Cannot read item ${dir}: ${err instanceof Error ? err.message : String(err)}`
+      );
     }
   }
 
@@ -590,7 +612,17 @@ export async function diagnose(root: string): Promise<Diagnostic[]> {
     itemDirs = entries
       .filter((e) => e.isDirectory() && /^\d{3}-/.test(e.name))
       .map((e) => e.name);
-  } catch {
+  } catch (err) {
+    // ENOENT is expected (no items yet), other errors should report
+    if ((err as NodeJS.ErrnoException).code !== "ENOENT") {
+      diagnostics.push({
+        itemId: null,
+        severity: "warning",
+        code: "ITEMS_DIR_UNREADABLE",
+        message: `Cannot read items directory: ${err instanceof Error ? err.message : String(err)}`,
+        fixable: false,
+      });
+    }
     diagnostics.push(...(await diagnoseIndex(root)));
     diagnostics.push(...(await diagnoseBatchProgress(root)));
     return diagnostics;
