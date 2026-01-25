@@ -1,177 +1,184 @@
-# Implement backup mechanism before doctor fixes (spec 010 Gap 3) Implementation Plan
+# Implement backup mechanism before doctor fixes (spec 010 Gap 3) - Implementation Plan
 
 ## Overview
 
-This item implements a backup mechanism for `wreckit doctor --fix` as specified in Gap 3 of spec 010 (`specs/010-doctor.md:279-285`). The backup mechanism creates timestamped backups of files before any modifications, allowing users to recover original state if needed.
+This task completes the implementation of a backup mechanism that creates timestamped backup sessions before the doctor command applies any automated fixes. This ensures users can undo doctor fixes if they cause problems, fulfilling the "Conservative Repair" principle from spec 010.
 
-**Current Status:** The core implementation is complete. All infrastructure, doctor integration, CLI output, and tests are implemented. The only remaining work is updating the spec documentation to mark Gap 3 as fixed.
+**Critical Discovery**: The core backup functionality has already been fully implemented in the codebase. This plan focuses on completing the remaining integration work and documentation updates.
 
-## Current State
+## Current State Analysis
 
-### Implementation Complete
+### What Already Exists ✅
 
-The backup mechanism is **fully implemented**:
+The backup mechanism is **fully implemented** with the following components:
 
-1. **Backup Module** (`src/fs/backup.ts:1-189`):
-   - `createSessionId()` - Generates ISO timestamp-based session IDs (safe for filenames)
-   - `createBackupSession()` - Creates backup directory structure
-   - `backupFile()` - Backs up individual files before modification
-   - `finalizeBackupSession()` - Writes manifest.json with file list
+1. **Backup Module** (`src/fs/backup.ts` - 190 lines):
+   - `createSessionId()` - Generates ISO timestamp-based session IDs
+   - `createBackupSession()` - Creates backup session directory
+   - `backupFile()` - Copies files to backup location with metadata
+   - `finalizeBackupSession()` - Writes manifest.json with session details
    - `listBackupSessions()` - Lists all backup sessions (newest first)
-   - `cleanupOldBackups()` - Retention policy (keeps last 10 sessions)
-   - `removeEmptyBackupSession()` - Cleans up if no backups created
+   - `cleanupOldBackups()` - Removes old sessions (keeps 10 by default)
+   - `removeEmptyBackupSession()` - Cleans up sessions with no files
 
-2. **Path Helpers** (`src/fs/paths.ts:100-110`):
-   - `getBackupsDir()` - `.wreckit/backups/`
-   - `getBackupSessionDir()` - `.wreckit/backups/<sessionId>/`
-   - `getBackupManifestPath()` - `.wreckit/backups/<sessionId>/manifest.json`
+2. **Backup Path Helpers** (`src/fs/paths.ts:100-110`):
+   - `getBackupsDir(root)` - Returns `.wreckit/backups`
+   - `getBackupSessionDir(root, sessionId)` - Returns session directory path
+   - `getBackupManifestPath(root, sessionId)` - Returns manifest.json path
 
-3. **Schemas** (`src/schemas.ts:201-219`):
-   - `BackupFileEntrySchema` - Individual file backup entry
-   - `BackupManifestSchema` - Session manifest with file list
+3. **Backup Schemas** (`src/schemas.ts:202-219`):
+   - `BackupFileEntrySchema` - Metadata for individual backed-up files
+   - `BackupManifestSchema` - Complete backup session manifest
+   - TypeScript types: `BackupFileEntry`, `BackupManifest`
 
-4. **Doctor Integration** (`src/doctor.ts:588-759`):
+4. **Doctor Integration** (`src/doctor.ts:655-838`):
    - `applyFixes()` creates backup session before any fixes
-   - Backs up files before: INDEX_STALE, STATE_FILE_MISMATCH, STALE_BATCH_PROGRESS, BATCH_PROGRESS_CORRUPT
-   - Skips backup for MISSING_PROMPTS (creates, doesn't modify)
-   - `FixResult.backup` field populated for each backed-up file
-   - `DoctorResult.backupSessionId` returned to callers
+   - Backs up files for INDEX_STALE, STATE_FILE_MISMATCH, and batch progress fixes
+   - Returns `backupSessionId` in results
+   - Finalizes manifest or cleans up empty sessions
+   - Automatically keeps only 10 most recent backups
 
-5. **CLI Output** (`src/commands/doctor.ts`):
-   - Shows "Backup created: .wreckit/backups/<session-id>/" when fixes applied
+5. **CLI Integration** (`src/commands/doctor.ts:89-93`):
+   - Displays backup location after fixes complete
+   - Shows: `Backup created: .wreckit/backups/<session-id>/`
 
-6. **Test Coverage** (`src/__tests__/doctor.test.ts`):
-   - Verifies `backupSessionId` is defined when fixes applied
-   - Verifies `backupSessionId` is null when no fixable issues
-   - Verifies `results[x].backup` is defined for backed-up files
+6. **Comprehensive Test Coverage**:
+   - **Unit tests** (`src/__tests__/backup.test.ts` - 467 lines):
+     - 12 test suites covering all backup functions
+     - Tests for session ID generation, file backup, manifest creation
+     - Tests for cleanup and edge cases
+   - **Integration tests** (`src/__tests__/doctor.test.ts:753-1000` - 7 test suites):
+     - Tests backup creation for each fix type
+     - Tests manifest correctness and file content preservation
+     - Tests backup cleanup (retention policy)
+     - Tests empty session cleanup
 
-### Key Discoveries
+### What's Missing ❌
 
-- **Backup Storage**: Files stored in `.wreckit/backups/<sessionId>/` preserving directory structure relative to `.wreckit/`
-- **Retention Policy**: Automatically keeps last 10 backup sessions
-- **Session ID Format**: ISO timestamp with safe characters (e.g., `2025-01-24T14-30-00-000Z`)
-- **Conservative Repair**: Follows spec 010 security model - backup before modify, never delete without recovery path
+1. **Missing Exports**: Backup functions not exported from `src/fs/index.ts`
+2. **Documentation**: Spec 010 Gap 3 still marked "Open"
+3. **Documentation**: ROADMAP.md objective not marked complete
+
+### Key Constraints
+
+- Must follow existing code patterns (already done)
+- Must preserve all existing functionality (already done)
+- Must be backward compatible (already done)
+- Cannot change existing test behavior (already done)
 
 ## Desired End State
 
-After completing this item:
+### Verification Criteria
 
-1. All backup functionality working (DONE)
-2. CLI shows backup location to users (DONE)
-3. Comprehensive test coverage (DONE)
-4. Spec 010 Gap 3 marked as "FIXED" (REMAINING)
+1. ✅ All backup functions exported from `src/fs/index.ts`
+2. ✅ Spec 010 Gap 3 updated with "Fixed" status and implementation details
+3. ✅ ROADMAP.md M3 objective marked as complete
+4. ✅ All existing tests continue to pass
+5. ✅ No functional changes to doctor behavior (only adding exports)
 
-### How to Verify
+### Key Discoveries from Code Review
 
-```bash
-# Run all tests
-npm test
-
-# Run doctor tests specifically
-npm test -- --grep "doctor|backup"
-
-# Manual verification
-wreckit doctor --fix
-# Should see: "Backup created: .wreckit/backups/2025-01-25T..."
-```
+- **Pattern Consistency**: Backup module follows same patterns as `src/fs/atomic.ts` and `src/fs/lock.ts`
+- **Session ID Format**: Uses ISO 8601 timestamps with safe characters (`2025-01-25T14-30-00-000Z`)
+- **Backup Structure**: Preserves relative paths under `.wreckit/backups/<session>/`
+- **Error Handling**: Returns `null` for missing files (safe), throws for permission errors (conservative)
+- **Retention Policy**: Automatic cleanup keeps 10 most recent sessions
+- **Integration Points**: Clean separation between backup logic and doctor logic
 
 ## What We're NOT Doing
 
-1. **NOT implementing `doctor --restore`** - Future enhancement; manual file copy is sufficient for now
-2. **NOT adding `--no-backup` flag** - Backups are always created (conservative approach)
-3. **NOT changing backup storage format** - Current session-based structure is correct
-4. **NOT making retention configurable** - Hardcoded to 10 sessions
+The following items are **explicitly out of scope** to prevent scope creep:
+
+- ❌ Creating a `wreckit restore <session-id>` command (manual restoration is acceptable)
+- ❌ Implementing automatic backup restoration on failure
+- ❌ Adding backup compression (files are text-based and small)
+- ❌ Including git metadata (commit SHA) in backups
+- ❌ Tracking backups in item.json or index.json
+- ❌ Changing the retention policy from 10 sessions
+- ❌ Adding backup functionality to other commands beyond doctor
+- ❌ Implementing backup encryption
+- ❌ Creating interactive backup selection UI
 
 ## Implementation Approach
 
-Session-based directory structure for backups:
+### High-Level Strategy
+
+Complete the backup mechanism implementation by:
+1. Adding missing exports from `src/fs/index.ts` (enables external use)
+2. Updating documentation to reflect implemented status
+3. Verifying all tests pass (no functional changes)
+
+This is a **documentation and export completion** task, not a feature implementation task. The core functionality is already working and tested.
+
+### Implementation Phases
+
+#### Phase 1: Add Missing Exports
+**Rationale**: The backup module exists but isn't exported, making it invisible to external consumers and breaking the established pattern where all fs modules export their utilities.
+
+#### Phase 2: Update Spec 010 Documentation
+**Rationale**: Gap 3 status needs to reflect the implemented state with proper implementation details for future maintainers.
+
+#### Phase 3: Update ROADMAP
+**Rationale**: Mark the M3 objective as complete to track project progress accurately.
+
+---
+
+## Phase 1: Add Missing Exports
+
+### Overview
+Export backup utilities from `src/fs/index.ts` following the established pattern for all fs modules.
+
+### Changes Required
+
+#### 1. Export Backup Utilities
+**File**: `src/fs/index.ts`
+**Changes**: Add export section for backup utilities
+
+```typescript
+export {
+  createSessionId,
+  createBackupSession,
+  backupFile,
+  finalizeBackupSession,
+  listBackupSessions,
+  cleanupOldBackups,
+  removeEmptyBackupSession,
+} from "./backup";
 ```
-.wreckit/
-  backups/
-    2025-01-24T14-30-00-000Z/
-      manifest.json
-      batch-progress.json      # Full copy if deleted
-      index.json               # Full copy if regenerated
-      items/
-        001-feature/
-          item.json            # Full copy before state modification
-```
+
+**Location**: After line 47 (after atomic exports), before the lock exports section
+
+**Rationale**: Follows the alphabetical/pattern organization of the file. All other fs modules (paths, json, util, atomic, lock) are exported here, so backup should be too.
+
+### Success Criteria
+
+#### Automated Verification:
+- [ ] Tests pass: `npm test` (specifically backup and doctor tests)
+- [ ] Type checking passes: `npm run typecheck` (if available)
+- [ ] Build succeeds: `npm run build`
+- [ ] No import errors from the new exports
+
+#### Manual Verification:
+- [ ] Can import backup functions from `src/fs` module
+- [ ] All existing doctor tests continue to pass
+- [ ] No regressions in backup functionality
+
+**Note**: This phase is purely additive - no behavior changes, only adding missing exports.
 
 ---
 
-## Phases
+## Phase 2: Update Spec 010 Documentation
 
-### Phase 1: Core Infrastructure (COMPLETE)
+### Overview
+Update `specs/010-doctor.md` to mark Gap 3 as fixed with implementation details.
 
-#### Overview
-Add path helpers, schemas, and backup module with core functions.
+### Changes Required
 
-#### Status: COMPLETE
-
-Files implemented:
-- `src/fs/paths.ts` - Added `getBackupsDir()`, `getBackupSessionDir()`, `getBackupManifestPath()`
-- `src/schemas.ts` - Added `BackupFileEntrySchema`, `BackupManifestSchema`
-- `src/fs/backup.ts` - New module with all backup functions
-
----
-
-### Phase 2: Doctor Integration (COMPLETE)
-
-#### Overview
-Integrate backup creation into `applyFixes()` for all fix types that modify or delete files.
-
-#### Status: COMPLETE
-
-Changes implemented:
-- `src/doctor.ts` - `FixResult` and `DoctorResult` interfaces updated with backup fields
-- `src/doctor.ts` - `applyFixes()` creates backups before INDEX_STALE, STATE_FILE_MISMATCH, STALE_BATCH_PROGRESS, BATCH_PROGRESS_CORRUPT fixes
-- `src/doctor.ts` - Session lifecycle: create, finalize, cleanup old sessions
-
----
-
-### Phase 3: CLI Output (COMPLETE)
-
-#### Overview
-Display backup session location in doctor command output.
-
-#### Status: COMPLETE
-
-Changes implemented:
-- `src/commands/doctor.ts` - Destructures `backupSessionId` from result
-- `src/commands/doctor.ts` - Shows "Backup created: .wreckit/backups/<session-id>/" when applicable
-
----
-
-### Phase 4: Testing (COMPLETE)
-
-#### Overview
-Add comprehensive unit tests for backup module and doctor integration tests.
-
-#### Status: COMPLETE
-
-Tests implemented in `src/__tests__/doctor.test.ts`:
-- Backup created for STATE_FILE_MISMATCH fix
-- Backup created for STALE_BATCH_PROGRESS fix
-- Backup created for INDEX_STALE fix
-- No backup for MISSING_PROMPTS fix
-- Backup manifest contains correct entries
-- `backupSessionId` returned when backups created
-- `backupSessionId` is null when no backups needed
-
----
-
-### Phase 5: Documentation Update (REMAINING)
-
-#### Overview
-Update spec 010 to mark Gap 3 as fixed.
-
-#### Changes Required:
-
-##### 1. Update Spec 010 Gap 3
+#### 1. Update Gap 3 Status
 **File**: `specs/010-doctor.md`
-**Changes**: Mark Gap 3 as fixed (lines 279-285)
+**Section**: Gap 3: No Backup Before Fix (lines 279-285)
 
-Replace:
+**Current content**:
 ```markdown
 ### Gap 3: No Backup Before Fix
 
@@ -182,84 +189,190 @@ Fixes modify files without creating backups.
 **Status:** Open - No backup mechanism implemented.
 ```
 
-With:
+**New content**:
 ```markdown
 ### Gap 3: No Backup Before Fix ✅ FIXED
 
 ~~Fixes modify files without creating backups.~~
 
-~~**Impact:** Cannot undo fixes if they cause problems.~~
+**Impact:** Cannot undo fixes if they cause problems.
 
-**Status:** Fixed - Backup mechanism implemented in `src/fs/backup.ts`. Backups are created in `.wreckit/backups/<session-id>/` before any file modifications. Keeps last 10 backup sessions. See:
-- `src/fs/backup.ts` - Core backup functions
-- `src/doctor.ts:588-759` - Integration in `applyFixes()`
-- CLI shows backup location after fixes applied
+**Status:** Fixed - Backup mechanism implemented. Doctor creates timestamped backup sessions in `.wreckit/backups/<session-id>/` before applying any fixes. Each session includes a `manifest.json` with metadata about backed-up files. Automatically retains the 10 most recent sessions. See `src/fs/backup.ts` for implementation and `src/doctor.ts:655-838` for integration. Users can manually restore files from backup if needed.
 ```
 
-#### Success Criteria:
+**Rationale**: Matches the format of other fixed gaps (like Gap 1 and Gap 4) with ✅ indicator, strikethrough of problem statement, and detailed implementation references.
 
-##### Automated Verification:
-- [ ] No automated verification needed for documentation
+### Success Criteria
 
-##### Manual Verification:
-- [ ] Gap 3 section clearly marked as FIXED
-- [ ] Implementation details are accurate
-- [ ] Format consistent with Gap 1 (already fixed)
+#### Automated Verification:
+- [ ] Markdown file is valid (no syntax errors)
+- [ ] All file references in the update are accurate
+
+#### Manual Verification:
+- [ ] Documentation accurately describes the implementation
+- [ ] File paths and line numbers are correct
+- [ ] Status matches other fixed gaps in the spec
+
+**Note**: Documentation update only - no code changes.
+
+---
+
+## Phase 3: Update ROADMAP
+
+### Overview
+Mark the M3 objective as complete in `ROADMAP.md`.
+
+### Changes Required
+
+#### 1. Mark Objective Complete
+**File**: `ROADMAP.md`
+**Section**: [M3] Robust Error Handling and Recovery (line 35)
+
+**Current content**:
+```markdown
+#### Objectives
+- [ ] Fix silent read errors in artifact detection (specs 002, 010 Gap: errors swallowed)
+- [ ] Implement backup mechanism before doctor fixes (spec 010 Gap 3)
+- [ ] Improve ambiguous ID resolution to warn/error on multiple matches (spec 009 Gap 3)
+- [ ] Add distinct error types for different failure modes across all phases
+- [ ] Implement progress persistence for batch operations (spec 009 Gap 2)
+```
+
+**New content**:
+```markdown
+#### Objectives
+- [ ] Fix silent read errors in artifact detection (specs 002, 010 Gap: errors swallowed)
+- [x] Implement backup mechanism before doctor fixes (spec 010 Gap 3)
+- [ ] Improve ambiguous ID resolution to warn/error on multiple matches (spec 009 Gap 3)
+- [ ] Add distinct error types for different failure modes across all phases
+- [ ] Implement progress persistence for batch operations (spec 009 Gap 2)
+```
+
+**Rationale**: Standard checklist format - mark completed items with `[x]`. This objective is fully implemented and tested.
+
+### Success Criteria
+
+#### Automated Verification:
+- [ ] Markdown file is valid
+- [ ] No syntax errors introduced
+
+#### Manual Verification:
+- [ ] ROADMAP accurately reflects implementation status
+- [ ] Checkbox format matches other objectives
+
+**Note**: Documentation update only - marks work as complete.
 
 ---
 
 ## Testing Strategy
 
-### Unit Tests (COMPLETE)
+### Unit Tests
+**Status**: ✅ Already complete (467 lines in `src/__tests__/backup.test.ts`)
 
-Tests in `src/__tests__/doctor.test.ts` cover:
-- Backup created for STATE_FILE_MISMATCH fix with manifest entry
-- Backup created for batch-progress deletion with manifest entry
+All backup functions have comprehensive unit tests:
+- Session ID generation (uniqueness, format validation)
+- Session creation (directory creation, ID format)
+- File backup (content preservation, path structure, missing files)
+- Manifest creation (schema validation, multiple files)
+- Session listing (sorting, directory filtering)
+- Cleanup logic (retention policy, edge cases)
+- Empty session removal (idempotent cleanup)
+
+### Integration Tests
+**Status**: ✅ Already complete (7 test suites in `src/__tests__/doctor.test.ts`)
+
+Doctor+backup integration fully tested:
+- Backup created for STATE_FILE_MISMATCH fix
+- Backup created for batch-progress deletion
 - Backup created for INDEX_STALE fix
-- No backup for MISSING_PROMPTS (no `backupSessionId`)
-- FixResult.backup populated correctly
-- Tests use `{ results, backupSessionId }` destructuring
+- No backup for MISSING_PROMPTS (doesn't modify files)
+- Manifest correctness (file entries, metadata)
+- Retention policy (keeps 10, deletes older)
+- Empty session cleanup (when no backups needed)
 
 ### Manual Testing Steps
 
-1. Create a repo with fixable issues:
+Since this is primarily a documentation/export completion task, manual verification is light:
+
+1. **Export Verification** (Phase 1):
    ```bash
+   # Verify exports are accessible
+   node -e "import { createBackupSession } from './src/fs/index.ts'; console.log('✓ Export works')"
+   ```
+
+2. **Doctor Fix Verification** (existing functionality):
+   ```bash
+   # Create a test repo with an issue
    wreckit init
-   mkdir -p .wreckit/items/001-test
-   echo '{"schema_version":1,"id":"001-test","title":"Test","state":"researched","overview":"x","branch":null,"pr_url":null,"pr_number":null,"last_error":null,"created_at":"2025-01-01","updated_at":"2025-01-01"}' > .wreckit/items/001-test/item.json
-   ```
-
-2. Run doctor without fix:
-   ```bash
-   wreckit doctor
-   # Should show STATE_FILE_MISMATCH warning
-   ```
-
-3. Run doctor with fix:
-   ```bash
+   echo '{"test": "data"}' > .wreckit/batch-progress.json
+   # Run doctor with fix
    wreckit doctor --fix
-   # Should show:
-   # - Fix applied message
-   # - "Backup created: .wreckit/backups/..." line
-   ```
-
-4. Verify backup:
-   ```bash
-   ls .wreckit/backups/
+   # Verify backup was created
+   ls -la .wreckit/backups/
    cat .wreckit/backups/*/manifest.json
    ```
 
----
+3. **Documentation Verification**:
+   - Read `specs/010-doctor.md` Gap 3 section
+   - Verify it matches format of other fixed gaps
+   - Verify ROADMAP.md shows objective as complete
+
+### Regression Testing
+
+All existing tests must continue to pass:
+- `npm test` - Full test suite (includes 29 doctor tests)
+- Doctor tests specifically: `describe("applyFixes")`, `describe("doctorCommand")`
+- Backup tests specifically: All 12 test suites in `backup.test.ts`
 
 ## Migration Notes
 
-No migration needed. The backup mechanism adds a new `.wreckit/backups/` directory that is created automatically when `doctor --fix` creates backups.
+**No data migration required** - This is:
+1. Adding exports for existing code (no breaking changes)
+2. Updating documentation to reflect implemented status
+
+Users will see no functional changes. The backup mechanism is already active in production code.
+
+## Risks and Mitigations
+
+| Risk | Impact | Likelihood | Mitigation |
+|------|--------|------------|------------|
+| **Breaking change from adding exports** | Low | Very Low | Purely additive - existing code unaffected |
+| **Documentation doesn't match implementation** | Medium | Low | Careful verification of file paths and line numbers |
+| **Tests fail due to environment** | Medium | Low | Tests already passing - only adding exports/docs |
+| **ROADMAP marking creates confusion** | Low | Very Low | Objective is fully complete - accurate status |
 
 ## References
 
-- Research: `/Users/speed/wreckit/.wreckit/items/032-implement-backup-mechanism-before-doctor-fixes-spe/research.md`
-- Spec: `specs/010-doctor.md:279-285` (Gap 3)
-- Implementation: `src/fs/backup.ts:1-189`
-- Integration: `src/doctor.ts:588-759`
-- CLI: `src/commands/doctor.ts`
-- Tests: `src/__tests__/doctor.test.ts`
+### Implementation Files
+- **Backup module**: `/Users/speed/wreckit/src/fs/backup.ts` (1-190)
+- **Path helpers**: `/Users/speed/wreckit/src/fs/paths.ts` (100-110)
+- **Backup schemas**: `/Users/speed/wreckit/src/schemas.ts` (202-219)
+- **Doctor integration**: `/Users/speed/wreckit/src/doctor.ts` (655-838)
+- **CLI display**: `/Users/speed/wreckit/src/commands/doctor.ts` (89-93)
+
+### Test Files
+- **Unit tests**: `/Users/speed/wreckit/src/__tests__/backup.test.ts` (1-467)
+- **Integration tests**: `/Users/speed/wreckit/src/__tests__/doctor.test.ts` (753-1000)
+
+### Documentation Files
+- **Spec 010**: `/Users/speed/wreckit/specs/010-doctor.md` (Gap 3 at lines 279-285)
+- **ROADMAP**: `/Users/speed/wreckit/ROADMAP.md` (M3 objective at line 35)
+
+### Related Research
+- **Research document**: `/Users/speed/wreckit/.wreckit/items/032-implement-backup-mechanism-before-doctor-fixes-spe/research.md`
+
+---
+
+## Summary
+
+This implementation plan completes the backup mechanism feature by:
+
+1. **Adding missing exports** from `src/fs/index.ts` (Phase 1)
+2. **Updating spec documentation** to mark Gap 3 as fixed (Phase 2)
+3. **Updating ROADMAP** to mark objective complete (Phase 3)
+
+The core backup functionality is **already fully implemented and tested**. This plan focuses solely on export completeness and documentation accuracy. No functional code changes are required beyond adding exports.
+
+**Estimated Effort**: 1-2 hours (primarily documentation verification)
+**Risk Level**: Low (purely additive changes and documentation updates)
+**Test Coverage**: ✅ Complete (467 lines unit tests + 7 integration test suites)

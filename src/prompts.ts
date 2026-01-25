@@ -19,6 +19,8 @@ export interface PromptVariables {
   plan?: string;
   prd?: string;
   progress?: string;
+  // Add skill context for JIT loading (Item 033)
+  skill_context?: string;
 }
 
 function getPromptTemplatePath(root: string, name: PromptName): string {
@@ -84,6 +86,7 @@ export function renderPrompt(
     plan: variables.plan,
     prd: variables.prd,
     progress: variables.progress,
+    skill_context: variables.skill_context, // Add skill context
   };
 
   for (const [key, value] of Object.entries(varMap)) {

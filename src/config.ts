@@ -1,5 +1,5 @@
 import * as fs from "node:fs/promises";
-import { ConfigSchema, PrChecksSchema, BranchCleanupSchema, type Config, type AgentConfigUnion } from "./schemas";
+import { ConfigSchema, PrChecksSchema, BranchCleanupSchema, type Config, type AgentConfigUnion, type SkillConfig } from "./schemas";
 import { getConfigPath, getWreckitDir } from "./fs/paths";
 import { safeWriteJson } from "./fs/atomic";
 import {
@@ -30,6 +30,8 @@ export interface ConfigResolved {
   timeout_seconds: number;
   pr_checks: PrChecksResolved;
   branch_cleanup: BranchCleanupResolved;
+  // Add optional skills (Item 033)
+  skills?: SkillConfig;
 }
 
 export interface ConfigOverrides {
@@ -135,6 +137,7 @@ export function mergeWithDefaults(partial: Partial<Config>): ConfigResolved {
     timeout_seconds: partial.timeout_seconds ?? DEFAULT_CONFIG.timeout_seconds,
     pr_checks: prChecks,
     branch_cleanup: branchCleanup,
+    skills: partial.skills, // Add optional skills (Item 033)
   };
 }
 

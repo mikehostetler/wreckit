@@ -38,6 +38,8 @@ import {
 } from "../prompts";
 import { runAgentUnion, getAgentConfigUnion } from "../agent/runner";
 import { getAllowedToolsForPhase } from "../agent/toolAllowlist";
+import { loadSkillsForPhase } from "../agent/skillLoader";
+import { buildJitContext, formatContextForPrompt } from "../agent/contextBuilder";
 import {
   ensureBranch,
   hasUncommittedChanges,
@@ -168,7 +170,8 @@ async function saveItem(root: string, item: Item): Promise<void> {
 async function buildPromptVariables(
   root: string,
   item: Item,
-  config: ConfigResolved
+  config: ConfigResolved,
+  phase?: string, // Add optional phase parameter for skill loading
 ): Promise<PromptVariables> {
   const itemDir = getItemDir(root, item.id);
   const branchName = `${config.branch_prefix}${item.id.replace("/", "-")}`;
@@ -182,6 +185,33 @@ async function buildPromptVariables(
   const agent = config.agent;
   const isProcessMode = agent.kind === "process";
   const completionSignal = isProcessMode ? agent.completion_signal : "<promise>COMPLETE</promise>";
+
+  // Build skill context if phase specified and skills configured (Item 033)
+  let skillContext: string | undefined;
+  if (phase && config.skills) {
+    const skillResult = loadSkillsForPhase(phase, config.skills);
+
+    if (skillResult.contextRequirements.length > 0) {
+      const context = await buildJitContext(
+        skillResult.contextRequirements,
+        item,
+        config,
+        root
+      );
+      skillContext = formatContextForPrompt(context);
+
+      // Log context loading for transparency
+      if (skillResult.loadedSkillIds.length > 0) {
+        console.log(`Loaded skills for phase '${phase}': ${skillResult.loadedSkillIds.join(", ")}`);
+      }
+      if (Object.keys(context.files).length > 0 || Object.keys(context.artifacts).length > 0) {
+        console.log(`JIT context: ${Object.keys(context.files).length} file(s), ${Object.keys(context.artifacts).length} artifact(s)`);
+      }
+      if (context.errors.length > 0) {
+        console.warn(`Context loading errors: ${context.errors.join("; ")}`);
+      }
+    }
+  }
 
   return {
     id: item.id,
@@ -197,6 +227,7 @@ async function buildPromptVariables(
     plan,
     prd: prdContent,
     progress,
+    skill_context: skillContext, // Add skill context
   };
 }
 
@@ -243,10 +274,13 @@ export async function runPhaseResearch(
   }
 
   const template = await loadPromptTemplate(root, "research");
-  const baseVariables = await buildPromptVariables(root, item, config);
-  
+  const baseVariables = await buildPromptVariables(root, item, config, "research"); // Add phase
+
   const itemDir = getItemDir(root, item.id);
   const agentConfig = getAgentConfigUnion(config);
+
+  // Load skills for research phase (Item 033)
+  const skillResult = loadSkillsForPhase("research", config.skills);
 
   // Capture git status before running agent for read-only enforcement
   const beforeStatus: GitFileChange[] = dryRun || mockAgent
@@ -281,8 +315,12 @@ export async function runPhaseResearch(
       onStdoutChunk: onAgentOutput,
       onStderrChunk: onAgentOutput,
       onAgentEvent,
-      // Restrict to read-only tools for research phase
-      allowedTools: getAllowedToolsForPhase("research"),
+      // Merge skill MCP servers (Item 033)
+      mcpServers: {
+        ...(skillResult.mcpServers || {}),
+      },
+      // Use skill-merged tool allowlist (or phase tools if no skills)
+      allowedTools: skillResult.allowedTools,
     });
 
     if (dryRun) {
@@ -405,8 +443,8 @@ export async function runPhasePlan(
   }
 
   const template = await loadPromptTemplate(root, "plan");
-  const baseVariables = await buildPromptVariables(root, item, config);
-  
+  const baseVariables = await buildPromptVariables(root, item, config, "plan"); // Add phase
+
   const itemDir = getItemDir(root, item.id);
   const agentConfig = getAgentConfigUnion(config);
 
@@ -440,6 +478,9 @@ export async function runPhasePlan(
       },
     });
 
+    // Load skills for plan phase (Item 033)
+    const skillResult = loadSkillsForPhase("plan", config.skills);
+
     const result = await runAgentUnion({
       config: agentConfig,
       cwd: itemDir,
@@ -451,9 +492,13 @@ export async function runPhasePlan(
       onStdoutChunk: onAgentOutput,
       onStderrChunk: onAgentOutput,
       onAgentEvent,
-      mcpServers: { wreckit: wreckitServer },
-      // Restrict to read+write tools for plan phase
-      allowedTools: getAllowedToolsForPhase("plan"),
+      // Merge wreckit MCP server with skill MCP servers (Item 033)
+      mcpServers: {
+        wreckit: wreckitServer,
+        ...(skillResult.mcpServers || {}),
+      },
+      // Use skill-merged tool allowlist (or phase tools if no skills)
+      allowedTools: skillResult.allowedTools,
     });
 
     if (dryRun) {
@@ -606,9 +651,13 @@ export async function runPhaseImplement(
     await saveItem(root, item);
 
     const template = await loadPromptTemplate(root, "implement");
-    const variables = await buildPromptVariables(root, item, config);
+    const variables = await buildPromptVariables(root, item, config, "implement"); // Add phase
     const prompt = renderPrompt(template, variables);
     const agentConfig = getAgentConfigUnion(config);
+
+    // Load skills for implement phase (Item 033)
+    const skillResult = loadSkillsForPhase("implement", config.skills);
+
     await runAgentUnion({
       config: agentConfig,
       cwd: itemDir,
@@ -620,8 +669,12 @@ export async function runPhaseImplement(
       onStdoutChunk: onAgentOutput,
       onStderrChunk: onAgentOutput,
       onAgentEvent,
-      // Allow full tool access for implement phase
-      allowedTools: getAllowedToolsForPhase("implement"),
+      // Merge skill MCP servers (implement phase has no wreckit server in mock mode)
+      mcpServers: {
+        ...(skillResult.mcpServers || {}),
+      },
+      // Use skill-merged tool allowlist (or phase tools if no skills)
+      allowedTools: skillResult.allowedTools,
     });
     return { success: true, item };
   }
@@ -675,7 +728,7 @@ export async function runPhaseImplement(
       : await getGitStatus({ cwd: root, logger });
 
     const template = await loadPromptTemplate(root, "implement");
-    const variables = await buildPromptVariables(root, item, config);
+    const variables = await buildPromptVariables(root, item, config, "implement"); // Add phase
     const prompt = renderPrompt(template, variables);
 
     // Create MCP server to capture story status updates with verification
@@ -686,6 +739,9 @@ export async function runPhaseImplement(
         storyUpdates.push({ storyId, status, verification });
       },
     });
+
+    // Load skills for implement phase (Item 033)
+    const skillResult = loadSkillsForPhase("implement", config.skills);
 
     const agentConfig = getAgentConfigUnion(config);
     const result = await runAgentUnion({
@@ -699,9 +755,13 @@ export async function runPhaseImplement(
       onStdoutChunk: onAgentOutput,
       onStderrChunk: onAgentOutput,
       onAgentEvent,
-      mcpServers: { wreckit: wreckitServer },
-      // Allow full tool access for implement phase
-      allowedTools: getAllowedToolsForPhase("implement"),
+      // Merge wreckit MCP server with skill MCP servers (Item 033)
+      mcpServers: {
+        wreckit: wreckitServer,
+        ...(skillResult.mcpServers || {}),
+      },
+      // Use skill-merged tool allowlist (or phase tools if no skills)
+      allowedTools: skillResult.allowedTools,
     });
 
     if (dryRun) {
@@ -789,7 +849,8 @@ export async function runPhaseImplement(
   onStoryChanged?.(null);
 
   item = await loadItem(root, itemId);
-  item = { ...item, last_error: null };
+  // Auto-transition to critique phase to trigger the adversarial gate
+  item = { ...item, state: "critique", last_error: null };
   await saveItem(root, item);
 
   return { success: true, item };
@@ -842,16 +903,17 @@ export async function runPhasePr(
     mockAgent = false,
     onAgentOutput,
     onAgentEvent,
+    force = false,
   } = options;
 
   let item = await loadItem(root, itemId);
   const itemDir = getItemDir(root, item.id);
 
-  if (item.state !== "implementing") {
+  if (item.state !== "critique" && !force) {
     return {
       success: false,
       item,
-      error: `Item is in state ${item.state}, expected 'implementing' for PR phase`,
+      error: `Item is in state ${item.state}, expected 'critique' for PR phase (Adversarial Gate)`,
     };
   }
 
@@ -1171,8 +1233,11 @@ export async function runPhasePr(
   if (!dryRun) {
     try {
       const template = await loadPromptTemplate(root, "pr");
-      const variables = await buildPromptVariables(root, item, config);
+      const variables = await buildPromptVariables(root, item, config, "pr"); // Add phase
       const prompt = renderPrompt(template, variables);
+
+      // Load skills for PR phase (Item 033)
+      const skillResult = loadSkillsForPhase("pr", config.skills);
 
       const agentConfig = getAgentConfigUnion(config);
       const result = await runAgentUnion({
@@ -1186,8 +1251,12 @@ export async function runPhasePr(
         onStdoutChunk: onAgentOutput,
         onStderrChunk: onAgentOutput,
         onAgentEvent,
-        // Restrict to read + bash tools for PR phase
-        allowedTools: getAllowedToolsForPhase("pr"),
+        // Merge skill MCP servers (Item 033)
+        mcpServers: {
+          ...(skillResult.mcpServers || {}),
+        },
+        // Use skill-merged tool allowlist (or phase tools if no skills)
+        allowedTools: skillResult.allowedTools,
       });
 
       if (result.success) {
@@ -1433,7 +1502,7 @@ export async function runPhaseComplete(
  */
 export function getNextPhase(
   item: Item
-): "research" | "plan" | "implement" | "pr" | "complete" | null {
+): "research" | "plan" | "implement" | "critique" | "pr" | "complete" | null {
   switch (item.state) {
     case "idea":
       return "research";
@@ -1442,6 +1511,8 @@ export function getNextPhase(
     case "planned":
       return "implement";
     case "implementing":
+      return "critique";
+    case "critique":
       return "pr";
     case "in_pr":
       return "complete";

@@ -1,10 +1,11 @@
 import { z } from "zod";
 
-export const WorkflowStateSchema = z.enum([
+export const ItemStateSchema = z.enum([
   "idea",
   "researched",
   "planned",
   "implementing",
+  "critique",
   "in_pr",
   "done",
 ]);
@@ -77,6 +78,50 @@ export const LegacyAgentConfigSchema = z.object({
   completion_signal: z.string(),
 });
 
+// ============================================================
+// Skill Configuration Schema (Item 033 - Phase-Specific Skill Loading)
+// ============================================================
+
+/**
+ * Context requirement for a skill.
+ * Specifies what context the skill needs for JIT loading.
+ */
+export const SkillContextRequirementSchema = z.object({
+  type: z.enum(["file", "git_status", "item_metadata", "phase_artifact"]),
+  path: z.string().optional(), // For type="file" or type="phase_artifact"
+  description: z.string().optional(),
+}).optional();
+
+/**
+ * A skill defines reusable capabilities (tools, MCP servers, context)
+ * that can be loaded for specific phases.
+ */
+export const SkillSchema = z.object({
+  id: z.string().describe("Unique skill identifier (e.g., 'code-analysis', 'test-generation')"),
+  name: z.string().describe("Human-readable skill name"),
+  description: z.string().describe("What this skill provides and when to use it"),
+  tools: z.array(z.string()).describe("Tool names required by this skill"),
+  mcp_servers: z.record(z.string(), z.any()).optional().describe("MCP servers to attach (advanced usage)"),
+  required_context: z.array(SkillContextRequirementSchema).optional().describe("JIT context requirements"),
+}).strict();
+
+/**
+ * Maps phase names to skill IDs that should be loaded for that phase.
+ */
+export const PhaseSkillsMappingSchema = z.record(
+  z.string(), // phase name (e.g., "research", "implement")
+  z.array(z.string()) // array of skill IDs
+);
+
+/**
+ * Skill configuration for wreckit.
+ * Maps phases to skills and defines the skill library.
+ */
+export const SkillConfigSchema = z.object({
+  phase_skills: PhaseSkillsMappingSchema.describe("Phase -> skill IDs mapping"),
+  skills: z.array(SkillSchema).describe("Available skill definitions"),
+}).strict();
+
 export const ConfigSchema = z.object({
   schema_version: z.number().default(1),
   base_branch: z.string().default("main"),
@@ -88,6 +133,8 @@ export const ConfigSchema = z.object({
   timeout_seconds: z.number().default(3600),
   pr_checks: PrChecksSchema.optional(),
   branch_cleanup: BranchCleanupSchema.optional(),
+  // Add optional skills configuration (Item 033)
+  skills: SkillConfigSchema.optional(),
 });
 
 export const PriorityHintSchema = z.enum(["low", "medium", "high", "critical"]);
@@ -97,7 +144,7 @@ export const ItemSchema = z.object({
   id: z.string(),
   title: z.string(),
   section: z.string().optional(),
-  state: WorkflowStateSchema,
+  state: ItemStateSchema,
   overview: z.string(),
   branch: z.string().nullable(),
   pr_url: z.string().nullable(),
@@ -148,7 +195,7 @@ export const PrdSchema = z.object({
 
 export const IndexItemSchema = z.object({
   id: z.string(),
-  state: WorkflowStateSchema,
+  state: ItemStateSchema,
   title: z.string(),
   // Dependency management for efficient orchestration (Item 022)
   depends_on: z.array(z.string()).optional(),
@@ -178,7 +225,7 @@ export const BatchProgressSchema = z.object({
   skipped: z.array(z.string()), // Already done at session start
 });
 
-export type WorkflowState = z.infer<typeof WorkflowStateSchema>;
+export type WorkflowState = z.infer<typeof ItemStateSchema>;
 export type StoryStatus = z.infer<typeof StoryStatusSchema>;
 export type MergeMode = z.infer<typeof MergeModeSchema>;
 export type Config = z.infer<typeof ConfigSchema>;
@@ -197,6 +244,12 @@ export type CodexSdkAgentConfig = z.infer<typeof CodexSdkAgentSchema>;
 export type OpenCodeSdkAgentConfig = z.infer<typeof OpenCodeSdkAgentSchema>;
 export type AgentConfigUnion = z.infer<typeof AgentConfigUnionSchema>;
 export type BatchProgress = z.infer<typeof BatchProgressSchema>;
+
+// Type exports for skill configuration (Item 033)
+export type SkillContextRequirement = z.infer<typeof SkillContextRequirementSchema>;
+export type Skill = z.infer<typeof SkillSchema>;
+export type PhaseSkillsMapping = z.infer<typeof PhaseSkillsMappingSchema>;
+export type SkillConfig = z.infer<typeof SkillConfigSchema>;
 
 // Backup manifest schemas for doctor --fix
 export const BackupFileEntrySchema = z.object({
