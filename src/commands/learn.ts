@@ -1,0 +1,297 @@
+import * as fs from "node:fs/promises";
+import * as path from "node:path";
+import type { Logger } from "../logging";
+import type { SkillConfig } from "../schemas";
+import { SkillConfigSchema } from "../schemas";
+import { findRootFromOptions, getSkillsPath } from "../fs/paths";
+import { loadConfig, type ConfigResolved } from "../config";
+import { loadPromptTemplate, renderPrompt, type PromptName } from "../prompts";
+import { runAgentUnion, getAgentConfigUnion } from "../agent/runner";
+import { getAllowedToolsForPhase, PHASE_TOOL_ALLOWLISTS } from "../agent/toolAllowlist";
+import { pathExists } from "../fs/util";
+import { scanItems } from "../domain/indexing";
+import { resolveId } from "../domain/resolveId";
+import { getItemDir, readItem } from "../fs";
+import { safeWriteJson } from "../fs/atomic";
+import type { ToolName } from "../agent/toolAllowlist";
+
+export interface LearnOptions {
+  patterns?: string[];
+  item?: string;
+  phase?: string;
+  all?: boolean;
+  output?: string;
+  merge?: "append" | "replace" | "ask";
+  review?: boolean;
+  dryRun?: boolean;
+  cwd?: string;
+  verbose?: boolean;
+}
+
+/**
+ * Determine which items to extract patterns from based on command options.
+ */
+async function determineSourceItems(
+  root: string,
+  options: LearnOptions,
+  logger: Logger
+): Promise<{ items: any[]; context: string }> {
+  const allItems = await scanItems(root);
+
+  // --item <id>: Extract from specific item
+  if (options.item) {
+    const resolvedId = await resolveId(root, options.item);
+    const itemDir = getItemDir(root, resolvedId);
+    const item = await readItem(itemDir);
+    logger.info(`Extracting patterns from item: ${resolvedId}`);
+    const context = `Source item: ${item.id} - ${item.title}\nState: ${item.state}`;
+    return { items: [item], context };
+  }
+
+  // --phase <state>: Extract from items in specific state
+  if (options.phase) {
+    const filteredItems = allItems.filter(i => i.state === options.phase);
+    logger.info(`Extracting patterns from ${filteredItems.length} items in state: ${options.phase}`);
+    const context = `Source items: ${filteredItems.length} items in state '${options.phase}'`;
+    return { items: filteredItems, context };
+  }
+
+  // --all: Extract from all completed items
+  if (options.all) {
+    const completedItems = allItems.filter(i => i.state === "done");
+    logger.info(`Extracting patterns from ${completedItems.length} completed items`);
+    const context = `Source items: ${completedItems.length} completed items`;
+    return { items: completedItems, context };
+  }
+
+  // Default: extract from most recent 5 completed items
+  const completedItems = allItems
+    .filter(i => i.state === "done")
+    .sort((a, b) => b.updated_at.localeCompare(a.updated_at));
+
+  const recentItems = completedItems.slice(0, 5);
+  logger.info(`Extracting patterns from ${recentItems.length} recent completed items (default)`);
+  const context = `Source items: ${recentItems.length} recent completed items`;
+  return { items: recentItems, context };
+}
+
+/**
+ * Load existing skills configuration from .wreckit/skills.json.
+ * Returns null if the file doesn't exist.
+ */
+async function loadExistingSkills(root: string): Promise<SkillConfig | null> {
+  const skillsPath = getSkillsPath(root);
+  try {
+    const content = await fs.readFile(skillsPath, "utf-8");
+    const result = SkillConfigSchema.safeParse(JSON.parse(content));
+    if (result.success) {
+      return result.data;
+    } else {
+      throw new Error(`Invalid skills.json: ${result.error.message}`);
+    }
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code === "ENOENT") {
+      return null;  // No existing skills.json
+    }
+    throw err;
+  }
+}
+
+/**
+ * Merge skill configurations based on the specified strategy.
+ */
+export function mergeSkillConfigs(
+  existing: SkillConfig | null,
+  extracted: SkillConfig,
+  strategy: "append" | "replace" | "ask"
+): SkillConfig {
+  if (!existing) {
+    return extracted;  // No existing skills, use extracted
+  }
+
+  switch (strategy) {
+    case "replace":
+      return extracted;  // Replace entirely
+
+    case "append":
+      // Merge phase_skills: keep existing, add new
+      const phaseSkills = { ...existing.phase_skills };
+      for (const [phase, skillIds] of Object.entries(extracted.phase_skills)) {
+        const existingIds = phaseSkills[phase] || [];
+        const newIds = skillIds.filter(id => !existingIds.includes(id));
+        phaseSkills[phase] = [...existingIds, ...newIds];
+      }
+
+      // Merge skills: keep existing, add new (by ID)
+      const existingSkillsMap = new Map(
+        existing.skills.map(s => [s.id, s])
+      );
+      for (const skill of extracted.skills) {
+        if (!existingSkillsMap.has(skill.id)) {
+          existingSkillsMap.set(skill.id, skill);
+        }
+      }
+
+      return {
+        phase_skills: phaseSkills,
+        skills: Array.from(existingSkillsMap.values())
+      };
+
+    case "ask":
+      throw new Error("Interactive 'ask' merge strategy not yet implemented. Use 'append' or 'replace'.");
+  }
+}
+
+/**
+ * Validate that skill tools are allowed in their assigned phases.
+ * Issues warnings but does not throw errors.
+ */
+function validateSkillTools(
+  skillConfig: SkillConfig,
+  logger: Logger
+): void {
+  for (const skill of skillConfig.skills) {
+    for (const [phase, skillIds] of Object.entries(skillConfig.phase_skills)) {
+      if (skillIds.includes(skill.id)) {
+        const phaseTools = PHASE_TOOL_ALLOWLISTS[phase];
+        if (phaseTools) {
+          const invalidTools = skill.tools.filter(
+            t => !phaseTools.includes(t as ToolName)
+          );
+          if (invalidTools.length > 0) {
+            logger.warn(
+              `Skill '${skill.id}' requests tools not allowed in '${phase}' phase: ` +
+              invalidTools.join(", ")
+            );
+          }
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Run the learn phase to extract and compile codebase patterns into reusable Skill artifacts.
+ *
+ * The learn phase analyzes completed work to identify reusable patterns and compiles
+ * them into Skill artifacts (stored in .wreckit/skills.json). This enables the system
+ * to learn from its own implementations and improve over time.
+ */
+export async function learnCommand(
+  options: LearnOptions,
+  logger: Logger
+): Promise<void> {
+  const root = findRootFromOptions(options);
+  const config = await loadConfig(root);
+
+  // Determine source items
+  const { items: sourceItems, context: sourceContext } = await determineSourceItems(root, options, logger);
+
+  if (sourceItems.length === 0) {
+    logger.warn("No source items found for pattern extraction");
+    return;
+  }
+
+  // Load existing skills
+  const existingSkills = await loadExistingSkills(root);
+  const existingSkillsContext = existingSkills
+    ? `\nExisting skills: ${existingSkills.skills.length} skills defined\n` +
+      `Existing phases: ${Object.keys(existingSkills.phase_skills).join(", ")}`
+    : "\nNo existing skills.json (will create new file)";
+
+  // Determine output path
+  const outputPath = options.output
+    ? path.resolve(root, options.output)
+    : getSkillsPath(root);
+
+  if (options.dryRun) {
+    logger.info("[dry-run] Would extract patterns and write to skills.json");
+    logger.info(`  Root: ${root}`);
+    logger.info(`  Source items: ${sourceItems.length}`);
+    logger.info(`  ${sourceContext}`);
+    logger.info(`  ${existingSkillsContext.trim()}`);
+    logger.info(`  Output: ${outputPath}`);
+    logger.info(`  Merge strategy: ${options.merge || "append"}`);
+    return;
+  }
+
+  // Build prompt variables for learn phase
+  const completionSignal =
+    config.agent.kind === "process"
+      ? config.agent.completion_signal
+      : "<promise>COMPLETE</promise>";
+
+  const variables = {
+    id: "learn",
+    title: "Pattern Extraction",
+    section: "skills",
+    overview: "Extract and compile codebase patterns into reusable Skill artifacts",
+    item_path: root,
+    branch_name: "",
+    base_branch: config.base_branch,
+    completion_signal: completionSignal,
+    output_path: outputPath,
+    merge_strategy: options.merge || "append",
+    source_items_context: sourceContext + existingSkillsContext,
+  };
+
+  // Load learn prompt template
+  const template = await loadPromptTemplate(root, "learn" as PromptName);
+  const prompt = renderPrompt(template, variables);
+
+  const agentConfig = getAgentConfigUnion(config);
+
+  logger.info("Running pattern extraction...");
+
+  // Run agent with learn phase tools
+  const result = await runAgentUnion({
+    config: agentConfig,
+    cwd: root,
+    prompt,
+    logger,
+    dryRun: options.dryRun,
+    mockAgent: false,
+    timeoutSeconds: config.timeout_seconds,
+    allowedTools: getAllowedToolsForPhase("learn"),
+  });
+
+  if (!result.success) {
+    const error = result.timedOut
+      ? "Agent timed out during pattern extraction"
+      : `Agent failed with exit code ${result.exitCode}`;
+    throw new Error(error);
+  }
+
+  // Verify skills.json was created
+  if (!(await pathExists(outputPath))) {
+    throw new Error("Agent did not create skills.json");
+  }
+
+  // Validate skills.json format
+  const skillsContent = await fs.readFile(outputPath, "utf-8");
+  const extractedValidation = SkillConfigSchema.safeParse(JSON.parse(skillsContent));
+
+  if (!extractedValidation.success) {
+    const errorMsg = `Extracted skills.json format validation failed:\n${extractedValidation.error.message}`;
+    logger.error(errorMsg);
+    throw new Error(errorMsg);
+  }
+
+  // Merge with existing skills based on strategy
+  const finalSkills = mergeSkillConfigs(
+    existingSkills,
+    extractedValidation.data,
+    options.merge || "append"
+  );
+
+  // Validate tool permissions
+  validateSkillTools(finalSkills, logger);
+
+  // Write final skills.json
+  await safeWriteJson(outputPath, finalSkills);
+
+  logger.info(`Pattern extraction complete.`);
+  logger.info(`  Extracted: ${extractedValidation.data.skills.length} skills`);
+  logger.info(`  Final total: ${finalSkills.skills.length} skills`);
+  logger.info(`  Written to: ${outputPath}`);
+}

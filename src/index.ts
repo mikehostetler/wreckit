@@ -17,6 +17,7 @@ import { initCommand } from "./commands/init";
 import { rollbackCommand } from "./commands/rollback";
 import { strategyCommand } from "./commands/strategy";
 import { executeRoadmapCommand } from "./commands/execute-roadmap";
+import { learnCommand } from "./commands/learn";
 // import { sdkInfoCommand } from "./commands/sdk-info";
 import { runOnboardingIfNeeded } from "./onboarding";
 import { resolveId } from "./domain/resolveId";
@@ -607,6 +608,45 @@ program
             cwd: resolveCwd(globalOpts.cwd),
             verbose: globalOpts.verbose,
             includeDone: options.includeDone,
+          },
+          logger
+        );
+      },
+      logger,
+      {
+        verbose: globalOpts.verbose,
+        quiet: globalOpts.quiet,
+        dryRun: globalOpts.dryRun,
+        cwd: resolveCwd(globalOpts.cwd),
+      }
+    );
+  });
+
+program
+  .command("learn [patterns...]")
+  .description("Extract and compile codebase patterns into reusable Skill artifacts")
+  .option("--item <id>", "Extract patterns from specific item")
+  .option("--phase <state>", "Extract patterns from items in specific phase state")
+  .option("--all", "Extract patterns from all completed items")
+  .option("--output <path>", "Output path for skills.json (default: .wreckit/skills.json)")
+  .option("--merge <strategy>", "Merge strategy: append|replace|ask (default: append)")
+  .option("--review", "Review extracted skills before saving")
+  .action(async (patterns, options, cmd) => {
+    const globalOpts = cmd.optsWithGlobals();
+    await executeCommand(
+      async () => {
+        await learnCommand(
+          {
+            patterns: patterns && patterns.length > 0 ? patterns : undefined,
+            item: options.item,
+            phase: options.phase,
+            all: options.all,
+            output: options.output,
+            merge: options.merge,
+            review: options.review,
+            dryRun: globalOpts.dryRun,
+            cwd: resolveCwd(globalOpts.cwd),
+            verbose: globalOpts.verbose,
           },
           logger
         );

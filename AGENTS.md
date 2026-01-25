@@ -29,6 +29,7 @@
 | `wreckit next` | Run next incomplete item |
 | `wreckit run <id>` | Run single item through all phases (id: `1`, `2`, or `001-slug`) |
 | `wreckit ideas < FILE` | Ingest ideas (create idea items) |
+| `wreckit learn` | Extract patterns and compile into reusable skills |
 | `wreckit status` | List all items + state |
 | `wreckit list` | List items (with optional `--state` filtering) |
 | `wreckit show <id>` | Show item details |

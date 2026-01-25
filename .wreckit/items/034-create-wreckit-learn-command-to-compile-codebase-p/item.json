@@ -3,14 +3,14 @@
   "id": "034-create-wreckit-learn-command-to-compile-codebase-p",
   "title": "Create `wreckit learn` command to compile codebase patterns into reusable Skill artifacts",
   "section": "roadmap",
-  "state": "idea",
+  "state": "critique",
   "overview": "From milestone [M4] Recursive Evolution & Skill-Based Media Layer\n\n**Motivation:** Strategic milestone: Recursive Evolution & Skill-Based Media Layer",
   "branch": null,
   "pr_url": null,
   "pr_number": null,
   "last_error": null,
   "created_at": "2026-01-25T01:01:23.621Z",
-  "updated_at": "2026-01-25T01:01:23.621Z",
+  "updated_at": "2026-01-25T05:47:16.553Z",
   "motivation": "Strategic milestone: Recursive Evolution & Skill-Based Media Layer",
   "depends_on": [
     "033-implement-phase-specific-skill-loading-jit-context"

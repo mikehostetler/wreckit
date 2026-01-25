@@ -114,6 +114,14 @@ export const PHASE_TOOL_ALLOWLISTS: Record<string, ToolName[] | undefined> = {
     AVAILABLE_TOOLS.Glob,
     AVAILABLE_TOOLS.Grep,
   ],
+
+  // Learn phase: Read + Write + Glob + Grep for pattern extraction and skills.json creation
+  learn: [
+    AVAILABLE_TOOLS.Read,
+    AVAILABLE_TOOLS.Write,
+    AVAILABLE_TOOLS.Glob,
+    AVAILABLE_TOOLS.Grep,
+  ],
 } as const;
 
 /**
