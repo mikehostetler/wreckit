@@ -85,16 +85,31 @@ TypeScript CLI built with Bun. Key directories:
   "base_branch": "main",
   "branch_prefix": "wreckit/",
   "merge_mode": "pr",
-  "agent": {"command": "amp", "args": ["--dangerously-allow-all"]},
+  "agent": {
+    "kind": "claude_sdk",
+    "model": "claude-sonnet-4-20250514"
+  },
   "max_iterations": 100,
   "timeout_seconds": 3600,
   "branch_cleanup": {"enabled": true, "delete_remote": true}
 }
 ```
 
+### Agent Kind Options
+
+| Kind | Description |
+|------|-------------|
+| `claude_sdk` | Claude Agent SDK (default, recommended) |
+| `amp_sdk` | Amp SDK (experimental) |
+| `codex_sdk` | Codex SDK (experimental) |
+| `opencode_sdk` | OpenCode SDK (experimental) |
+| `process` | External CLI process |
+
+See [README.md](./README.md#agent-options) for configuration examples for each kind.
+
 ### Environment Variable Resolution
 
-When using `agent.mode: "sdk"`, environment variables are merged from multiple sources with this precedence (highest first):
+When using SDK mode (`claude_sdk`, `amp_sdk`, `codex_sdk`, or `opencode_sdk`), environment variables are merged from multiple sources with this precedence (highest first):
 
 1. `.wreckit/config.local.json` `agent.env` (project-specific, gitignored)
 2. `.wreckit/config.json` `agent.env` (project defaults)

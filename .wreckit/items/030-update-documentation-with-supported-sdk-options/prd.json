@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "id": "030-update-documentation-with-supported-sdk-options",
+  "branch_name": "wreckit/030-update-documentation-with-supported-sdk-options",
+  "user_stories": [
+    {
+      "id": "US-001",
+      "title": "Mark documentation objective complete in ROADMAP.md",
+      "acceptance_criteria": [
+        "ROADMAP.md line 26 is changed from '- [ ] Update documentation with supported SDK options' to '- [x] Update documentation with supported SDK options'",
+        "All five M2 objectives in ROADMAP.md lines 22-26 now show [x] checkmarks",
+        "Grep command 'grep \"[x] Update documentation\" ROADMAP.md' returns a match"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Single-line change to mark the milestone objective as complete. All documentation already exists in README.md, MIGRATION.md, and AGENTS.md from previous work."
+    },
+    {
+      "id": "US-002",
+      "title": "Verify README.md SDK documentation accuracy",
+      "acceptance_criteria": [
+        "README.md Agent Options table (lines 167-174) lists all five agent kinds: claude_sdk, amp_sdk, codex_sdk, opencode_sdk, process",
+        "README.md Experimental SDK Modes section (lines 189-222) includes JSON configuration examples for amp_sdk, codex_sdk, and opencode_sdk",
+        "Experimental SDKs are clearly labeled with a note about experimental status"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Verification only - documentation already exists. Cross-reference with src/schemas.ts:50-62 to confirm accuracy."
+    },
+    {
+      "id": "US-003",
+      "title": "Verify MIGRATION.md experimental SDK documentation accuracy",
+      "acceptance_criteria": [
+        "MIGRATION.md Experimental SDK Modes section (lines 187-274) contains configuration tables for amp_sdk, codex_sdk, and opencode_sdk",
+        "Each experimental SDK has documented options, types, defaults, and descriptions",
+        "Section includes note that all SDK modes share the same environment variable resolution"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "Verification only - documentation already exists. Confirm tables match schema definitions in src/schemas.ts."
+    },
+    {
+      "id": "US-004",
+      "title": "Verify AGENTS.md agent kind options accuracy",
+      "acceptance_criteria": [
+        "AGENTS.md Agent Kind Options table (lines 98-108) lists all five kinds with descriptions",
+        "Experimental SDKs are labeled as experimental in the table",
+        "Reference to README.md for configuration examples is present"
+      ],
+      "priority": 4,
+      "status": "done",
+      "notes": "Verification only - documentation already exists. Confirm developer guidelines are accurate."
+    }
+  ]
+}

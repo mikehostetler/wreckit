@@ -184,6 +184,95 @@ Wreckit automatically converts legacy configs:
 | `mode: "process"` with `command` | `kind: "process"` with same settings |
 | No agent config | `kind: "claude_sdk"` (default) |
 
+### Experimental SDK Modes
+
+Wreckit supports experimental SDK backends for specialized use cases. All experimental SDKs:
+
+- Use the same `@anthropic-ai/claude-agent-sdk` query API
+- Share the same environment variable resolution (see [Environment Variables](#environment-variables))
+- Have the same error handling and timeout behavior (3600 seconds default)
+- Support MCP servers and tool restrictions
+
+> **Note:** These SDKs are marked experimental and may have API changes in future releases.
+
+#### Amp SDK
+
+Minimal configuration with optional model override:
+
+```json
+{
+  "agent": {
+    "kind": "amp_sdk",
+    "model": "custom-model"
+  }
+}
+```
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `kind` | `"amp_sdk"` | Required | Discriminator for Amp SDK |
+| `model` | string | (none) | Optional model override |
+
+#### Codex SDK
+
+Configuration with default model:
+
+```json
+{
+  "agent": {
+    "kind": "codex_sdk",
+    "model": "codex-1"
+  }
+}
+```
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `kind` | `"codex_sdk"` | Required | Discriminator for Codex SDK |
+| `model` | string | `"codex-1"` | Model to use |
+
+#### OpenCode SDK
+
+Zero-configuration SDK mode:
+
+```json
+{
+  "agent": {
+    "kind": "opencode_sdk"
+  }
+}
+```
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `kind` | `"opencode_sdk"` | Required | Discriminator for OpenCode SDK |
+
+#### Switching Between SDK Modes
+
+To switch from `claude_sdk` to an experimental SDK, change the `kind` field:
+
+**Before (Claude SDK):**
+```json
+{
+  "agent": {
+    "kind": "claude_sdk",
+    "model": "claude-sonnet-4-20250514"
+  }
+}
+```
+
+**After (Codex SDK):**
+```json
+{
+  "agent": {
+    "kind": "codex_sdk",
+    "model": "codex-1"
+  }
+}
+```
+
+All SDK modes use the same credential resolution. Run `wreckit sdk-info` to verify your configuration.
+
 ---
 
 ## Environment Variables
