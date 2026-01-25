@@ -19,6 +19,14 @@ import {
   getItemsDir,
   getBatchProgressPath,
 } from "./fs/paths";
+import {
+  createBackupSession,
+  backupFile,
+  finalizeBackupSession,
+  cleanupOldBackups,
+  removeEmptyBackupSession,
+} from "./fs/backup";
+import type { BackupFileEntry } from "./schemas";
 import { pathExists } from "./fs/util";
 import { scanItems } from "./commands/status";
 import { initPromptTemplates } from "./prompts";
@@ -156,11 +164,16 @@ export interface FixResult {
   diagnostic: Diagnostic;
   fixed: boolean;
   message: string;
+  backup?: {
+    sessionId: string;
+    filePath: string;
+  };
 }
 
 export interface DoctorResult {
   diagnostics: Diagnostic[];
   fixes?: FixResult[];
+  backupSessionId?: string | null;
 }
 
 async function readJson(filePath: string): Promise<unknown> {
@@ -576,17 +589,42 @@ export async function applyFixes(
   root: string,
   diagnostics: Diagnostic[],
   logger: Logger
-): Promise<FixResult[]> {
+): Promise<{ results: FixResult[]; backupSessionId: string | null }> {
   const results: FixResult[] = [];
   const fixableDiagnostics = diagnostics.filter((d) => d.fixable);
+
+  if (fixableDiagnostics.length === 0) {
+    return { results, backupSessionId: null };
+  }
+
+  // Create backup session
+  const sessionId = await createBackupSession(root);
+  const backupEntries: BackupFileEntry[] = [];
+  let hasBackups = false;
 
   for (const diagnostic of fixableDiagnostics) {
     let fixed = false;
     let message = "";
+    let backupInfo: { sessionId: string; filePath: string } | undefined;
 
     switch (diagnostic.code) {
       case "INDEX_STALE": {
         try {
+          // Backup existing index.json before regeneration (if it exists)
+          const indexPath = getIndexPath(root);
+          const entry = await backupFile(
+            root,
+            sessionId,
+            indexPath,
+            diagnostic,
+            "modified"
+          );
+          if (entry) {
+            backupEntries.push(entry);
+            hasBackups = true;
+            backupInfo = { sessionId, filePath: entry.backup_path };
+          }
+
           const items = await scanItems(root);
           const index: Index = {
             schema_version: 1,
@@ -604,6 +642,7 @@ export async function applyFixes(
       }
 
       case "MISSING_PROMPTS": {
+        // No backup needed - creates new files, doesn't modify existing
         try {
           await initPromptTemplates(root);
           fixed = true;
@@ -642,6 +681,20 @@ export async function applyFixes(
             }
 
             if (newState !== item.state) {
+              // Backup before modification
+              const entry = await backupFile(
+                root,
+                sessionId,
+                itemJsonPath,
+                diagnostic,
+                "modified"
+              );
+              if (entry) {
+                backupEntries.push(entry);
+                hasBackups = true;
+                backupInfo = { sessionId, filePath: entry.backup_path };
+              }
+
               const updatedItem = {
                 ...item,
                 state: newState,
@@ -664,6 +717,21 @@ export async function applyFixes(
       case "STALE_BATCH_PROGRESS":
       case "BATCH_PROGRESS_CORRUPT": {
         try {
+          // Backup before deletion
+          const progressPath = getBatchProgressPath(root);
+          const entry = await backupFile(
+            root,
+            sessionId,
+            progressPath,
+            diagnostic,
+            "deleted"
+          );
+          if (entry) {
+            backupEntries.push(entry);
+            hasBackups = true;
+            backupInfo = { sessionId, filePath: entry.backup_path };
+          }
+
           await clearBatchProgress(root);
           fixed = true;
           message = "Removed stale/corrupt batch-progress.json";
@@ -677,10 +745,18 @@ export async function applyFixes(
         message = "No fix available";
     }
 
-    results.push({ diagnostic, fixed, message });
+    results.push({ diagnostic, fixed, message, backup: backupInfo });
   }
 
-  return results;
+  // Finalize or cleanup backup session
+  if (hasBackups) {
+    await finalizeBackupSession(root, sessionId, backupEntries);
+    await cleanupOldBackups(root, 10);
+  } else {
+    await removeEmptyBackupSession(root, sessionId);
+  }
+
+  return { results, backupSessionId: hasBackups ? sessionId : null };
 }
 
 export async function runDoctor(
@@ -694,6 +770,10 @@ export async function runDoctor(
     return { diagnostics };
   }
 
-  const fixes = await applyFixes(root, diagnostics, logger);
-  return { diagnostics, fixes };
+  const { results: fixes, backupSessionId } = await applyFixes(
+    root,
+    diagnostics,
+    logger
+  );
+  return { diagnostics, fixes, backupSessionId };
 }

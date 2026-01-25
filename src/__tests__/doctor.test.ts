@@ -378,7 +378,7 @@ describe("applyFixes", () => {
       },
     ];
 
-    const results = await applyFixes(tempDir, diagnostics, mockLogger);
+    const { results } = await applyFixes(tempDir, diagnostics, mockLogger);
 
     expect(results).toHaveLength(1);
     expect(results[0].fixed).toBe(true);
@@ -402,7 +402,7 @@ describe("applyFixes", () => {
       },
     ];
 
-    const results = await applyFixes(tempDir, diagnostics, mockLogger);
+    const { results } = await applyFixes(tempDir, diagnostics, mockLogger);
 
     expect(results).toHaveLength(1);
     expect(results[0].fixed).toBe(true);
@@ -425,11 +425,13 @@ describe("applyFixes", () => {
       },
     ];
 
-    const results = await applyFixes(tempDir, diagnostics, mockLogger);
+    const { results, backupSessionId } = await applyFixes(tempDir, diagnostics, mockLogger);
 
     expect(results).toHaveLength(1);
     expect(results[0].fixed).toBe(true);
     expect(results[0].message).toContain("idea");
+    expect(results[0].backup).toBeDefined();
+    expect(backupSessionId).toBeDefined();
 
     const itemPath = path.join(
       tempDir,
@@ -454,8 +456,9 @@ describe("applyFixes", () => {
       },
     ];
 
-    const results = await applyFixes(tempDir, diagnostics, mockLogger);
+    const { results, backupSessionId } = await applyFixes(tempDir, diagnostics, mockLogger);
     expect(results).toHaveLength(0);
+    expect(backupSessionId).toBeNull();
   });
 
   it("returns fix results for all fixable diagnostics", async () => {
@@ -478,10 +481,12 @@ describe("applyFixes", () => {
       },
     ];
 
-    const results = await applyFixes(tempDir, diagnostics, mockLogger);
+    const { results, backupSessionId } = await applyFixes(tempDir, diagnostics, mockLogger);
 
     expect(results).toHaveLength(2);
     expect(results.every((r) => r.fixed)).toBe(true);
+    // Backup created for STATE_FILE_MISMATCH but not MISSING_PROMPTS
+    expect(backupSessionId).toBeDefined();
   });
 
   it("fixes STALE_BATCH_PROGRESS by removing file", async () => {
@@ -511,11 +516,13 @@ describe("applyFixes", () => {
       },
     ];
 
-    const results = await applyFixes(tempDir, diagnostics, mockLogger);
+    const { results, backupSessionId } = await applyFixes(tempDir, diagnostics, mockLogger);
 
     expect(results).toHaveLength(1);
     expect(results[0].fixed).toBe(true);
     expect(results[0].message).toContain("Removed");
+    expect(results[0].backup).toBeDefined();
+    expect(backupSessionId).toBeDefined();
 
     const exists = await fs.access(progressPath).then(() => true).catch(() => false);
     expect(exists).toBe(false);
@@ -535,11 +542,13 @@ describe("applyFixes", () => {
       },
     ];
 
-    const results = await applyFixes(tempDir, diagnostics, mockLogger);
+    const { results, backupSessionId } = await applyFixes(tempDir, diagnostics, mockLogger);
 
     expect(results).toHaveLength(1);
     expect(results[0].fixed).toBe(true);
     expect(results[0].message).toContain("Removed");
+    expect(results[0].backup).toBeDefined();
+    expect(backupSessionId).toBeDefined();
 
     const exists = await fs.access(progressPath).then(() => true).catch(() => false);
     expect(exists).toBe(false);
