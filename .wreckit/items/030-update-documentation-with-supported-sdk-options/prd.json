@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "id": "030-update-documentation-with-supported-sdk-options",
+  "branch_name": "wreckit/030-update-documentation-with-supported-sdk-options",
+  "user_stories": [
+    {
+      "id": "US-001",
+      "title": "Document experimental SDK options in README.md",
+      "acceptance_criteria": [
+        "README.md contains a table listing all five agent kinds (claude_sdk, amp_sdk, codex_sdk, opencode_sdk, process)",
+        "README.md includes JSON configuration examples for amp_sdk, codex_sdk, and opencode_sdk",
+        "Experimental SDKs are clearly labeled as experimental with a note about potential API changes",
+        "Link to MIGRATION.md for detailed configuration is present"
+      ],
+      "priority": 1,
+      "status": "pending",
+      "notes": "Updates README.md lines 163-208. Follow existing pattern for SDK Mode and Process Mode sections."
+    },
+    {
+      "id": "US-002",
+      "title": "Document experimental SDK configuration in MIGRATION.md",
+      "acceptance_criteria": [
+        "MIGRATION.md contains 'Experimental SDK Modes' section after Configuration Reference",
+        "Each experimental SDK has a configuration example with JSON code block",
+        "Each experimental SDK has a table documenting its options, types, defaults, and descriptions",
+        "Section includes guidance on switching between SDK modes",
+        "Note that all SDK modes share the same environment variable resolution"
+      ],
+      "priority": 2,
+      "status": "pending",
+      "notes": "Insert after line 186 in MIGRATION.md. Include Amp SDK, Codex SDK, OpenCode SDK subsections."
+    },
+    {
+      "id": "US-003",
+      "title": "Update AGENTS.md with all agent kinds",
+      "acceptance_criteria": [
+        "Config example in AGENTS.md uses kind: claude_sdk format instead of legacy mode: sdk",
+        "AGENTS.md contains a table listing all five agent kinds with descriptions",
+        "Experimental SDKs are labeled as experimental in the table"
+      ],
+      "priority": 3,
+      "status": "pending",
+      "notes": "Updates lines 79-93. Add Agent Kind Options section with table."
+    },
+    {
+      "id": "US-004",
+      "title": "Add changelog entry for experimental SDK documentation",
+      "acceptance_criteria": [
+        "CHANGELOG.md [Unreleased] section contains Added subsection for experimental SDK documentation",
+        "Entry mentions all three experimental SDK modes (amp_sdk, codex_sdk, opencode_sdk)",
+        "Entry references README.md and MIGRATION.md for details"
+      ],
+      "priority": 4,
+      "status": "pending",
+      "notes": "Add after line 8 in existing [Unreleased] section. Follow Keep a Changelog format."
+    }
+  ]
+}
