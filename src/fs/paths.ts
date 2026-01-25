@@ -96,3 +96,15 @@ export function getPromptPath(root: string, id: string): string {
 export function getRoadmapPath(root: string): string {
   return path.join(root, "ROADMAP.md");
 }
+
+export function getBackupsDir(root: string): string {
+  return path.join(getWreckitDir(root), "backups");
+}
+
+export function getBackupSessionDir(root: string, sessionId: string): string {
+  return path.join(getBackupsDir(root), sessionId);
+}
+
+export function getBackupManifestPath(root: string, sessionId: string): string {
+  return path.join(getBackupSessionDir(root, sessionId), "manifest.json");
+}
