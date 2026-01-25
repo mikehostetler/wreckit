@@ -34,6 +34,7 @@ export const AVAILABLE_TOOLS = {
   wreckit_save_prd: "mcp__wreckit__save_prd",
   wreckit_update_story_status: "mcp__wreckit__update_story_status",
   wreckit_complete: "mcp__wreckit__complete",
+  wreckit_save_dream_ideas: "mcp__wreckit-dream__save_dream_ideas",
 } as const;
 
 export type ToolName = typeof AVAILABLE_TOOLS[keyof typeof AVAILABLE_TOOLS];
@@ -121,6 +122,14 @@ export const PHASE_TOOL_ALLOWLISTS: Record<string, ToolName[] | undefined> = {
     AVAILABLE_TOOLS.Write,
     AVAILABLE_TOOLS.Glob,
     AVAILABLE_TOOLS.Grep,
+  ],
+
+  // Dream phase: Read-only tools for scanning + dream MCP tool for saving ideas
+  dream: [
+    AVAILABLE_TOOLS.Read,
+    AVAILABLE_TOOLS.Glob,
+    AVAILABLE_TOOLS.Grep,
+    AVAILABLE_TOOLS.wreckit_save_dream_ideas,
   ],
 
   // Media phase: Bash for CLI tools, Write for scripts, Read for source, Glob/Grep for exploration
