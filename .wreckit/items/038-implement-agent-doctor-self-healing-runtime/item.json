@@ -3,13 +3,13 @@
   "id": "038-implement-agent-doctor-self-healing-runtime",
   "title": "Implement The Agent Doctor (Self-Healing Runtime)",
   "section": "roadmap",
-  "state": "idea",
+  "state": "critique",
   "overview": "Implement a recursive self-healing capability where the runtime can catch system errors (git locks, npm failures, invalid JSON) and spawn a specialized \"Doctor Agent\" to fix the environment and resume execution.\n\n**Key Features:**\n- **Error Interception:** Catch exit codes and stderr from agent processes.\n- **Doctor Skill:** A specialized skill set for environment repair (rm locks, npm install, json fix).\n- **Recursive Recovery:** The watchdog should not crash; it should pause, heal, and retry.\n\n**Motivation:** Demonstrated need during Campaign M4 where manual intervention was required for git locks and dependency issues.",
-  "campaign": "M5",
-  "created_at": "2026-01-25T14:20:05.000Z",
-  "updated_at": "2026-01-25T14:20:05.000Z",
   "branch": null,
   "pr_url": null,
   "pr_number": null,
-  "last_error": null
+  "last_error": "Not all stories are done",
+  "created_at": "2026-01-25T14:20:05.000Z",
+  "updated_at": "2026-01-25T21:21:39.365Z",
+  "campaign": "M5"
 }

@@ -8,6 +8,8 @@ import { loadConfig } from "../config";
 import { readItem, readPrd, writeItem, readBatchProgress, writeBatchProgress, clearBatchProgress } from "../fs/json";
 import { scanItems } from "./status";
 import { runCommand } from "./run";
+import { writeHealingLog, type HealingLogEntry } from "../agent/healingRunner";
+import type { DoctorConfig } from "../schemas";
 import { TuiViewAdapter } from "../views";
 import type { AgentEvent } from "../tui/agentEvents";
 import { createSimpleProgress } from "../tui";
@@ -84,6 +86,8 @@ export interface OrchestratorOptions {
   noResume?: boolean;
   /** If true, include previously failed items when resuming */
   retryFailed?: boolean;
+  /** If true, disable automatic self-healing (Item 038) */
+  noHealing?: boolean;
 }
 
 export interface OrchestratorResult {
@@ -104,7 +108,7 @@ export async function orchestrateAll(
   options: OrchestratorOptions,
   logger: Logger
 ): Promise<OrchestratorResult> {
-  const { force = false, dryRun = false, noTui = false, tuiDebug = false, cwd, mockAgent = false, parallel = 1 } = options;
+  const { force = false, dryRun = false, noTui = false, tuiDebug = false, cwd, mockAgent = false, parallel = 1, noHealing = false } = options;
 
   const root = findRootFromOptions(options);
   const config = await loadConfig(root);
@@ -301,6 +305,7 @@ export async function orchestrateAll(
             force,
             dryRun: false,
             mockAgent,
+            noHealing, // Pass through healing flag (Item 038)
             onAgentOutput: view ? (chunk) => view.onAgentEvent(item.id, { type: "assistant_text", text: chunk }) : undefined,
             onAgentEvent: view ? (event: AgentEvent) => view.onAgentEvent(item.id, event) : undefined,
             onIterationChanged: view ? (iteration, maxIterations) => view.onIterationChanged(iteration, maxIterations) : undefined,

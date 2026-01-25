@@ -45,6 +45,7 @@ program
   .option("--parallel <n>", "Process N items in parallel (default: 1)", "1")
   .option("--no-resume", "Start fresh batch run, ignoring saved progress")
   .option("--retry-failed", "Include previously failed items when resuming")
+  .option("--no-healing", "Disable automatic self-healing (Item 038)")
   .option("--cwd <path>", "Override the working directory");
 
 program.action(async () => {
@@ -73,6 +74,7 @@ program.action(async () => {
           parallel: parseInt(opts.parallel, 10) || 1,
           noResume: opts.noResume,
           retryFailed: opts.retryFailed,
+          noHealing: opts.noHealing, // Pass through --no-healing flag (Item 038)
         },
         logger
       );

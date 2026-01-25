@@ -3,7 +3,7 @@
   "id": "037-generate-launchpad-marketing-video",
   "title": "Generate Launchpad-style Marketing Video with Remotion",
   "section": "roadmap",
-  "state": "critique",
+  "state": "done",
   "overview": "Create a high-energy, 30-second product launch video for Wreckit using Remotion.\n\n**Style Guide (Launchpad):**\n- Use **React** and **Tailwind CSS** for styling.\n- **Typography:** Bold, clean, modern (Inter/Roboto).\n- **Motion:** Fast transitions, zoom-ins on code blocks, kinetic typography.\n- **Theme:** \"The Factory is Alive\". Visualize the agent loop, the watchdog, and the media layer.\n\n**Reference:** https://github.com/trycua/launchpad\n\n**Goal:** Demonstrate that Wreckit can autonomously produce high-quality marketing assets in the style of top-tier open source projects.",
   "branch": null,
   "pr_url": null,

@@ -122,6 +122,32 @@ export const SkillConfigSchema = z.object({
   skills: z.array(SkillSchema).describe("Available skill definitions"),
 }).strict();
 
+// ============================================================
+// Doctor Configuration Schema (Item 038 - Agent Doctor Self-Healing Runtime)
+// ============================================================
+
+/**
+ * Auto-repair modes for the Agent Doctor
+ * - true: Allow all repairs (git lock, npm install, JSON restoration)
+ * - false: Disable all auto-repair
+ * - "safe-only": Only allow safe repairs (git lock removal, npm install)
+ */
+export const DoctorAutoRepairModeSchema = z.union([
+  z.literal(true),
+  z.literal(false),
+  z.literal("safe-only"),
+]);
+
+/**
+ * Doctor configuration for automatic self-healing
+ */
+export const DoctorConfigSchema = z.object({
+  enabled: z.boolean().default(true).describe("Enable automatic self-healing"),
+  auto_repair: DoctorAutoRepairModeSchema.default("safe-only").describe("What repairs are allowed"),
+  max_retries: z.number().default(3).describe("Max retry attempts after healing"),
+  timeout_ms: z.number().default(300000).describe("Timeout for healing operations (default 5 minutes)"),
+}).strict();
+
 export const ConfigSchema = z.object({
   schema_version: z.number().default(1),
   base_branch: z.string().default("main"),
@@ -135,6 +161,8 @@ export const ConfigSchema = z.object({
   branch_cleanup: BranchCleanupSchema.optional(),
   // Add optional skills configuration (Item 033)
   skills: SkillConfigSchema.optional(),
+  // Add optional doctor configuration (Item 038)
+  doctor: DoctorConfigSchema.optional(),
 });
 
 export const PriorityHintSchema = z.enum(["low", "medium", "high", "critical"]);
@@ -223,6 +251,10 @@ export const BatchProgressSchema = z.object({
   completed: z.array(z.string()), // Successfully processed this session
   failed: z.array(z.string()), // Failed items this session
   skipped: z.array(z.string()), // Already done at session start
+
+  // Healing metrics (Item 038)
+  healing_attempts: z.number().default(0).describe("Number of healing attempts this session"),
+  last_healing_at: z.string().nullable().describe("ISO timestamp of last healing event"),
 });
 
 export type WorkflowState = z.infer<typeof ItemStateSchema>;
@@ -250,6 +282,10 @@ export type SkillContextRequirement = z.infer<typeof SkillContextRequirementSche
 export type Skill = z.infer<typeof SkillSchema>;
 export type PhaseSkillsMapping = z.infer<typeof PhaseSkillsMappingSchema>;
 export type SkillConfig = z.infer<typeof SkillConfigSchema>;
+
+// Type exports for doctor configuration (Item 038)
+export type DoctorAutoRepairMode = z.infer<typeof DoctorAutoRepairModeSchema>;
+export type DoctorConfig = z.infer<typeof DoctorConfigSchema>;
 
 // Backup manifest schemas for doctor --fix
 export const BackupFileEntrySchema = z.object({

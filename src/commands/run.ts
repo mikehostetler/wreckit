@@ -29,6 +29,8 @@ export interface RunOptions {
   onStoryChanged?: (story: { id: string; title: string } | null) => void;
   onPhaseChanged?: (phase: string | null) => void;
   cwd?: string;
+  /** Disable automatic self-healing for this run (Item 038) */
+  noHealing?: boolean;
 }
 
 async function phaseArtifactsExist(
@@ -59,7 +61,7 @@ export async function runCommand(
   options: RunOptions,
   logger: Logger
 ): Promise<void> {
-  const { force = false, dryRun = false, mockAgent = false, onAgentOutput, onAgentEvent, onIterationChanged, onStoryChanged, onPhaseChanged, cwd } = options;
+  const { force = false, dryRun = false, mockAgent = false, onAgentOutput, onAgentEvent, onIterationChanged, onStoryChanged, onPhaseChanged, cwd, noHealing = false } = options;
 
   const root = findRootFromOptions(options);
   const config = await loadConfig(root);
@@ -92,6 +94,7 @@ export async function runCommand(
     onIterationChanged,
     onStoryChanged,
     onPhaseChanged,
+    noHealing, // Pass through healing flag
   };
 
   const phaseRunners = {

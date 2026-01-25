@@ -3,7 +3,7 @@
   "id": "036-create-wreckit-summarize-to-generate-30-second-fea",
   "title": "Create `wreckit summarize` to generate 30-second feature visualization videos autonomously",
   "section": "roadmap",
-  "state": "in_pr",
+  "state": "done",
   "overview": "From milestone [M4] Recursive Evolution & Skill-Based Media Layer\n\n**Motivation:** Strategic milestone: Recursive Evolution & Skill-Based Media Layer",
   "branch": "wreckit/036-create-wreckit-summarize-to-generate-30-second-fea",
   "pr_url": "https://github.com/jmanhype/wreckit/pull/17",

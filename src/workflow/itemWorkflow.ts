@@ -37,6 +37,7 @@ import {
   type PromptVariables,
 } from "../prompts";
 import { runAgentUnion, getAgentConfigUnion } from "../agent/runner";
+import { runAgentWithHealing, doctorConfigToHealingConfig, type HealingConfig } from "../agent/healingRunner";
 import { getAllowedToolsForPhase } from "../agent/toolAllowlist";
 import { loadSkillsForPhase } from "../agent/skillLoader";
 import { buildJitContext, formatContextForPrompt } from "../agent/contextBuilder";
@@ -86,6 +87,8 @@ export interface WorkflowOptions {
   onIterationChanged?: (iteration: number, maxIterations: number) => void;
   onStoryChanged?: (story: { id: string; title: string } | null) => void;
   onPhaseChanged?: (phase: WorkflowState | null) => void;
+  /** Disable automatic self-healing for this workflow (Item 038) */
+  noHealing?: boolean;
 }
 
 export interface PhaseResult {
@@ -244,6 +247,7 @@ export async function runPhaseResearch(
     mockAgent = false,
     onAgentOutput,
     onAgentEvent,
+    noHealing = false,
   } = options;
 
   let item = await loadItem(root, itemId);
@@ -304,7 +308,19 @@ export async function runPhaseResearch(
       prompt += `\n\nCRITICAL: Your previous attempt failed validation with the following errors:\n${validationError}\n\nYou MUST fix these issues in this attempt. Ensure you strictly follow all format requirements and section headers.`;
     }
 
-    const result = await runAgentUnion({
+    // Build healing config (Item 038)
+    const doctorConfig = config.doctor || {};
+    const healingConfig: HealingConfig = doctorConfigToHealingConfig({
+      ...doctorConfig,
+      enabled: !noHealing && (doctorConfig.enabled ?? true),
+    });
+
+    // Run agent with healing (Item 038)
+    const agentRunner = healingConfig.enabled
+      ? runAgentWithHealing
+      : runAgentUnion;
+
+    const result = await agentRunner({
       config: agentConfig,
       cwd: itemDir,
       prompt,
@@ -321,7 +337,7 @@ export async function runPhaseResearch(
       },
       // Use skill-merged tool allowlist (or phase tools if no skills)
       allowedTools: skillResult.allowedTools,
-    });
+    }, healingConfig, itemId);
 
     if (dryRun) {
       return { success: true, item };
