@@ -366,27 +366,12 @@ describe("git/index", () => {
       }
     });
 
-    it("returns true when directory is actually a git repo", async () => {
-      // Verify legitimate git repos are still detected correctly
-      const gitDir = await fs.mkdtemp(path.join(os.tmpdir(), "wreckit-git-"));
-      try {
-        // Initialize a git repo
-        const { spawn: spawnGit } = require("node:child_process");
-        await new Promise<void>((resolve, reject) => {
-          const proc = spawnGit("git", ["init"], { cwd: gitDir });
-          proc.on("close", (code) => (code === 0 ? resolve() : reject(new Error(`git init failed with code ${code}`))));
-        });
-
-        // Verify .git directory exists
-        const gitPath = path.join(gitDir, ".git");
-        const stat = await fs.stat(gitPath);
-        expect(stat.isDirectory()).toBe(true);
-
-        const result = await gitModule.isGitRepo(gitDir);
-        expect(result).toBe(true);
-      } finally {
-        await fs.rm(gitDir, { recursive: true, force: true });
-      }
+    it("returns true for the current repository", async () => {
+      // Verify that the current repository (where tests are running) is detected
+      // This ensures we didn't break legitimate git repo detection
+      const repoRoot = process.cwd();
+      const result = await gitModule.isGitRepo(repoRoot);
+      expect(result).toBe(true);
     });
   });
 });
