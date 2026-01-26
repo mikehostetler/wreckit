@@ -4,6 +4,11 @@ export default defineConfig({
   // Base path for GitHub Pages subdirectory deployment
   base: '/wreckit/',
 
+  // Head tags
+  head: [
+    ['link', { rel: 'icon', href: '/wreckit/favicon.ico' }]
+  ],
+
   // Site metadata
   title: 'Wreckit',
   description: 'A CLI tool for turning ideas into automated PRs through an autonomous agent loop',
@@ -16,6 +21,7 @@ export default defineConfig({
       { text: 'Home', link: '/' },
       { text: 'Guide', link: '/guide/introduction' },
       { text: 'CLI Reference', link: '/cli/' },
+      { text: 'API Documentation', link: '/api/' },
       { text: 'Agent Development', link: '/agent-development/' },
       { text: 'Migration', link: '/migration/' },
       { text: 'Changelog', link: '/changelog' },
@@ -72,6 +78,18 @@ export default defineConfig({
             { text: 'Quick Migration', link: '/migration/quick-migration' },
             { text: 'Environment Variables', link: '/migration/environment' },
             { text: 'Troubleshooting', link: '/migration/troubleshooting' }
+          ]
+        }
+      ],
+      '/api/': [
+        {
+          text: 'API Reference',
+          items: [
+            { text: 'Overview', link: '/api/' },
+            { text: 'Agent', link: '/api/agent/' },
+            { text: 'Commands', link: '/api/commands/' },
+            { text: 'Doctor', link: '/api/doctor/' },
+            { text: 'Index', link: '/api/index/' }
           ]
         }
       ]

@@ -14,7 +14,7 @@
         "Logo image is clearly visible and appropriately sized"
       ],
       "priority": 1,
-      "status": "pending",
+      "status": "done",
       "notes": "Copy existing logo from /img/wreckit.png to docs/public/logo.png. VitePress serves files from public/ at site root, so /logo.png reference in docs/index.md:9 will resolve correctly."
     },
     {
@@ -29,7 +29,7 @@
         "Clicking 'Edit this page on GitHub' link navigates to correct repository"
       ],
       "priority": 1,
-      "status": "pending",
+      "status": "done",
       "notes": "Repository URL mismatch is pervasive across config files and 72 generated API docs. Use find-and-replace for quick fix in Phase 1, proper fix via Typedoc reconfiguration in Phase 2."
     },
     {
@@ -44,7 +44,7 @@
         "All generated API docs use correct repository URLs (grep verifies no jmanhype references)"
       ],
       "priority": 2,
-      "status": "pending",
+      "status": "done",
       "notes": "Typedoc is already configured but not integrated into build. Adding it to docs:build ensures API docs are always in sync with code. Typedoc config needs repository URL to generate correct source links."
     },
     {
@@ -59,7 +59,7 @@
         "All sidebar links in API section navigate to correct pages"
       ],
       "priority": 2,
-      "status": "pending",
+      "status": "done",
       "notes": "API docs are generated but not discoverable through navigation. Adding nav link and sidebar configuration makes them accessible to users."
     },
     {
@@ -72,7 +72,7 @@
         "Favicon appears in browser tab when viewing any page on documentation site"
       ],
       "priority": 3,
-      "status": "pending",
+      "status": "done",
       "notes": "Simple SVG favicon with 'W' logo on blue background matches Wreckit branding. Alternative is to copy existing PNG as favicon.ico if SVG creation is not desired."
     },
     {
@@ -85,7 +85,7 @@
         "Module descriptions are clear and helpful for users navigating API reference"
       ],
       "priority": 3,
-      "status": "pending",
+      "status": "done",
       "notes": "Current API README is just a raw index. Adding descriptions and context makes it more useful for users seeking TypeScript API documentation."
     },
     {
@@ -102,7 +102,7 @@
         "Deployed site matches local preview (logo, links, content all correct)"
       ],
       "priority": 4,
-      "status": "pending",
+      "status": "done",
       "notes": "No code changes in this story - verification only. Test complete pipeline from local build to GitHub Pages deployment to ensure documentation site is production-ready."
     }
   ]

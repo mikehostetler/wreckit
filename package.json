@@ -30,8 +30,9 @@
     "test": "bun test --preload ./src/__tests__/test-preload.ts ./src/__tests__/commands/phase.isospec.ts && bun test --preload ./src/__tests__/test-preload.ts ./src/__tests__/commands/run.isospec.ts && bun test ./src/__tests__/*.test.ts ./src/__tests__/commands/init.test.ts ./src/__tests__/commands/ideas.test.ts ./src/__tests__/commands/orchestrator.test.ts ./src/__tests__/commands/show.test.ts ./src/__tests__/commands/status.test.ts && bun test ./src/__tests__/edge-cases/cwd.test.ts && bun test ./src/__tests__/edge-cases/branch-ops.isospec.ts && bun test ./src/__tests__/edge-cases/config.test.ts && bun test ./src/__tests__/edge-cases/dry-run.isospec.ts && bun test ./src/__tests__/edge-cases/errors.isospec.ts && bun test ./src/__tests__/edge-cases/item-states.test.ts && bun test ./src/__tests__/edge-cases/mock-agent.isospec.ts && bun test ./src/__tests__/edge-cases/repo-state.isospec.ts && bun test ./src/__tests__/edge-cases/state-conflicts.test.ts && bun test ./src/__tests__/sdk-integration/*.integration.test.ts",
     "watch": "tsup src/index.ts --format esm --watch --onSuccess \"cp -r src/prompts dist/\"",
     "benchmark": "bun run ./src/benchmarks/cli.ts",
+    "docs:api": "typedoc",
     "docs:dev": "vitepress dev docs",
-    "docs:build": "vitepress build docs",
+    "docs:build": "bun run docs:api && vitepress build docs",
     "docs:preview": "vitepress preview docs"
   },
   "keywords": [
