@@ -8,9 +8,9 @@
   "branch": null,
   "pr_url": null,
   "pr_number": null,
-  "last_error": null,
+  "last_error": "Research phase detected unauthorized file modifications:\n\n  Untracked .wreckit/backups/2026-01-26T18-49-36-256Z/\n\nThe research phase must be read-only. Only research.md may be created.\nAny code changes should be made during the implementation phase.",
   "created_at": "2026-01-26T18:08:09.230Z",
-  "updated_at": "2026-01-26T18:08:09.230Z",
+  "updated_at": "2026-01-26T19:04:52.945Z",
   "problem_statement": "Type 'any' used for sdkOptions in claude-sdk-runner.ts line 32 eliminates type checking for critical SDK configuration, potentially allowing invalid options to pass silently.",
   "motivation": "Proper typing ensures compile-time validation of SDK options, better IDE autocomplete, and prevents runtime errors from misspelled or invalid options. Using 'any' defeats TypeScript's primary benefit.",
   "success_criteria": [

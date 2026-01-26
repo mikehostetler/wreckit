@@ -214,7 +214,7 @@ async function writeHealingLog(cwd: string, entry: HealingLogEntry): Promise<voi
     await fs.appendFile(logPath, line, "utf-8");
   } catch (err) {
     // Don't fail if logging fails - just warn
-    console.error(`Failed to write healing log: ${err}`);
+    logger.error(`Failed to write healing log: ${err}`);
   }
 }
 
@@ -267,7 +267,7 @@ async function checkRepeatedFailures(cwd: string, errorType: string, logger: Log
     }
   } catch (err) {
     // Don't fail if check fails - it's just an alert
-    console.error(`Failed to check repeated failures: ${err}`);
+    logger.error(`Failed to check repeated failures: ${err}`);
   }
 }
 

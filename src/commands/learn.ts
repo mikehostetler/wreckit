@@ -152,7 +152,7 @@ export async function mergeSkillConfigs(
     case "ask": {
       // Check if running in TTY environment
       if (!process.stdout.isTTY) {
-        console.warn("Not a TTY environment. Falling back to 'append' merge strategy.");
+        logger.warn("Not a TTY environment. Falling back to 'append' merge strategy.");
         return performAppendMerge(existing, extracted);
       }
 
@@ -180,9 +180,9 @@ export async function mergeSkillConfigs(
           });
         };
 
-        console.log("");
-        console.log(fmt.bold("Interactive Skill Merge"));
-        console.log(fmt.dim("─".repeat(60)));
+        logger.info("");
+        logger.info(fmt.bold("Interactive Skill Merge"));
+        logger.info(fmt.dim("─".repeat(60)));
 
         // Collect phase_skills conflicts
         const phaseConflicts: Array<{
@@ -227,11 +227,11 @@ export async function mergeSkillConfigs(
 
         // If no conflicts, just append
         if (phaseConflicts.length === 0) {
-          console.log(fmt.green("✓") + " No conflicts found. Using append strategy.");
+          logger.info(fmt.green("✓") + " No conflicts found. Using append strategy.");
           return performAppendMerge(existing, extracted);
         }
 
-        console.log(
+        logger.info(
           fmt.yellow(`Found ${phaseConflicts.length} conflict${phaseConflicts.length > 1 ? "s" : ""} to resolve:\n`)
         );
 
@@ -252,12 +252,12 @@ export async function mergeSkillConfigs(
           const existingPhase = conflict.existingPhases[0];
           const extractedPhase = conflict.extractedPhases[0];
 
-          console.log(
+          logger.info(
             fmt.bold(`[${i + 1}/${phaseConflicts.length}]`) +
             ` Skill: ${fmt.cyan(conflict.skillId)}`
           );
-          console.log(`  Existing: phase=${fmt.dim(existingPhase)}`);
-          console.log(`  Extracted: phase=${fmt.dim(extractedPhase)}`);
+          logger.info(`  Existing: phase=${fmt.dim(existingPhase)}`);
+          logger.info(`  Extracted: phase=${fmt.dim(extractedPhase)}`);
 
           const answer = await ask(
             `  Choose: ${fmt.green("1")} keep ${fmt.dim(existingPhase)}, ` +
@@ -271,7 +271,7 @@ export async function mergeSkillConfigs(
           switch (choice) {
             case "1":
               // Keep existing - do nothing
-              console.log(`  → Keeping in ${fmt.dim(existingPhase)} phase\n`);
+              logger.info(`  → Keeping in ${fmt.dim(existingPhase)} phase\n`);
               break;
             case "2":
               // Use extracted: remove from existing, add to extracted
@@ -282,7 +282,7 @@ export async function mergeSkillConfigs(
                 ...(resultPhaseSkills[extractedPhase] || []),
                 conflict.skillId,
               ];
-              console.log(`  → Moved to ${fmt.dim(extractedPhase)} phase\n`);
+              logger.info(`  → Moved to ${fmt.dim(extractedPhase)} phase\n`);
               break;
             case "3":
               // Add to both phases
@@ -290,10 +290,10 @@ export async function mergeSkillConfigs(
                 ...(resultPhaseSkills[extractedPhase] || []),
                 conflict.skillId,
               ];
-              console.log(`  → Added to both phases\n`);
+              logger.info(`  → Added to both phases\n`);
               break;
             default:
-              console.log(fmt.yellow("  → Invalid choice, keeping existing\n"));
+              logger.info(fmt.yellow("  → Invalid choice, keeping existing\n"));
           }
         }
 
@@ -304,7 +304,7 @@ export async function mergeSkillConfigs(
           resultPhaseSkills[phase] = [...existingIds, ...newIds];
         }
 
-        console.log(fmt.green("✓") + " Merge complete.\n");
+        logger.info(fmt.green("✓") + " Merge complete.\n");
 
         return {
           phase_skills: resultPhaseSkills,

@@ -205,13 +205,13 @@ async function buildPromptVariables(
 
       // Log context loading for transparency
       if (skillResult.loadedSkillIds.length > 0) {
-        console.log(`Loaded skills for phase '${phase}': ${skillResult.loadedSkillIds.join(", ")}`);
+        logger.info(`Loaded skills for phase '${phase}': ${skillResult.loadedSkillIds.join(", ")}`);
       }
       if (Object.keys(context.files).length > 0 || Object.keys(context.artifacts).length > 0) {
-        console.log(`JIT context: ${Object.keys(context.files).length} file(s), ${Object.keys(context.artifacts).length} artifact(s)`);
+        logger.info(`JIT context: ${Object.keys(context.files).length} file(s), ${Object.keys(context.artifacts).length} artifact(s)`);
       }
       if (context.errors.length > 0) {
-        console.warn(`Context loading errors: ${context.errors.join("; ")}`);
+        logger.warn(`Context loading errors: ${context.errors.join("; ")}`);
       }
     }
   }

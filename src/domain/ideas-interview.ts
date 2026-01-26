@@ -184,9 +184,9 @@ async function finishInterview(
   // Show the summary
   spinner.stop();
   const rendered = renderMarkdown(assistantResponse.trim());
-  console.log(fmt.magenta("Agent:"));
-  console.log(rendered);
-  console.log("");
+  logger.info(fmt.magenta("Agent:"));
+  logger.info(rendered);
+  logger.info("");
 
   // Now use query() with resume to pipe the transcript to MCP for structured extraction
   const extractSpinner = createSpinner("Extracting ideas...");
@@ -293,12 +293,12 @@ export async function runIdeaInterview(
   if (inGitRepo) {
     const hasChanges = await hasUncommittedChanges({ cwd: root, logger: internalLogger });
     if (hasChanges) {
-      console.log("");
-      console.log("⚠️  You have uncommitted changes.");
-      console.log("  The idea phase is for planning and exploration only.");
-      console.log("  The agent is configured to read-only and cannot make code changes.");
-      console.log("  You may want to commit or stash your work first for a clean slate.");
-      console.log("");
+      logger.info("");
+      logger.info("⚠️  You have uncommitted changes.");
+      logger.info("  The idea phase is for planning and exploration only.");
+      logger.info("  The agent is configured to read-only and cannot make code changes.");
+      logger.info("  You may want to commit or stash your work first for a clean slate.");
+      logger.info("");
     }
   }
 
@@ -334,22 +334,22 @@ export async function runIdeaInterview(
     } as any); // Cast to any since env may not be in the type definition yet
 
     // Start the conversation - get user's idea FIRST
-    console.log("");
-    console.log(fmt.gray("─".repeat(60)));
-    console.log(fmt.bold(" 🚀  Capture a new idea"));
-    console.log(fmt.gray("─".repeat(60)));
-    console.log(fmt.dim("Type 'done' when finished, 'quit' to cancel"));
-    console.log("");
-    console.log("What's your idea? " + fmt.dim("(Just describe it in your own words)"));
-    console.log("");
+    logger.info("");
+    logger.info(fmt.gray("─".repeat(60)));
+    logger.info(fmt.bold(" 🚀  Capture a new idea"));
+    logger.info(fmt.gray("─".repeat(60)));
+    logger.info(fmt.dim("Type 'done' when finished, 'quit' to cancel"));
+    logger.info("");
+    logger.info("What's your idea? " + fmt.dim("(Just describe it in your own words)"));
+    logger.info("");
 
     // Get the user's initial idea before involving the agent
     const initialIdea = await askUser(`${fmt.green("You:   ")}`);
 
     // Check for cancel/empty
     if (isCancelSignal(initialIdea) || !initialIdea.trim()) {
-      console.log("");
-      console.log(fmt.yellow("No idea provided. Cancelled."));
+      logger.info("");
+      logger.info(fmt.yellow("No idea provided. Cancelled."));
       rl.close();
       return [];
     }
@@ -395,9 +395,9 @@ export async function runIdeaInterview(
 
       // Render markdown and print with agent prefix
       const rendered = renderMarkdown(assistantResponse.trim());
-      console.log(fmt.magenta("Agent:"));
-      console.log(rendered);
-      console.log("");
+      logger.info(fmt.magenta("Agent:"));
+      logger.info(rendered);
+      logger.info("");
       conversationLog.push(`Assistant: ${assistantResponse}`);
 
       // Check if the response contains JSON (interview complete)
@@ -413,15 +413,15 @@ export async function runIdeaInterview(
 
       // Check for cancel commands
       if (isCancelSignal(userInput)) {
-        console.log("");
-        console.log(fmt.yellow("Interview cancelled."));
+        logger.info("");
+        logger.info(fmt.yellow("Interview cancelled."));
         rl.close();
         return [];
       }
 
       // Check for empty input (just pressed enter) - treat as done signal
       if (!userInput.trim()) {
-        console.log(fmt.dim("(Press Enter again to finish, or type your response)"));
+        logger.info(fmt.dim("(Press Enter again to finish, or type your response)"));
         const secondInput = await askUser(`${fmt.green("You:   ")}`);
         if (!secondInput.trim()) {
           // Double-enter means done - finish immediately
@@ -459,8 +459,8 @@ export async function runIdeaInterview(
   } catch (error) {
     // Handle Ctrl+C or other interruptions
     if ((error as any)?.code === "ERR_USE_AFTER_CLOSE") {
-      console.log("");
-      console.log(fmt.yellow("Interview interrupted."));
+      logger.info("");
+      logger.info(fmt.yellow("Interview interrupted."));
       return [];
     }
     throw error;
@@ -528,15 +528,15 @@ export async function runSimpleInterview(): Promise<ParsedIdea[]> {
     });
   };
 
-  console.log("");
-  console.log(fmt.bold("Capture Your Idea"));
-  console.log(fmt.gray("─".repeat(60)));
-  console.log("");
+  logger.info("");
+  logger.info(fmt.bold("Capture Your Idea"));
+  logger.info(fmt.gray("─".repeat(60)));
+  logger.info("");
 
   try {
     const title = await ask(`${fmt.bold("Title:")} `);
     if (!title.trim()) {
-      console.log(fmt.yellow("No title provided. Cancelled."));
+      logger.info(fmt.yellow("No title provided. Cancelled."));
       return [];
     }
 
@@ -578,18 +578,19 @@ export async function runSimpleInterview(): Promise<ParsedIdea[]> {
         .filter(Boolean);
     }
 
-    console.log("");
-    console.log(fmt.gray("─".repeat(60)));
-    console.log(fmt.bold("Captured:"));
-    console.log("");
-    console.log(`  ${fmt.bold("Title:")} ${idea.title}`);
-    console.log(`  ${fmt.bold("Description:")} ${idea.description}`);
-    if (idea.problemStatement) console.log(`  ${fmt.bold("Problem:")} ${idea.problemStatement}`);
-    if (idea.motivation) console.log(`  ${fmt.bold("Motivation:")} ${idea.motivation}`);
-    if (idea.successCriteria?.length) console.log(`  ${fmt.bold("Success:")} ${idea.successCriteria.join(", ")}`);
+    logger.info("");
+    logger.info("");
+    logger.info(fmt.gray("─".repeat(60)));
+    logger.info(fmt.bold("Captured:"));
+    logger.info("");
+    logger.info(`  ${fmt.bold("Title:")} ${idea.title}`);
+    logger.info(`  ${fmt.bold("Description:")} ${idea.description}`);
+    if (idea.problemStatement) logger.info(`  ${fmt.bold("Problem:")} ${idea.problemStatement}`);
+    if (idea.motivation) logger.info(`  ${fmt.bold("Motivation:")} ${idea.motivation}`);
+    if (idea.successCriteria?.length) logger.info(`  ${fmt.bold("Success:")} ${idea.successCriteria.join(", ")}`);
     if (idea.technicalConstraints?.length)
-      console.log(`  ${fmt.bold("Constraints:")} ${idea.technicalConstraints.join(", ")}`);
-    console.log("");
+      logger.info(`  ${fmt.bold("Constraints:")} ${idea.technicalConstraints.join(", ")}`);
+    logger.info("");
 
     return [idea];
   } finally {

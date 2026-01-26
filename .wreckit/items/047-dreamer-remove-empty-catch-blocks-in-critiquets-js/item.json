@@ -7,7 +7,7 @@
   "branch": null,
   "pr_url": null,
   "pr_number": null,
-  "last_error": null,
+  "last_error": "Failed to checkout base branch main",
   "created_at": "2026-01-26T18:08:09.231Z",
   "updated_at": "2026-01-26T18:23:24.199Z",
   "problem_statement": "Empty catch blocks in parseCritiqueJson (critique.ts lines 26, 38-40) suppress JSON parsing errors without logging or handling, making it impossible to diagnose parsing failures.",

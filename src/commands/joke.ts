@@ -25,6 +25,6 @@ export async function jokeCommand(
   logger: Logger
 ): Promise<void> {
   const joke = getRandomJoke();
-  console.log(`🤣 ${joke.setup}`);
-  console.log(`   ${joke.punchline}`);
+  logger.info(`🤣 ${joke.setup}`);
+  logger.info(`   ${joke.punchline}`);
 }

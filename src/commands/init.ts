@@ -103,11 +103,11 @@ export async function initCommand(
     logger.debug(`Could not update .gitignore: ${e}`);
   }
 
-  console.log("Initialized .wreckit/ directory");
-  console.log("  Created config.json");
-  console.log("  Created prompts/research.md");
-  console.log("  Created prompts/plan.md");
-  console.log("  Created prompts/implement.md");
-  console.log("");
-  console.log("Tip: Create .wreckit/config.local.json for project-specific env overrides (gitignored)");
+  logger.info("Initialized .wreckit/ directory");
+  logger.info("  Created config.json");
+  logger.info("  Created prompts/research.md");
+  logger.info("  Created prompts/plan.md");
+  logger.info("  Created prompts/implement.md");
+  logger.info("");
+  logger.info("Tip: Create .wreckit/config.local.json for project-specific env overrides (gitignored)");
 }

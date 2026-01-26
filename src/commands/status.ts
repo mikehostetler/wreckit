@@ -51,7 +51,7 @@ export async function scanItems(root: string): Promise<IndexItem[]> {
       if (err instanceof InvalidJsonError) continue;
       if (err instanceof SchemaValidationError) continue;
       // Unexpected errors (permissions): log warning
-      console.warn(
+      logger.warn(
         `Warning: Cannot read item at ${itemPath}: ${err instanceof Error ? err.message : String(err)}`
       );
     }
@@ -80,15 +80,15 @@ export async function statusCommand(
   }
 
   if (items.length === 0) {
-    console.log("No items found");
+    logger.info("No items found");
     return;
   }
 
   const header = `${"#".padStart(3)}  STATE`;
-  console.log(header);
+  logger.info(header);
 
   for (const item of items) {
     const line = `${String(item.shortId).padStart(3)}  ${item.state}`;
-    console.log(line);
+    logger.info(line);
   }
 }

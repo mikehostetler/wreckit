@@ -139,7 +139,7 @@ async function diagnoseDependencies(root: string): Promise<Diagnostic[]> {
       if (err instanceof InvalidJsonError) continue;
       if (err instanceof SchemaValidationError) continue;
       // Unexpected errors: warn
-      console.warn(
+      logger.warn(
         `Warning: Cannot read item ${dir}: ${err instanceof Error ? err.message : String(err)}`
       );
     }
