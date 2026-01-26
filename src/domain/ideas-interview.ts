@@ -8,13 +8,14 @@ import { loadPromptTemplate } from "../prompts";
 import type { ParsedIdea } from "./ideas";
 import { createIdeasMcpServer } from "../agent/mcp/ideasMcpServer";
 import { buildSdkEnv } from "../agent/env";
-import { createLogger } from "../logging";
+import { createLogger, logger, type Logger } from "../logging";
 import { hasUncommittedChanges, isGitRepo } from "../git";
 import { assertPayloadLimits } from "./validation";
 import { McpToolNotCalledError } from "../errors";
 
 export interface InterviewOptions {
   verbose?: boolean;
+  logger?: Logger;
 }
 
 // ANSI color codes for terminal formatting
@@ -28,6 +29,7 @@ const colors = {
   blue: "\x1b[34m",
   magenta: "\x1b[35m",
   gray: "\x1b[90m",
+  red: "\x1b[31m",
 };
 
 const fmt = {
@@ -39,6 +41,7 @@ const fmt = {
   blue: (s: string) => `${colors.blue}${s}${colors.reset}`,
   magenta: (s: string) => `${colors.magenta}${s}${colors.reset}`,
   gray: (s: string) => `${colors.gray}${s}${colors.reset}`,
+  red: (s: string) => `${colors.red}${s}${colors.reset}`,
 };
 
 /**
@@ -153,8 +156,10 @@ async function finishInterview(
   session: unstable_v2_Session,
   sessionId: string,
   verbose?: boolean,
-  sdkEnv?: Record<string, string>
+  sdkEnv?: Record<string, string>,
+  logger?: Logger
 ): Promise<ParsedIdea[]> {
+  const internalLogger = logger ?? createLogger({ verbose: false });
   const spinner = createSpinner("Finishing...");
   spinner.start();
 
@@ -227,9 +232,9 @@ async function finishInterview(
     }
   } catch (error) {
     extractSpinner.stop();
-    console.error(fmt.red("Failed to extract ideas via MCP tool"));
-    console.error(fmt.yellow("The agent must call the save_interview_ideas tool to capture ideas."));
-    console.error(fmt.yellow("JSON fallback has been removed for security reasons."));
+    internalLogger.error("Failed to extract ideas via MCP tool");
+    internalLogger.warn("The agent must call the save_interview_ideas tool to capture ideas.");
+    internalLogger.warn("JSON fallback has been removed for security reasons.");
     throw new McpToolNotCalledError(
       "Agent did not call the required MCP tool (save_interview_ideas). " +
         "The agent must use the structured tool call to save ideas from interviews. " +
@@ -247,8 +252,8 @@ async function finishInterview(
   // tool channel. This is a fail-closed design - if the tool isn't called, the
   // operation fails rather than falling back to an insecure extraction method.
   if (capturedIdeas.length === 0) {
-    console.error(fmt.red("Failed to extract ideas - MCP tool was not called"));
-    console.error(fmt.yellow("The agent must call the save_interview_ideas tool to capture ideas."));
+    internalLogger.error("Failed to extract ideas - MCP tool was not called");
+    internalLogger.warn("The agent must call the save_interview_ideas tool to capture ideas.");
     throw new McpToolNotCalledError(
       "Agent did not call the required MCP tool (save_interview_ideas). " +
         "The agent must use the structured tool call to save ideas from interviews. " +
@@ -261,11 +266,11 @@ async function finishInterview(
     assertPayloadLimits(capturedIdeas);
   } catch (error) {
     const err = error as Error;
-    console.error(fmt.yellow(`Warning: ${err.message}`));
-    console.error(fmt.yellow("Some ideas may not have been captured correctly."));
+    internalLogger.warn(`Warning: ${err.message}`);
+    internalLogger.warn("Some ideas may not have been captured correctly.");
     return [];
   }
-  console.log(fmt.green(`✓ Captured ${capturedIdeas.length} idea(s)`));
+  internalLogger.info(`Captured ${capturedIdeas.length} idea(s)`);
   return capturedIdeas;
 }
 
@@ -280,13 +285,13 @@ export async function runIdeaInterview(
   const systemPrompt = await loadPromptTemplate(root, "interview");
 
   // Build SDK environment to pass custom credentials (ANTHROPIC_AUTH_TOKEN, etc.)
-  const logger = createLogger({ verbose: options.verbose });
-  const sdkEnv = await buildSdkEnv({ cwd: root, logger });
+  const internalLogger = options.logger ?? createLogger({ verbose: options.verbose });
+  const sdkEnv = await buildSdkEnv({ cwd: root, logger: internalLogger });
 
   // Warn if user has uncommitted changes before starting interview
   const inGitRepo = await isGitRepo(root);
   if (inGitRepo) {
-    const hasChanges = await hasUncommittedChanges({ cwd: root, logger });
+    const hasChanges = await hasUncommittedChanges({ cwd: root, logger: internalLogger });
     if (hasChanges) {
       console.log("");
       console.log("⚠️  You have uncommitted changes.");
@@ -422,9 +427,9 @@ export async function runIdeaInterview(
           // Double-enter means done - finish immediately
           conversationLog.push(`User: [done signal]`);
           if (!sessionId) {
-            console.error(fmt.yellow("Warning: No session ID captured, falling back to JSON extraction"));
+            internalLogger.warn("No session ID captured, falling back to JSON extraction");
           }
-          ideas = await finishInterview(session, sessionId || "", options.verbose, sdkEnv);
+          ideas = await finishInterview(session, sessionId || "", options.verbose, sdkEnv, internalLogger);
           isComplete = true;
           break;
         }
@@ -437,9 +442,9 @@ export async function runIdeaInterview(
       if (isDoneSignal(userInput)) {
         conversationLog.push(`User: [done signal]`);
         if (!sessionId) {
-          console.error(fmt.yellow("Warning: No session ID captured, falling back to JSON extraction"));
+          internalLogger.warn("No session ID captured, falling back to JSON extraction");
         }
-        ideas = await finishInterview(session, sessionId || "", options.verbose, sdkEnv);
+        ideas = await finishInterview(session, sessionId || "", options.verbose, sdkEnv, internalLogger);
         isComplete = true;
         break;
       }

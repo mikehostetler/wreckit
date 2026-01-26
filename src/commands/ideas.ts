@@ -128,7 +128,10 @@ export async function ideasCommand(
   } else {
     // No input and TTY - start interview mode
     try {
-      ideas = await runIdeaInterview(root, { verbose: options.verbose });
+      ideas = await runIdeaInterview(root, {
+        verbose: options.verbose,
+        logger
+      });
     } catch (error) {
       // Fall back to simple interview if SDK fails
       if (options.verbose) {

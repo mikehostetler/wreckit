@@ -37,7 +37,7 @@
         "All existing tests pass"
       ],
       "priority": 2,
-      "status": "pending",
+      "status": "done",
       "notes": "Low complexity, 1 console.log call. Depends on global logger import. Must update 3 call sites in commands/ideas.ts and 6 test calls in ideas-agent.test.ts."
     },
     {

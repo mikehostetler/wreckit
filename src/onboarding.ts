@@ -78,9 +78,12 @@ async function promptFirstIdea(
 
   // Use the agent-powered interview flow (with simple fallback)
   let ideas: Awaited<ReturnType<typeof runIdeaInterview>> = [];
-  
+
   try {
-    ideas = await runIdeaInterview(root, { verbose: false });
+    ideas = await runIdeaInterview(root, {
+      verbose: false,
+      logger
+    });
   } catch (error) {
     // Fall back to simple interview if SDK fails
     logger.debug?.(`SDK interview failed: ${error}`);
