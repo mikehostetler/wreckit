@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "id": "047-dreamer-remove-empty-catch-blocks-in-critiquets-js",
+  "title": "[DREAMER] Remove empty catch blocks in critique.ts JSON parsing",
+  "state": "critique",
+  "overview": "Empty catch blocks in parseCritiqueJson (critique.ts lines 26, 38-40) suppress JSON parsing errors without logging or handling, making it impossible to diagnose parsing failures.\n\n**Motivation:** Proper error handling ensures that errors are logged, surfaced, or handled appropriately. Silent failures make debugging extremely difficult and can lead to data corruption or incorrect system state.\n\n**Success criteria:**\n- All catch blocks log errors or handle them appropriately\n- No empty catch blocks remain\n- Error messages provide actionable context\n\n**Technical constraints:**\n- Must maintain existing JSON parsing logic\n- Should not break existing fallback behavior\n- Need to add logging infrastructure if missing\n\n**In scope:**\n- Add error logging to empty catch blocks in parseCritiqueJson\n- Ensure errors are surfaced appropriately\n- Maintain existing fallback parsing behavior\n**Out of scope:**\n- Refactoring JSON parsing strategy\n- Changes to error handling architecture\n- Modifying critique phase logic\n\n**Signals:** priority: medium",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-26T18:08:09.231Z",
+  "updated_at": "2026-01-26T18:23:24.199Z",
+  "problem_statement": "Empty catch blocks in parseCritiqueJson (critique.ts lines 26, 38-40) suppress JSON parsing errors without logging or handling, making it impossible to diagnose parsing failures.",
+  "motivation": "Proper error handling ensures that errors are logged, surfaced, or handled appropriately. Silent failures make debugging extremely difficult and can lead to data corruption or incorrect system state.",
+  "success_criteria": [
+    "All catch blocks log errors or handle them appropriately",
+    "No empty catch blocks remain",
+    "Error messages provide actionable context"
+  ],
+  "technical_constraints": [
+    "Must maintain existing JSON parsing logic",
+    "Should not break existing fallback behavior",
+    "Need to add logging infrastructure if missing"
+  ],
+  "scope_in_scope": [
+    "Add error logging to empty catch blocks in parseCritiqueJson",
+    "Ensure errors are surfaced appropriately",
+    "Maintain existing fallback parsing behavior"
+  ],
+  "scope_out_of_scope": [
+    "Refactoring JSON parsing strategy",
+    "Changes to error handling architecture",
+    "Modifying critique phase logic"
+  ],
+  "priority_hint": "medium"
+}

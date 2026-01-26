@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "id": "046-dreamer-add-proper-typing-for-sdk-options-in-claud",
+  "title": "[DREAMER] Add proper typing for SDK options in claude-sdk-runner.ts",
+  "section": "items",
+  "state": "idea",
+  "overview": "Type 'any' used for sdkOptions in claude-sdk-runner.ts line 32 eliminates type checking for critical SDK configuration, potentially allowing invalid options to pass silently.\n\n**Motivation:** Proper typing ensures compile-time validation of SDK options, better IDE autocomplete, and prevents runtime errors from misspelled or invalid options. Using 'any' defeats TypeScript's primary benefit.\n\n**Success criteria:**\n- sdkOptions properly typed using SDK types\n- No 'any' types in agent runner files\n- Type safety validated with TypeScript strict mode\n\n**Technical constraints:**\n- Must identify correct SDK option types from @anthropic-ai/claude-agent-sdk\n- Should not break existing functionality\n- May need to augment SDK types if incomplete\n\n**In scope:**\n- Replace 'any' type with proper SDK types\n- Validate all option properties are typed\n- Ensure type safety for MCP servers and tools\n**Out of scope:**\n- Refactoring SDK integration architecture\n- Changes to SDK package usage patterns\n- Modifying error handling\n\n**Signals:** priority: medium, urgency: Type safety issues can cause runtime errors with SDK options",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-26T18:08:09.230Z",
+  "updated_at": "2026-01-26T18:08:09.230Z",
+  "problem_statement": "Type 'any' used for sdkOptions in claude-sdk-runner.ts line 32 eliminates type checking for critical SDK configuration, potentially allowing invalid options to pass silently.",
+  "motivation": "Proper typing ensures compile-time validation of SDK options, better IDE autocomplete, and prevents runtime errors from misspelled or invalid options. Using 'any' defeats TypeScript's primary benefit.",
+  "success_criteria": [
+    "sdkOptions properly typed using SDK types",
+    "No 'any' types in agent runner files",
+    "Type safety validated with TypeScript strict mode"
+  ],
+  "technical_constraints": [
+    "Must identify correct SDK option types from @anthropic-ai/claude-agent-sdk",
+    "Should not break existing functionality",
+    "May need to augment SDK types if incomplete"
+  ],
+  "scope_in_scope": [
+    "Replace 'any' type with proper SDK types",
+    "Validate all option properties are typed",
+    "Ensure type safety for MCP servers and tools"
+  ],
+  "scope_out_of_scope": [
+    "Refactoring SDK integration architecture",
+    "Changes to SDK package usage patterns",
+    "Modifying error handling"
+  ],
+  "priority_hint": "medium",
+  "urgency_hint": "Type safety issues can cause runtime errors with SDK options"
+}
