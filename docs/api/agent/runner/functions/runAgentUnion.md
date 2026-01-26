@@ -8,7 +8,7 @@
 
 > **runAgentUnion**(`options`): `Promise`\<[`AgentResult`](../interfaces/AgentResult.md)\>
 
-Defined in: [agent/runner.ts:348](https://github.com/jmanhype/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/agent/runner.ts#L348)
+Defined in: [agent/runner.ts:348](https://github.com/mikehostetler/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/agent/runner.ts#L348)
 
 Run an agent using the new discriminated union config.
 This is the new dispatch system that supports multiple agent backends.

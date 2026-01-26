@@ -8,7 +8,7 @@
 
 > **dreamCommand**(`options`, `logger`): `Promise`\<`void`\>
 
-Defined in: [commands/dream.ts:194](https://github.com/jmanhype/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/commands/dream.ts#L194)
+Defined in: [commands/dream.ts:194](https://github.com/mikehostetler/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/commands/dream.ts#L194)
 
 Run the Dreamer agent to autonomously identify opportunities in the codebase.
 

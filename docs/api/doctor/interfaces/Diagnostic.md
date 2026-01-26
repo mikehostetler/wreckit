@@ -6,7 +6,7 @@
 
 # Interface: Diagnostic
 
-Defined in: [doctor.ts:177](https://github.com/jmanhype/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/doctor.ts#L177)
+Defined in: [doctor.ts:177](https://github.com/mikehostetler/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/doctor.ts#L177)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [doctor.ts:177](https://github.com/jmanhype/wreckit/blob/f8592a1b389
 
 > **code**: `string`
 
-Defined in: [doctor.ts:180](https://github.com/jmanhype/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/doctor.ts#L180)
+Defined in: [doctor.ts:180](https://github.com/mikehostetler/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/doctor.ts#L180)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [doctor.ts:180](https://github.com/jmanhype/wreckit/blob/f8592a1b389
 
 > **fixable**: `boolean`
 
-Defined in: [doctor.ts:182](https://github.com/jmanhype/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/doctor.ts#L182)
+Defined in: [doctor.ts:182](https://github.com/mikehostetler/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/doctor.ts#L182)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [doctor.ts:182](https://github.com/jmanhype/wreckit/blob/f8592a1b389
 
 > **itemId**: `string` \| `null`
 
-Defined in: [doctor.ts:178](https://github.com/jmanhype/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/doctor.ts#L178)
+Defined in: [doctor.ts:178](https://github.com/mikehostetler/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/doctor.ts#L178)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [doctor.ts:178](https://github.com/jmanhype/wreckit/blob/f8592a1b389
 
 > **message**: `string`
 
-Defined in: [doctor.ts:181](https://github.com/jmanhype/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/doctor.ts#L181)
+Defined in: [doctor.ts:181](https://github.com/mikehostetler/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/doctor.ts#L181)
 
 ***
 
@@ -46,4 +46,4 @@ Defined in: [doctor.ts:181](https://github.com/jmanhype/wreckit/blob/f8592a1b389
 
 > **severity**: [`DiagnosticSeverity`](../type-aliases/DiagnosticSeverity.md)
 
-Defined in: [doctor.ts:179](https://github.com/jmanhype/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/doctor.ts#L179)
+Defined in: [doctor.ts:179](https://github.com/mikehostetler/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/doctor.ts#L179)

@@ -14,7 +14,7 @@ hero:
       link: /guide/introduction
     - theme: alt
       text: View on GitHub
-      link: https://github.com/jmanhype/wreckit
+      link: https://github.com/mikehostetler/wreckit
 
 features:
   - icon: 🧠

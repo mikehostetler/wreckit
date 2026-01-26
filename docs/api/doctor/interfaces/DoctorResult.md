@@ -6,7 +6,7 @@
 
 # Interface: DoctorResult
 
-Defined in: [doctor.ts:195](https://github.com/jmanhype/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/doctor.ts#L195)
+Defined in: [doctor.ts:195](https://github.com/mikehostetler/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/doctor.ts#L195)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [doctor.ts:195](https://github.com/jmanhype/wreckit/blob/f8592a1b389
 
 > `optional` **backupSessionId**: `string` \| `null`
 
-Defined in: [doctor.ts:198](https://github.com/jmanhype/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/doctor.ts#L198)
+Defined in: [doctor.ts:198](https://github.com/mikehostetler/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/doctor.ts#L198)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [doctor.ts:198](https://github.com/jmanhype/wreckit/blob/f8592a1b389
 
 > **diagnostics**: [`Diagnostic`](Diagnostic.md)[]
 
-Defined in: [doctor.ts:196](https://github.com/jmanhype/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/doctor.ts#L196)
+Defined in: [doctor.ts:196](https://github.com/mikehostetler/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/doctor.ts#L196)
 
 ***
 
@@ -30,4 +30,4 @@ Defined in: [doctor.ts:196](https://github.com/jmanhype/wreckit/blob/f8592a1b389
 
 > `optional` **fixes**: [`FixResult`](FixResult.md)[]
 
-Defined in: [doctor.ts:197](https://github.com/jmanhype/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/doctor.ts#L197)
+Defined in: [doctor.ts:197](https://github.com/mikehostetler/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/doctor.ts#L197)

@@ -8,7 +8,7 @@
 
 > **terminateAllAgents**(`logger?`): `void`
 
-Defined in: [agent/runner.ts:19](https://github.com/jmanhype/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/agent/runner.ts#L19)
+Defined in: [agent/runner.ts:19](https://github.com/mikehostetler/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/agent/runner.ts#L19)
 
 ## Parameters
 

@@ -6,7 +6,7 @@
 
 # Interface: AgentConfig
 
-Defined in: [agent/runner.ts:56](https://github.com/jmanhype/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/agent/runner.ts#L56)
+Defined in: [agent/runner.ts:56](https://github.com/mikehostetler/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/agent/runner.ts#L56)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [agent/runner.ts:56](https://github.com/jmanhype/wreckit/blob/f8592a
 
 > **args**: `string`[]
 
-Defined in: [agent/runner.ts:59](https://github.com/jmanhype/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/agent/runner.ts#L59)
+Defined in: [agent/runner.ts:59](https://github.com/mikehostetler/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/agent/runner.ts#L59)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [agent/runner.ts:59](https://github.com/jmanhype/wreckit/blob/f8592a
 
 > **command**: `string`
 
-Defined in: [agent/runner.ts:58](https://github.com/jmanhype/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/agent/runner.ts#L58)
+Defined in: [agent/runner.ts:58](https://github.com/mikehostetler/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/agent/runner.ts#L58)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [agent/runner.ts:58](https://github.com/jmanhype/wreckit/blob/f8592a
 
 > **completion\_signal**: `string`
 
-Defined in: [agent/runner.ts:60](https://github.com/jmanhype/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/agent/runner.ts#L60)
+Defined in: [agent/runner.ts:60](https://github.com/mikehostetler/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/agent/runner.ts#L60)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [agent/runner.ts:60](https://github.com/jmanhype/wreckit/blob/f8592a
 
 > **max\_iterations**: `number`
 
-Defined in: [agent/runner.ts:62](https://github.com/jmanhype/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/agent/runner.ts#L62)
+Defined in: [agent/runner.ts:62](https://github.com/mikehostetler/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/agent/runner.ts#L62)
 
 ***
 
@@ -46,7 +46,7 @@ Defined in: [agent/runner.ts:62](https://github.com/jmanhype/wreckit/blob/f8592a
 
 > **mode**: `"process"` \| `"sdk"`
 
-Defined in: [agent/runner.ts:57](https://github.com/jmanhype/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/agent/runner.ts#L57)
+Defined in: [agent/runner.ts:57](https://github.com/mikehostetler/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/agent/runner.ts#L57)
 
 ***
 
@@ -54,4 +54,4 @@ Defined in: [agent/runner.ts:57](https://github.com/jmanhype/wreckit/blob/f8592a
 
 > **timeout\_seconds**: `number`
 
-Defined in: [agent/runner.ts:61](https://github.com/jmanhype/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/agent/runner.ts#L61)
+Defined in: [agent/runner.ts:61](https://github.com/mikehostetler/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/agent/runner.ts#L61)
