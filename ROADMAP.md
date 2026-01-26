@@ -3,16 +3,16 @@
 ## Active Milestones
 
 ### [M1] Complete Git Integration Test Fix
-**Status:** in-progress
-**Target:** Q1 2026
+**Status:** done
+**Target:** January 2026
 **Strategic Goal:** CI reliability is critical for developer confidence. Git integration tests fail in CI due to temp directory nesting in the workspace git repo, causing false negatives that block legitimate PRs.
 
 #### Objectives
-- [ ] Implement `GIT_CEILING_DIRECTORIES` in `isGitRepo()` function (specs/fix-git-tests-ci.md)
-- [ ] Add verification test for ceiling directory behavior
-- [ ] Ensure all 23 failing tests in git integration suite pass in CI
-- [ ] Document git behavior in nested repository environments
-- [ ] Verify no regressions in production git operations
+- [x] Implement `GIT_CEILING_DIRECTORIES` in `isGitRepo()` function (specs/fix-git-tests-ci.md)
+- [x] Add verification test for ceiling directory behavior
+- [x] Ensure all 23 failing tests in git integration suite pass in CI
+- [x] Document git behavior in nested repository environments
+- [x] Verify no regressions in production git operations
 
 ### [M2] Payload Size Limits Enforcement
 **Status:** planned

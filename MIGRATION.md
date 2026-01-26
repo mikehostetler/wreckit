@@ -652,6 +652,14 @@ Git pre-flight check failed:
 - Run `git init` to initialize a new repository
 - Or navigate to an existing git repository
 
+#### Nested Git Repositories and Ceiling Directories
+
+Wreckit's `isGitRepo()` function uses `GIT_CEILING_DIRECTORIES` to prevent git from searching for a repository in parent directories. This ensures that:
+1. Temporary directories created during testing are not incorrectly identified as part of a parent git repository (e.g., in CI environments).
+2. Wreckit operations are isolated to the intended directory.
+
+If you are running wreckit from a subdirectory and it fails with `NOT_GIT_REPO`, it may be because `isGitRepo()` is now more strict. Wreckit generally expects to be run from the root of the repository. Use `findRepoRoot` logic or the `--cwd` flag to ensure you are pointing to the correct repository root.
+
 #### DETACHED_HEAD
 
 **Symptom:**

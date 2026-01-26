@@ -354,15 +354,33 @@ describe("git/index", () => {
 
   describe("isGitRepo", () => {
     it("returns false when in subdirectory of git repo but ceiling is set", async () => {
-      // This test verifies that even when running inside a git repo (e.g., in CI),
-      // creating a temp directory and checking isGitRepo returns false
-      // because GIT_CEILING_DIRECTORIES prevents upward search
-      const testTempDir = await fs.mkdtemp(path.join(os.tmpdir(), "wreckit-test-"));
+      // Create a temporary directory that will act as a git repo
+      const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), "wreckit-test-repo-"));
+      const subDir = path.join(repoRoot, "nested-dir");
+      await fs.mkdir(subDir);
+
       try {
-        const result = await gitModule.isGitRepo(testTempDir);
+        // Initialize git in the repoRoot
+        const gitModule = await import("../../git/index");
+        await gitModule.runGitCommand(["init"], { cwd: repoRoot, logger: createMockLogger() });
+
+        // Verify that without our fix, git WOULD find the repo (testing git behavior)
+        // We do this by running a raw git command without the ceiling env var
+        const { spawnSync } = await import("node:child_process");
+        const rawGit = spawnSync("git", ["rev-parse", "--is-inside-work-tree"], { cwd: subDir });
+        expect(rawGit.status).toBe(0);
+        expect(rawGit.stdout.toString().trim()).toBe("true");
+
+        // Now verify that our isGitRepo function returns false for the subdirectory
+        // because it sets GIT_CEILING_DIRECTORIES
+        const result = await gitModule.isGitRepo(subDir);
         expect(result).toBe(false);
+
+        // It should still return true for the repo root itself
+        const rootResult = await gitModule.isGitRepo(repoRoot);
+        expect(rootResult).toBe(true);
       } finally {
-        await fs.rm(testTempDir, { recursive: true, force: true });
+        await fs.rm(repoRoot, { recursive: true, force: true });
       }
     });
 

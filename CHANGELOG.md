@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Improved `isGitRepo()` with `GIT_CEILING_DIRECTORIES` to prevent upward git repository searching.
+  - Fixes CI test failures where temporary directories were incorrectly detected as part of the workspace git repo.
+  - Added robust verification tests for nested repository behavior.
 - Documentation for experimental SDK modes (`amp_sdk`, `codex_sdk`, `opencode_sdk`)
   - All experimental SDKs share authentication and environment variable resolution with `claude_sdk`
   - See README.md "Experimental SDK Modes" section for configuration examples
