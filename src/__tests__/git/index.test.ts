@@ -370,7 +370,11 @@ describe("git/index", () => {
       // Verify that the current repository (where tests are running) is detected
       // This ensures we didn't break legitimate git repo detection
       const repoRoot = process.cwd();
+      // Log for debugging CI issues
+      console.log(`[DEBUG] Checking if repo root is git: ${repoRoot}`);
+      console.log(`[DEBUG] Parent would be: ${path.dirname(repoRoot)}`);
       const result = await gitModule.isGitRepo(repoRoot);
+      console.log(`[DEBUG] isGitRepo returned: ${result}`);
       expect(result).toBe(true);
     });
   });
