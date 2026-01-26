@@ -161,6 +161,20 @@ wreckit next
 
 ---
 
+## wreckit joke
+
+**The "Proof of Life" Command.**
+
+```bash
+wreckit joke
+```
+
+**What it does:**
+- Displays a random programming joke from a curated internal list.
+- This command was autonomously researched, planned, and implemented by Wreckit itself (Item 045) to prove its sovereignty.
+
+---
+
 ## wreckit dream
 
 **Autonomous Ideation.**
