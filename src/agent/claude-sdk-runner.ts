@@ -1,4 +1,4 @@
-import { query } from "@anthropic-ai/claude-agent-sdk";
+import { query, type Options } from "@anthropic-ai/claude-agent-sdk";
 import type { Logger } from "../logging";
 import type { AgentConfig, AgentResult, RunAgentOptions } from "./runner.js";
 import { registerSdkController, unregisterSdkController } from "./runner.js";
@@ -29,14 +29,14 @@ export async function runClaudeSdkAgent(options: RunAgentOptions, config: AgentC
     const sdkEnv = await buildSdkEnv({ cwd, logger });
 
     // Build SDK options
-    const sdkOptions: any = {
+    const sdkOptions: Options = {
       cwd, // Working directory
       permissionMode: "bypassPermissions", // wreckit runs autonomously
       allowDangerouslySkipPermissions: true, // Required for bypassPermissions
       abortController, // Enable cancellation on TUI quit/signals
       env: sdkEnv, // Pass environment to ensure custom endpoints are honored
       // Pass MCP servers if provided
-      ...(options.mcpServers && { mcpServers: options.mcpServers }),
+      ...(options.mcpServers && { mcpServers: options.mcpServers as any }),
       // Restrict tools if allowedTools is specified (guardrail to prevent unwanted actions)
       ...(options.allowedTools && { tools: options.allowedTools }),
     };
