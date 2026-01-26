@@ -6,6 +6,7 @@ import { loadPromptTemplate, renderPrompt } from "../prompts";
 import { getItemDir, getProgressLogPath, getPlanPath, getPrdPath, getResearchPath } from "../fs/paths";
 import { readItem, writeItem } from "../fs/json";
 import { getGitStatus, type GitFileChange } from "../git";
+import type { Logger } from "../logging";
 
 interface CritiqueResult {
   status: "approved" | "rejected";
@@ -13,7 +14,7 @@ interface CritiqueResult {
   critique: string;
 }
 
-function parseCritiqueJson(output: string): CritiqueResult | null {
+function parseCritiqueJson(output: string, logger?: Logger): CritiqueResult | null {
   try {
     // Strategy 1: Look for JSON markdown block
     const codeBlockMatch = output.match(/```json\s*([\s\S]*?)\s*```/);
@@ -23,7 +24,12 @@ function parseCritiqueJson(output: string): CritiqueResult | null {
         if (parsed.status === "approved" || parsed.status === "rejected") {
           return parsed as CritiqueResult;
         }
-      } catch {}
+      } catch (error) {
+        logger?.debug(
+          `Failed to parse JSON markdown block in critique output: ` +
+          `${error instanceof Error ? error.message : String(error)}`
+        );
+      }
     }
 
     // Strategy 2: Find the last valid JSON object in the output (in case of multiple or trailing text)
@@ -35,13 +41,22 @@ function parseCritiqueJson(output: string): CritiqueResult | null {
           if (parsed.status === "approved" || parsed.status === "rejected") {
             return parsed as CritiqueResult;
           }
-        } catch {
+        } catch (error) {
+          // Log and continue to next match
+          logger?.debug(
+            `Failed to parse JSON object ${i + 1}/${matches.length} in critique output: ` +
+            `${error instanceof Error ? error.message : String(error)}`
+          );
           continue;
         }
       }
     }
     return null;
-  } catch {
+  } catch (error) {
+    logger?.debug(
+      `Unexpected error during critique JSON parsing: ` +
+      `${error instanceof Error ? error.message : String(error)}`
+    );
     return null;
   }
 }
@@ -139,7 +154,7 @@ export async function runPhaseCritique(
     return { success: true, item };
   }
 
-  const critique = parseCritiqueJson(result.output);
+  const critique = parseCritiqueJson(result.output, logger);
   
   if (!critique) {
     const error = "Critic failed to output valid JSON decision";
