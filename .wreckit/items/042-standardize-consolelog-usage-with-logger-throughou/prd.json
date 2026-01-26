@@ -84,7 +84,7 @@
         "grep for console. in domain/ shows only UI-related console.log in ideas-interview.ts"
       ],
       "priority": 4,
-      "status": "pending",
+      "status": "done",
       "notes": "Verification story. Must be completed after US-001, US-002, and US-003. Includes comprehensive manual testing of all affected commands. Final validation that migration is complete and no regressions were introduced."
     }
   ]
