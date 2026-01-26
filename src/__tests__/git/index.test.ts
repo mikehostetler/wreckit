@@ -351,4 +351,37 @@ describe("git/index", () => {
       expect(result.baseRefName).toBe("develop"); // Caller should validate against config.base_branch
     });
   });
+
+  describe("isGitRepo", () => {
+    it("returns false when in subdirectory of git repo but ceiling is set", async () => {
+      // This test verifies that even when running inside a git repo (e.g., in CI),
+      // creating a temp directory and checking isGitRepo returns false
+      // because GIT_CEILING_DIRECTORIES prevents upward search
+      const testTempDir = await fs.mkdtemp(path.join(os.tmpdir(), "wreckit-test-"));
+      try {
+        const result = await gitModule.isGitRepo(testTempDir);
+        expect(result).toBe(false);
+      } finally {
+        await fs.rm(testTempDir, { recursive: true, force: true });
+      }
+    });
+
+    it("returns true when directory is actually a git repo", async () => {
+      // Verify legitimate git repos are still detected correctly
+      const gitDir = await fs.mkdtemp(path.join(os.tmpdir(), "wreckit-git-"));
+      try {
+        // Initialize a git repo
+        const { spawn } = require("node:child_process");
+        await new Promise<void>((resolve, reject) => {
+          const proc = spawn("git", ["init"], { cwd: gitDir });
+          proc.on("close", (code) => (code === 0 ? resolve() : reject(new Error(`git init failed with code ${code}`))));
+        });
+
+        const result = await gitModule.isGitRepo(gitDir);
+        expect(result).toBe(true);
+      } finally {
+        await fs.rm(gitDir, { recursive: true, force: true });
+      }
+    });
+  });
 });
