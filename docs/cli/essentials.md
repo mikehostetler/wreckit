@@ -200,4 +200,107 @@ wreckit doctor --fix
 - After manual edits to `.wreckit/`
 - Before running Wreckit after a long break
 
+---
+
+## wreckit learn
+
+Extract and compile codebase patterns into reusable Skill artifacts.
+
+```bash
+wreckit learn [patterns...]
+```
+
+**What it does:**
+- Analyzes completed items to identify reusable patterns
+- Compiles patterns into Skill artifacts stored in `.wreckit/skills.json`
+- Skills can be used in future work to leverage learned patterns
+- Improves over time as more items are completed
+
+**Options:**
+- `--item <id>` - Extract patterns from specific item
+- `--phase <state>` - Extract patterns from items in specific phase state
+- `--all` - Extract patterns from all completed items
+- `--output <path>` - Output path for skills.json (default: `.wreckit/skills.json`)
+- `--merge <strategy>` - Merge strategy: `append` (default), `ask`, or `replace`
+- `--review` - Review extracted skills before saving
+- `--dry-run` - Preview without writing changes
+
+**Merge Strategies:**
+
+### Append (default)
+Merges new skills with existing skills without removing any.
+
+```bash
+wreckit learn --merge append
+```
+
+**Behavior:**
+- Keeps all existing skills
+- Adds new skills from extracted patterns
+- Merges phase assignments (skill can be in multiple phases)
+- Keeps existing skill definitions (never overwrites)
+
+### Replace
+Replaces all existing skills with newly extracted skills.
+
+```bash
+wreckit learn --merge replace
+```
+
+**Behavior:**
+- Discards all existing skills
+- Uses only newly extracted skills
+- Useful for complete skill regeneration
+
+### Ask (interactive)
+Interactively choose which skills to keep for each conflict.
+
+```bash
+wreckit learn --merge ask
+```
+
+**Behavior:**
+- Prompts user for each skill phase conflict
+- Non-TTY environments (CI/CD, piped input) automatically fall back to `append`
+- Provides fine-grained control over skill merges
+- Options for each conflict:
+  - **Keep existing**: Maintain the skill's current phase assignment
+  - **Use extracted**: Move the skill to the extracted phase
+  - **Keep both**: Add the skill to both phases
+
+**When to use:**
+- Curating skills from multiple extraction sessions
+- Merging skills with conflicting phase assignments
+- Wanting manual control over which skills to keep
+
+**Example interaction:**
+```
+Interactive Skill Merge
+────────────────────────────────────────────────────────────
+Found 2 conflicts to resolve:
+
+[1/2] Skill: code-analysis
+  Existing: phase=research
+  Extracted: phase=plan
+  Choose: 1 keep research, 2 use plan, 3 add to both, [default: 1] > 2
+  → Moved to plan phase
+
+[2/2] Skill: test-generation
+  Existing: phase=implement
+  Extracted: phase=plan
+  Choose: 1 keep implement, 2 use plan, 3 add to both, [default: 1] > 3
+  → Added to both phases
+
+✓ Merge complete.
+```
+
+**Examples:**
+```bash
+wreckit learn                      # Learn from recent 5 completed items
+wreckit learn --all                # Learn from all completed items
+wreckit learn --item 001           # Learn from specific item
+wreckit learn --merge ask          # Interactive merge
+wreckit learn --dry-run            # Preview without writing
+```
+
 [Back to CLI Reference](/cli/)

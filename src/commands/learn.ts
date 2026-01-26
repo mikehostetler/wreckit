@@ -1,5 +1,6 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
+import * as readline from "node:readline";
 import type { Logger } from "../logging";
 import type { SkillConfig } from "../schemas";
 import { SkillConfigSchema } from "../schemas";
@@ -98,13 +99,45 @@ async function loadExistingSkills(root: string): Promise<SkillConfig | null> {
 }
 
 /**
+ * Perform append merge of skill configs.
+ * Extracted as a helper to reuse in both append and ask strategies.
+ */
+function performAppendMerge(
+  existing: SkillConfig,
+  extracted: SkillConfig
+): SkillConfig {
+  // Merge phase_skills: keep existing, add new
+  const phaseSkills = { ...existing.phase_skills };
+  for (const [phase, skillIds] of Object.entries(extracted.phase_skills)) {
+    const existingIds = phaseSkills[phase] || [];
+    const newIds = skillIds.filter(id => !existingIds.includes(id));
+    phaseSkills[phase] = [...existingIds, ...newIds];
+  }
+
+  // Merge skills: keep existing, add new (by ID)
+  const existingSkillsMap = new Map(
+    existing.skills.map(s => [s.id, s])
+  );
+  for (const skill of extracted.skills) {
+    if (!existingSkillsMap.has(skill.id)) {
+      existingSkillsMap.set(skill.id, skill);
+    }
+  }
+
+  return {
+    phase_skills: phaseSkills,
+    skills: Array.from(existingSkillsMap.values())
+  };
+}
+
+/**
  * Merge skill configurations based on the specified strategy.
  */
-export function mergeSkillConfigs(
+export async function mergeSkillConfigs(
   existing: SkillConfig | null,
   extracted: SkillConfig,
   strategy: "append" | "replace" | "ask"
-): SkillConfig {
+): Promise<SkillConfig> {
   if (!existing) {
     return extracted;  // No existing skills, use extracted
   }
@@ -114,31 +147,173 @@ export function mergeSkillConfigs(
       return extracted;  // Replace entirely
 
     case "append":
-      // Merge phase_skills: keep existing, add new
-      const phaseSkills = { ...existing.phase_skills };
-      for (const [phase, skillIds] of Object.entries(extracted.phase_skills)) {
-        const existingIds = phaseSkills[phase] || [];
-        const newIds = skillIds.filter(id => !existingIds.includes(id));
-        phaseSkills[phase] = [...existingIds, ...newIds];
+      return performAppendMerge(existing, extracted);
+
+    case "ask": {
+      // Check if running in TTY environment
+      if (!process.stdout.isTTY) {
+        console.warn("Not a TTY environment. Falling back to 'append' merge strategy.");
+        return performAppendMerge(existing, extracted);
       }
 
-      // Merge skills: keep existing, add new (by ID)
-      const existingSkillsMap = new Map(
-        existing.skills.map(s => [s.id, s])
-      );
-      for (const skill of extracted.skills) {
-        if (!existingSkillsMap.has(skill.id)) {
-          existingSkillsMap.set(skill.id, skill);
+      // Interactive merge
+      const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout,
+      });
+
+      try {
+        // ANSI formatting for better UX
+        const fmt = {
+          bold: (s: string) => `\x1b[1m${s}\x1b[0m`,
+          dim: (s: string) => `\x1b[2m${s}\x1b[0m`,
+          cyan: (s: string) => `\x1b[36m${s}\x1b[0m`,
+          yellow: (s: string) => `\x1b[33m${s}\x1b[0m`,
+          green: (s: string) => `\x1b[32m${s}\x1b[0m`,
+        };
+
+        const ask = (question: string): Promise<string> => {
+          return new Promise((resolve) => {
+            rl.question(question, (answer) => {
+              resolve(answer.trim());
+            });
+          });
+        };
+
+        console.log("");
+        console.log(fmt.bold("Interactive Skill Merge"));
+        console.log(fmt.dim("─".repeat(60)));
+
+        // Collect phase_skills conflicts
+        const phaseConflicts: Array<{
+          phase: string;
+          skillId: string;
+          existingPhases: string[];
+          extractedPhases: string[];
+        }> = [];
+
+        const allPhases = new Set([
+          ...Object.keys(existing.phase_skills),
+          ...Object.keys(extracted.phase_skills),
+        ]);
+
+        for (const phase of allPhases) {
+          const existingIds = existing.phase_skills[phase] || [];
+          const extractedIds = extracted.phase_skills[phase] || [];
+
+          // Skills in extracted but not in existing for this phase
+          for (const skillId of extractedIds) {
+            if (!existingIds.includes(skillId)) {
+              // Check if skill exists in a different phase
+              const existingPhase = Object.entries(existing.phase_skills).find(
+                ([_, ids]) => ids.includes(skillId)
+              )?.[0];
+
+              if (existingPhase) {
+                // Conflict: skill in different phase
+                phaseConflicts.push({
+                  phase,
+                  skillId,
+                  existingPhases: [existingPhase],
+                  extractedPhases: [phase],
+                });
+              } else {
+                // No conflict: new skill, add it
+                // Will be handled by non-conflict merge
+              }
+            }
+          }
         }
+
+        // If no conflicts, just append
+        if (phaseConflicts.length === 0) {
+          console.log(fmt.green("✓") + " No conflicts found. Using append strategy.");
+          return performAppendMerge(existing, extracted);
+        }
+
+        console.log(
+          fmt.yellow(`Found ${phaseConflicts.length} conflict${phaseConflicts.length > 1 ? "s" : ""} to resolve:\n`)
+        );
+
+        // Initialize result with existing config
+        const resultPhaseSkills = { ...existing.phase_skills };
+        const resultSkillsMap = new Map(existing.skills.map(s => [s.id, s]));
+
+        // Add all non-conflicting skills from extracted
+        for (const skill of extracted.skills) {
+          if (!resultSkillsMap.has(skill.id)) {
+            resultSkillsMap.set(skill.id, skill);
+          }
+        }
+
+        // Resolve each conflict
+        for (let i = 0; i < phaseConflicts.length; i++) {
+          const conflict = phaseConflicts[i];
+          const existingPhase = conflict.existingPhases[0];
+          const extractedPhase = conflict.extractedPhases[0];
+
+          console.log(
+            fmt.bold(`[${i + 1}/${phaseConflicts.length}]`) +
+            ` Skill: ${fmt.cyan(conflict.skillId)}`
+          );
+          console.log(`  Existing: phase=${fmt.dim(existingPhase)}`);
+          console.log(`  Extracted: phase=${fmt.dim(extractedPhase)}`);
+
+          const answer = await ask(
+            `  Choose: ${fmt.green("1")} keep ${fmt.dim(existingPhase)}, ` +
+            `${fmt.green("2")} use ${fmt.dim(extractedPhase)}, ` +
+            `${fmt.green("3")} add to ${fmt.dim("both")}, ` +
+            `${fmt.dim("[default: 1]")} > `
+          );
+
+          const choice = answer || "1";
+
+          switch (choice) {
+            case "1":
+              // Keep existing - do nothing
+              console.log(`  → Keeping in ${fmt.dim(existingPhase)} phase\n`);
+              break;
+            case "2":
+              // Use extracted: remove from existing, add to extracted
+              resultPhaseSkills[existingPhase] = resultPhaseSkills[existingPhase].filter(
+                id => id !== conflict.skillId
+              );
+              resultPhaseSkills[extractedPhase] = [
+                ...(resultPhaseSkills[extractedPhase] || []),
+                conflict.skillId,
+              ];
+              console.log(`  → Moved to ${fmt.dim(extractedPhase)} phase\n`);
+              break;
+            case "3":
+              // Add to both phases
+              resultPhaseSkills[extractedPhase] = [
+                ...(resultPhaseSkills[extractedPhase] || []),
+                conflict.skillId,
+              ];
+              console.log(`  → Added to both phases\n`);
+              break;
+            default:
+              console.log(fmt.yellow("  → Invalid choice, keeping existing\n"));
+          }
+        }
+
+        // Add any remaining non-conflicting phase_skills
+        for (const [phase, skillIds] of Object.entries(extracted.phase_skills)) {
+          const existingIds = resultPhaseSkills[phase] || [];
+          const newIds = skillIds.filter(id => !existingIds.includes(id));
+          resultPhaseSkills[phase] = [...existingIds, ...newIds];
+        }
+
+        console.log(fmt.green("✓") + " Merge complete.\n");
+
+        return {
+          phase_skills: resultPhaseSkills,
+          skills: Array.from(resultSkillsMap.values()),
+        };
+      } finally {
+        rl.close();
       }
-
-      return {
-        phase_skills: phaseSkills,
-        skills: Array.from(existingSkillsMap.values())
-      };
-
-    case "ask":
-      throw new Error("Interactive 'ask' merge strategy not yet implemented. Use 'append' or 'replace'.");
+    }
   }
 }
 
@@ -278,7 +453,7 @@ export async function learnCommand(
   }
 
   // Merge with existing skills based on strategy
-  const finalSkills = mergeSkillConfigs(
+  const finalSkills = await mergeSkillConfigs(
     existingSkills,
     extractedValidation.data,
     options.merge || "append"
