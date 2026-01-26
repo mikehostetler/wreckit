@@ -41,12 +41,12 @@ export async function listCommand(
       state: i.state,
       title: i.title,
     }));
-    console.log(JSON.stringify(jsonItems, null, 2));
+    logger.json(jsonItems);
     return;
   }
 
   if (items.length === 0) {
-    console.log("No items found");
+    logger.info("No items found");
     return;
   }
 
@@ -58,16 +58,16 @@ export async function listCommand(
   }));
   
   const header = `${"#".padStart(3)}  ${"STATE".padEnd(stateWidth)}  TITLE`;
-  console.log(header);
+  logger.info(header);
 
   for (const item of cleanItems) {
     const displayTitle = item.cleanTitle.length > 60 
       ? item.cleanTitle.substring(0, 57) + "..."
       : item.cleanTitle;
     const line = `${String(item.shortId).padStart(3)}  ${item.state.padEnd(stateWidth)}  ${displayTitle}`;
-    console.log(line);
+    logger.info(line);
   }
 
-  console.log("");
-  console.log(`Total: ${items.length} item(s)`);
+  logger.info("");
+  logger.info(`Total: ${items.length} item(s)`);
 }

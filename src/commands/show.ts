@@ -80,43 +80,43 @@ export async function showCommand(
     return;
   }
 
-  console.log(`ID: ${item.id}`);
-  console.log(`Title: ${item.title}`);
-  console.log(`State: ${item.state}`);
+  logger.info(`ID: ${item.id}`);
+  logger.info(`Title: ${item.title}`);
+  logger.info(`State: ${item.state}`);
 
   if (item.overview) {
-    console.log(`Overview: ${item.overview}`);
+    logger.info(`Overview: ${item.overview}`);
   }
 
-  console.log("");
-  console.log(`Research: ${hasResearch ? "✓" : "✗"}`);
-  console.log(`Plan: ${hasPlan ? "✓" : "✗"}`);
+  logger.info("");
+  logger.info(`Research: ${hasResearch ? "✓" : "✗"}`);
+  logger.info(`Plan: ${hasPlan ? "✓" : "✗"}`);
 
   if (prd) {
     const pending = prd.user_stories.filter((s) => s.status === "pending").length;
     const done = prd.user_stories.filter((s) => s.status === "done").length;
-    console.log(`Stories: ${pending} pending, ${done} done`);
+    logger.info(`Stories: ${pending} pending, ${done} done`);
   } else {
-    console.log("Stories: -");
+    logger.info("Stories: -");
   }
 
   if (item.branch) {
-    console.log(`Branch: ${item.branch}`);
+    logger.info(`Branch: ${item.branch}`);
   }
 
   if (item.pr_url) {
-    console.log(`PR: ${item.pr_url}`);
+    logger.info(`PR: ${item.pr_url}`);
   }
 
   if (item.rollback_sha) {
-    console.log(`Rollback SHA: ${item.rollback_sha}`);
+    logger.info(`Rollback SHA: ${item.rollback_sha}`);
   }
 
   if (item.completed_at) {
-    console.log(`Completed: ${item.completed_at}`);
+    logger.info(`Completed: ${item.completed_at}`);
   }
 
   if (item.last_error) {
-    console.log(`Last Error: ${item.last_error}`);
+    logger.info(`Last Error: ${item.last_error}`);
   }
 }

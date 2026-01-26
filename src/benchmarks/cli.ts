@@ -1,6 +1,7 @@
 #!/usr/bin/env bun
 
 import * as fs from "node:fs/promises";
+import { initLogger, logger } from "../logging";
 import {
   runBenchmarks,
   formatOutput,
@@ -48,7 +49,8 @@ function parseArgs(args: string[]): {
         result.output = value;
       }
     } else if (arg === "--help" || arg === "-h") {
-      console.log(`
+      initLogger({ verbose: true });
+      logger.info(`
 Usage: bun run benchmark [options]
 
 Options:
@@ -72,11 +74,12 @@ Examples:
 }
 
 async function main(): Promise<void> {
+  initLogger({ verbose: true }); // Always show benchmark output
   const args = parseArgs(process.argv.slice(2));
 
-  console.error("Wreckit Benchmark Suite");
-  console.error("=======================");
-  console.error("");
+  logger.info("Wreckit Benchmark Suite");
+  logger.info("=======================");
+  logger.info("");
 
   const result = await runBenchmarks({
     suites: args.suites,
@@ -87,17 +90,17 @@ async function main(): Promise<void> {
   const output = formatOutput(result, args.format);
 
   if (args.output === "-") {
-    console.log(output);
+    logger.info(output);
   } else {
     await fs.writeFile(args.output, output, "utf-8");
-    console.error(`\nResults written to ${args.output}`);
+    logger.info(`\nResults written to ${args.output}`);
   }
 
-  console.error("");
-  console.error(`Total duration: ${result.total_duration_ms.toFixed(0)}ms`);
+  logger.info("");
+  logger.info(`Total duration: ${result.total_duration_ms.toFixed(0)}ms`);
 }
 
 main().catch((error) => {
-  console.error("Benchmark failed:", error);
+  logger.error("Benchmark failed:", error);
   process.exit(1);
 });

@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "id": "047-dreamer-remove-empty-catch-blocks-in-critiquets-js",
+  "branch_name": "wreckit/047-dreamer-remove-empty-catch-blocks-in-critiquets-js",
+  "user_stories": [
+    {
+      "id": "US-001",
+      "title": "Add diagnostic logging to critique parsing",
+      "acceptance_criteria": [
+        "parseCritiqueJson accepts optional logger",
+        "All catch blocks in parseCritiqueJson log at debug level",
+        "TypeScript compilation passes"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Successfully implemented debug logging for all three catch blocks in parseCritiqueJson. Build passes successfully."
+    }
+  ]
+}

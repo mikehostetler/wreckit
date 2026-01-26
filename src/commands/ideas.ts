@@ -117,7 +117,7 @@ export async function ideasCommand(
     // Piped stdin input
     const input = await readStdin();
     if (!input.trim()) {
-      console.log("No input provided");
+      logger.info("No input provided");
       return;
     }
     logger.info("Parsing ideas with agent...");
@@ -145,15 +145,15 @@ export async function ideasCommand(
   // Handle dry run
   if (options.dryRun) {
     if (ideas.length === 0) {
-      console.log("No items would be created");
+      logger.info("No items would be created");
       return;
     }
 
-    console.log(`Would create ${ideas.length} items:`);
+    logger.info(`Would create ${ideas.length} items:`);
     for (const idea of ideas) {
       const slug = generateSlug(idea.title);
       if (slug) {
-        console.log(`  XXX-${slug}`);
+        logger.info(`  XXX-${slug}`);
       }
     }
     return;
@@ -161,28 +161,28 @@ export async function ideasCommand(
 
   // Persist the ideas
   if (ideas.length === 0) {
-    console.log("No items created");
+    logger.info("No items created");
     return;
   }
 
   const result = await persistItems(root, ideas);
 
   if (result.created.length === 0 && result.skipped.length === 0) {
-    console.log("No items created");
+    logger.info("No items created");
     return;
   }
 
   if (result.created.length > 0) {
-    console.log(`Created ${result.created.length} items:`);
+    logger.info(`Created ${result.created.length} items:`);
     for (const item of result.created) {
-      console.log(`  ${item.id}`);
+      logger.info(`  ${item.id}`);
     }
   }
 
   if (result.skipped.length > 0) {
-    console.log(`Skipped ${result.skipped.length} existing items:`);
+    logger.info(`Skipped ${result.skipped.length} existing items:`);
     for (const id of result.skipped) {
-      console.log(`  ${id}`);
+      logger.info(`  ${id}`);
     }
   }
 }

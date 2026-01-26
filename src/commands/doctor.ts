@@ -39,7 +39,7 @@ export async function doctorCommand(
   const { diagnostics, fixes, backupSessionId } = result;
 
   if (diagnostics.length === 0) {
-    console.log("✓ No issues found");
+    logger.info("✓ No issues found");
     return;
   }
 
@@ -50,53 +50,53 @@ export async function doctorCommand(
   };
 
   if (grouped.error.length > 0) {
-    console.log(`Errors (${grouped.error.length}):`);
+    logger.info(`Errors (${grouped.error.length}):`);
     for (const d of grouped.error) {
-      console.log(`  ✗ ${formatDiagnostic(d)}`);
+      logger.info(`  ✗ ${formatDiagnostic(d)}`);
     }
   }
 
   if (grouped.warning.length > 0) {
-    console.log(`Warnings (${grouped.warning.length}):`);
+    logger.info(`Warnings (${grouped.warning.length}):`);
     for (const d of grouped.warning) {
-      console.log(`  ⚠ ${formatDiagnostic(d)}`);
+      logger.info(`  ⚠ ${formatDiagnostic(d)}`);
     }
   }
 
   if (grouped.info.length > 0) {
-    console.log(`Info (${grouped.info.length}):`);
+    logger.info(`Info (${grouped.info.length}):`);
     for (const d of grouped.info) {
-      console.log(`  ℹ ${formatDiagnostic(d)}`);
+      logger.info(`  ℹ ${formatDiagnostic(d)}`);
     }
   }
 
   if (fixes && fixes.length > 0) {
-    console.log("");
-    console.log("Fixes applied:");
+    logger.info("");
+    logger.info("Fixes applied:");
     for (const fix of fixes) {
       const status = fix.fixed ? "✓" : "✗";
       const itemPrefix = fix.diagnostic.itemId
         ? `[${fix.diagnostic.itemId}] `
         : "";
-      console.log(`  ${status} ${itemPrefix}${fix.message}`);
+      logger.info(`  ${status} ${itemPrefix}${fix.message}`);
     }
 
     const fixedCount = fixes.filter((f) => f.fixed).length;
     const failedCount = fixes.length - fixedCount;
-    console.log("");
-    console.log(`Fixed ${fixedCount} issue(s), ${failedCount} failed`);
+    logger.info("");
+    logger.info(`Fixed ${fixedCount} issue(s), ${failedCount} failed`);
 
     // Show backup session info
     if (backupSessionId) {
-      console.log("");
-      console.log(`Backup created: .wreckit/backups/${backupSessionId}/`);
+      logger.info("");
+      logger.info(`Backup created: .wreckit/backups/${backupSessionId}/`);
     }
   } else if (
     diagnostics.some((d) => d.fixable) &&
     !options.fix
   ) {
-    console.log("");
-    console.log("Run with --fix to auto-fix recoverable issues");
+    logger.info("");
+    logger.info("Run with --fix to auto-fix recoverable issues");
   }
 
   const remainingErrors = options.fix

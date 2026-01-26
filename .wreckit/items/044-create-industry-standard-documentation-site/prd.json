@@ -1,0 +1,109 @@
+{
+  "schema_version": 1,
+  "id": "044-create-industry-standard-documentation-site",
+  "branch_name": "wreckit/044-create-industry-standard-documentation-site",
+  "user_stories": [
+    {
+      "id": "US-001",
+      "title": "Fix missing logo asset on documentation homepage",
+      "acceptance_criteria": [
+        "docs/public/ directory exists",
+        "docs/public/logo.png file exists and is a valid PNG image",
+        "Running bun run docs:build completes without errors",
+        "Running bun run docs:preview and navigating to homepage shows logo image without broken image icon",
+        "Logo image is clearly visible and appropriately sized"
+      ],
+      "priority": 1,
+      "status": "pending",
+      "notes": "Copy existing logo from /img/wreckit.png to docs/public/logo.png. VitePress serves files from public/ at site root, so /logo.png reference in docs/index.md:9 will resolve correctly."
+    },
+    {
+      "id": "US-002",
+      "title": "Update all repository URLs to point to canonical mikehostetler/wreckit repository",
+      "acceptance_criteria": [
+        "docs/.vitepress/config.ts lines 24, 82, 87 use mikehostetler instead of jmanhype",
+        "docs/index.md line 17 uses mikehostetler instead of jmanhype",
+        "All markdown files in docs/api/ directory have been updated to use mikehostetler",
+        "Command grep -r 'jmanhype' docs/ returns no results",
+        "Clicking 'View on GitHub' button on homepage navigates to https://github.com/mikehostetler/wreckit",
+        "Clicking 'Edit this page on GitHub' link navigates to correct repository"
+      ],
+      "priority": 1,
+      "status": "pending",
+      "notes": "Repository URL mismatch is pervasive across config files and 72 generated API docs. Use find-and-replace for quick fix in Phase 1, proper fix via Typedoc reconfiguration in Phase 2."
+    },
+    {
+      "id": "US-003",
+      "title": "Integrate Typedoc API documentation generation into build process",
+      "acceptance_criteria": [
+        "package.json has new 'docs:api' script that runs typedoc",
+        "package.json 'docs:build' script runs 'bun run docs:api' before vitepress build",
+        "typedoc.json includes gitRevision and repository fields pointing to mikehostetler/wreckit",
+        "Running bun run docs:api generates files in docs/api/ without errors",
+        "Running bun run docs:build executes API generation then VitePress build",
+        "All generated API docs use correct repository URLs (grep verifies no jmanhype references)"
+      ],
+      "priority": 2,
+      "status": "pending",
+      "notes": "Typedoc is already configured but not integrated into build. Adding it to docs:build ensures API docs are always in sync with code. Typedoc config needs repository URL to generate correct source links."
+    },
+    {
+      "id": "US-004",
+      "title": "Add API Documentation to site navigation",
+      "acceptance_criteria": [
+        "docs/.vitepress/config.ts nav array includes 'API Documentation' link",
+        "docs/.vitepress/config.ts sidebar object includes /api/ configuration",
+        "API Documentation link appears in top navigation bar",
+        "Clicking API Documentation link navigates to /api/ section",
+        "API section has sidebar navigation with Overview, Agent Runner, Commands, Doctor, Dream, Geneticist links",
+        "All sidebar links in API section navigate to correct pages"
+      ],
+      "priority": 2,
+      "status": "pending",
+      "notes": "API docs are generated but not discoverable through navigation. Adding nav link and sidebar configuration makes them accessible to users."
+    },
+    {
+      "id": "US-005",
+      "title": "Create favicon for documentation site",
+      "acceptance_criteria": [
+        "docs/public/favicon.svg or favicon.ico file exists",
+        "Favicon file is valid and renders correctly in browser",
+        "Running bun run docs:preview shows favicon in browser tab",
+        "Favicon appears in browser tab when viewing any page on documentation site"
+      ],
+      "priority": 3,
+      "status": "pending",
+      "notes": "Simple SVG favicon with 'W' logo on blue background matches Wreckit branding. Alternative is to copy existing PNG as favicon.ico if SVG creation is not desired."
+    },
+    {
+      "id": "US-006",
+      "title": "Improve API documentation landing page content",
+      "acceptance_criteria": [
+        "docs/api/README.md has enhanced content with descriptions for each module",
+        "API landing page provides context about auto-generated documentation",
+        "API landing page includes instruction for regenerating docs (bun run docs:api)",
+        "Module descriptions are clear and helpful for users navigating API reference"
+      ],
+      "priority": 3,
+      "status": "pending",
+      "notes": "Current API README is just a raw index. Adding descriptions and context makes it more useful for users seeking TypeScript API documentation."
+    },
+    {
+      "id": "US-007",
+      "title": "Verify end-to-end deployment pipeline works correctly",
+      "acceptance_criteria": [
+        "Local build (bun run docs:build) completes successfully without errors",
+        "Local preview (bun run docs:preview) serves functional site at localhost:4173/wreckit/",
+        "All internal links work during preview (no 404s)",
+        "All external GitHub links navigate to mikehostetler/wreckit",
+        "GitHub Actions workflow runs successfully on push",
+        "GitHub Pages deployment completes without errors",
+        "Deployed site is accessible at GitHub Pages URL",
+        "Deployed site matches local preview (logo, links, content all correct)"
+      ],
+      "priority": 4,
+      "status": "pending",
+      "notes": "No code changes in this story - verification only. Test complete pipeline from local build to GitHub Pages deployment to ensure documentation site is production-ready."
+    }
+  ]
+}

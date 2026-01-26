@@ -212,7 +212,7 @@ export async function runPhaseCommand(
   const result = await phaseConfig.runFn(itemId, workflowOptions);
 
   if (result.success) {
-    console.log(
+    logger.info(
       `Successfully ran ${phase} phase on ${itemId}: ${item.state} → ${result.item.state}`
     );
   } else {
