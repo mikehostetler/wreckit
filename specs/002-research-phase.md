@@ -20,12 +20,12 @@ Research is about **understanding**, not **doing**. The agent gathers informatio
 
 ### Guardrails Required
 
-| Guardrail | Purpose |
-|-----------|---------|
-| **Write Containment** | Agent should only write to `research.md` within the item directory |
-| **No Code Changes** | Source files, tests, configs must not be modified |
-| **No New Files** | Agent should not create files in the repository (outside `.wreckit/`) |
-| **Git State Preservation** | Working tree should be unchanged after research (except research.md) |
+| Guardrail                  | Purpose                                                               |
+| -------------------------- | --------------------------------------------------------------------- |
+| **Write Containment**      | Agent should only write to `research.md` within the item directory    |
+| **No Code Changes**        | Source files, tests, configs must not be modified                     |
+| **No New Files**           | Agent should not create files in the repository (outside `.wreckit/`) |
+| **Git State Preservation** | Working tree should be unchanged after research (except research.md)  |
 
 ### Enforcement (Recommended)
 
@@ -45,6 +45,7 @@ To enforce read-only behavior:
 ### Automatic Execution
 
 The research phase runs automatically when executing:
+
 - `wreckit` — Runs all incomplete items through their next phase
 - `wreckit run <id>` — Runs single item through all phases
 - `wreckit next` — Runs next incomplete item
@@ -56,6 +57,7 @@ Automatic execution requires the item to be in `idea` state.
 Run `wreckit research <id>` to manually trigger the phase.
 
 The `<id>` can be specified as:
+
 - Full ID: `001-add-feature`
 - Numeric prefix: `1` or `001`
 - Slug suffix: `add-feature`
@@ -71,17 +73,17 @@ The `<id>` can be specified as:
 
 ### Template Variables
 
-| Variable | Description |
-|----------|-------------|
-| `{{id}}` | Item ID (e.g., `001-add-feature`) |
-| `{{title}}` | Human-readable title |
-| `{{section}}` | Section/category (default: `"items"`) |
-| `{{overview}}` | Item description/overview |
-| `{{item_path}}` | Absolute path to item directory |
-| `{{branch_name}}` | Git branch name for this item |
-| `{{base_branch}}` | Base branch (e.g., `main`) |
-| `{{completion_signal}}` | Signal agent prints on completion |
-| `{{sdk_mode}}` | Whether running in SDK mode |
+| Variable                | Description                           |
+| ----------------------- | ------------------------------------- |
+| `{{id}}`                | Item ID (e.g., `001-add-feature`)     |
+| `{{title}}`             | Human-readable title                  |
+| `{{section}}`           | Section/category (default: `"items"`) |
+| `{{overview}}`          | Item description/overview             |
+| `{{item_path}}`         | Absolute path to item directory       |
+| `{{branch_name}}`       | Git branch name for this item         |
+| `{{base_branch}}`       | Base branch (e.g., `main`)            |
+| `{{completion_signal}}` | Signal agent prints on completion     |
+| `{{sdk_mode}}`          | Whether running in SDK mode           |
 
 ### Working Directory
 
@@ -107,17 +109,17 @@ The research prompt instructs the agent to:
 
 **Required Structure:**
 
-| Section | Purpose | Quality Indicator |
-|---------|---------|-------------------|
-| **Header** | Title, date, item ID | Present and accurate |
-| **Research Question** | Original overview/description | Captures the intent |
-| **Summary** | High-level findings (2-3 paragraphs) | Actionable, not generic |
-| **Current State Analysis** | Existing implementation | Contains `file:line` references |
-| **Key Files** | Critical files identified | Specific paths with line numbers |
-| **Technical Considerations** | Dependencies, patterns | References actual codebase patterns |
-| **Risks and Mitigations** | Risk table | Concrete risks with realistic mitigations |
-| **Recommended Approach** | Implementation strategy | Maps to discovered architecture |
-| **Open Questions** | Unknowns and assumptions | Clearly separates what's known vs. unknown |
+| Section                      | Purpose                              | Quality Indicator                          |
+| ---------------------------- | ------------------------------------ | ------------------------------------------ |
+| **Header**                   | Title, date, item ID                 | Present and accurate                       |
+| **Research Question**        | Original overview/description        | Captures the intent                        |
+| **Summary**                  | High-level findings (2-3 paragraphs) | Actionable, not generic                    |
+| **Current State Analysis**   | Existing implementation              | Contains `file:line` references            |
+| **Key Files**                | Critical files identified            | Specific paths with line numbers           |
+| **Technical Considerations** | Dependencies, patterns               | References actual codebase patterns        |
+| **Risks and Mitigations**    | Risk table                           | Concrete risks with realistic mitigations  |
+| **Recommended Approach**     | Implementation strategy              | Maps to discovered architecture            |
+| **Open Questions**           | Unknowns and assumptions             | Clearly separates what's known vs. unknown |
 
 ---
 
@@ -127,27 +129,27 @@ The research prompt instructs the agent to:
 
 High-quality research demonstrates deep codebase understanding:
 
-| Quality Signal | Description |
-|----------------|-------------|
-| **Concrete citations** | Many `path/to/file.ext:123` references, not just file names |
-| **Traceability** | Explains how code paths connect (call chains, data flow) |
-| **Coverage** | Identifies key modules, integration points, and existing tests |
-| **Pattern recognition** | Notes existing conventions to follow |
-| **Realistic risks** | Identifies actual challenges, not generic concerns |
-| **Actionable approach** | Recommendations map to discovered architecture |
+| Quality Signal          | Description                                                    |
+| ----------------------- | -------------------------------------------------------------- |
+| **Concrete citations**  | Many `path/to/file.ext:123` references, not just file names    |
+| **Traceability**        | Explains how code paths connect (call chains, data flow)       |
+| **Coverage**            | Identifies key modules, integration points, and existing tests |
+| **Pattern recognition** | Notes existing conventions to follow                           |
+| **Realistic risks**     | Identifies actual challenges, not generic concerns             |
+| **Actionable approach** | Recommendations map to discovered architecture                 |
 
 ### What Poor Research Looks Like
 
 Low-quality research that should be rejected or flagged:
 
-| Anti-Pattern | Example |
-|--------------|---------|
-| **Generic statements** | "The system uses a service layer" with no citations |
-| **Missing references** | No file paths or line numbers |
-| **Surface-level analysis** | Only reads prompt context, doesn't inspect repo |
-| **Template recommendations** | Generic advice that ignores existing patterns |
-| **Missing sections** | Key template sections absent or empty |
-| **No open questions** | Falsely implies complete understanding |
+| Anti-Pattern                 | Example                                             |
+| ---------------------------- | --------------------------------------------------- |
+| **Generic statements**       | "The system uses a service layer" with no citations |
+| **Missing references**       | No file paths or line numbers                       |
+| **Surface-level analysis**   | Only reads prompt context, doesn't inspect repo     |
+| **Template recommendations** | Generic advice that ignores existing patterns       |
+| **Missing sections**         | Key template sections absent or empty               |
+| **No open questions**        | Falsely implies complete understanding              |
 
 ### Validation (Recommended)
 
@@ -165,6 +167,7 @@ To ensure research quality, validate:
 ### Success Criteria
 
 All conditions must be met:
+
 1. Agent completes without error
 2. `research.md` exists in the item directory
 3. Validation passes (confirms artifact exists)
@@ -178,6 +181,7 @@ All conditions must be met:
 ### Skip Behavior
 
 If `research.md` already exists and `--force` is not specified:
+
 - The agent is not run
 - State is advanced to `researched` immediately
 - This enables resumability without re-running expensive research
@@ -187,6 +191,7 @@ If `research.md` already exists and `--force` is not specified:
 ### Agent Failure
 
 If the agent exits with an error or fails to produce output:
+
 - `last_error` is set to the error message
 - State remains at `idea`
 - Item can be retried
@@ -194,6 +199,7 @@ If the agent exits with an error or fails to produce output:
 ### Agent Timeout
 
 If the agent exceeds the configured timeout:
+
 - Error: "Agent timed out"
 - State remains at `idea`
 - Partial research.md may exist but phase fails
@@ -201,18 +207,21 @@ If the agent exceeds the configured timeout:
 ### Missing Artifact
 
 If agent completes but `research.md` is not created:
+
 - Error: "Agent did not create research.md"
 - State remains at `idea`
 
 ### Wrong State
 
 If item is not in `idea` state and `--force` is not specified:
+
 - Error: "Item is in state X, expected 'idea' for research phase"
 - No changes made
 
 ### Error Recovery
 
 All errors:
+
 1. Set `last_error` on the item
 2. Write updated item to disk
 3. State is NOT advanced
@@ -225,11 +234,11 @@ All errors:
 
 If the agent modifies repository files during research:
 
-| Scenario | Current Behavior | Recommended Behavior |
-|----------|------------------|----------------------|
-| Agent edits source file | Phase succeeds if research.md exists | Should fail and revert |
-| Agent creates new file in repo | Phase succeeds | Should fail |
-| Agent modifies config files | Phase succeeds | Should fail |
+| Scenario                       | Current Behavior                     | Recommended Behavior   |
+| ------------------------------ | ------------------------------------ | ---------------------- |
+| Agent edits source file        | Phase succeeds if research.md exists | Should fail and revert |
+| Agent creates new file in repo | Phase succeeds                       | Should fail            |
+| Agent modifies config files    | Phase succeeds                       | Should fail            |
 
 **Risk:** Unintended changes can leak into later commits. The PR phase auto-commits uncommitted changes, meaning research-time code edits could be included in the implementation PR.
 
@@ -237,12 +246,12 @@ If the agent modifies repository files during research:
 
 The agent should only write to `.wreckit/items/<id>/research.md`. Any other writes should be treated as violations:
 
-| Violation | Impact |
-|-----------|--------|
-| Write to source files | Code changes without review |
-| Write to other item directories | Cross-item contamination |
-| Write to `.wreckit/config.json` | Configuration tampering |
-| Write outside repository | System file access |
+| Violation                       | Impact                      |
+| ------------------------------- | --------------------------- |
+| Write to source files           | Code changes without review |
+| Write to other item directories | Cross-item contamination    |
+| Write to `.wreckit/config.json` | Configuration tampering     |
+| Write outside repository        | System file access          |
 
 ### Detection (Recommended)
 
@@ -258,6 +267,7 @@ The agent should only write to `.wreckit/items/<id>/research.md`. Any other writ
 ### Re-running After Error
 
 Simply re-run any trigger command:
+
 - `wreckit research <id>` — Try again
 - `wreckit run <id>` — Starts at research if state is idea
 - `wreckit` — Picks up incomplete items
@@ -267,6 +277,7 @@ The phase will check if `research.md` exists (skip if so, unless `--force`), run
 ### Doctor Recovery
 
 Run `wreckit doctor --fix` to repair inconsistent state:
+
 - Resets state to `idea` if `research.md` is missing but state is `researched`
 - Clears `last_error` if artifacts are valid
 
@@ -277,6 +288,7 @@ Edit `.wreckit/items/<id>/item.json` directly to set `state: "idea"` and `last_e
 ## Dry Run Mode
 
 Run `wreckit research <id> --dry-run` to:
+
 - Log what would happen
 - NOT run the agent
 - NOT modify any files
@@ -288,29 +300,29 @@ Create `.wreckit/prompts/research.md` to customize the research prompt. This fil
 
 ## Exit Codes
 
-| Code | Meaning |
-|------|---------|
-| 0 | Success |
-| 1 | Error (agent failure, missing artifact, validation) |
-| 130 | Interrupted (SIGINT/SIGTERM) |
+| Code | Meaning                                             |
+| ---- | --------------------------------------------------- |
+| 0    | Success                                             |
+| 1    | Error (agent failure, missing artifact, validation) |
+| 130  | Interrupted (SIGINT/SIGTERM)                        |
 
 ---
 
 ## Implementation Status
 
-| Feature | Status | Notes |
-|---------|--------|-------|
-| **Core research phase** | ✅ Implemented | See `src/workflow/itemWorkflow.ts:runPhaseResearch` |
-| **Prompt template loading** | ✅ Implemented | Project overrides in `.wreckit/prompts/research.md` |
-| **Template variable substitution** | ✅ Implemented | All variables in spec are supported |
-| **Artifact validation (exists)** | ✅ Implemented | Checks `research.md` exists |
-| **Skip if artifact exists** | ✅ Implemented | `--force` flag to regenerate |
-| **Tool allowlist (read-only)** | ✅ Implemented | See `src/agent/toolAllowlist.ts` - only Read, Glob, Grep |
-| **Git status comparison (write containment)** | ✅ Implemented | Before/after status comparison blocks violations |
-| **Research quality validation** | ✅ Implemented | See `src/domain/validation.ts:validateResearchQuality` |
-| **State transitions** | ✅ Implemented | `idea` → `researched` on success |
-| **Error handling** | ✅ Implemented | `last_error` set on failure |
-| **Dry-run mode** | ✅ Implemented | `--dry-run` flag works |
+| Feature                                       | Status         | Notes                                                    |
+| --------------------------------------------- | -------------- | -------------------------------------------------------- |
+| **Core research phase**                       | ✅ Implemented | See `src/workflow/itemWorkflow.ts:runPhaseResearch`      |
+| **Prompt template loading**                   | ✅ Implemented | Project overrides in `.wreckit/prompts/research.md`      |
+| **Template variable substitution**            | ✅ Implemented | All variables in spec are supported                      |
+| **Artifact validation (exists)**              | ✅ Implemented | Checks `research.md` exists                              |
+| **Skip if artifact exists**                   | ✅ Implemented | `--force` flag to regenerate                             |
+| **Tool allowlist (read-only)**                | ✅ Implemented | See `src/agent/toolAllowlist.ts` - only Read, Glob, Grep |
+| **Git status comparison (write containment)** | ✅ Implemented | Before/after status comparison blocks violations         |
+| **Research quality validation**               | ✅ Implemented | See `src/domain/validation.ts:validateResearchQuality`   |
+| **State transitions**                         | ✅ Implemented | `idea` → `researched` on success                         |
+| **Error handling**                            | ✅ Implemented | `last_error` set on failure                              |
+| **Dry-run mode**                              | ✅ Implemented | `--dry-run` flag works                                   |
 
 ---
 

@@ -1,4 +1,13 @@
-import { describe, it, expect, beforeEach, afterEach, afterAll, mock, vi } from "bun:test";
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  afterAll,
+  mock,
+  vi,
+} from "bun:test";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import * as os from "node:os";
@@ -19,7 +28,8 @@ mock.module("node:child_process", () => ({
   spawn: mockedSpawn,
 }));
 
-const { isGitRepo, getCurrentBranch, branchExists, ensureBranch } = await import("../../git");
+const { isGitRepo, getCurrentBranch, branchExists, ensureBranch } =
+  await import("../../git");
 
 function createMockLogger(): Logger & { messages: string[] } {
   const messages: string[] = [];
@@ -65,7 +75,7 @@ function mockSpawnOnce(stdout: string, exitCode: number): void {
 }
 
 function mockSpawnSequence(
-  responses: Array<{ stdout: string; exitCode: number }>
+  responses: Array<{ stdout: string; exitCode: number }>,
 ): void {
   for (const r of responses) {
     mockSpawnOnce(r.stdout, r.exitCode);
@@ -111,7 +121,9 @@ describe("Repo State Detection - Tests 31-41", () => {
           noTui: true,
         });
 
-        expect(mockLogger.messages.some((l) => l.includes("Not a git repository"))).toBe(true);
+        expect(
+          mockLogger.messages.some((l) => l.includes("Not a git repository")),
+        ).toBe(true);
       });
     });
 
@@ -135,7 +147,9 @@ describe("Repo State Detection - Tests 31-41", () => {
         });
 
         expect(mockLogger.error).toHaveBeenCalledWith("Not a git repository.");
-        expect(mockLogger.messages.some((l) => l.includes("git init"))).toBe(true);
+        expect(mockLogger.messages.some((l) => l.includes("git init"))).toBe(
+          true,
+        );
       });
     });
 
@@ -152,12 +166,18 @@ describe("Repo State Detection - Tests 31-41", () => {
         };
         mockedSpawn.mockReturnValueOnce(mockProc as never);
 
-        mockProc.on.mockImplementation((event: string, cb: (arg: unknown) => void) => {
-          if (event === "error") {
-            setTimeout(() => cb(new Error("spawn git ENOENT")), 0);
-          }
-          return mockProc;
-        });
+        mockProc.on.mockImplementation(
+          (event: string, cb: (code: number | null) => void) => {
+            if (event === "error") {
+              setTimeout(
+                () =>
+                  (cb as (arg: unknown) => void)(new Error("spawn git ENOENT")),
+                0,
+              );
+            }
+            return mockProc;
+          },
+        );
 
         const result = await isGitRepo(tempDir);
         expect(result).toBe(false);
@@ -171,7 +191,9 @@ describe("Repo State Detection - Tests 31-41", () => {
           logger: mockLogger,
         };
 
-        await expect(getCurrentBranch(options)).rejects.toThrow("Failed to get current branch");
+        await expect(getCurrentBranch(options)).rejects.toThrow(
+          "Failed to get current branch",
+        );
       });
     });
   });
@@ -208,7 +230,7 @@ describe("Repo State Detection - Tests 31-41", () => {
               args: [],
               completion_signal: "DONE",
             },
-          })
+          }),
         );
       });
 
@@ -234,7 +256,7 @@ describe("Repo State Detection - Tests 31-41", () => {
         expect(mockedSpawn).toHaveBeenCalledWith(
           "git",
           ["checkout", "master"],
-          expect.any(Object)
+          expect.any(Object),
         );
       });
     });
@@ -252,7 +274,7 @@ describe("Repo State Detection - Tests 31-41", () => {
             schema_version: 1,
             base_branch: "main",
             agent: { command: "test", args: [], completion_signal: "DONE" },
-          })
+          }),
         );
 
         const config = await loadConfig(tempDir);
@@ -267,7 +289,7 @@ describe("Repo State Detection - Tests 31-41", () => {
             schema_version: 1,
             base_branch: "master",
             agent: { command: "test", args: [], completion_signal: "DONE" },
-          })
+          }),
         );
 
         const config = await loadConfig(tempDir);
@@ -281,7 +303,7 @@ describe("Repo State Detection - Tests 31-41", () => {
             schema_version: 1,
             base_branch: "develop",
             agent: { command: "test", args: [], completion_signal: "DONE" },
-          })
+          }),
         );
 
         const config = await loadConfig(tempDir);
@@ -299,21 +321,24 @@ describe("Repo State Detection - Tests 31-41", () => {
             schema_version: 1,
             base_branch: "nonexistent",
             agent: { command: "test", args: [], completion_signal: "DONE" },
-          })
+          }),
         );
       });
 
       it("ensureBranch fails when base branch does not exist", async () => {
         mockSpawnSequence([
           { stdout: "", exitCode: 1 },
-          { stdout: "error: pathspec 'nonexistent' did not match", exitCode: 1 },
+          {
+            stdout: "error: pathspec 'nonexistent' did not match",
+            exitCode: 1,
+          },
         ]);
 
         await expect(
           ensureBranch("nonexistent", "wreckit/", "item-1", {
             cwd: tempDir,
             logger: mockLogger,
-          })
+          }),
         ).rejects.toThrow();
       });
 
@@ -342,7 +367,7 @@ describe("Repo State Detection - Tests 31-41", () => {
             schema_version: 1,
             base_branch: "Main",
             agent: { command: "test", args: [], completion_signal: "DONE" },
-          })
+          }),
         );
 
         mockSpawnSequence([
@@ -354,7 +379,7 @@ describe("Repo State Detection - Tests 31-41", () => {
           ensureBranch("Main", "wreckit/", "item-1", {
             cwd: tempDir,
             logger: mockLogger,
-          })
+          }),
         ).rejects.toThrow();
       });
 
@@ -401,10 +426,14 @@ describe("Repo State Detection - Tests 31-41", () => {
           noTui: false,
         });
 
-        expect(mockLogger.messages.some((l) => l.includes("wreckit is not initialized"))).toBe(
-          true
-        );
-        expect(mockLogger.messages.some((l) => l.includes("wreckit init"))).toBe(true);
+        expect(
+          mockLogger.messages.some((l) =>
+            l.includes("wreckit is not initialized"),
+          ),
+        ).toBe(true);
+        expect(
+          mockLogger.messages.some((l) => l.includes("wreckit init")),
+        ).toBe(true);
       });
     });
 
@@ -431,7 +460,9 @@ describe("Repo State Detection - Tests 31-41", () => {
           noTui: false,
         });
 
-        expect(mockLogger.error).toHaveBeenCalledWith("wreckit is not initialized in this repo.");
+        expect(mockLogger.error).toHaveBeenCalledWith(
+          "wreckit is not initialized in this repo.",
+        );
         expect(mockLogger.info).toHaveBeenCalledWith("  wreckit init");
       });
 
@@ -442,7 +473,9 @@ describe("Repo State Detection - Tests 31-41", () => {
           noTui: false,
         });
 
-        expect(mockLogger.messages.some((l) => l.includes("wreckit ideas"))).toBe(true);
+        expect(
+          mockLogger.messages.some((l) => l.includes("wreckit ideas")),
+        ).toBe(true);
       });
     });
 
@@ -456,7 +489,9 @@ describe("Repo State Detection - Tests 31-41", () => {
       });
 
       it("error message indicates .wreckit exists but no .git", () => {
-        expect(() => findRepoRoot(tempDir)).toThrow(/Found .wreckit.*but no .git/);
+        expect(() => findRepoRoot(tempDir)).toThrow(
+          /Found .wreckit.*but no .git/,
+        );
       });
 
       it("findRepoRoot from nested directory also throws", async () => {
@@ -464,7 +499,9 @@ describe("Repo State Detection - Tests 31-41", () => {
         await fs.mkdir(nestedDir, { recursive: true });
 
         expect(() => findRepoRoot(nestedDir)).toThrow(RepoNotFoundError);
-        expect(() => findRepoRoot(nestedDir)).toThrow(/Found .wreckit.*but no .git/);
+        expect(() => findRepoRoot(nestedDir)).toThrow(
+          /Found .wreckit.*but no .git/,
+        );
       });
     });
   });
@@ -475,10 +512,15 @@ describe("Repo State Detection - Tests 31-41", () => {
       await fs.mkdir(path.join(tempDir, ".wreckit"));
       await fs.writeFile(
         path.join(tempDir, ".wreckit", "config.json"),
-        JSON.stringify({ schema_version: 1 })
+        JSON.stringify({ schema_version: 1 }),
       );
 
-      const ideaDir = path.join(tempDir, ".wreckit", "features", "001-test-idea");
+      const ideaDir = path.join(
+        tempDir,
+        ".wreckit",
+        "features",
+        "001-test-idea",
+      );
       await fs.mkdir(ideaDir, { recursive: true });
       await fs.writeFile(
         path.join(ideaDir, "item.json"),
@@ -495,7 +537,7 @@ describe("Repo State Detection - Tests 31-41", () => {
           last_error: null,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
-        })
+        }),
       );
 
       const result = await runOnboardingIfNeeded(mockLogger, {

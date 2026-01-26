@@ -1,4 +1,12 @@
-import { describe, it, expect, beforeEach, afterEach, vi, spyOn } from "bun:test";
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  vi,
+  spyOn,
+} from "bun:test";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import * as os from "node:os";
@@ -102,7 +110,9 @@ describe("git/index", () => {
 
       expect(result.mergeable).toBe(false);
       expect(result.determined).toBe(false);
-      expect(mockLogger.warn).toHaveBeenCalledWith(expect.stringContaining("Failed to check mergeability"));
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        expect.stringContaining("Failed to check mergeability"),
+      );
     });
 
     it("returns determined: false when JSON parsing fails", async () => {
@@ -119,7 +129,9 @@ describe("git/index", () => {
 
       expect(result.mergeable).toBe(false);
       expect(result.determined).toBe(false);
-      expect(mockLogger.warn).toHaveBeenCalledWith(expect.stringContaining("Failed to parse mergeability"));
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        expect.stringContaining("Failed to parse mergeability"),
+      );
     });
 
     it("returns success in dryRun mode", async () => {
@@ -131,7 +143,9 @@ describe("git/index", () => {
 
       expect(result.mergeable).toBe(true);
       expect(result.determined).toBe(true);
-      expect(mockLogger.info).toHaveBeenCalledWith(expect.stringContaining("[dry-run]"));
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        expect.stringContaining("[dry-run]"),
+      );
       // In dryRun mode, runGhCommand should not be called
       expect(runGhCommandSpy).not.toHaveBeenCalled();
     });
@@ -139,11 +153,15 @@ describe("git/index", () => {
 
   describe("checkMergeConflicts", () => {
     it("returns no conflicts in dryRun mode", async () => {
-      const result = await gitModule.checkMergeConflicts("main", "feature-branch", {
-        cwd: tempDir,
-        logger: mockLogger,
-        dryRun: true,
-      });
+      const result = await gitModule.checkMergeConflicts(
+        "main",
+        "feature-branch",
+        {
+          cwd: tempDir,
+          logger: mockLogger,
+          dryRun: true,
+        },
+      );
 
       expect(result.hasConflicts).toBe(false);
       // In dry run, error is not set
@@ -151,11 +169,15 @@ describe("git/index", () => {
     });
 
     it("returns correct result structure", async () => {
-      const result = await gitModule.checkMergeConflicts("main", "feature-branch", {
-        cwd: tempDir,
-        logger: mockLogger,
-        dryRun: true,
-      });
+      const result = await gitModule.checkMergeConflicts(
+        "main",
+        "feature-branch",
+        {
+          cwd: tempDir,
+          logger: mockLogger,
+          dryRun: true,
+        },
+      );
 
       // Verify result structure
       expect(result).toHaveProperty("hasConflicts");
@@ -324,7 +346,9 @@ describe("git/index", () => {
       expect(result.baseRefName).toBe("main");
       expect(result.headRefName).toBe("feature-branch");
       expect(result.mergeCommitOid).toBe("abc123");
-      expect(mockLogger.info).toHaveBeenCalledWith(expect.stringContaining("[dry-run]"));
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        expect.stringContaining("[dry-run]"),
+      );
     });
 
     it("validates PR merged to correct branch (Gap 1)", async () => {

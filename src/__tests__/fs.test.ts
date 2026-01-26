@@ -62,7 +62,7 @@ describe("Path utilities", () => {
 
       expect(() => findRepoRoot(tempDir)).toThrow(RepoNotFoundError);
       expect(() => findRepoRoot(tempDir)).toThrow(
-        /Found .wreckit.*but no .git/
+        /Found .wreckit.*but no .git/,
       );
     });
 
@@ -101,7 +101,9 @@ describe("Path utilities", () => {
     });
 
     it("getBatchProgressPath returns correct path", () => {
-      expect(getBatchProgressPath(root)).toBe("/test/repo/.wreckit/batch-progress.json");
+      expect(getBatchProgressPath(root)).toBe(
+        "/test/repo/.wreckit/batch-progress.json",
+      );
     });
 
     it("getPromptsDir returns correct path", () => {
@@ -114,43 +116,43 @@ describe("Path utilities", () => {
 
     it("getItemDir returns correct path", () => {
       expect(getItemDir(root, "001-auth")).toBe(
-        "/test/repo/.wreckit/items/001-auth"
+        "/test/repo/.wreckit/items/001-auth",
       );
     });
 
     it("getItemJsonPath returns correct path", () => {
       expect(getItemJsonPath(root, "001-auth")).toBe(
-        "/test/repo/.wreckit/items/001-auth/item.json"
+        "/test/repo/.wreckit/items/001-auth/item.json",
       );
     });
 
     it("getPrdPath returns correct path", () => {
       expect(getPrdPath(root, "001-auth")).toBe(
-        "/test/repo/.wreckit/items/001-auth/prd.json"
+        "/test/repo/.wreckit/items/001-auth/prd.json",
       );
     });
 
     it("getResearchPath returns correct path", () => {
       expect(getResearchPath(root, "001-auth")).toBe(
-        "/test/repo/.wreckit/items/001-auth/research.md"
+        "/test/repo/.wreckit/items/001-auth/research.md",
       );
     });
 
     it("getPlanPath returns correct path", () => {
       expect(getPlanPath(root, "001-auth")).toBe(
-        "/test/repo/.wreckit/items/001-auth/plan.md"
+        "/test/repo/.wreckit/items/001-auth/plan.md",
       );
     });
 
     it("getProgressLogPath returns correct path", () => {
       expect(getProgressLogPath(root, "001-auth")).toBe(
-        "/test/repo/.wreckit/items/001-auth/progress.log"
+        "/test/repo/.wreckit/items/001-auth/progress.log",
       );
     });
 
     it("getPromptPath returns correct path", () => {
       expect(getPromptPath(root, "001-auth")).toBe(
-        "/test/repo/.wreckit/items/001-auth/prompt.md"
+        "/test/repo/.wreckit/items/001-auth/prompt.md",
       );
     });
   });
@@ -185,11 +187,11 @@ describe("JSON utilities", () => {
       const filePath = path.join(tempDir, "test.json");
       await fs.writeFile(
         filePath,
-        JSON.stringify({ name: "test", value: "not a number" })
+        JSON.stringify({ name: "test", value: "not a number" }),
       );
 
       await expect(readJsonWithSchema(filePath, TestSchema)).rejects.toThrow(
-        SchemaValidationError
+        SchemaValidationError,
       );
     });
 
@@ -198,7 +200,7 @@ describe("JSON utilities", () => {
       await fs.writeFile(filePath, "{ invalid json }");
 
       await expect(readJsonWithSchema(filePath, TestSchema)).rejects.toThrow(
-        InvalidJsonError
+        InvalidJsonError,
       );
     });
 
@@ -206,7 +208,7 @@ describe("JSON utilities", () => {
       const filePath = path.join(tempDir, "nonexistent.json");
 
       await expect(readJsonWithSchema(filePath, TestSchema)).rejects.toThrow(
-        FileNotFoundError
+        FileNotFoundError,
       );
     });
   });
@@ -313,7 +315,7 @@ describe("Typed wrapper tests", () => {
     it("reads valid config", async () => {
       await fs.writeFile(
         path.join(tempDir, ".wreckit", "config.json"),
-        JSON.stringify(validConfig)
+        JSON.stringify(validConfig),
       );
 
       const result = await readConfig(tempDir);
@@ -323,7 +325,7 @@ describe("Typed wrapper tests", () => {
     it("throws on invalid config", async () => {
       await fs.writeFile(
         path.join(tempDir, ".wreckit", "config.json"),
-        JSON.stringify({ invalid: "config" })
+        JSON.stringify({ invalid: "config" }),
       );
 
       await expect(readConfig(tempDir)).rejects.toThrow(SchemaValidationError);
@@ -345,7 +347,7 @@ describe("Typed wrapper tests", () => {
       await fs.mkdir(itemDir, { recursive: true });
       await fs.writeFile(
         path.join(itemDir, "item.json"),
-        JSON.stringify({ invalid: "item" })
+        JSON.stringify({ invalid: "item" }),
       );
 
       await expect(readItem(itemDir)).rejects.toThrow(SchemaValidationError);
@@ -367,7 +369,7 @@ describe("Typed wrapper tests", () => {
       await fs.mkdir(itemDir, { recursive: true });
       await fs.writeFile(
         path.join(itemDir, "prd.json"),
-        JSON.stringify({ invalid: "prd" })
+        JSON.stringify({ invalid: "prd" }),
       );
 
       await expect(readPrd(itemDir)).rejects.toThrow(SchemaValidationError);
@@ -390,7 +392,7 @@ describe("Typed wrapper tests", () => {
     it("throws on invalid index data", async () => {
       await fs.writeFile(
         path.join(tempDir, ".wreckit", "index.json"),
-        JSON.stringify({ invalid: "index" })
+        JSON.stringify({ invalid: "index" }),
       );
 
       await expect(readIndex(tempDir)).rejects.toThrow(SchemaValidationError);
@@ -410,6 +412,8 @@ describe("Typed wrapper tests", () => {
       completed: [],
       failed: [],
       skipped: [],
+      healing_attempts: 0,
+      last_healing_at: null,
     };
 
     it("returns null when progress file does not exist", async () => {
@@ -447,7 +451,7 @@ describe("Typed wrapper tests", () => {
     it("returns null for invalid JSON (graceful degradation)", async () => {
       await fs.writeFile(
         path.join(tempDir, ".wreckit", "batch-progress.json"),
-        "{ invalid json }"
+        "{ invalid json }",
       );
 
       // Should return null instead of throwing
@@ -458,7 +462,7 @@ describe("Typed wrapper tests", () => {
     it("returns null for invalid schema (graceful degradation)", async () => {
       await fs.writeFile(
         path.join(tempDir, ".wreckit", "batch-progress.json"),
-        JSON.stringify({ invalid: "schema" })
+        JSON.stringify({ invalid: "schema" }),
       );
 
       // Should return null instead of throwing

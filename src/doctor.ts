@@ -86,7 +86,7 @@ function detectCycles(items: Item[]): string[][] {
  * Find dependencies that reference non-existent items.
  */
 function findMissingDependencies(
-  items: Item[]
+  items: Item[],
 ): Array<{ itemId: string; missingDep: string }> {
   const missing: Array<{ itemId: string; missingDep: string }> = [];
   const itemIds = new Set(items.map((i) => i.id));
@@ -140,7 +140,7 @@ async function diagnoseDependencies(root: string): Promise<Diagnostic[]> {
       if (err instanceof SchemaValidationError) continue;
       // Unexpected errors: warn
       console.warn(
-        `Warning: Cannot read item ${dir}: ${err instanceof Error ? err.message : String(err)}`
+        `Warning: Cannot read item ${dir}: ${err instanceof Error ? err.message : String(err)}`,
       );
     }
   }
@@ -246,7 +246,7 @@ async function diagnoseConfig(root: string): Promise<Diagnostic[]> {
 async function diagnoseItem(
   root: string,
   itemsDir: string,
-  itemDirName: string
+  itemDirName: string,
 ): Promise<Diagnostic[]> {
   const diagnostics: Diagnostic[] = [];
   const itemDir = path.join(itemsDir, itemDirName);
@@ -398,7 +398,7 @@ async function diagnoseItem(
 
         if (item.state === "implementing") {
           const pendingStories = prdResult.data.user_stories.filter(
-            (s) => s.status === "pending"
+            (s) => s.status === "pending",
           );
           if (pendingStories.length === 0) {
             diagnostics.push({
@@ -655,7 +655,7 @@ export async function diagnose(root: string): Promise<Diagnostic[]> {
 export async function applyFixes(
   root: string,
   diagnostics: Diagnostic[],
-  logger: Logger
+  logger: Logger,
 ): Promise<{ results: FixResult[]; backupSessionId: string | null }> {
   const results: FixResult[] = [];
   const fixableDiagnostics = diagnostics.filter((d) => d.fixable);
@@ -684,7 +684,7 @@ export async function applyFixes(
             sessionId,
             indexPath,
             diagnostic,
-            "modified"
+            "modified",
           );
           if (entry) {
             backupEntries.push(entry);
@@ -730,14 +730,19 @@ export async function applyFixes(
 
             // Use error-aware checks for artifact presence (Spec 010 Gap 4)
             const researchCheck = await checkPathAccess(
-              path.join(itemDir, "research.md")
+              path.join(itemDir, "research.md"),
             );
-            const planCheck = await checkPathAccess(path.join(itemDir, "plan.md"));
-            const prdCheck = await checkPathAccess(path.join(itemDir, "prd.json"));
+            const planCheck = await checkPathAccess(
+              path.join(itemDir, "plan.md"),
+            );
+            const prdCheck = await checkPathAccess(
+              path.join(itemDir, "prd.json"),
+            );
 
             // If any artifact is unreadable, skip the fix
             if (researchCheck.error || planCheck.error || prdCheck.error) {
-              message = "Cannot fix: artifact files are unreadable (check permissions)";
+              message =
+                "Cannot fix: artifact files are unreadable (check permissions)";
               break;
             }
 
@@ -765,7 +770,7 @@ export async function applyFixes(
                 sessionId,
                 itemJsonPath,
                 diagnostic,
-                "modified"
+                "modified",
               );
               if (entry) {
                 backupEntries.push(entry);
@@ -802,7 +807,7 @@ export async function applyFixes(
             sessionId,
             progressPath,
             diagnostic,
-            "deleted"
+            "deleted",
           );
           if (entry) {
             backupEntries.push(entry);
@@ -840,7 +845,7 @@ export async function applyFixes(
 export async function runDoctor(
   root: string,
   options: { fix?: boolean },
-  logger: Logger
+  logger: Logger,
 ): Promise<DoctorResult> {
   const diagnostics = await diagnose(root);
 
@@ -851,7 +856,7 @@ export async function runDoctor(
   const { results: fixes, backupSessionId } = await applyFixes(
     root,
     diagnostics,
-    logger
+    logger,
   );
   return { diagnostics, fixes, backupSessionId };
 }

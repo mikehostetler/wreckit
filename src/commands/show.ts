@@ -3,7 +3,14 @@ import * as path from "node:path";
 import type { Logger } from "../logging";
 import type { Item, Prd } from "../schemas";
 import { PrdSchema } from "../schemas";
-import { findRepoRoot, findRootFromOptions, getItemDir, getResearchPath, getPlanPath, getPrdPath } from "../fs/paths";
+import {
+  findRepoRoot,
+  findRootFromOptions,
+  getItemDir,
+  getResearchPath,
+  getPlanPath,
+  getPrdPath,
+} from "../fs/paths";
 import { checkPathAccess } from "../fs/util";
 import { readItem, readJsonWithSchema } from "../fs/json";
 import { FileNotFoundError } from "../errors";
@@ -20,7 +27,10 @@ export interface ItemDetails {
   prd: Prd | null;
 }
 
-export async function loadItemDetails(root: string, id: string): Promise<ItemDetails> {
+export async function loadItemDetails(
+  root: string,
+  id: string,
+): Promise<ItemDetails> {
   const itemDir = getItemDir(root, id);
   const item = await readItem(itemDir);
 
@@ -51,7 +61,7 @@ export async function loadItemDetails(root: string, id: string): Promise<ItemDet
 export async function showCommand(
   id: string,
   options: ShowOptions,
-  logger: Logger
+  logger: Logger,
 ): Promise<void> {
   const root = findRootFromOptions(options);
 
@@ -93,7 +103,9 @@ export async function showCommand(
   console.log(`Plan: ${hasPlan ? "✓" : "✗"}`);
 
   if (prd) {
-    const pending = prd.user_stories.filter((s) => s.status === "pending").length;
+    const pending = prd.user_stories.filter(
+      (s) => s.status === "pending",
+    ).length;
     const done = prd.user_stories.filter((s) => s.status === "done").length;
     console.log(`Stories: ${pending} pending, ${done} done`);
   } else {

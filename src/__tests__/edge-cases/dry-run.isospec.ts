@@ -3,7 +3,7 @@
  *
  * Tests that dry-run mode prevents all mutations while still performing introspection.
  * Per EDGE_CASE_TEST_PLAN.md section 1.3
- * 
+ *
  * NOTE: These tests use dryRun: true which bypasses spawn entirely,
  * so we don't need to mock child_process - the git/agent modules check dryRun first.
  */
@@ -26,10 +26,7 @@ import {
 import type { AgentConfig, RunAgentOptions } from "../../agent";
 import { runAgent } from "../../agent";
 
-import {
-  initCommand,
-  NotGitRepoError,
-} from "../../commands/init";
+import { initCommand, NotGitRepoError } from "../../commands/init";
 
 let spawnCallCount = 0;
 
@@ -90,7 +87,7 @@ describe("Dry-Run Edge Cases (Tests 12-18)", () => {
       expect(result.created).toBe(true);
       // dry-run mode bypasses spawn in the implementation
       expect(logger.info).toHaveBeenCalledWith(
-        expect.stringContaining("[dry-run]")
+        expect.stringContaining("[dry-run]"),
       );
       expect(logger.messages.some((m) => m.includes("[dry-run]"))).toBe(true);
     });
@@ -99,7 +96,12 @@ describe("Dry-Run Edge Cases (Tests 12-18)", () => {
       const logger = createMockLogger();
       const options: GitOptions = { cwd: "/repo", logger, dryRun: true };
 
-      const result = await ensureBranch("main", "feature/", "test-item", options);
+      const result = await ensureBranch(
+        "main",
+        "feature/",
+        "test-item",
+        options,
+      );
 
       expect(result.branchName).toBe("feature/test-item");
       expect(result.created).toBe(true);
@@ -113,7 +115,7 @@ describe("Dry-Run Edge Cases (Tests 12-18)", () => {
       await ensureBranch("develop", "wreckit/", "raw-1", options);
 
       const dryRunMessages = logger.messages.filter((m) =>
-        m.includes("[dry-run]")
+        m.includes("[dry-run]"),
       );
       expect(dryRunMessages.length).toBeGreaterThan(0);
     });
@@ -128,7 +130,7 @@ describe("Dry-Run Edge Cases (Tests 12-18)", () => {
 
       // dry-run mode bypasses spawn in the implementation
       expect(logger.info).toHaveBeenCalledWith(
-        expect.stringContaining("[dry-run]")
+        expect.stringContaining("[dry-run]"),
       );
     });
 
@@ -140,7 +142,7 @@ describe("Dry-Run Edge Cases (Tests 12-18)", () => {
 
       // dry-run mode bypasses spawn in the implementation
       expect(logger.info).toHaveBeenCalledWith(
-        expect.stringContaining("[dry-run]")
+        expect.stringContaining("[dry-run]"),
       );
     });
 
@@ -180,7 +182,7 @@ describe("Dry-Run Edge Cases (Tests 12-18)", () => {
         "feature-branch",
         "PR Title",
         "PR Body",
-        options
+        options,
       );
 
       expect(result.created).toBe(true);
@@ -188,7 +190,7 @@ describe("Dry-Run Edge Cases (Tests 12-18)", () => {
       expect(result.url).toContain("example");
       // dry-run mode bypasses spawn in the implementation
       expect(logger.info).toHaveBeenCalledWith(
-        expect.stringContaining("[dry-run]")
+        expect.stringContaining("[dry-run]"),
       );
     });
 
@@ -201,7 +203,7 @@ describe("Dry-Run Edge Cases (Tests 12-18)", () => {
         "wreckit/feature-123",
         "My Feature",
         "Implements feature 123",
-        options
+        options,
       );
 
       expect(result.created).toBe(true);
@@ -213,7 +215,10 @@ describe("Dry-Run Edge Cases (Tests 12-18)", () => {
       const logger = createMockLogger();
       const options: GitOptions = { cwd: "/repo", logger, dryRun: true };
 
-      const result = await runGhCommand(["pr", "create", "--title", "Test"], options);
+      const result = await runGhCommand(
+        ["pr", "create", "--title", "Test"],
+        options,
+      );
 
       expect(result.stdout).toBe("");
       expect(result.exitCode).toBe(0);
@@ -229,7 +234,9 @@ describe("Dry-Run Edge Cases (Tests 12-18)", () => {
       await runGhCommand(["repo", "view"], options);
 
       // dry-run mode bypasses spawn in the implementation
-      expect(logger.messages.filter((m) => m.includes("[dry-run]")).length).toBe(3);
+      expect(
+        logger.messages.filter((m) => m.includes("[dry-run]")).length,
+      ).toBe(3);
     });
   });
 
@@ -239,6 +246,7 @@ describe("Dry-Run Edge Cases (Tests 12-18)", () => {
       const logger = createMockLogger();
 
       const config: AgentConfig = {
+        mode: "process",
         command: "claude",
         args: ["--dangerously-skip-permissions", "--print"],
         completion_signal: "<promise>COMPLETE</promise>",
@@ -268,6 +276,7 @@ describe("Dry-Run Edge Cases (Tests 12-18)", () => {
       const logger = createMockLogger();
 
       const config: AgentConfig = {
+        mode: "process",
         command: "amp",
         args: ["--dangerously-allow-all"],
         completion_signal: "COMPLETE",
@@ -286,7 +295,7 @@ describe("Dry-Run Edge Cases (Tests 12-18)", () => {
       await runAgent(options);
 
       const dryRunMessages = logger.messages.filter((m) =>
-        m.includes("[dry-run]")
+        m.includes("[dry-run]"),
       );
       expect(dryRunMessages.length).toBeGreaterThan(0);
       expect(dryRunMessages.some((m) => m.includes("Would run"))).toBe(true);
@@ -298,6 +307,7 @@ describe("Dry-Run Edge Cases (Tests 12-18)", () => {
 
       const testPrompt = "A".repeat(1000);
       const config: AgentConfig = {
+        mode: "process",
         command: "claude",
         args: [],
         completion_signal: "DONE",
@@ -315,9 +325,9 @@ describe("Dry-Run Edge Cases (Tests 12-18)", () => {
 
       await runAgent(options);
 
-      expect(
-        logger.messages.some((m) => m.includes("1000 characters"))
-      ).toBe(true);
+      expect(logger.messages.some((m) => m.includes("1000 characters"))).toBe(
+        true,
+      );
     });
 
     it("dry-run takes precedence over mock-agent", async () => {
@@ -325,6 +335,7 @@ describe("Dry-Run Edge Cases (Tests 12-18)", () => {
       const logger = createMockLogger();
 
       const config: AgentConfig = {
+        mode: "process",
         command: "claude",
         args: [],
         completion_signal: "COMPLETE",
@@ -356,7 +367,13 @@ describe("Dry-Run Edge Cases (Tests 12-18)", () => {
       await ensureBranch("main", "wreckit/", "item-1", options);
       await commitAll("Test commit", options);
       await pushBranch("wreckit/item-1", options);
-      await createOrUpdatePr("main", "wreckit/item-1", "Title", "Body", options);
+      await createOrUpdatePr(
+        "main",
+        "wreckit/item-1",
+        "Title",
+        "Body",
+        options,
+      );
 
       // dry-run mode bypasses spawn in the implementation
     });
@@ -433,9 +450,9 @@ describe("Dry-Run Edge Cases (Tests 12-18)", () => {
       tempDir = await setupTempDir();
       const logger = createMockLogger();
 
-      await expect(
-        initCommand({ cwd: tempDir }, logger)
-      ).rejects.toThrow(NotGitRepoError);
+      await expect(initCommand({ cwd: tempDir }, logger)).rejects.toThrow(
+        NotGitRepoError,
+      );
     });
 
     it("dry-run still validates repository before operations", async () => {
@@ -443,7 +460,7 @@ describe("Dry-Run Edge Cases (Tests 12-18)", () => {
       const logger = createMockLogger();
 
       await expect(initCommand({ cwd: tempDir }, logger)).rejects.toThrow(
-        "Not a git repository"
+        "Not a git repository",
       );
     });
 
@@ -452,7 +469,7 @@ describe("Dry-Run Edge Cases (Tests 12-18)", () => {
       const nonExistentPath = "/nonexistent/path/that/does/not/exist";
 
       await expect(
-        initCommand({ cwd: nonExistentPath }, logger)
+        initCommand({ cwd: nonExistentPath }, logger),
       ).rejects.toThrow();
     });
 
@@ -461,7 +478,7 @@ describe("Dry-Run Edge Cases (Tests 12-18)", () => {
       const logger = createMockLogger();
 
       await expect(initCommand({ cwd: tempDir }, logger)).rejects.toThrow(
-        ".wreckit/ already exists"
+        ".wreckit/ already exists",
       );
     });
 
@@ -495,10 +512,11 @@ describe("Dry-Run Edge Cases (Tests 12-18)", () => {
         "wreckit/raw-1",
         "feat: implement raw/1",
         "Implementation of raw/1",
-        gitOptions
+        gitOptions,
       );
 
       const agentConfig: AgentConfig = {
+        mode: "process",
         command: "claude",
         args: ["--dangerously-skip-permissions", "--print"],
         completion_signal: "<promise>COMPLETE</promise>",
@@ -538,7 +556,12 @@ describe("Dry-Run Edge Cases (Tests 12-18)", () => {
       const logger = createMockLogger();
       const options: GitOptions = { cwd: "/repo", logger, dryRun: true };
 
-      const branchResult = await ensureBranch("main", "wreckit/", "item-1", options);
+      const branchResult = await ensureBranch(
+        "main",
+        "wreckit/",
+        "item-1",
+        options,
+      );
       expect(branchResult.branchName).toBe("wreckit/item-1");
 
       const prResult = await createOrUpdatePr(
@@ -546,7 +569,7 @@ describe("Dry-Run Edge Cases (Tests 12-18)", () => {
         branchResult.branchName,
         "Title",
         "Body",
-        options
+        options,
       );
       expect(prResult.number).toBe(0);
       expect(prResult.created).toBe(true);

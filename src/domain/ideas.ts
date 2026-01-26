@@ -195,12 +195,12 @@ export function generateSlug(title: string): string {
 export async function allocateItemId(
   root: string,
   slug: string,
-  allocatedIds: Set<string> = new Set()
+  allocatedIds: Set<string> = new Set(),
 ): Promise<{ id: string; dir: string; number: string }> {
   const itemsDir = getItemsDir(root);
 
   let maxNumber = 0;
-  
+
   // 1. Check disk for existing numbers
   try {
     const entries = await fs.readdir(itemsDir);
@@ -237,10 +237,7 @@ export async function allocateItemId(
   return { id, dir, number: nextNumber };
 }
 
-export function createItemFromIdea(
-  id: string,
-  idea: ParsedIdea
-): Item {
+export function createItemFromIdea(id: string, idea: ParsedIdea): Item {
   const now = new Date().toISOString();
   const overview = buildOverviewFromParsedIdea(idea);
 
@@ -295,10 +292,9 @@ async function getAllKnownItems(root: string): Promise<Map<string, string>> {
   return slugToId;
 }
 
-
 export async function persistItems(
   root: string,
-  ideas: ParsedIdea[]
+  ideas: ParsedIdea[],
 ): Promise<{ created: Item[]; skipped: string[] }> {
   const created: Item[] = [];
   const skipped: string[] = [];
@@ -306,9 +302,14 @@ export async function persistItems(
   // 1. Build a map of all known slugs to IDs (existing + new)
   const slugToIdMap = await getAllKnownItems(root);
   const allAllocatedIds = new Set<string>(slugToIdMap.values());
-  
+
   // Track allocations for second pass
-  const allocations: Array<{ idea: ParsedIdea; id: string; dir: string; slug: string }> = [];
+  const allocations: Array<{
+    idea: ParsedIdea;
+    id: string;
+    dir: string;
+    slug: string;
+  }> = [];
 
   for (const idea of ideas) {
     const slug = generateSlug(idea.title);
@@ -328,7 +329,7 @@ export async function persistItems(
     // Allocate new ID
     const { id, dir } = await allocateItemId(root, slug, allAllocatedIds);
     allocations.push({ idea, id, dir, slug });
-    
+
     // Add to map and set so subsequent ideas can depend on this one
     slugToIdMap.set(slug, id);
     allAllocatedIds.add(id);
@@ -338,7 +339,7 @@ export async function persistItems(
   for (const { idea, id, dir } of allocations) {
     // Resolve slug-based dependencies
     if (idea.dependsOn) {
-      idea.dependsOn = idea.dependsOn.map(dep => {
+      idea.dependsOn = idea.dependsOn.map((dep) => {
         if (dep.startsWith("slug:")) {
           const depSlug = dep.slice(5);
           return slugToIdMap.get(depSlug) || dep;
@@ -359,7 +360,7 @@ export async function persistItems(
 
 export async function ingestIdeas(
   root: string,
-  text: string
+  text: string,
 ): Promise<{ created: Item[]; skipped: string[] }> {
   const ideas = parseIdeasFromText(text);
   return persistItems(root, ideas);

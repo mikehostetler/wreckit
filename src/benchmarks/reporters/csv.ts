@@ -29,9 +29,7 @@ export function formatCsv(result: BenchmarkResult): string {
   const lines: string[] = [];
 
   // Header row
-  lines.push(
-    "suite,metric,value,unit,min,max,p50,p95,p99,samples,timestamp"
-  );
+  lines.push("suite,metric,value,unit,min,max,p50,p95,p99,samples,timestamp");
 
   // Data rows
   for (const suite of result.suites) {

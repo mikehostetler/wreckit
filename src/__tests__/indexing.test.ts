@@ -1,4 +1,13 @@
-import { describe, it, expect, beforeEach, afterEach, mock, spyOn, vi } from "bun:test";
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  mock,
+  spyOn,
+  vi,
+} from "bun:test";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import * as os from "node:os";
@@ -33,7 +42,7 @@ function createValidItem(overrides: Partial<Item> = {}): Item {
 
 async function createTestFixture(
   root: string,
-  items: Array<{ id: string; item: Partial<Item> }>
+  items: Array<{ id: string; item: Partial<Item> }>,
 ): Promise<void> {
   const itemsDir = path.join(root, ".wreckit", "items");
   await fs.mkdir(itemsDir, { recursive: true });
@@ -49,7 +58,7 @@ async function createTestFixture(
 
     await fs.writeFile(
       path.join(itemDir, "item.json"),
-      JSON.stringify(fullItem, null, 2)
+      JSON.stringify(fullItem, null, 2),
     );
   }
 }
@@ -134,7 +143,9 @@ describe("buildIndex", () => {
     expect(result.schema_version).toBe(1);
     expect(result.items).toEqual([]);
     expect(result.generated_at).toBeDefined();
-    expect(new Date(result.generated_at).toISOString()).toBe(result.generated_at);
+    expect(new Date(result.generated_at).toISOString()).toBe(
+      result.generated_at,
+    );
   });
 
   it("builds index with items", () => {
@@ -146,8 +157,18 @@ describe("buildIndex", () => {
     const result = buildIndex(items);
 
     expect(result.items).toHaveLength(2);
-    expect(result.items[0]).toEqual({ id: "001-a", title: "A", state: "idea", depends_on: undefined });
-    expect(result.items[1]).toEqual({ id: "002-b", title: "B", state: "done", depends_on: undefined });
+    expect(result.items[0]).toEqual({
+      id: "001-a",
+      title: "A",
+      state: "idea",
+      depends_on: undefined,
+    });
+    expect(result.items[1]).toEqual({
+      id: "002-b",
+      title: "B",
+      state: "done",
+      depends_on: undefined,
+    });
   });
 
   it("sets generated_at to current ISO timestamp", () => {
@@ -172,7 +193,9 @@ describe("scanItems", () => {
   });
 
   it("returns empty array for empty .wreckit", async () => {
-    await fs.mkdir(path.join(tempDir, ".wreckit", "items"), { recursive: true });
+    await fs.mkdir(path.join(tempDir, ".wreckit", "items"), {
+      recursive: true,
+    });
 
     const result = await scanItems(tempDir);
 
@@ -223,7 +246,7 @@ describe("scanItems", () => {
     await fs.mkdir(invalidDir, { recursive: true });
     await fs.writeFile(
       path.join(invalidDir, "item.json"),
-      JSON.stringify({ invalid: "data" })
+      JSON.stringify({ invalid: "data" }),
     );
 
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
@@ -233,7 +256,7 @@ describe("scanItems", () => {
     expect(result).toHaveLength(1);
     expect(result[0].id).toBe("001-valid");
     expect(warnSpy).toHaveBeenCalledWith(
-      expect.stringContaining("Skipping invalid item")
+      expect.stringContaining("Skipping invalid item"),
     );
 
     warnSpy.mockRestore();
@@ -244,11 +267,16 @@ describe("scanItems", () => {
       { id: "001-auth", item: { title: "Auth" } },
     ]);
 
-    const invalidDir = path.join(tempDir, ".wreckit", "items", "no-number-prefix");
+    const invalidDir = path.join(
+      tempDir,
+      ".wreckit",
+      "items",
+      "no-number-prefix",
+    );
     await fs.mkdir(invalidDir, { recursive: true });
     await fs.writeFile(
       path.join(invalidDir, "item.json"),
-      JSON.stringify(createValidItem())
+      JSON.stringify(createValidItem()),
     );
 
     const result = await scanItems(tempDir);
@@ -288,7 +316,7 @@ describe("refreshIndex", () => {
   it("updates existing index.json with current state", async () => {
     await fs.writeFile(
       path.join(tempDir, ".wreckit", "index.json"),
-      JSON.stringify({ schema_version: 1, items: [], generated_at: "old" })
+      JSON.stringify({ schema_version: 1, items: [], generated_at: "old" }),
     );
 
     await createTestFixture(tempDir, [
@@ -334,7 +362,9 @@ describe("getItem", () => {
   });
 
   it("returns null for non-existent ID", async () => {
-    await fs.mkdir(path.join(tempDir, ".wreckit", "items"), { recursive: true });
+    await fs.mkdir(path.join(tempDir, ".wreckit", "items"), {
+      recursive: true,
+    });
 
     const result = await getItem(tempDir, "999-nonexistent");
 
@@ -354,9 +384,7 @@ describe("itemExists", () => {
   });
 
   it("returns true when item exists", async () => {
-    await createTestFixture(tempDir, [
-      { id: "001-auth", item: {} },
-    ]);
+    await createTestFixture(tempDir, [{ id: "001-auth", item: {} }]);
 
     const result = await itemExists(tempDir, "001-auth");
 
@@ -364,7 +392,9 @@ describe("itemExists", () => {
   });
 
   it("returns false when item does not exist", async () => {
-    await fs.mkdir(path.join(tempDir, ".wreckit", "items"), { recursive: true });
+    await fs.mkdir(path.join(tempDir, ".wreckit", "items"), {
+      recursive: true,
+    });
 
     const result = await itemExists(tempDir, "999-missing");
 

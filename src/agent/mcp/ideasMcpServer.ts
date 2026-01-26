@@ -9,15 +9,30 @@ import type { ParsedIdea } from "../../domain/ideas";
 export const ParsedIdeaSchema = z.object({
   title: z.string().describe("Concise title under 60 characters"),
   description: z.string().describe("1-3 sentence summary of the idea"),
-  problemStatement: z.string().optional().describe("The core problem being solved"),
+  problemStatement: z
+    .string()
+    .optional()
+    .describe("The core problem being solved"),
   motivation: z.string().optional().describe("Why this matters"),
-  successCriteria: z.array(z.string()).optional().describe("How we know it's working"),
-  technicalConstraints: z.array(z.string()).optional().describe("Implementation constraints"),
-  scope: z.object({
-    inScope: z.array(z.string()).optional(),
-    outOfScope: z.array(z.string()).optional(),
-  }).optional().describe("Scope boundaries"),
-  priorityHint: z.enum(["low", "medium", "high", "critical"]).optional().describe("Inferred priority"),
+  successCriteria: z
+    .array(z.string())
+    .optional()
+    .describe("How we know it's working"),
+  technicalConstraints: z
+    .array(z.string())
+    .optional()
+    .describe("Implementation constraints"),
+  scope: z
+    .object({
+      inScope: z.array(z.string()).optional(),
+      outOfScope: z.array(z.string()).optional(),
+    })
+    .optional()
+    .describe("Scope boundaries"),
+  priorityHint: z
+    .enum(["low", "medium", "high", "critical"])
+    .optional()
+    .describe("Inferred priority"),
   urgencyHint: z.string().optional().describe("Timing notes"),
   suggestedSection: z.string().optional().describe("Where this belongs"),
 });
@@ -55,35 +70,43 @@ export function createIdeasMcpServer(handlers: IdeasMcpHandlers = {}) {
         "save_interview_ideas",
         "Save captured ideas from an interview session to the wreckit system. Call this tool when the user signals they are done with the interview.",
         {
-          ideas: z.array(ParsedIdeaSchema).describe("Array of captured ideas from the interview"),
+          ideas: z
+            .array(ParsedIdeaSchema)
+            .describe("Array of captured ideas from the interview"),
         },
         async (args) => {
           const ideas = args.ideas as ParsedIdea[];
           handlers.onInterviewIdeas?.(ideas);
           return {
-            content: [{
-              type: "text" as const,
-              text: `Successfully saved ${ideas.length} idea(s) to wreckit.`,
-            }],
+            content: [
+              {
+                type: "text" as const,
+                text: `Successfully saved ${ideas.length} idea(s) to wreckit.`,
+              },
+            ],
           };
-        }
+        },
       ),
       tool(
         "save_parsed_ideas",
         "Save parsed ideas from a document to the wreckit system. Call this tool after parsing ideas from input text.",
         {
-          ideas: z.array(ParsedIdeaSchema).describe("Array of parsed ideas from the document"),
+          ideas: z
+            .array(ParsedIdeaSchema)
+            .describe("Array of parsed ideas from the document"),
         },
         async (args) => {
           const ideas = args.ideas as ParsedIdea[];
           handlers.onParsedIdeas?.(ideas);
           return {
-            content: [{
-              type: "text" as const,
-              text: `Successfully saved ${ideas.length} parsed idea(s) to wreckit.`,
-            }],
+            content: [
+              {
+                type: "text" as const,
+                text: `Successfully saved ${ideas.length} parsed idea(s) to wreckit.`,
+              },
+            ],
           };
-        }
+        },
       ),
     ],
   });

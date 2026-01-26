@@ -190,7 +190,9 @@ describe("serializeRoadmap", () => {
     const serialized = serializeRoadmap(roadmap);
     const reparsed = parseRoadmap(serialized);
 
-    expect(reparsed.activeMilestones).toHaveLength(roadmap.activeMilestones.length);
+    expect(reparsed.activeMilestones).toHaveLength(
+      roadmap.activeMilestones.length,
+    );
     expect(reparsed.backlog).toHaveLength(roadmap.backlog.length);
     expect(reparsed.completed).toHaveLength(roadmap.completed.length);
 
@@ -250,7 +252,9 @@ Some text but no sections.
     const result = validateRoadmap(content);
 
     expect(result.valid).toBe(false);
-    expect(result.errors.some((e) => e.includes("at least one section"))).toBe(true);
+    expect(result.errors.some((e) => e.includes("at least one section"))).toBe(
+      true,
+    );
   });
 
   it("requires at least one milestone", () => {
@@ -264,7 +268,9 @@ No milestones here.
     const result = validateRoadmap(content);
 
     expect(result.valid).toBe(false);
-    expect(result.errors.some((e) => e.includes("at least one milestone"))).toBe(true);
+    expect(
+      result.errors.some((e) => e.includes("at least one milestone")),
+    ).toBe(true);
   });
 
   it("detects duplicate milestone IDs", () => {
@@ -282,7 +288,9 @@ No milestones here.
     const result = validateRoadmap(content);
 
     expect(result.valid).toBe(false);
-    expect(result.errors.some((e) => e.includes("Duplicate milestone ID"))).toBe(true);
+    expect(
+      result.errors.some((e) => e.includes("Duplicate milestone ID")),
+    ).toBe(true);
   });
 });
 

@@ -104,7 +104,7 @@ describe("backupFile", () => {
       sessionId,
       testFilePath,
       diagnostic,
-      "modified"
+      "modified",
     );
 
     expect(entry).not.toBeNull();
@@ -120,7 +120,7 @@ describe("backupFile", () => {
       ".wreckit",
       "backups",
       sessionId,
-      "test.json"
+      "test.json",
     );
     const backupContent = await fs.readFile(backupPath, "utf-8");
     expect(backupContent).toBe(testContent);
@@ -149,7 +149,7 @@ describe("backupFile", () => {
       sessionId,
       itemFilePath,
       diagnostic,
-      "modified"
+      "modified",
     );
 
     expect(entry).not.toBeNull();
@@ -164,7 +164,7 @@ describe("backupFile", () => {
       sessionId,
       "items",
       "001-test",
-      "item.json"
+      "item.json",
     );
     const backupContent = await fs.readFile(backupPath, "utf-8");
     expect(backupContent).toBe(itemContent);
@@ -188,7 +188,7 @@ describe("backupFile", () => {
       sessionId,
       nonExistentPath,
       diagnostic,
-      "modified"
+      "modified",
     );
 
     expect(entry).toBeNull();
@@ -213,7 +213,7 @@ describe("backupFile", () => {
       sessionId,
       testFilePath,
       diagnostic,
-      "deleted"
+      "deleted",
     );
 
     expect(entry).not.toBeNull();
@@ -253,7 +253,7 @@ describe("finalizeBackupSession", () => {
       ".wreckit",
       "backups",
       sessionId,
-      "manifest.json"
+      "manifest.json",
     );
     const content = await fs.readFile(manifestPath, "utf-8");
     const manifest = JSON.parse(content);
@@ -293,7 +293,7 @@ describe("finalizeBackupSession", () => {
       ".wreckit",
       "backups",
       sessionId,
-      "manifest.json"
+      "manifest.json",
     );
     const content = await fs.readFile(manifestPath, "utf-8");
     const manifest = JSON.parse(content);
@@ -460,7 +460,7 @@ describe("removeEmptyBackupSession", () => {
 
   it("does not throw if session does not exist", async () => {
     await expect(
-      removeEmptyBackupSession(tempDir, "nonexistent-session")
+      removeEmptyBackupSession(tempDir, "nonexistent-session"),
     ).resolves.toBeUndefined();
   });
 });

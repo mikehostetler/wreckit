@@ -20,13 +20,16 @@ This directory contains media content generated for the "Autonomous Media Layer"
 ## Rendering Status
 
 ### Validation Results
+
 - ✅ Both scene files are valid Python syntax
 - ✅ Scene files follow Manim API conventions
 - ✅ Animations are properly structured with Scene classes
 - ✅ Code includes helpful comments explaining each section
 
 ### Known Issue
+
 There is a compatibility issue between Manim v0.19.0 and PyAV v16.0.1 that prevents final video rendering. The partial movie files are generated correctly, but the concatenation step fails with:
+
 ```
 InvalidDataError: [Errno 1094995529] Invalid data found when processing input
 ```
@@ -43,25 +46,31 @@ This is a known issue with newer versions of PyAV and the `file:` protocol in co
 ## How to View Scenes
 
 ### Option 1: Install Manim with compatible PyAV
+
 ```bash
 pip install "av<12.0.0"
 manim media/simple-test.py SimpleMediaLayer -qh
 ```
 
 ### Option 2: Use Docker
+
 ```bash
 docker run --rm -v $(pwd):/wreckit manimcommunity/manim manim media/simple-test.py SimpleMediaLayer -qh
 ```
 
 ### Option 3: View Code
+
 The scene files are well-documented and can be reviewed directly:
+
 - `media/simple-test.py` - Simple demonstration
 - `media/autonomous-media-layer.py` - Full feature visualization
 
 ## Scene Descriptions
 
 ### SimpleMediaLayer
+
 A 15-second animation showing:
+
 1. Title: "Wreckit Media Layer"
 2. Central Wreckit hub (blue circle)
 3. Manim node (left, green) with label "Mathematical Animations"
@@ -70,7 +79,9 @@ A 15-second animation showing:
 6. Transform animation showing integration
 
 ### AutonomousMediaLayer
+
 A 30-40 second animation showing:
+
 1. Title sequence introducing "Autonomous Media Layer"
 2. Central Wreckit hub with "Media Phase" label
 3. Manim and Remotion skill nodes with descriptions
@@ -86,6 +97,7 @@ A 30-40 second animation showing:
 ## Integration with Wreckit
 
 These scenes demonstrate the autonomous media layer capabilities:
+
 - **Media Phase**: New phase for video generation tasks
 - **Skill-Based**: Skills for manim-generation and remotion-generation
 - **Tool Access**: Controlled tool permissions (Read, Write, Glob, Bash)
@@ -94,6 +106,7 @@ These scenes demonstrate the autonomous media layer capabilities:
 ## Next Steps
 
 To fully utilize the media layer:
+
 1. Resolve PyAV compatibility issue or use Docker
 2. Render animations to MP4 format
 3. Place generated videos in `media/` directory

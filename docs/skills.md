@@ -99,6 +99,7 @@ Capture current git status:
 ```
 
 Output format:
+
 ```
 M src/index.ts
 A src/new-file.ts
@@ -117,6 +118,7 @@ Serialize item metadata as JSON:
 ```
 
 Output format:
+
 ```json
 {
   "id": "033-implement-phase-specific-skill-loading",
@@ -143,10 +145,12 @@ Load a phase artifact (research.md, plan.md, prd.json, etc.):
 **Skills cannot exceed phase permissions.**
 
 The final tool allowlist is the **intersection** of:
+
 1. Phase tool allowlist (from `src/agent/toolAllowlist.ts`)
 2. Union of all skill tools loaded for the phase
 
 Example:
+
 - Research phase allows: `[Read, Write, Glob, Grep]`
 - Skill requests: `[Read, Bash]`
 - Final allowlist: `[Read]` (Bash excluded by phase permissions)
@@ -248,6 +252,7 @@ Skills are **fully optional**. If `.wreckit/skills.json` is not present:
 Each skill should have a single, well-defined purpose. Avoid creating "god skills" that do everything.
 
 ❌ Bad:
+
 ```json
 {
   "id": "everything",
@@ -256,6 +261,7 @@ Each skill should have a single, well-defined purpose. Avoid creating "god skill
 ```
 
 ✅ Good:
+
 ```json
 {
   "id": "code-exploration",
@@ -266,6 +272,7 @@ Each skill should have a single, well-defined purpose. Avoid creating "god skill
 ### 2. Use Context Requirements Wisely
 
 Only load context that's actually needed. Excessive context can:
+
 - Slow down phase execution
 - Consume token limits
 - Reduce agent focus
@@ -277,6 +284,7 @@ Only load context that's actually needed. Excessive context can:
 ### 3. Respect Phase Boundaries
 
 Skills should align with phase semantics:
+
 - Research skills: Read-only (Read, Glob, Grep)
 - Plan skills: Documentation (Read, Write, Edit)
 - Implement skills: Full capability (Read, Write, Edit, Bash)
@@ -284,6 +292,7 @@ Skills should align with phase semantics:
 ### 4. Document Skills
 
 Always provide clear descriptions:
+
 - What the skill does
 - When to use it
 - What tools it requires
@@ -292,11 +301,13 @@ Always provide clear descriptions:
 ### 5. Test Skills Incrementally
 
 Test skills with `--dry-run` first:
+
 ```bash
 wreckit phase research --dry-run
 ```
 
 Check logs for:
+
 - Loaded skill IDs
 - JIT context summary
 - Context loading errors
@@ -308,11 +319,13 @@ Check logs for:
 **Symptom**: Logs show "Loaded skills for phase 'X': "
 
 **Causes**:
+
 - `phase_skills` mapping missing the phase
 - Skill IDs don't match skill definitions
 - `.wreckit/skills.json` has invalid JSON
 
 **Fix**:
+
 ```bash
 # Validate JSON
 cat .wreckit/skills.json | jq .
@@ -328,6 +341,7 @@ jq '.phase_skills.research' .wreckit/skills.json
 **Cause**: Tool excluded by phase permissions (security intersection)
 
 **Fix**:
+
 ```bash
 # Check phase tool allowlist
 # src/agent/toolAllowlist.ts
@@ -340,11 +354,13 @@ Remember: Skills ∩ PhaseTools = FinalAllowlist
 **Symptom**: `{{skill_context}}` empty in prompt
 
 **Causes**:
+
 - `required_context` missing from skill
 - File paths incorrect
 - Artifact doesn't exist yet
 
 **Fix**:
+
 - Check logs for "Context loading errors"
 - Verify file paths are relative to repo root
 - Ensure artifacts exist before loading them
@@ -356,6 +372,7 @@ Remember: Skills ∩ PhaseTools = FinalAllowlist
 **Cause**: Skill MCP server name conflicts with wreckit server
 
 **Fix**:
+
 - Use unique MCP server names in skills
 - Document MCP server dependencies
 - Test MCP tools with `--dry-run`
@@ -365,22 +382,26 @@ Remember: Skills ∩ PhaseTools = FinalAllowlist
 ### Adding Skills to Existing Repo
 
 1. Create `.wreckit/skills.json`:
+
 ```bash
 cp .wreckit/skills.json .wreckit/skills.json.bak  # Backup default
 # Edit skills.json for your project
 ```
 
 2. Test with dry-run:
+
 ```bash
 wreckit phase research --dry-run
 ```
 
 3. Verify skills loaded:
+
 ```bash
 # Check logs for "Loaded skills for phase 'research': ..."
 ```
 
 4. Run phase:
+
 ```bash
 wreckit phase research
 ```

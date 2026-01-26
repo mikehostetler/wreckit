@@ -20,34 +20,34 @@ Completion means **verified delivery**. The phase should confirm the work landed
 
 ### Current Validation
 
-| Check | Performed | Gap |
-|-------|-----------|-----|
-| PR state is MERGED | Yes | Only check performed |
-| Merged to correct branch | No | Could be merged to wrong branch |
-| Merge commit exists on base | No | Not verified |
-| CI/checks passed | No | Force-merged PRs accepted |
-| Code matches implementation | No | PR could have drifted |
-| Branch cleanup | No | Feature branches linger |
+| Check                       | Performed | Gap                             |
+| --------------------------- | --------- | ------------------------------- |
+| PR state is MERGED          | Yes       | Only check performed            |
+| Merged to correct branch    | No        | Could be merged to wrong branch |
+| Merge commit exists on base | No        | Not verified                    |
+| CI/checks passed            | No        | Force-merged PRs accepted       |
+| Code matches implementation | No        | PR could have drifted           |
+| Branch cleanup              | No        | Feature branches linger         |
 
 ### Recommended Validation
 
-| Check | Purpose |
-|-------|---------|
-| PR state is MERGED | Basic requirement |
-| Base branch matches config | Ensure merged to correct target |
-| Head branch matches item | Ensure correct PR |
-| Merge commit on base branch | Verify merge actually landed |
-| Checks passed | Ensure CI was green |
-| Record completion metadata | Audit trail |
+| Check                       | Purpose                         |
+| --------------------------- | ------------------------------- |
+| PR state is MERGED          | Basic requirement               |
+| Base branch matches config  | Ensure merged to correct target |
+| Head branch matches item    | Ensure correct PR               |
+| Merge commit on base branch | Verify merge actually landed    |
+| Checks passed               | Ensure CI was green             |
+| Record completion metadata  | Audit trail                     |
 
 ---
 
 ## Triggers
 
-| Method | Command |
-|--------|---------|
+| Method    | Command                                               |
+| --------- | ----------------------------------------------------- |
 | Automatic | `wreckit` or `wreckit run <id>` when state is `in_pr` |
-| Manual | `wreckit complete <id>` |
+| Manual    | `wreckit complete <id>`                               |
 
 ## Behavior
 
@@ -68,28 +68,28 @@ This is the only phase that produces no new artifact files. The item's state is 
 
 ## State Transitions
 
-| Condition | Result |
-|-----------|--------|
-| PR is merged | State changes to `done` (terminal) |
+| Condition        | Result                              |
+| ---------------- | ----------------------------------- |
+| PR is merged     | State changes to `done` (terminal)  |
 | PR is not merged | State remains `in_pr`, error thrown |
 
 ## Error Scenarios
 
-| Condition | Behavior | Recovery |
-|-----------|----------|----------|
-| Missing PR number | Cannot complete | Re-run PR phase |
-| PR not yet merged | Fails with message | Merge PR in GitHub, retry |
+| Condition              | Behavior              | Recovery                  |
+| ---------------------- | --------------------- | ------------------------- |
+| Missing PR number      | Cannot complete       | Re-run PR phase           |
+| PR not yet merged      | Fails with message    | Merge PR in GitHub, retry |
 | GitHub CLI unavailable | Treated as not merged | Fix authentication, retry |
 
 ### Edge Cases
 
-| Scenario | Current Behavior | Recommended Behavior |
-|----------|------------------|----------------------|
-| PR closed without merge | Returns "not merged" | Distinct error: "PR was closed without merging" |
-| PR merged to wrong branch | Completes successfully | Fail: "PR merged to X, expected Y" |
-| PR force-merged (bypassed checks) | Completes successfully | Warn or fail based on config |
-| PR head changed after push | Completes successfully | Warn: "PR head differs from expected" |
-| `gh` command fails | Silent failure, returns not merged | Distinct error with auth hint |
+| Scenario                          | Current Behavior                   | Recommended Behavior                            |
+| --------------------------------- | ---------------------------------- | ----------------------------------------------- |
+| PR closed without merge           | Returns "not merged"               | Distinct error: "PR was closed without merging" |
+| PR merged to wrong branch         | Completes successfully             | Fail: "PR merged to X, expected Y"              |
+| PR force-merged (bypassed checks) | Completes successfully             | Warn or fail based on config                    |
+| PR head changed after push        | Completes successfully             | Warn: "PR head differs from expected"           |
+| `gh` command fails                | Silent failure, returns not merged | Distinct error with auth hint                   |
 
 ---
 
@@ -101,11 +101,11 @@ When `merge_mode: "direct"` is used, there is no PR to check. The complete phase
 
 Direct merge mode has no post-merge validation:
 
-| Missing Validation | Risk |
-|--------------------|------|
+| Missing Validation     | Risk                              |
+| ---------------------- | --------------------------------- |
 | Merge commit on remote | Local merge might not have pushed |
-| Base branch updated | Remote might reject push |
-| No PR record | No audit trail of what was merged |
+| Base branch updated    | Remote might reject push          |
+| No PR record           | No audit trail of what was merged |
 
 ### Recommended Validation for Direct Mode
 
@@ -124,23 +124,24 @@ After successful completion, clean up feature branches:
 
 ### PR Mode
 
-| Action | Condition |
-|--------|-----------|
+| Action               | Condition                      |
+| -------------------- | ------------------------------ |
 | Delete remote branch | PR merged, branch matches item |
-| Delete local branch | PR merged, not current branch |
+| Delete local branch  | PR merged, not current branch  |
 
 GitHub can be configured to auto-delete branches on merge, but wreckit should clean up local branches regardless.
 
 ### Direct Mode
 
-| Action | Condition |
-|--------|-----------|
+| Action               | Condition                     |
+| -------------------- | ----------------------------- |
 | Delete remote branch | After successful push to base |
-| Delete local branch | After successful push to base |
+| Delete local branch  | After successful push to base |
 
 ### Safety Checks
 
 Only delete branches if:
+
 - PR is confirmed merged (or direct merge confirmed on remote)
 - Branch name matches expected pattern (`branch_prefix` + item ID)
 - Branch is not the base branch
@@ -153,6 +154,7 @@ Only delete branches if:
 - **External dependency**: Requires human or CI to merge the PR in GitHub
 
 Typical flow:
+
 1. Run complete phase → "PR not merged yet"
 2. Merge PR in GitHub (via UI, CLI, or CI automation)
 3. Run complete phase again → Success
@@ -174,15 +176,15 @@ Record completion metadata for audit and debugging:
 
 ### Recommended Fields
 
-| Field | Source | Purpose |
-|-------|--------|---------|
-| `completed_at` | Current timestamp | When completion occurred |
-| `merged_at` | PR `mergedAt` field | When GitHub recorded merge |
-| `merge_commit_sha` | PR `mergeCommit.oid` | Exact commit that was merged |
-| `base_branch` | PR `baseRefName` | Branch that received the merge |
-| `completion_mode` | Config | `"pr"` or `"direct"` |
-| `checks_passed` | PR `statusCheckRollup` | Whether CI was green |
-| `completion_warnings` | Validation | Any warnings during completion |
+| Field                 | Source                 | Purpose                        |
+| --------------------- | ---------------------- | ------------------------------ |
+| `completed_at`        | Current timestamp      | When completion occurred       |
+| `merged_at`           | PR `mergedAt` field    | When GitHub recorded merge     |
+| `merge_commit_sha`    | PR `mergeCommit.oid`   | Exact commit that was merged   |
+| `base_branch`         | PR `baseRefName`       | Branch that received the merge |
+| `completion_mode`     | Config                 | `"pr"` or `"direct"`           |
+| `checks_passed`       | PR `statusCheckRollup` | Whether CI was green           |
+| `completion_warnings` | Validation             | Any warnings during completion |
 
 ### Progress Log Entry
 
@@ -199,17 +201,17 @@ This provides a human-readable record alongside the structured metadata.
 
 ## Implementation Status
 
-| Feature | Status | Notes |
-|---------|--------|-------|
-| **Core complete phase** | ✅ Implemented | See `src/workflow/itemWorkflow.ts:runPhaseComplete` |
-| **PR merge verification** | ✅ Implemented | Uses `gh pr view` |
-| **Base branch validation** | ✅ Implemented | Verifies merged to correct branch |
-| **Head branch validation** | ✅ Implemented | Warns if head differs from expected |
-| **Checks status logging** | ✅ Implemented | Logs CI check status |
-| **Audit trail** | ✅ Implemented | Metadata in item + progress.log |
-| **State transitions** | ✅ Implemented | `in_pr` → `done` |
-| **Error handling** | ✅ Implemented | Distinct errors for different failures |
-| **Dry-run mode** | ✅ Implemented | `--dry-run` flag works |
+| Feature                    | Status         | Notes                                               |
+| -------------------------- | -------------- | --------------------------------------------------- |
+| **Core complete phase**    | ✅ Implemented | See `src/workflow/itemWorkflow.ts:runPhaseComplete` |
+| **PR merge verification**  | ✅ Implemented | Uses `gh pr view`                                   |
+| **Base branch validation** | ✅ Implemented | Verifies merged to correct branch                   |
+| **Head branch validation** | ✅ Implemented | Warns if head differs from expected                 |
+| **Checks status logging**  | ✅ Implemented | Logs CI check status                                |
+| **Audit trail**            | ✅ Implemented | Metadata in item + progress.log                     |
+| **State transitions**      | ✅ Implemented | `in_pr` → `done`                                    |
+| **Error handling**         | ✅ Implemented | Distinct errors for different failures              |
+| **Dry-run mode**           | ✅ Implemented | `--dry-run` flag works                              |
 
 ---
 
@@ -226,6 +228,7 @@ This provides a human-readable record alongside the structured metadata.
 ~~Direct merge mode bypasses the complete phase entirely. There is no verification that the merge actually landed on the remote.~~
 
 **Status:** Fixed - Direct mode now verifies merge landed on remote:
+
 - Fetches remote base branch after push
 - Compares local HEAD SHA with remote HEAD SHA
 - Fails with clear error if they don't match

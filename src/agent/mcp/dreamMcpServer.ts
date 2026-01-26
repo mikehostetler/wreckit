@@ -29,24 +29,28 @@ export function createDreamMcpServer(handlers: DreamMcpHandlers = {}) {
       tool(
         "save_dream_ideas",
         "Save autonomously generated ideas from the Dreamer agent to the wreckit system. " +
-        "Call this tool after analyzing the codebase for TODOs, FIXMEs, technical debt, and gaps. " +
-        "Each idea MUST include evidence (file paths, line numbers) and be checked against existing items.",
+          "Call this tool after analyzing the codebase for TODOs, FIXMEs, technical debt, and gaps. " +
+          "Each idea MUST include evidence (file paths, line numbers) and be checked against existing items.",
         {
-          ideas: z.array(ParsedIdeaSchema).describe(
-            "Array of autonomously generated ideas from codebase analysis. " +
-            "Each idea must have a title starting with '[DREAMER]' for loop prevention."
-          ),
+          ideas: z
+            .array(ParsedIdeaSchema)
+            .describe(
+              "Array of autonomously generated ideas from codebase analysis. " +
+                "Each idea must have a title starting with '[DREAMER]' for loop prevention.",
+            ),
         },
         async (args) => {
           const ideas = args.ideas as ParsedIdea[];
           handlers.onDreamIdeas?.(ideas);
           return {
-            content: [{
-              type: "text" as const,
-              text: `Successfully saved ${ideas.length} dream idea(s) to wreckit.`,
-            }],
+            content: [
+              {
+                type: "text" as const,
+                text: `Successfully saved ${ideas.length} dream idea(s) to wreckit.`,
+              },
+            ],
           };
-        }
+        },
       ),
     ],
   });

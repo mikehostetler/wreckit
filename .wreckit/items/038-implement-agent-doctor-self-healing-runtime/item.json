@@ -8,8 +8,8 @@
   "branch": null,
   "pr_url": null,
   "pr_number": null,
-  "last_error": "Not all stories are done",
+  "last_error": "Failed to push branch wreckit/038-implement-agent-doctor-self-healing-runtime to origin. Check that you have push access and the remote is configured correctly.",
   "created_at": "2026-01-25T14:20:05.000Z",
-  "updated_at": "2026-01-25T21:21:39.365Z",
+  "updated_at": "2026-01-26T02:15:05.990Z",
   "campaign": "M5"
 }

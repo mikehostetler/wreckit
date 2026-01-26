@@ -24,8 +24,8 @@ Once you have API access, you can set up Claude Code to use the Zai API:
 
 # Wreck it Ralph Wiggum 🔨
 
-> *"I'm gonna wreck it!"* — Wreck-It Ralph  
-> *"I'm in danger."* — Ralph Wiggum, also your codebase
+> _"I'm gonna wreck it!"_ — Wreck-It Ralph  
+> _"I'm in danger."_ — Ralph Wiggum, also your codebase
 
 **Your AI agent, unsupervised, wrecking through your backlog while you sleep.**
 
@@ -84,14 +84,14 @@ Each item progresses through states:
 raw → researched → planned → implementing → in_pr → done
 ```
 
-| State | What Happened |
-|-------|---------------|
-| `raw` | Ingested, waiting for attention |
-| `researched` | Agent analyzed codebase, wrote `research.md` |
-| `planned` | Agent created `plan.md` + `prd.json` with user stories |
-| `implementing` | Agent coding through stories, committing as it goes |
-| `in_pr` | PR opened, awaiting your review |
-| `done` | Merged. Ralph did it. |
+| State          | What Happened                                          |
+| -------------- | ------------------------------------------------------ |
+| `raw`          | Ingested, waiting for attention                        |
+| `researched`   | Agent analyzed codebase, wrote `research.md`           |
+| `planned`      | Agent created `plan.md` + `prd.json` with user stories |
+| `implementing` | Agent coding through stories, committing as it goes    |
+| `in_pr`        | PR opened, awaiting your review                        |
+| `done`         | Merged. Ralph did it.                                  |
 
 ### The Workflow
 
@@ -109,35 +109,35 @@ raw → researched → planned → implementing → in_pr → done
 
 ### The Essentials
 
-| Command | What It Does |
-|---------|--------------|
-| `wreckit` | Run everything. TUI shows progress. |
-| `wreckit init` | Initialize `.wreckit/` in repo |
-| `wreckit ideas < FILE` | Ingest ideas from stdin |
-| `wreckit status` | List all items with state |
-| `wreckit run <id>` | Run single item through all phases |
-| `wreckit next` | Run the next incomplete item |
-| `wreckit doctor` | Validate items, find issues |
+| Command                | What It Does                        |
+| ---------------------- | ----------------------------------- |
+| `wreckit`              | Run everything. TUI shows progress. |
+| `wreckit init`         | Initialize `.wreckit/` in repo      |
+| `wreckit ideas < FILE` | Ingest ideas from stdin             |
+| `wreckit status`       | List all items with state           |
+| `wreckit run <id>`     | Run single item through all phases  |
+| `wreckit next`         | Run the next incomplete item        |
+| `wreckit doctor`       | Validate items, find issues         |
 
 ### Phase Commands (for debugging)
 
-| Command | Transition |
-|---------|------------|
-| `wreckit research <id>` | raw → researched |
-| `wreckit plan <id>` | researched → planned |
+| Command                  | Transition             |
+| ------------------------ | ---------------------- |
+| `wreckit research <id>`  | raw → researched       |
+| `wreckit plan <id>`      | researched → planned   |
 | `wreckit implement <id>` | planned → implementing |
-| `wreckit pr <id>` | implementing → in_pr |
-| `wreckit complete <id>` | in_pr → done |
+| `wreckit pr <id>`        | implementing → in_pr   |
+| `wreckit complete <id>`  | in_pr → done           |
 
 ### Flags
 
-| Flag | What |
-|------|------|
-| `--verbose` | More logs |
-| `--quiet` | Errors only |
-| `--no-tui` | Disable TUI (CI mode) |
+| Flag        | What                   |
+| ----------- | ---------------------- |
+| `--verbose` | More logs              |
+| `--quiet`   | Errors only            |
+| `--no-tui`  | Disable TUI (CI mode)  |
 | `--dry-run` | Preview, don't execute |
-| `--force` | Regenerate artifacts |
+| `--force`   | Regenerate artifacts   |
 
 ---
 
@@ -164,13 +164,13 @@ Lives in `.wreckit/config.json`:
 
 Wreckit supports multiple agent execution backends:
 
-| Kind | Description | Configuration |
-|------|-------------|---------------|
-| `claude_sdk` | Claude Agent SDK (recommended) | model, max_tokens, tools |
-| `amp_sdk` | Amp SDK (experimental) | model (optional) |
-| `codex_sdk` | Codex SDK (experimental) | model (default: codex-1) |
-| `opencode_sdk` | OpenCode SDK (experimental) | none |
-| `process` | External CLI process | command, args, completion_signal |
+| Kind           | Description                    | Configuration                    |
+| -------------- | ------------------------------ | -------------------------------- |
+| `claude_sdk`   | Claude Agent SDK (recommended) | model, max_tokens, tools         |
+| `amp_sdk`      | Amp SDK (experimental)         | model (optional)                 |
+| `codex_sdk`    | Codex SDK (experimental)       | model (default: codex-1)         |
+| `opencode_sdk` | OpenCode SDK (experimental)    | none                             |
+| `process`      | External CLI process           | command, args, completion_signal |
 
 #### Claude SDK Mode (Recommended)
 
@@ -193,6 +193,7 @@ Wreckit also supports experimental SDK integrations. These use the same underlyi
 > **Note:** Experimental SDKs may have API changes in future releases.
 
 **Amp SDK:**
+
 ```json
 {
   "agent": {
@@ -203,6 +204,7 @@ Wreckit also supports experimental SDK integrations. These use the same underlyi
 ```
 
 **Codex SDK:**
+
 ```json
 {
   "agent": {
@@ -213,6 +215,7 @@ Wreckit also supports experimental SDK integrations. These use the same underlyi
 ```
 
 **OpenCode SDK:**
+
 ```json
 {
   "agent": {
@@ -226,6 +229,7 @@ Wreckit also supports experimental SDK integrations. These use the same underlyi
 Spawns an external CLI process (for backward compatibility or custom agents):
 
 **Amp CLI:**
+
 ```json
 {
   "agent": {
@@ -238,6 +242,7 @@ Spawns an external CLI process (for backward compatibility or custom agents):
 ```
 
 **Claude CLI:**
+
 ```json
 {
   "agent": {
@@ -289,20 +294,20 @@ Edit files in `.wreckit/prompts/` to customize agent behavior:
 
 ### Template Variables
 
-| Variable | Description |
-|----------|-------------|
-| `{{id}}` | Item ID (e.g., `features/001-dark-mode`) |
-| `{{title}}` | Item title |
-| `{{section}}` | Section name |
-| `{{overview}}` | Item description |
-| `{{item_path}}` | Path to item folder |
-| `{{branch_name}}` | Git branch name |
-| `{{base_branch}}` | Base branch |
-| `{{completion_signal}}` | Agent completion signal |
-| `{{research}}` | Contents of research.md |
-| `{{plan}}` | Contents of plan.md |
-| `{{prd}}` | Contents of prd.json |
-| `{{progress}}` | Contents of progress.log |
+| Variable                | Description                              |
+| ----------------------- | ---------------------------------------- |
+| `{{id}}`                | Item ID (e.g., `features/001-dark-mode`) |
+| `{{title}}`             | Item title                               |
+| `{{section}}`           | Section name                             |
+| `{{overview}}`          | Item description                         |
+| `{{item_path}}`         | Path to item folder                      |
+| `{{branch_name}}`       | Git branch name                          |
+| `{{base_branch}}`       | Base branch                              |
+| `{{completion_signal}}` | Agent completion signal                  |
+| `{{research}}`          | Contents of research.md                  |
+| `{{plan}}`              | Contents of plan.md                      |
+| `{{prd}}`               | Contents of prd.json                     |
+| `{{progress}}`          | Contents of progress.log                 |
 
 ---
 
@@ -392,11 +397,11 @@ bun run test
 
 ## Exit Codes
 
-| Code | Meaning |
-|------|---------|
-| 0 | Success |
-| 1 | Error |
-| 130 | Interrupted (Ctrl-C) |
+| Code | Meaning              |
+| ---- | -------------------- |
+| 0    | Success              |
+| 1    | Error                |
+| 130  | Interrupted (Ctrl-C) |
 
 ---
 
@@ -417,4 +422,4 @@ MIT
 
 ---
 
-*"My code is in danger!"* — your codebase, nervously
+_"My code is in danger!"_ — your codebase, nervously

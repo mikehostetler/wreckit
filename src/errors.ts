@@ -1,7 +1,7 @@
 export class WreckitError extends Error {
   constructor(
     message: string,
-    public code: string
+    public code: string,
   ) {
     super(message);
     this.name = "WreckitError";
@@ -91,11 +91,11 @@ export class FileNotFoundError extends WreckitError {
 export class ArtifactReadError extends WreckitError {
   constructor(
     public readonly filePath: string,
-    public readonly cause: Error
+    public readonly cause: Error,
   ) {
     super(
       `Cannot read artifact ${filePath}: ${cause.message}`,
-      ErrorCodes.ARTIFACT_READ_ERROR
+      ErrorCodes.ARTIFACT_READ_ERROR,
     );
     this.name = "ArtifactReadError";
   }
@@ -161,10 +161,16 @@ export function wrapError(error: unknown, context: string): WreckitError {
   }
 
   if (error instanceof Error) {
-    return new WreckitError(`${context}: ${error.message}`, ErrorCodes.WRAPPED_ERROR);
+    return new WreckitError(
+      `${context}: ${error.message}`,
+      ErrorCodes.WRAPPED_ERROR,
+    );
   }
 
-  return new WreckitError(`${context}: ${String(error)}`, ErrorCodes.WRAPPED_ERROR);
+  return new WreckitError(
+    `${context}: ${String(error)}`,
+    ErrorCodes.WRAPPED_ERROR,
+  );
 }
 
 export class PayloadValidationError extends WreckitError {
@@ -184,12 +190,12 @@ export class McpToolNotCalledError extends WreckitError {
 export class AmbiguousIdError extends WreckitError {
   constructor(
     public input: string,
-    public matches: string[]
+    public matches: string[],
   ) {
     const matchList = matches.map((id) => `  - ${id}`).join("\n");
     super(
       `Ambiguous ID '${input}' matches multiple items:\n${matchList}\nUse the full ID to specify which item.`,
-      ErrorCodes.AMBIGUOUS_ID
+      ErrorCodes.AMBIGUOUS_ID,
     );
     this.name = "AmbiguousIdError";
   }
@@ -199,7 +205,7 @@ export class ItemNotFoundError extends WreckitError {
   constructor(input: string) {
     super(
       `Item not found: '${input}'. Use 'wreckit list' to see available items.`,
-      ErrorCodes.ITEM_NOT_FOUND
+      ErrorCodes.ITEM_NOT_FOUND,
     );
     this.name = "ItemNotFoundError";
   }
@@ -216,7 +222,7 @@ export class PhaseFailedError extends WreckitError {
   constructor(
     public readonly phase: string,
     public readonly itemId: string,
-    message: string
+    message: string,
   ) {
     super(message, ErrorCodes.PHASE_FAILED);
     this.name = "PhaseFailedError";
@@ -229,7 +235,7 @@ export class PhaseFailedError extends WreckitError {
 export class PhaseValidationError extends WreckitError {
   constructor(
     public readonly phase: string,
-    message: string
+    message: string,
   ) {
     super(message, ErrorCodes.PHASE_VALIDATION);
     this.name = "PhaseValidationError";
@@ -243,7 +249,7 @@ export class TransitionError extends WreckitError {
   constructor(
     public readonly fromState: string,
     public readonly toState: string,
-    message: string
+    message: string,
   ) {
     super(message, ErrorCodes.INVALID_TRANSITION);
     this.name = "TransitionError";
@@ -256,11 +262,11 @@ export class TransitionError extends WreckitError {
 export class ArtifactNotCreatedError extends WreckitError {
   constructor(
     public readonly artifactPath: string,
-    public readonly phase: string
+    public readonly phase: string,
   ) {
     super(
       `Agent did not create ${artifactPath} during ${phase} phase`,
-      ErrorCodes.ARTIFACT_NOT_CREATED
+      ErrorCodes.ARTIFACT_NOT_CREATED,
     );
     this.name = "ArtifactNotCreatedError";
   }
@@ -277,7 +283,7 @@ export class ResearchQualityError extends WreckitError {
   constructor(public readonly errors: string[]) {
     super(
       `Research quality validation failed:\n${errors.join("\n")}`,
-      ErrorCodes.RESEARCH_QUALITY
+      ErrorCodes.RESEARCH_QUALITY,
     );
     this.name = "ResearchQualityError";
   }
@@ -290,7 +296,7 @@ export class PlanQualityError extends WreckitError {
   constructor(public readonly errors: string[]) {
     super(
       `Plan quality validation failed:\n${errors.join("\n")}`,
-      ErrorCodes.PLAN_QUALITY
+      ErrorCodes.PLAN_QUALITY,
     );
     this.name = "PlanQualityError";
   }
@@ -303,7 +309,7 @@ export class StoryQualityError extends WreckitError {
   constructor(public readonly errors: string[]) {
     super(
       `Story quality validation failed:\n${errors.join("\n")}`,
-      ErrorCodes.STORY_QUALITY
+      ErrorCodes.STORY_QUALITY,
     );
     this.name = "StoryQualityError";
   }
@@ -320,7 +326,7 @@ export class BranchError extends WreckitError {
   constructor(
     public readonly branchName: string,
     public readonly operation: "create" | "checkout" | "delete",
-    message: string
+    message: string,
   ) {
     super(message, ErrorCodes.BRANCH_ERROR);
     this.name = "BranchError";
@@ -334,7 +340,7 @@ export class PushError extends WreckitError {
   constructor(
     public readonly branchName: string,
     public readonly remote: string,
-    message: string
+    message: string,
   ) {
     super(message, ErrorCodes.PUSH_ERROR);
     this.name = "PushError";
@@ -348,7 +354,7 @@ export class PrCreationError extends WreckitError {
   constructor(
     public readonly headBranch: string,
     public readonly baseBranch: string,
-    message: string
+    message: string,
   ) {
     super(message, ErrorCodes.PR_CREATION_ERROR);
     this.name = "PrCreationError";
@@ -361,11 +367,11 @@ export class PrCreationError extends WreckitError {
 export class MergeConflictError extends WreckitError {
   constructor(
     public readonly sourceBranch: string,
-    public readonly targetBranch: string
+    public readonly targetBranch: string,
   ) {
     super(
       `Merge conflict detected: ${sourceBranch} cannot be cleanly merged into ${targetBranch}`,
-      ErrorCodes.MERGE_CONFLICT
+      ErrorCodes.MERGE_CONFLICT,
     );
     this.name = "MergeConflictError";
   }
@@ -378,11 +384,11 @@ export class RemoteValidationError extends WreckitError {
   constructor(
     public readonly remoteName: string,
     public readonly actualUrl: string | null,
-    public readonly allowedPatterns: string[]
+    public readonly allowedPatterns: string[],
   ) {
     super(
       `Remote URL validation failed. URL '${actualUrl}' does not match allowed patterns: ${allowedPatterns.join(", ")}`,
-      ErrorCodes.REMOTE_VALIDATION
+      ErrorCodes.REMOTE_VALIDATION,
     );
     this.name = "RemoteValidationError";
   }

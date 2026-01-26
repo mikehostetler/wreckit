@@ -53,7 +53,7 @@ type MilestoneStatus = RoadmapMilestone["status"];
  * Parse a milestone header line like "### [M1] Milestone Title"
  */
 function parseMilestoneHeader(
-  line: string
+  line: string,
 ): { id: string; title: string } | null {
   const match = line.match(/^###\s+\[([^\]]+)\]\s+(.+)$/);
   if (!match) return null;
@@ -106,9 +106,7 @@ function parseObjectiveLine(line: string): RoadmapObjective | null {
 /**
  * Identify which section we're in based on heading
  */
-function parseSection(
-  line: string
-): "active" | "backlog" | "completed" | null {
+function parseSection(line: string): "active" | "backlog" | "completed" | null {
   const trimmed = line.trim().toLowerCase();
   if (trimmed === "## active milestones" || trimmed === "## active") {
     return "active";
@@ -300,7 +298,7 @@ export function validateRoadmap(content: string): {
 
   if (!hasActiveSection && !hasBacklogSection && !hasCompletedSection) {
     errors.push(
-      "ROADMAP.md must have at least one section: Active Milestones, Backlog, or Completed"
+      "ROADMAP.md must have at least one section: Active Milestones, Backlog, or Completed",
     );
   }
 
@@ -349,9 +347,7 @@ export function validateRoadmap(content: string): {
  * @param roadmap - The parsed Roadmap structure
  * @returns Array of pending objectives with milestone context
  */
-export function extractPendingObjectives(
-  roadmap: Roadmap
-): Array<{
+export function extractPendingObjectives(roadmap: Roadmap): Array<{
   milestoneId: string;
   milestoneTitle: string;
   objective: string;
@@ -387,9 +383,7 @@ export function extractPendingObjectives(
  * @param roadmap - The parsed Roadmap structure
  * @returns Array of all objectives with milestone context and completion status
  */
-export function extractAllObjectives(
-  roadmap: Roadmap
-): Array<{
+export function extractAllObjectives(roadmap: Roadmap): Array<{
   milestoneId: string;
   milestoneTitle: string;
   objective: string;

@@ -19,7 +19,7 @@ function createMockLogger() {
 async function createItem(
   root: string,
   id: string,
-  state: string = "idea"
+  state: string = "idea",
 ): Promise<Item> {
   const itemDir = path.join(root, ".wreckit", "items", id);
   await fs.mkdir(itemDir, { recursive: true });
@@ -38,7 +38,10 @@ async function createItem(
     updated_at: new Date().toISOString(),
   };
 
-  await fs.writeFile(path.join(itemDir, "item.json"), JSON.stringify(item, null, 2));
+  await fs.writeFile(
+    path.join(itemDir, "item.json"),
+    JSON.stringify(item, null, 2),
+  );
   return item;
 }
 
@@ -48,7 +51,9 @@ describe("listCommand", () => {
 
   beforeEach(async () => {
     tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "wreckit-list-test-"));
-    await fs.mkdir(path.join(tempDir, ".wreckit", "items"), { recursive: true });
+    await fs.mkdir(path.join(tempDir, ".wreckit", "items"), {
+      recursive: true,
+    });
     await fs.mkdir(path.join(tempDir, ".git"), { recursive: true });
     originalCwd = process.cwd();
     process.chdir(tempDir);

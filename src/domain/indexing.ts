@@ -18,7 +18,7 @@ import {
 const ITEM_DIR_PATTERN = /^(\d+)-(.+)$/;
 
 export function parseItemId(
-  id: string
+  id: string,
 ): { number: string; slug: string } | null {
   const match = id.match(ITEM_DIR_PATTERN);
   if (!match) return null;
@@ -63,7 +63,7 @@ export async function scanItems(root: string): Promise<Item[]> {
     }
     // Permission or I/O errors should warn, not silently return empty
     console.warn(
-      `Warning: Cannot read items directory ${itemsDir}: ${err instanceof Error ? err.message : String(err)}`
+      `Warning: Cannot read items directory ${itemsDir}: ${err instanceof Error ? err.message : String(err)}`,
     );
     return [];
   }
@@ -82,7 +82,7 @@ export async function scanItems(root: string): Promise<Item[]> {
     } catch (err) {
       const itemJsonPath = path.join(itemDirPath, "item.json");
       console.warn(
-        `Warning: Skipping invalid item at ${itemJsonPath}: ${err instanceof Error ? err.message : String(err)}`
+        `Warning: Skipping invalid item at ${itemJsonPath}: ${err instanceof Error ? err.message : String(err)}`,
       );
     }
   }
@@ -103,10 +103,7 @@ export async function refreshIndex(root: string): Promise<Index> {
   return index;
 }
 
-export async function getItem(
-  root: string,
-  id: string
-): Promise<Item | null> {
+export async function getItem(root: string, id: string): Promise<Item | null> {
   const itemDir = getItemDir(root, id);
 
   try {

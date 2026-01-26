@@ -85,7 +85,9 @@ export interface PathAccessResult {
  * @param filePath - Path to check
  * @returns PathAccessResult with exists flag and optional error
  */
-export async function checkPathAccess(filePath: string): Promise<PathAccessResult> {
+export async function checkPathAccess(
+  filePath: string,
+): Promise<PathAccessResult> {
   try {
     await fs.access(filePath);
     return { exists: true };

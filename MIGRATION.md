@@ -23,17 +23,18 @@ Wreckit v1.0.0 introduced **SDK mode** as the default agent execution method. In
 
 ### Benefits of SDK Mode
 
-| Feature | Process Mode | SDK Mode |
-|---------|--------------|----------|
-| **Performance** | Subprocess overhead | In-process execution |
-| **Error handling** | Parse CLI output | Structured error types |
-| **Tool support** | CLI-defined | Built-in + MCP servers |
-| **Authentication** | CLI manages | Explicit credentials |
-| **Context management** | CLI-managed | SDK-managed |
+| Feature                | Process Mode        | SDK Mode               |
+| ---------------------- | ------------------- | ---------------------- |
+| **Performance**        | Subprocess overhead | In-process execution   |
+| **Error handling**     | Parse CLI output    | Structured error types |
+| **Tool support**       | CLI-defined         | Built-in + MCP servers |
+| **Authentication**     | CLI manages         | Explicit credentials   |
+| **Context management** | CLI-managed         | SDK-managed            |
 
 ### Backward Compatibility
 
 **Your existing configuration continues to work.** Wreckit automatically:
+
 - Migrates legacy `mode`-based configs to the new `kind`-based format
 - Falls back to process mode if SDK authentication fails
 - Supports both old and new configuration formats
@@ -178,11 +179,11 @@ When no agent config is specified, wreckit uses:
 
 Wreckit automatically converts legacy configs:
 
-| Legacy | New |
-|--------|-----|
-| `mode: "sdk"` | `kind: "claude_sdk"` |
+| Legacy                           | New                                  |
+| -------------------------------- | ------------------------------------ |
+| `mode: "sdk"`                    | `kind: "claude_sdk"`                 |
 | `mode: "process"` with `command` | `kind: "process"` with same settings |
-| No agent config | `kind: "claude_sdk"` (default) |
+| No agent config                  | `kind: "claude_sdk"` (default)       |
 
 ### Experimental SDK Modes
 
@@ -208,10 +209,10 @@ Minimal configuration with optional model override:
 }
 ```
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `kind` | `"amp_sdk"` | Required | Discriminator for Amp SDK |
-| `model` | string | (none) | Optional model override |
+| Option  | Type        | Default  | Description               |
+| ------- | ----------- | -------- | ------------------------- |
+| `kind`  | `"amp_sdk"` | Required | Discriminator for Amp SDK |
+| `model` | string      | (none)   | Optional model override   |
 
 #### Codex SDK
 
@@ -226,10 +227,10 @@ Configuration with default model:
 }
 ```
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `kind` | `"codex_sdk"` | Required | Discriminator for Codex SDK |
-| `model` | string | `"codex-1"` | Model to use |
+| Option  | Type          | Default     | Description                 |
+| ------- | ------------- | ----------- | --------------------------- |
+| `kind`  | `"codex_sdk"` | Required    | Discriminator for Codex SDK |
+| `model` | string        | `"codex-1"` | Model to use                |
 
 #### OpenCode SDK
 
@@ -243,8 +244,8 @@ Zero-configuration SDK mode:
 }
 ```
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
+| Option | Type             | Default  | Description                    |
+| ------ | ---------------- | -------- | ------------------------------ |
 | `kind` | `"opencode_sdk"` | Required | Discriminator for OpenCode SDK |
 
 #### Switching Between SDK Modes
@@ -252,6 +253,7 @@ Zero-configuration SDK mode:
 To switch from `claude_sdk` to an experimental SDK, change the `kind` field:
 
 **Before (Claude SDK):**
+
 ```json
 {
   "agent": {
@@ -262,6 +264,7 @@ To switch from `claude_sdk` to an experimental SDK, change the `kind` field:
 ```
 
 **After (Codex SDK):**
+
 ```json
 {
   "agent": {
@@ -281,11 +284,11 @@ SDK mode requires explicit API credentials. The Claude CLI's OAuth login is **no
 
 ### Key Variables
 
-| Variable | Purpose |
-|----------|---------|
-| `ANTHROPIC_API_KEY` | Direct Anthropic API authentication |
-| `ANTHROPIC_BASE_URL` | Custom API endpoint (e.g., Zai proxy) |
-| `ANTHROPIC_AUTH_TOKEN` | Authentication for custom endpoints |
+| Variable               | Purpose                               |
+| ---------------------- | ------------------------------------- |
+| `ANTHROPIC_API_KEY`    | Direct Anthropic API authentication   |
+| `ANTHROPIC_BASE_URL`   | Custom API endpoint (e.g., Zai proxy) |
+| `ANTHROPIC_AUTH_TOKEN` | Authentication for custom endpoints   |
 
 ### Precedence (Highest to Lowest)
 
@@ -301,11 +304,13 @@ Environment variables are resolved from multiple sources:
 **Direct Anthropic API (simplest):**
 
 Set in your shell:
+
 ```bash
 export ANTHROPIC_API_KEY=sk-ant-api03-...
 ```
 
 Or in `~/.claude/settings.json`:
+
 ```json
 {
   "env": {
@@ -317,6 +322,7 @@ Or in `~/.claude/settings.json`:
 **Custom Endpoint (Zai, internal proxy, etc.):**
 
 Create `.wreckit/config.local.json` (gitignored):
+
 ```json
 {
   "agent": {
@@ -333,6 +339,7 @@ Create `.wreckit/config.local.json` (gitignored):
 **Project-Wide Defaults:**
 
 Add to `.wreckit/config.json` (committed):
+
 ```json
 {
   "agent": {
@@ -352,12 +359,12 @@ Team members then set their token in `.wreckit/config.local.json` or shell envir
 
 These variables allow overriding the default model selection:
 
-| Variable | Purpose | Example |
-|----------|---------|---------|
-| `ANTHROPIC_MODEL` | Override the model for all requests | `claude-sonnet-4-20250514` |
-| `ANTHROPIC_DEFAULT_SONNET_MODEL` | Override the default Sonnet model | `claude-sonnet-4-20250514` |
-| `ANTHROPIC_DEFAULT_HAIKU_MODEL` | Override the default Haiku model | `claude-haiku-3-20240307` |
-| `ANTHROPIC_DEFAULT_OPUS_MODEL` | Override the default Opus model | `claude-opus-4-20250514` |
+| Variable                         | Purpose                             | Example                    |
+| -------------------------------- | ----------------------------------- | -------------------------- |
+| `ANTHROPIC_MODEL`                | Override the model for all requests | `claude-sonnet-4-20250514` |
+| `ANTHROPIC_DEFAULT_SONNET_MODEL` | Override the default Sonnet model   | `claude-sonnet-4-20250514` |
+| `ANTHROPIC_DEFAULT_HAIKU_MODEL`  | Override the default Haiku model    | `claude-haiku-3-20240307`  |
+| `ANTHROPIC_DEFAULT_OPUS_MODEL`   | Override the default Opus model     | `claude-opus-4-20250514`   |
 
 #### Allowed Prefixes for Claude Settings Import
 
@@ -382,11 +389,13 @@ wreckit sdk-info
 ```
 
 This shows:
+
 - Resolved environment variables (from all sources)
 - Account info from the SDK
 - Supported models
 
 Example output:
+
 ```
 Fetching SDK configuration info...
 
@@ -447,6 +456,7 @@ This allows teams to gradually migrate without breaking existing workflows.
 ### When Fallback Triggers
 
 Fallback occurs when:
+
 - `ANTHROPIC_API_KEY` is not set and no custom endpoint is configured
 - The SDK returns a 401 Unauthorized error
 - Authentication token is invalid or expired
@@ -462,6 +472,7 @@ To enforce SDK-only mode (fail instead of fallback), ensure proper credentials a
 ### Authentication Error
 
 **Symptom:**
+
 ```
 Authentication Error: Invalid API key
 ```
@@ -469,6 +480,7 @@ Authentication Error: Invalid API key
 **Solutions:**
 
 1. Verify credentials are set:
+
    ```bash
    wreckit sdk-info
    ```
@@ -494,11 +506,13 @@ Authentication Error: Invalid API key
 ### Rate Limit Exceeded
 
 **Symptom:**
+
 ```
 Rate limit exceeded: 429 Too Many Requests
 ```
 
 **Solutions:**
+
 - Wait and retry (rate limits reset over time)
 - Reduce concurrency if running multiple wreckit instances
 - Consider upgrading your API tier
@@ -507,11 +521,13 @@ Rate limit exceeded: 429 Too Many Requests
 ### Context Window Error
 
 **Symptom:**
+
 ```
 Context error: maximum context length exceeded
 ```
 
 **Solutions:**
+
 - Break tasks into smaller pieces
 - Reduce scope of individual items
 - Use more specific research/plan prompts
@@ -519,11 +535,13 @@ Context error: maximum context length exceeded
 ### Network Error
 
 **Symptom:**
+
 ```
 Network error: ECONNREFUSED
 ```
 
 **Solutions:**
+
 - Check internet connection
 - Verify `ANTHROPIC_BASE_URL` is correct (if using custom endpoint)
 - Check if firewall/proxy is blocking the connection
@@ -532,12 +550,14 @@ Network error: ECONNREFUSED
 ### SDK Not Available
 
 **Symptom:**
+
 ```
 Cannot find module '@anthropic-ai/claude-agent-sdk'
 ```
 
 **Solution:**
 Reinstall wreckit:
+
 ```bash
 npm install -g wreckit
 ```
@@ -545,6 +565,7 @@ npm install -g wreckit
 ### Fallback to Process Mode Warning
 
 **Symptom:**
+
 ```
 [warn] SDK authentication failed, falling back to process mode
 ```
@@ -555,6 +576,7 @@ When SDK mode is configured but authentication fails, wreckit automatically fall
 **Solutions:**
 
 1. If you **want SDK mode**, fix the authentication:
+
    ```bash
    # Verify credentials are set
    wreckit sdk-info
@@ -582,6 +604,7 @@ When SDK mode is configured but authentication fails, wreckit automatically fall
 ### Config Schema Validation Error
 
 **Symptom:**
+
 ```
 SchemaValidationError: Schema validation failed for .wreckit/config.json
 ```
@@ -592,21 +615,23 @@ The configuration file contains invalid or unrecognized properties. This often o
 **Solutions:**
 
 1. Run the doctor to diagnose config issues:
+
    ```bash
    wreckit doctor
    ```
 
 2. Check for legacy `mode` vs new `kind` format:
 
-   | Legacy (deprecated) | New (current) |
-   |---------------------|---------------|
-   | `mode: "sdk"` | `kind: "claude_sdk"` |
-   | `mode: "process"` | `kind: "process"` |
-   | No agent config | `kind: "claude_sdk"` (default) |
+   | Legacy (deprecated) | New (current)                  |
+   | ------------------- | ------------------------------ |
+   | `mode: "sdk"`       | `kind: "claude_sdk"`           |
+   | `mode: "process"`   | `kind: "process"`              |
+   | No agent config     | `kind: "claude_sdk"` (default) |
 
 3. Example migration:
 
    **Before (legacy):**
+
    ```json
    {
      "agent": {
@@ -618,6 +643,7 @@ The configuration file contains invalid or unrecognized properties. This often o
    ```
 
    **After (current):**
+
    ```json
    {
      "agent": {
@@ -643,36 +669,42 @@ Git pre-flight checks run before each workflow phase to ensure a clean working s
 #### NOT_GIT_REPO
 
 **Symptom:**
+
 ```
 Git pre-flight check failed:
 • Not a git repository
 ```
 
 **Solutions:**
+
 - Run `git init` to initialize a new repository
 - Or navigate to an existing git repository
 
 #### DETACHED_HEAD
 
 **Symptom:**
+
 ```
 Git pre-flight check failed:
 • Repository is in detached HEAD state
 ```
 
 **Solutions:**
+
 - Run `git checkout <branch-name>` to switch to a branch
 - Or run `git checkout -b <new-branch>` to create a new branch from current state
 
 #### UNCOMMITTED_CHANGES
 
 **Symptom:**
+
 ```
 Git pre-flight check failed:
 • There are uncommitted changes in the working directory
 ```
 
 **Solutions:**
+
 - Run `git stash` to temporarily save changes
 - Or run `git commit -am "message"` to commit changes
 - Or run `git checkout -- .` to discard changes (destructive)
@@ -680,12 +712,14 @@ Git pre-flight check failed:
 #### BRANCH_DIVERGED
 
 **Symptom:**
+
 ```
 Git pre-flight check failed:
 • Local branch has diverged from remote
 ```
 
 **Solutions:**
+
 - Run `git pull --rebase` to rebase local changes on top of remote
 - Or run `git pull` to merge remote changes
 - Resolve any conflicts and commit
@@ -693,12 +727,14 @@ Git pre-flight check failed:
 #### NO_REMOTE
 
 **Symptom:**
+
 ```
 Git pre-flight check failed:
 • No remote repository configured
 ```
 
 **Solution:**
+
 - Run `git remote add origin <url>` to add a remote
 
 ### State and Artifact Mismatches
@@ -708,6 +744,7 @@ Wreckit maintains workflow state in `item.json` and expects corresponding artifa
 #### STATE_FILE_MISMATCH
 
 **Symptom:**
+
 ```
 warning: State is 'researched' but research.md is missing
 warning: State is 'planned' but plan.md and prd.json are missing
@@ -717,10 +754,13 @@ warning: State is 'planned' but plan.md and prd.json are missing
 The item's state indicates a phase was completed, but the expected output file is missing.
 
 **Solutions:**
+
 1. Auto-repair with doctor:
+
    ```bash
    wreckit doctor --fix
    ```
+
    This will reset the state to match the available artifacts.
 
 2. Manually re-run the phase:
@@ -731,6 +771,7 @@ The item's state indicates a phase was completed, but the expected output file i
 #### INDEX_STALE
 
 **Symptom:**
+
 ```
 warning: index.json is out of sync: 3 items missing from index
 ```
@@ -739,14 +780,17 @@ warning: index.json is out of sync: 3 items missing from index
 The cached index doesn't match the actual item directories.
 
 **Solution:**
+
 ```bash
 wreckit doctor --fix
 ```
+
 This rebuilds index.json from the actual items directory.
 
 #### MISSING_ITEM_JSON
 
 **Symptom:**
+
 ```
 error: item.json missing in .wreckit/items/<id>
 ```
@@ -760,6 +804,7 @@ Either remove the orphan directory or recreate the item.json manually.
 #### INVALID_PRD
 
 **Symptom:**
+
 ```
 error: prd.json is invalid: Expected number, received string
 ```
@@ -769,6 +814,7 @@ The prd.json file doesn't match the expected schema.
 
 **Solution:**
 Review and fix the prd.json file. Common issues:
+
 - Story priority should be a number (1-4), not a string
 - Story status should be "pending" or "done"
 - Story IDs should follow the "US-###" format
@@ -776,6 +822,7 @@ Review and fix the prd.json file. Common issues:
 #### CIRCULAR_DEPENDENCY
 
 **Symptom:**
+
 ```
 error: Circular dependency detected: item-a -> item-b -> item-a
 ```
@@ -789,6 +836,7 @@ Edit the item.json files to remove the circular reference in the `depends_on` ar
 #### MISSING_DEPENDENCY
 
 **Symptom:**
+
 ```
 warning: Depends on non-existent item: 999-nonexistent-item
 ```
@@ -806,6 +854,7 @@ Each workflow phase has specific success criteria. If these aren't met, the phas
 #### Research Phase Failures
 
 **Symptom:**
+
 ```
 Agent did not create research.md
 ```
@@ -814,6 +863,7 @@ Agent did not create research.md
 The agent completed without creating the expected research.md file.
 
 **Solutions:**
+
 - Re-run the research phase with `--force`: `wreckit phase research --item <id> --force`
 - Check the agent output for errors or context window issues
 - Verify the item's overview contains enough context for research
@@ -821,16 +871,19 @@ The agent completed without creating the expected research.md file.
 #### Plan Phase Failures
 
 **Symptom (missing plan.md):**
+
 ```
 Agent did not create plan.md
 ```
 
 **Symptom (missing prd.json):**
+
 ```
 Agent did not create prd.json
 ```
 
 **Symptom (invalid prd.json):**
+
 ```
 prd.json is not valid JSON or fails schema validation
 ```
@@ -839,6 +892,7 @@ prd.json is not valid JSON or fails schema validation
 The agent completed but didn't create both required artifacts (plan.md and prd.json), or the prd.json doesn't match the expected schema.
 
 **Solutions:**
+
 - Re-run the plan phase with `--force`: `wreckit phase plan --item <id> --force`
 - If prd.json is malformed, check for common issues:
   - Missing required fields (`id`, `branch_name`, `user_stories`)
@@ -848,6 +902,7 @@ The agent completed but didn't create both required artifacts (plan.md and prd.j
 #### Implement Phase Failures
 
 **Symptom (prd not found):**
+
 ```
 prd.json not found or invalid
 ```
@@ -859,6 +914,7 @@ The implement phase requires a valid prd.json from the plan phase.
 Run the plan phase first: `wreckit phase plan --item <id>`
 
 **Symptom (max iterations):**
+
 ```
 Reached max iterations (100) with stories still pending
 ```
@@ -867,7 +923,9 @@ Reached max iterations (100) with stories still pending
 The agent couldn't complete all user stories within the configured iteration limit.
 
 **Solutions:**
+
 1. Increase the iteration limit in `.wreckit/config.json`:
+
    ```json
    {
      "max_iterations": 200
@@ -881,6 +939,7 @@ The agent couldn't complete all user stories within the configured iteration lim
 #### PR Phase Failures
 
 **Symptom (stories not done):**
+
 ```
 Not all stories are done
 ```
@@ -892,6 +951,7 @@ The PR phase requires all user stories to have status "done".
 Complete implementation first: `wreckit phase implement --item <id>`
 
 **Symptom (quality gate failed):**
+
 ```
 Quality gate failed. The following checks must pass before pushing:
   • Command failed: npm test
@@ -901,6 +961,7 @@ Quality gate failed. The following checks must pass before pushing:
 Pre-push quality checks (tests, linting, etc.) failed.
 
 **Solutions:**
+
 1. Fix the failing tests/lint issues manually
 2. Review quality check configuration in `.wreckit/config.json`:
    ```json
@@ -914,6 +975,7 @@ Pre-push quality checks (tests, linting, etc.) failed.
 ### Agent Timeout
 
 **Symptom:**
+
 ```
 Agent timed out
 ```
@@ -924,6 +986,7 @@ The agent didn't complete within the configured timeout (default: 3600 seconds /
 **Solutions:**
 
 1. Increase the timeout in `.wreckit/config.json`:
+
    ```json
    {
      "timeout_seconds": 7200
@@ -939,6 +1002,7 @@ The agent didn't complete within the configured timeout (default: 3600 seconds /
 ### PRD Quality Validation Failures
 
 **Symptom:**
+
 ```
 Story quality validation failed:
 Story "US-001" (Add feature): Insufficient acceptance criteria: 1, required at least 2
@@ -949,15 +1013,16 @@ The PRD generated during the plan phase doesn't meet quality requirements.
 
 **Quality Requirements:**
 
-| Requirement | Rule |
-|-------------|------|
-| Story count | At least 1, not more than 15 |
+| Requirement         | Rule                         |
+| ------------------- | ---------------------------- |
+| Story count         | At least 1, not more than 15 |
 | Acceptance criteria | Each story needs 2+ criteria |
-| Story ID format | Must follow `US-###` pattern |
-| Priority range | Values 1-4 |
-| Title | Must be non-empty |
+| Story ID format     | Must follow `US-###` pattern |
+| Priority range      | Values 1-4                   |
+| Title               | Must be non-empty            |
 
 **Example of a valid story in prd.json:**
+
 ```json
 {
   "id": "US-001",
@@ -987,6 +1052,7 @@ The PRD generated during the plan phase doesn't meet quality requirements.
 ### Remote URL Validation Failed
 
 **Symptom:**
+
 ```
 Remote URL validation failed.
 This check prevents pushing code to an unintended repository.
@@ -1004,11 +1070,13 @@ This is a safety check to prevent accidentally pushing code to the wrong reposit
 **Solutions:**
 
 1. Verify the remote is correct:
+
    ```bash
    git remote -v
    ```
 
 2. Update the remote if needed:
+
    ```bash
    git remote set-url origin https://github.com/correct-org/correct-repo.git
    ```
@@ -1026,6 +1094,7 @@ This is a safety check to prevent accidentally pushing code to the wrong reposit
    ```
 
 **Note:** Patterns match against the normalized URL (without protocol prefix or `.git` suffix). For example, `github.com/myorg/` matches both:
+
 - `https://github.com/myorg/repo.git`
 - `git@github.com:myorg/repo.git`
 

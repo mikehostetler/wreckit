@@ -1,4 +1,13 @@
-import { describe, it, expect, beforeEach, afterEach, mock, spyOn, vi } from "bun:test";
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  mock,
+  spyOn,
+  vi,
+} from "bun:test";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import * as os from "node:os";
@@ -40,7 +49,9 @@ describe("runOnboardingIfNeeded", () => {
 
       expect(result.proceed).toBe(false);
       expect(result.reason).toBe("not-git-repo");
-      expect(mockLogger.messages.some((l) => l.includes("Not a git repository"))).toBe(true);
+      expect(
+        mockLogger.messages.some((l) => l.includes("Not a git repository")),
+      ).toBe(true);
     });
   });
 
@@ -58,10 +69,14 @@ describe("runOnboardingIfNeeded", () => {
 
       expect(result.proceed).toBe(false);
       expect(result.reason).toBe("noninteractive");
-      expect(mockLogger.messages.some((l) => l.includes("wreckit is not initialized"))).toBe(
-        true
+      expect(
+        mockLogger.messages.some((l) =>
+          l.includes("wreckit is not initialized"),
+        ),
+      ).toBe(true);
+      expect(mockLogger.messages.some((l) => l.includes("wreckit init"))).toBe(
+        true,
       );
-      expect(mockLogger.messages.some((l) => l.includes("wreckit init"))).toBe(true);
     });
 
     it("returns noninteractive when noTui is true", async () => {
@@ -82,7 +97,7 @@ describe("runOnboardingIfNeeded", () => {
       await fs.mkdir(path.join(tempDir, ".wreckit"));
       await fs.writeFile(
         path.join(tempDir, ".wreckit", "config.json"),
-        JSON.stringify({ schema_version: 1 })
+        JSON.stringify({ schema_version: 1 }),
       );
     });
 
@@ -95,7 +110,9 @@ describe("runOnboardingIfNeeded", () => {
 
       expect(result.proceed).toBe(false);
       expect(result.reason).toBe("noninteractive");
-      expect(mockLogger.messages.some((l) => l.includes("No ideas found"))).toBe(true);
+      expect(
+        mockLogger.messages.some((l) => l.includes("No ideas found")),
+      ).toBe(true);
     });
   });
 
@@ -105,7 +122,7 @@ describe("runOnboardingIfNeeded", () => {
       await fs.mkdir(path.join(tempDir, ".wreckit"));
       await fs.writeFile(
         path.join(tempDir, ".wreckit", "config.json"),
-        JSON.stringify({ schema_version: 1 })
+        JSON.stringify({ schema_version: 1 }),
       );
 
       const ideaDir = path.join(tempDir, ".wreckit", "items", "001-test-idea");
@@ -124,7 +141,7 @@ describe("runOnboardingIfNeeded", () => {
           last_error: null,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
-        })
+        }),
       );
     });
 

@@ -34,7 +34,7 @@ const SUITE_RUNNERS: Record<
  * @returns Complete benchmark results including environment metadata
  */
 export async function runBenchmarks(
-  options: BenchmarkOptions = {}
+  options: BenchmarkOptions = {},
 ): Promise<BenchmarkResult> {
   const { suites = ["all"], iterations = 10 } = options;
 
@@ -75,7 +75,7 @@ export async function runBenchmarks(
  */
 export function formatOutput(
   result: BenchmarkResult,
-  format: OutputFormat
+  format: OutputFormat,
 ): string {
   switch (format) {
     case "json":

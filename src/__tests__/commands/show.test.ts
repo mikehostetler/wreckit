@@ -1,4 +1,13 @@
-import { describe, expect, it, beforeEach, afterEach, mock, spyOn, vi } from "bun:test";
+import {
+  describe,
+  expect,
+  it,
+  beforeEach,
+  afterEach,
+  mock,
+  spyOn,
+  vi,
+} from "bun:test";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import * as os from "node:os";
@@ -20,7 +29,7 @@ function createMockLogger() {
 async function createItem(
   root: string,
   id: string,
-  overrides: Partial<Item> = {}
+  overrides: Partial<Item> = {},
 ): Promise<Item> {
   const itemDir = path.join(root, ".wreckit", "items", id);
   await fs.mkdir(itemDir, { recursive: true });
@@ -40,7 +49,10 @@ async function createItem(
     ...overrides,
   };
 
-  await fs.writeFile(path.join(itemDir, "item.json"), JSON.stringify(item, null, 2));
+  await fs.writeFile(
+    path.join(itemDir, "item.json"),
+    JSON.stringify(item, null, 2),
+  );
   return item;
 }
 
@@ -54,7 +66,11 @@ async function createPlan(root: string, id: string): Promise<void> {
   await fs.writeFile(planPath, "# Plan\n\nSome plan content.");
 }
 
-async function createPrd(root: string, id: string, stories: Array<{ status: "pending" | "done" }>): Promise<void> {
+async function createPrd(
+  root: string,
+  id: string,
+  stories: Array<{ status: "pending" | "done" }>,
+): Promise<void> {
   const prdPath = path.join(root, ".wreckit", "items", id, "prd.json");
 
   const prd: Prd = {
@@ -117,7 +133,10 @@ describe("loadItemDetails", () => {
 
   it("loads prd.json when exists", async () => {
     await createItem(tempDir, "001-test");
-    await createPrd(tempDir, "001-test", [{ status: "pending" }, { status: "done" }]);
+    await createPrd(tempDir, "001-test", [
+      { status: "pending" },
+      { status: "done" },
+    ]);
 
     const details = await loadItemDetails(tempDir, "001-test");
 
@@ -158,7 +177,9 @@ describe("showCommand", () => {
     expect(calls.some((c) => c.includes("ID: 001-test"))).toBe(true);
     expect(calls.some((c) => c.includes("Title: Test Feature"))).toBe(true);
     expect(calls.some((c) => c.includes("State: idea"))).toBe(true);
-    expect(calls.some((c) => c.includes("Overview: A test feature"))).toBe(true);
+    expect(calls.some((c) => c.includes("Overview: A test feature"))).toBe(
+      true,
+    );
     consoleSpy.mockRestore();
   });
 
@@ -213,7 +234,9 @@ describe("showCommand", () => {
     await showCommand("001-test", {}, logger);
 
     const calls = consoleSpy.mock.calls.map((c) => String(c[0]));
-    expect(calls.some((c) => c.includes("Stories: 2 pending, 1 done"))).toBe(true);
+    expect(calls.some((c) => c.includes("Stories: 2 pending, 1 done"))).toBe(
+      true,
+    );
     consoleSpy.mockRestore();
   });
 
@@ -252,7 +275,9 @@ describe("showCommand", () => {
   it("throws error for non-existent ID", async () => {
     const logger = createMockLogger();
 
-    await expect(showCommand("features/999-nonexistent", {}, logger)).rejects.toThrow(FileNotFoundError);
+    await expect(
+      showCommand("features/999-nonexistent", {}, logger),
+    ).rejects.toThrow(FileNotFoundError);
   });
 
   it("shows branch info when available", async () => {
@@ -265,7 +290,9 @@ describe("showCommand", () => {
     await showCommand("001-test", {}, logger);
 
     const calls = consoleSpy.mock.calls.map((c) => String(c[0]));
-    expect(calls.some((c) => c.includes("Branch: wreckit/001-test"))).toBe(true);
+    expect(calls.some((c) => c.includes("Branch: wreckit/001-test"))).toBe(
+      true,
+    );
     consoleSpy.mockRestore();
   });
 
@@ -279,7 +306,9 @@ describe("showCommand", () => {
     await showCommand("001-test", {}, logger);
 
     const calls = consoleSpy.mock.calls.map((c) => String(c[0]));
-    expect(calls.some((c) => c.includes("PR: https://github.com/org/repo/pull/123"))).toBe(true);
+    expect(
+      calls.some((c) => c.includes("PR: https://github.com/org/repo/pull/123")),
+    ).toBe(true);
     consoleSpy.mockRestore();
   });
 
@@ -293,7 +322,9 @@ describe("showCommand", () => {
     await showCommand("001-test", {}, logger);
 
     const calls = consoleSpy.mock.calls.map((c) => String(c[0]));
-    expect(calls.some((c) => c.includes("Rollback SHA: abc123def456"))).toBe(true);
+    expect(calls.some((c) => c.includes("Rollback SHA: abc123def456"))).toBe(
+      true,
+    );
     consoleSpy.mockRestore();
   });
 
@@ -308,7 +339,9 @@ describe("showCommand", () => {
     await showCommand("001-test", {}, logger);
 
     const calls = consoleSpy.mock.calls.map((c) => String(c[0]));
-    expect(calls.some((c) => c.includes(`Completed: ${completedAt}`))).toBe(true);
+    expect(calls.some((c) => c.includes(`Completed: ${completedAt}`))).toBe(
+      true,
+    );
     consoleSpy.mockRestore();
   });
 });

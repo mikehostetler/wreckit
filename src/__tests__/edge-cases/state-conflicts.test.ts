@@ -1,4 +1,14 @@
-import { describe, it, expect, beforeEach, afterEach, afterAll, mock, spyOn, vi } from "bun:test";
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  afterAll,
+  mock,
+  spyOn,
+  vi,
+} from "bun:test";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import * as os from "node:os";
@@ -59,7 +69,7 @@ function mockSpawnOnce(stdout: string, exitCode: number): void {
 }
 
 function mockSpawnSequence(
-  responses: Array<{ stdout: string; exitCode: number }>
+  responses: Array<{ stdout: string; exitCode: number }>,
 ): void {
   for (const r of responses) {
     mockSpawnOnce(r.stdout, r.exitCode);
@@ -79,14 +89,14 @@ async function createWreckitDir(root: string): Promise<void> {
       agent: { command: "amp", args: [], completion_signal: "DONE" },
       max_iterations: 100,
       timeout_seconds: 3600,
-    })
+    }),
   );
 }
 
 async function createItem(
   root: string,
   id: string,
-  overrides: Partial<Item> = {}
+  overrides: Partial<Item> = {},
 ): Promise<string> {
   const itemDir = path.join(root, ".wreckit", "items", id);
   await fs.mkdir(itemDir, { recursive: true });
@@ -108,18 +118,24 @@ async function createItem(
 
   await fs.writeFile(
     path.join(itemDir, "item.json"),
-    JSON.stringify(item, null, 2)
+    JSON.stringify(item, null, 2),
   );
 
   return itemDir;
 }
 
 async function createResearch(itemDir: string): Promise<void> {
-  await fs.writeFile(path.join(itemDir, "research.md"), "# Research\n\nResearch content here.");
+  await fs.writeFile(
+    path.join(itemDir, "research.md"),
+    "# Research\n\nResearch content here.",
+  );
 }
 
 async function createPlan(itemDir: string): Promise<void> {
-  await fs.writeFile(path.join(itemDir, "plan.md"), "# Plan\n\nPlan content here.");
+  await fs.writeFile(
+    path.join(itemDir, "plan.md"),
+    "# Plan\n\nPlan content here.",
+  );
 }
 
 async function createPrd(
@@ -133,7 +149,7 @@ async function createPrd(
       status: "pending",
       notes: "",
     },
-  ]
+  ],
 ): Promise<void> {
   const prd: Prd = {
     schema_version: 1,
@@ -144,7 +160,7 @@ async function createPrd(
 
   await fs.writeFile(
     path.join(itemDir, "prd.json"),
-    JSON.stringify(prd, null, 2)
+    JSON.stringify(prd, null, 2),
   );
 }
 
@@ -153,7 +169,9 @@ describe("State Conflict Resolution", () => {
 
   beforeEach(async () => {
     vi.clearAllMocks();
-    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "wreckit-state-conflicts-"));
+    tempDir = await fs.mkdtemp(
+      path.join(os.tmpdir(), "wreckit-state-conflicts-"),
+    );
     await createWreckitDir(tempDir);
   });
 
@@ -166,7 +184,9 @@ describe("State Conflict Resolution", () => {
       await createItem(tempDir, "001-item", { state: "researched" });
 
       const diagnostics = await diagnose(tempDir);
-      const mismatch = diagnostics.find((d) => d.code === "STATE_FILE_MISMATCH");
+      const mismatch = diagnostics.find(
+        (d) => d.code === "STATE_FILE_MISMATCH",
+      );
 
       expect(mismatch).toBeDefined();
       expect(mismatch?.severity).toBe("warning");
@@ -181,35 +201,47 @@ describe("State Conflict Resolution", () => {
 
       const diagnostics = await diagnose(tempDir);
 
-      expect(diagnostics.every((d) => d.code !== "STATE_FILE_MISMATCH")).toBe(true);
+      expect(diagnostics.every((d) => d.code !== "STATE_FILE_MISMATCH")).toBe(
+        true,
+      );
     });
 
     it("71: Planned but plan.md missing - should emit STATE_FILE_MISMATCH", async () => {
-      const itemDir = await createItem(tempDir, "001-item", { state: "planned" });
+      const itemDir = await createItem(tempDir, "001-item", {
+        state: "planned",
+      });
       await createResearch(itemDir);
       await createPrd(itemDir);
 
       const diagnostics = await diagnose(tempDir);
-      const mismatch = diagnostics.find((d) => d.code === "STATE_FILE_MISMATCH");
+      const mismatch = diagnostics.find(
+        (d) => d.code === "STATE_FILE_MISMATCH",
+      );
 
       expect(mismatch).toBeDefined();
       expect(mismatch?.message).toContain("plan.md is missing");
     });
 
     it("72: Planned but prd.json missing - should emit STATE_FILE_MISMATCH", async () => {
-      const itemDir = await createItem(tempDir, "001-item", { state: "planned" });
+      const itemDir = await createItem(tempDir, "001-item", {
+        state: "planned",
+      });
       await createResearch(itemDir);
       await createPlan(itemDir);
 
       const diagnostics = await diagnose(tempDir);
-      const mismatch = diagnostics.find((d) => d.code === "STATE_FILE_MISMATCH");
+      const mismatch = diagnostics.find(
+        (d) => d.code === "STATE_FILE_MISMATCH",
+      );
 
       expect(mismatch).toBeDefined();
       expect(mismatch?.message).toContain("prd.json is missing");
     });
 
     it("73: Implementing but no pending stories - should flag as ready for PR", async () => {
-      const itemDir = await createItem(tempDir, "001-item", { state: "implementing" });
+      const itemDir = await createItem(tempDir, "001-item", {
+        state: "implementing",
+      });
       await createResearch(itemDir);
       await createPlan(itemDir);
       await createPrd(itemDir, [
@@ -224,14 +256,18 @@ describe("State Conflict Resolution", () => {
       ]);
 
       const diagnostics = await diagnose(tempDir);
-      const mismatch = diagnostics.find((d) => d.code === "STATE_FILE_MISMATCH");
+      const mismatch = diagnostics.find(
+        (d) => d.code === "STATE_FILE_MISMATCH",
+      );
 
       expect(mismatch).toBeDefined();
       expect(mismatch?.message).toContain("no pending stories");
     });
 
     it("74: Planned but prd has pending stories - should detect upgrade to implementing", async () => {
-      const itemDir = await createItem(tempDir, "001-item", { state: "planned" });
+      const itemDir = await createItem(tempDir, "001-item", {
+        state: "planned",
+      });
       await createResearch(itemDir);
       await createPlan(itemDir);
       await createPrd(itemDir, [
@@ -247,11 +283,15 @@ describe("State Conflict Resolution", () => {
 
       const diagnostics = await diagnose(tempDir);
 
-      expect(diagnostics.every((d) => d.code !== "STATE_FILE_MISMATCH")).toBe(true);
+      expect(diagnostics.every((d) => d.code !== "STATE_FILE_MISMATCH")).toBe(
+        true,
+      );
     });
 
     it("72b: Planned but prd.json invalid - should emit INVALID_PRD", async () => {
-      const itemDir = await createItem(tempDir, "001-item", { state: "planned" });
+      const itemDir = await createItem(tempDir, "001-item", {
+        state: "planned",
+      });
       await createResearch(itemDir);
       await createPlan(itemDir);
       await fs.writeFile(path.join(itemDir, "prd.json"), "{ invalid json }");
@@ -275,11 +315,20 @@ describe("State Conflict Resolution", () => {
       await createResearch(itemDir);
       await createPlan(itemDir);
       await createPrd(itemDir, [
-        { id: "US-001", title: "Story", acceptance_criteria: [], priority: 1, status: "done", notes: "" },
+        {
+          id: "US-001",
+          title: "Story",
+          acceptance_criteria: [],
+          priority: 1,
+          status: "done",
+          notes: "",
+        },
       ]);
 
       const diagnostics = await diagnose(tempDir);
-      const mismatch = diagnostics.find((d) => d.code === "STATE_FILE_MISMATCH");
+      const mismatch = diagnostics.find(
+        (d) => d.code === "STATE_FILE_MISMATCH",
+      );
 
       expect(mismatch).toBeDefined();
       expect(mismatch?.message).toContain("pr_url is not set");
@@ -295,12 +344,21 @@ describe("State Conflict Resolution", () => {
       await createResearch(itemDir);
       await createPlan(itemDir);
       await createPrd(itemDir, [
-        { id: "US-001", title: "Story", acceptance_criteria: [], priority: 1, status: "done", notes: "" },
+        {
+          id: "US-001",
+          title: "Story",
+          acceptance_criteria: [],
+          priority: 1,
+          status: "done",
+          notes: "",
+        },
       ]);
 
       const diagnostics = await diagnose(tempDir);
 
-      expect(diagnostics.filter((d) => d.code === "STATE_FILE_MISMATCH")).toHaveLength(0);
+      expect(
+        diagnostics.filter((d) => d.code === "STATE_FILE_MISMATCH"),
+      ).toHaveLength(0);
     });
 
     it("77: done with pr_url - no diagnostic", async () => {
@@ -313,12 +371,21 @@ describe("State Conflict Resolution", () => {
       await createResearch(itemDir);
       await createPlan(itemDir);
       await createPrd(itemDir, [
-        { id: "US-001", title: "Story", acceptance_criteria: [], priority: 1, status: "done", notes: "" },
+        {
+          id: "US-001",
+          title: "Story",
+          acceptance_criteria: [],
+          priority: 1,
+          status: "done",
+          notes: "",
+        },
       ]);
 
       const diagnostics = await diagnose(tempDir);
 
-      expect(diagnostics.filter((d) => d.code === "STATE_FILE_MISMATCH")).toHaveLength(0);
+      expect(
+        diagnostics.filter((d) => d.code === "STATE_FILE_MISMATCH"),
+      ).toHaveLength(0);
     });
 
     it("78: implementing with pr_url set - valid state", async () => {
@@ -334,7 +401,9 @@ describe("State Conflict Resolution", () => {
 
       const diagnostics = await diagnose(tempDir);
 
-      expect(diagnostics.filter((d) => d.code === "STATE_FILE_MISMATCH")).toHaveLength(0);
+      expect(
+        diagnostics.filter((d) => d.code === "STATE_FILE_MISMATCH"),
+      ).toHaveLength(0);
     });
 
     it("79: raw with pr_url set - unusual but valid", async () => {
@@ -346,7 +415,9 @@ describe("State Conflict Resolution", () => {
 
       const diagnostics = await diagnose(tempDir);
 
-      expect(diagnostics.filter((d) => d.code === "STATE_FILE_MISMATCH")).toHaveLength(0);
+      expect(
+        diagnostics.filter((d) => d.code === "STATE_FILE_MISMATCH"),
+      ).toHaveLength(0);
     });
   });
 
@@ -362,7 +433,9 @@ describe("State Conflict Resolution", () => {
 
       const diagnostics = await diagnose(tempDir);
 
-      expect(diagnostics.filter((d) => d.code === "STATE_FILE_MISMATCH")).toHaveLength(0);
+      expect(
+        diagnostics.filter((d) => d.code === "STATE_FILE_MISMATCH"),
+      ).toHaveLength(0);
     });
 
     it("81: in_pr without branch - should emit diagnostic", async () => {
@@ -375,11 +448,20 @@ describe("State Conflict Resolution", () => {
       await createResearch(itemDir);
       await createPlan(itemDir);
       await createPrd(itemDir, [
-        { id: "US-001", title: "Story", acceptance_criteria: [], priority: 1, status: "done", notes: "" },
+        {
+          id: "US-001",
+          title: "Story",
+          acceptance_criteria: [],
+          priority: 1,
+          status: "done",
+          notes: "",
+        },
       ]);
 
       const diagnostics = await diagnose(tempDir);
-      const mismatch = diagnostics.find((d) => d.code === "STATE_FILE_MISMATCH");
+      const mismatch = diagnostics.find(
+        (d) => d.code === "STATE_FILE_MISMATCH",
+      );
 
       expect(mismatch).toBeDefined();
     });
@@ -391,7 +473,9 @@ describe("State Conflict Resolution", () => {
       });
 
       const diagnostics = await diagnose(tempDir);
-      const mismatch = diagnostics.filter((d) => d.code === "STATE_FILE_MISMATCH");
+      const mismatch = diagnostics.filter(
+        (d) => d.code === "STATE_FILE_MISMATCH",
+      );
 
       expect(mismatch).toHaveLength(0);
     });
@@ -407,7 +491,9 @@ describe("State Conflict Resolution", () => {
 
       const diagnostics = await diagnose(tempDir);
 
-      expect(diagnostics.filter((d) => d.code === "STATE_FILE_MISMATCH")).toHaveLength(0);
+      expect(
+        diagnostics.filter((d) => d.code === "STATE_FILE_MISMATCH"),
+      ).toHaveLength(0);
     });
 
     it("84: in_pr with all artifacts present - valid state", async () => {
@@ -420,12 +506,21 @@ describe("State Conflict Resolution", () => {
       await createResearch(itemDir);
       await createPlan(itemDir);
       await createPrd(itemDir, [
-        { id: "US-001", title: "Story", acceptance_criteria: [], priority: 1, status: "done", notes: "" },
+        {
+          id: "US-001",
+          title: "Story",
+          acceptance_criteria: [],
+          priority: 1,
+          status: "done",
+          notes: "",
+        },
       ]);
 
       const diagnostics = await diagnose(tempDir);
 
-      expect(diagnostics.filter((d) => d.code === "STATE_FILE_MISMATCH")).toHaveLength(0);
+      expect(
+        diagnostics.filter((d) => d.code === "STATE_FILE_MISMATCH"),
+      ).toHaveLength(0);
     });
 
     it("85: done with all artifacts - valid state", async () => {
@@ -438,12 +533,21 @@ describe("State Conflict Resolution", () => {
       await createResearch(itemDir);
       await createPlan(itemDir);
       await createPrd(itemDir, [
-        { id: "US-001", title: "Story", acceptance_criteria: [], priority: 1, status: "done", notes: "" },
+        {
+          id: "US-001",
+          title: "Story",
+          acceptance_criteria: [],
+          priority: 1,
+          status: "done",
+          notes: "",
+        },
       ]);
 
       const diagnostics = await diagnose(tempDir);
 
-      expect(diagnostics.filter((d) => d.code === "STATE_FILE_MISMATCH")).toHaveLength(0);
+      expect(
+        diagnostics.filter((d) => d.code === "STATE_FILE_MISMATCH"),
+      ).toHaveLength(0);
     });
   });
 
@@ -458,11 +562,20 @@ describe("State Conflict Resolution", () => {
       await createResearch(itemDir);
       await createPlan(itemDir);
       await createPrd(itemDir, [
-        { id: "US-001", title: "Story", acceptance_criteria: [], priority: 1, status: "done", notes: "" },
+        {
+          id: "US-001",
+          title: "Story",
+          acceptance_criteria: [],
+          priority: 1,
+          status: "done",
+          notes: "",
+        },
       ]);
 
       const diagnostics = await diagnose(tempDir);
-      const mismatch = diagnostics.find((d) => d.code === "STATE_FILE_MISMATCH");
+      const mismatch = diagnostics.find(
+        (d) => d.code === "STATE_FILE_MISMATCH",
+      );
 
       expect(mismatch).toBeDefined();
       expect(mismatch?.message).toContain("pr_url is not set");
@@ -479,7 +592,9 @@ describe("State Conflict Resolution", () => {
 
       const diagnostics = await diagnose(tempDir);
 
-      expect(diagnostics.filter((d) => d.code === "STATE_FILE_MISMATCH")).toHaveLength(0);
+      expect(
+        diagnostics.filter((d) => d.code === "STATE_FILE_MISMATCH"),
+      ).toHaveLength(0);
     });
 
     it("88: item.branch set but different from expected - valid state", async () => {
@@ -493,7 +608,9 @@ describe("State Conflict Resolution", () => {
 
       const diagnostics = await diagnose(tempDir);
 
-      expect(diagnostics.filter((d) => d.code === "STATE_FILE_MISMATCH")).toHaveLength(0);
+      expect(
+        diagnostics.filter((d) => d.code === "STATE_FILE_MISMATCH"),
+      ).toHaveLength(0);
     });
 
     it("89: All stories done, implementing, no PR - should emit diagnostic about ready for PR", async () => {
@@ -506,11 +623,20 @@ describe("State Conflict Resolution", () => {
       await createResearch(itemDir);
       await createPlan(itemDir);
       await createPrd(itemDir, [
-        { id: "US-001", title: "Story", acceptance_criteria: [], priority: 1, status: "done", notes: "" },
+        {
+          id: "US-001",
+          title: "Story",
+          acceptance_criteria: [],
+          priority: 1,
+          status: "done",
+          notes: "",
+        },
       ]);
 
       const diagnostics = await diagnose(tempDir);
-      const mismatch = diagnostics.find((d) => d.code === "STATE_FILE_MISMATCH");
+      const mismatch = diagnostics.find(
+        (d) => d.code === "STATE_FILE_MISMATCH",
+      );
 
       expect(mismatch).toBeDefined();
       expect(mismatch?.message).toContain("no pending stories");
@@ -519,29 +645,39 @@ describe("State Conflict Resolution", () => {
 
   describe("Edge Cases - Invalid Artifact Combinations", () => {
     it("planned state with only plan.md (no prd.json) - should emit diagnostic", async () => {
-      const itemDir = await createItem(tempDir, "001-item", { state: "planned" });
+      const itemDir = await createItem(tempDir, "001-item", {
+        state: "planned",
+      });
       await createPlan(itemDir);
 
       const diagnostics = await diagnose(tempDir);
-      const mismatch = diagnostics.find((d) => d.code === "STATE_FILE_MISMATCH");
+      const mismatch = diagnostics.find(
+        (d) => d.code === "STATE_FILE_MISMATCH",
+      );
 
       expect(mismatch).toBeDefined();
       expect(mismatch?.message).toContain("prd.json is missing");
     });
 
     it("planned state with only prd.json (no plan.md) - should emit diagnostic", async () => {
-      const itemDir = await createItem(tempDir, "001-item", { state: "planned" });
+      const itemDir = await createItem(tempDir, "001-item", {
+        state: "planned",
+      });
       await createPrd(itemDir);
 
       const diagnostics = await diagnose(tempDir);
-      const mismatch = diagnostics.find((d) => d.code === "STATE_FILE_MISMATCH");
+      const mismatch = diagnostics.find(
+        (d) => d.code === "STATE_FILE_MISMATCH",
+      );
 
       expect(mismatch).toBeDefined();
       expect(mismatch?.message).toContain("plan.md is missing");
     });
 
     it("implementing state with invalid prd.json - should emit INVALID_PRD", async () => {
-      const itemDir = await createItem(tempDir, "001-item", { state: "implementing" });
+      const itemDir = await createItem(tempDir, "001-item", {
+        state: "implementing",
+      });
       await createResearch(itemDir);
       await createPlan(itemDir);
       await fs.writeFile(path.join(itemDir, "prd.json"), "{ invalid json }");
@@ -554,12 +690,16 @@ describe("State Conflict Resolution", () => {
     });
 
     it("researched state with valid research.md - no diagnostic", async () => {
-      const itemDir = await createItem(tempDir, "001-item", { state: "researched" });
+      const itemDir = await createItem(tempDir, "001-item", {
+        state: "researched",
+      });
       await createResearch(itemDir);
 
       const diagnostics = await diagnose(tempDir);
 
-      expect(diagnostics.filter((d) => d.code === "STATE_FILE_MISMATCH")).toHaveLength(0);
+      expect(
+        diagnostics.filter((d) => d.code === "STATE_FILE_MISMATCH"),
+      ).toHaveLength(0);
     });
 
     it("raw state with no artifacts - no diagnostic", async () => {
@@ -567,7 +707,9 @@ describe("State Conflict Resolution", () => {
 
       const diagnostics = await diagnose(tempDir);
 
-      expect(diagnostics.filter((d) => d.code === "STATE_FILE_MISMATCH")).toHaveLength(0);
+      expect(
+        diagnostics.filter((d) => d.code === "STATE_FILE_MISMATCH"),
+      ).toHaveLength(0);
     });
   });
 
@@ -575,18 +717,26 @@ describe("State Conflict Resolution", () => {
     it("handles multiple items with varying artifact completeness", async () => {
       const item1Dir = await createItem(tempDir, "001-raw", { state: "idea" });
 
-      const item2Dir = await createItem(tempDir, "002-researched", { state: "researched" });
+      const item2Dir = await createItem(tempDir, "002-researched", {
+        state: "researched",
+      });
       await createResearch(item2Dir);
 
-      const item3Dir = await createItem(tempDir, "003-planned", { state: "planned" });
+      const item3Dir = await createItem(tempDir, "003-planned", {
+        state: "planned",
+      });
       await createResearch(item3Dir);
       await createPlan(item3Dir);
       await createPrd(item3Dir);
 
-      const item4Dir = await createItem(tempDir, "004-broken", { state: "researched" });
+      const item4Dir = await createItem(tempDir, "004-broken", {
+        state: "researched",
+      });
 
       const diagnostics = await diagnose(tempDir);
-      const mismatches = diagnostics.filter((d) => d.code === "STATE_FILE_MISMATCH");
+      const mismatches = diagnostics.filter(
+        (d) => d.code === "STATE_FILE_MISMATCH",
+      );
 
       expect(mismatches).toHaveLength(1);
       expect(mismatches[0].itemId).toBe("004-broken");
@@ -595,11 +745,15 @@ describe("State Conflict Resolution", () => {
     it("validates all items in items folder", async () => {
       await createItem(tempDir, "001-broken", { state: "researched" });
 
-      const item2Dir = await createItem(tempDir, "002-valid", { state: "researched" });
+      const item2Dir = await createItem(tempDir, "002-valid", {
+        state: "researched",
+      });
       await createResearch(item2Dir);
 
       const diagnostics = await diagnose(tempDir);
-      const mismatches = diagnostics.filter((d) => d.code === "STATE_FILE_MISMATCH");
+      const mismatches = diagnostics.filter(
+        (d) => d.code === "STATE_FILE_MISMATCH",
+      );
 
       expect(mismatches).toHaveLength(1);
       expect(mismatches[0].itemId).toBe("001-broken");
@@ -608,27 +762,49 @@ describe("State Conflict Resolution", () => {
 
   describe("PRD Story Status Validation", () => {
     it("implementing with mixed story statuses - no diagnostic", async () => {
-      const itemDir = await createItem(tempDir, "001-item", { state: "implementing" });
+      const itemDir = await createItem(tempDir, "001-item", {
+        state: "implementing",
+      });
       await createResearch(itemDir);
       await createPlan(itemDir);
       await createPrd(itemDir, [
-        { id: "US-001", title: "Done Story", acceptance_criteria: [], priority: 1, status: "done", notes: "" },
-        { id: "US-002", title: "Pending Story", acceptance_criteria: [], priority: 2, status: "pending", notes: "" },
+        {
+          id: "US-001",
+          title: "Done Story",
+          acceptance_criteria: [],
+          priority: 1,
+          status: "done",
+          notes: "",
+        },
+        {
+          id: "US-002",
+          title: "Pending Story",
+          acceptance_criteria: [],
+          priority: 2,
+          status: "pending",
+          notes: "",
+        },
       ]);
 
       const diagnostics = await diagnose(tempDir);
 
-      expect(diagnostics.filter((d) => d.code === "STATE_FILE_MISMATCH")).toHaveLength(0);
+      expect(
+        diagnostics.filter((d) => d.code === "STATE_FILE_MISMATCH"),
+      ).toHaveLength(0);
     });
 
     it("implementing with empty stories array - should emit diagnostic", async () => {
-      const itemDir = await createItem(tempDir, "001-item", { state: "implementing" });
+      const itemDir = await createItem(tempDir, "001-item", {
+        state: "implementing",
+      });
       await createResearch(itemDir);
       await createPlan(itemDir);
       await createPrd(itemDir, []);
 
       const diagnostics = await diagnose(tempDir);
-      const mismatch = diagnostics.find((d) => d.code === "STATE_FILE_MISMATCH");
+      const mismatch = diagnostics.find(
+        (d) => d.code === "STATE_FILE_MISMATCH",
+      );
 
       expect(mismatch).toBeDefined();
       expect(mismatch?.message).toContain("no pending stories");

@@ -11,7 +11,7 @@ import {
   type ConfigResolved,
   type ConfigOverrides,
 } from "../config";
-import { ConfigSchema } from "../schemas";
+import { ConfigSchema, type Config } from "../schemas";
 import { SchemaValidationError, InvalidJsonError } from "../errors";
 
 describe("loadConfig", () => {
@@ -44,7 +44,7 @@ describe("loadConfig", () => {
     };
     await fs.writeFile(
       path.join(tempDir, ".wreckit", "config.json"),
-      JSON.stringify(partialConfig)
+      JSON.stringify(partialConfig),
     );
 
     const result = await loadConfig(tempDir);
@@ -89,7 +89,7 @@ describe("loadConfig", () => {
     };
     await fs.writeFile(
       path.join(tempDir, ".wreckit", "config.json"),
-      JSON.stringify(fullConfig)
+      JSON.stringify(fullConfig),
     );
 
     const result = await loadConfig(tempDir);
@@ -106,7 +106,7 @@ describe("loadConfig", () => {
     };
     await fs.writeFile(
       path.join(tempDir, ".wreckit", "config.json"),
-      JSON.stringify(invalidConfig)
+      JSON.stringify(invalidConfig),
     );
 
     await expect(loadConfig(tempDir)).rejects.toThrow(SchemaValidationError);
@@ -115,7 +115,7 @@ describe("loadConfig", () => {
   it("throws InvalidJsonError for malformed JSON", async () => {
     await fs.writeFile(
       path.join(tempDir, ".wreckit", "config.json"),
-      "{ invalid json }"
+      "{ invalid json }",
     );
 
     await expect(loadConfig(tempDir)).rejects.toThrow(InvalidJsonError);
@@ -152,7 +152,7 @@ describe("mergeWithDefaults", () => {
         args: ["--custom"],
         completion_signal: "CUSTOM_DONE",
       },
-    };
+    } as unknown as Partial<Config>;
 
     const result = mergeWithDefaults(partial);
 
@@ -281,7 +281,7 @@ describe("createDefaultConfig", () => {
 
   beforeEach(async () => {
     tempDir = await fs.mkdtemp(
-      path.join(os.tmpdir(), "wreckit-createconfig-test-")
+      path.join(os.tmpdir(), "wreckit-createconfig-test-"),
     );
   });
 

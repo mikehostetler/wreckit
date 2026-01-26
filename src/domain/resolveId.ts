@@ -87,7 +87,7 @@ export async function resolveId(root: string, input: string): Promise<string> {
   if (numericMatches.length > 1) {
     throw new AmbiguousIdError(
       input,
-      numericMatches.map((item) => item.id)
+      numericMatches.map((item) => item.id),
     );
   }
 
@@ -99,7 +99,7 @@ export async function resolveId(root: string, input: string): Promise<string> {
   if (slugMatches.length > 1) {
     throw new AmbiguousIdError(
       input,
-      slugMatches.map((item) => item.id)
+      slugMatches.map((item) => item.id),
     );
   }
 

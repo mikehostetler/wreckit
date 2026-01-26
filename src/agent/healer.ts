@@ -10,7 +10,12 @@ import * as path from "node:path";
 import { spawn } from "node:child_process";
 import type { Logger } from "../logging";
 import { pathExists } from "../fs/util";
-import { getWreckitDir, getBatchProgressPath, getIndexPath, getConfigPath } from "../fs/paths";
+import {
+  getWreckitDir,
+  getBatchProgressPath,
+  getIndexPath,
+  getConfigPath,
+} from "../fs/paths";
 import type { ErrorDiagnosis } from "./errorDetector";
 
 /**
@@ -41,7 +46,7 @@ export async function applyHealing(
   diagnosis: ErrorDiagnosis,
   cwd: string,
   config: HealingConfig,
-  logger: Logger
+  logger: Logger,
 ): Promise<HealingResult> {
   const startTime = Date.now();
 
@@ -57,7 +62,8 @@ export async function applyHealing(
   }
 
   // Check if this repair is allowed by auto_repair setting
-  const isSafeRepair = diagnosis.errorType === "git_lock" || diagnosis.errorType === "npm_failure";
+  const isSafeRepair =
+    diagnosis.errorType === "git_lock" || diagnosis.errorType === "npm_failure";
   if (config.autoRepair === false) {
     return {
       success: false,
@@ -113,7 +119,11 @@ export async function applyHealing(
  * Remove stale .git/index.lock file
  * Follows FileLock stale detection pattern from src/fs/lock.ts:156-196
  */
-async function removeGitLock(cwd: string, timeoutMs: number, logger: Logger): Promise<HealingResult> {
+async function removeGitLock(
+  cwd: string,
+  timeoutMs: number,
+  logger: Logger,
+): Promise<HealingResult> {
   const startTime = Date.now();
   const lockPath = path.join(cwd, ".git", "index.lock");
 
@@ -157,9 +167,14 @@ async function removeGitLock(cwd: string, timeoutMs: number, logger: Logger): Pr
       try {
         process.kill(pid, 0); // Signal 0 checks if process exists
         // Process is running, check timestamp
-        if (timestamp !== undefined && Date.now() - timestamp > STALE_THRESHOLD_MS) {
+        if (
+          timestamp !== undefined &&
+          Date.now() - timestamp > STALE_THRESHOLD_MS
+        ) {
           isStale = true;
-          logger.info(`Git lock is stale (timestamp: ${new Date(timestamp).toISOString()})`);
+          logger.info(
+            `Git lock is stale (timestamp: ${new Date(timestamp).toISOString()})`,
+          );
         } else {
           return {
             success: false,
@@ -216,7 +231,11 @@ async function removeGitLock(cwd: string, timeoutMs: number, logger: Logger): Pr
 /**
  * Run npm install to repair missing dependencies
  */
-async function runNpmInstall(cwd: string, timeoutMs: number, logger: Logger): Promise<HealingResult> {
+async function runNpmInstall(
+  cwd: string,
+  timeoutMs: number,
+  logger: Logger,
+): Promise<HealingResult> {
   const startTime = Date.now();
 
   // Check if package.json exists
@@ -271,7 +290,10 @@ async function runNpmInstall(cwd: string, timeoutMs: number, logger: Logger): Pr
 /**
  * Validate and repair critical JSON files
  */
-async function validateAndRepairJson(cwd: string, logger: Logger): Promise<HealingResult> {
+async function validateAndRepairJson(
+  cwd: string,
+  logger: Logger,
+): Promise<HealingResult> {
   const startTime = Date.now();
 
   // Critical JSON files to check
@@ -281,7 +303,8 @@ async function validateAndRepairJson(cwd: string, logger: Logger): Promise<Heali
     { path: getBatchProgressPath(cwd), name: "batch-progress.json" },
   ];
 
-  const corruptedFiles: Array<{ path: string; name: string; error: string }> = [];
+  const corruptedFiles: Array<{ path: string; name: string; error: string }> =
+    [];
 
   // Validate each file
   for (const file of criticalFiles) {
@@ -323,7 +346,9 @@ async function validateAndRepairJson(cwd: string, logger: Logger): Promise<Heali
         errors.push(`${file.name}: no backup found`);
       }
     } catch (err) {
-      errors.push(`${file.name}: ${err instanceof Error ? err.message : String(err)}`);
+      errors.push(
+        `${file.name}: ${err instanceof Error ? err.message : String(err)}`,
+      );
     }
   }
 
@@ -349,7 +374,11 @@ async function validateAndRepairJson(cwd: string, logger: Logger): Promise<Heali
 /**
  * Restore a file from the most recent backup
  */
-async function restoreFromBackup(cwd: string, filePath: string, logger: Logger): Promise<boolean> {
+async function restoreFromBackup(
+  cwd: string,
+  filePath: string,
+  logger: Logger,
+): Promise<boolean> {
   const wreckitDir = getWreckitDir(cwd);
   const backupsDir = path.join(wreckitDir, "backups");
 
@@ -415,7 +444,7 @@ function spawnCommand(
   command: string,
   args: string[],
   cwd: string,
-  timeoutMs: number
+  timeoutMs: number,
 ): Promise<SpawnResult> {
   return new Promise((resolve, reject) => {
     let stdout = "";

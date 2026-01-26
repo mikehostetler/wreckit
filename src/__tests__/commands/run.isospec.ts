@@ -1,4 +1,12 @@
-import { describe, it, expect, beforeEach, afterEach, vi, mock } from "bun:test";
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  vi,
+  mock,
+} from "bun:test";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import * as os from "node:os";
@@ -95,7 +103,7 @@ describe("runCommand", () => {
     await fs.writeFile(
       path.join(itemDir, "item.json"),
       JSON.stringify(item, null, 2),
-      "utf-8"
+      "utf-8",
     );
     return itemDir;
   }
@@ -106,7 +114,7 @@ describe("runCommand", () => {
     await fs.writeFile(
       path.join(itemDir, "item.json"),
       JSON.stringify(item, null, 2),
-      "utf-8"
+      "utf-8",
     );
   }
 
@@ -272,7 +280,11 @@ describe("runCommand", () => {
       const item = createTestItem({ state: "idea" });
       const itemDir = await setupItem(item);
 
-      await fs.writeFile(path.join(itemDir, "research.md"), "# Research", "utf-8");
+      await fs.writeFile(
+        path.join(itemDir, "research.md"),
+        "# Research",
+        "utf-8",
+      );
 
       let currentItem = { ...item };
 
@@ -291,11 +303,11 @@ describe("runCommand", () => {
       await runCommand(item.id, {}, mockLogger);
 
       expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.stringContaining("Skipping research phase")
+        expect.stringContaining("Skipping research phase"),
       );
       expect(mockedRunPhaseResearch).toHaveBeenCalledWith(
         item.id,
-        expect.objectContaining({ force: false })
+        expect.objectContaining({ force: false }),
       );
     });
 
@@ -306,8 +318,13 @@ describe("runCommand", () => {
       await fs.writeFile(path.join(itemDir, "plan.md"), "# Plan", "utf-8");
       await fs.writeFile(
         path.join(itemDir, "prd.json"),
-        JSON.stringify({ schema_version: 1, id: item.id, branch_name: "test", user_stories: [] }),
-        "utf-8"
+        JSON.stringify({
+          schema_version: 1,
+          id: item.id,
+          branch_name: "test",
+          user_stories: [],
+        }),
+        "utf-8",
       );
 
       let currentItem = { ...item };
@@ -327,11 +344,11 @@ describe("runCommand", () => {
       await runCommand(item.id, {}, mockLogger);
 
       expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.stringContaining("Skipping plan phase")
+        expect.stringContaining("Skipping plan phase"),
       );
       expect(mockedRunPhasePlan).toHaveBeenCalledWith(
         item.id,
-        expect.objectContaining({ force: false })
+        expect.objectContaining({ force: false }),
       );
     });
 
@@ -339,7 +356,11 @@ describe("runCommand", () => {
       const item = createTestItem({ state: "idea" });
       const itemDir = await setupItem(item);
 
-      await fs.writeFile(path.join(itemDir, "research.md"), "# Research", "utf-8");
+      await fs.writeFile(
+        path.join(itemDir, "research.md"),
+        "# Research",
+        "utf-8",
+      );
 
       let currentItem = { ...item };
 
@@ -358,11 +379,11 @@ describe("runCommand", () => {
       await runCommand(item.id, { force: true }, mockLogger);
 
       expect(mockLogger.info).not.toHaveBeenCalledWith(
-        expect.stringContaining("Skipping")
+        expect.stringContaining("Skipping"),
       );
       expect(mockedRunPhaseResearch).toHaveBeenCalledWith(
         item.id,
-        expect.objectContaining({ force: true })
+        expect.objectContaining({ force: true }),
       );
     });
   });
@@ -373,11 +394,11 @@ describe("runCommand", () => {
       await setupItem(item);
 
       mockedRunPhaseResearch.mockResolvedValue(
-        createFailureResult(item, "Agent failed")
+        createFailureResult(item, "Agent failed"),
       );
 
       await expect(runCommand(item.id, {}, mockLogger)).rejects.toThrow(
-        "Agent failed"
+        "Agent failed",
       );
 
       expect(mockedRunPhasePlan).not.toHaveBeenCalled();
@@ -388,13 +409,13 @@ describe("runCommand", () => {
       await setupItem(item);
 
       mockedRunPhaseResearch.mockResolvedValue(
-        createFailureResult(item, "Agent failed")
+        createFailureResult(item, "Agent failed"),
       );
 
       await expect(runCommand(item.id, {}, mockLogger)).rejects.toThrow();
 
       expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.stringContaining(item.id)
+        expect.stringContaining(item.id),
       );
     });
   });
@@ -407,7 +428,7 @@ describe("runCommand", () => {
       await runCommand(item.id, {}, mockLogger);
 
       expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.stringContaining("already done")
+        expect.stringContaining("already done"),
       );
       expect(mockedRunPhaseResearch).not.toHaveBeenCalled();
       expect(mockedRunPhasePlan).not.toHaveBeenCalled();
@@ -418,7 +439,7 @@ describe("runCommand", () => {
 
     it("non-existent item -> error", async () => {
       await expect(
-        runCommand("nonexistent/001-missing", {}, mockLogger)
+        runCommand("nonexistent/001-missing", {}, mockLogger),
       ).rejects.toThrow("Item not found");
     });
   });
@@ -431,13 +452,13 @@ describe("runCommand", () => {
       await runCommand(item.id, { dryRun: true }, mockLogger);
 
       expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.stringContaining("DRY RUN")
+        expect.stringContaining("DRY RUN"),
       );
       expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.stringContaining("Next Phase:")
+        expect.stringContaining("Next Phase:"),
       );
       expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.stringContaining("No changes made")
+        expect.stringContaining("No changes made"),
       );
       expect(mockedRunPhaseResearch).not.toHaveBeenCalled();
     });

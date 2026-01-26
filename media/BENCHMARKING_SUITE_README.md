@@ -11,6 +11,7 @@ This directory contains media visualizations for the **Benchmarking Suite for Re
 **Rendered Video**: `media/videos/benchmarking_suite_visualization/480p15/BenchmarkingSuiteScene.mp4`
 
 **Description**: A mathematical animation showing:
+
 - Architecture diagram of the benchmarking suite
 - Resumability benchmark visualization with progress bars
 - Concurrency scaling bar chart showing throughput vs threads
@@ -18,6 +19,7 @@ This directory contains media visualizations for the **Benchmarking Suite for Re
 - Summary of paper-ready metrics
 
 **To render**:
+
 ```bash
 # Low quality (for testing)
 manim render benchmarking_suite_visualization.py BenchmarkingSuiteScene -pql
@@ -33,6 +35,7 @@ manim render benchmarking_suite_visualization.py BenchmarkingSuiteScene -pqh
 **Root Configuration**: `remotion-root.tsx`
 
 **Description**: A React-based video composition featuring:
+
 - Animated title sequence
 - Resumability metrics with animated progress bars
 - Concurrency scaling with animated bar chart
@@ -41,6 +44,7 @@ manim render benchmarking_suite_visualization.py BenchmarkingSuiteScene -pqh
 - Duration: ~16 seconds (500 frames at 30fps)
 
 **To render** (requires Remotion):
+
 ```bash
 # Install Remotion if needed
 npm install --save-dev remotion@^4.0 @remotion/cli
@@ -79,12 +83,14 @@ The visualizations showcase the benchmarking suite's key capabilities:
 ## Technical Details
 
 ### Manim Scene Structure
+
 - Total animations: 45
 - Duration: ~30 seconds
 - Resolution: 854x480 (480p15) or 1920x1080 (1080p)
 - Colors: Blue (suite), Green (resumability), Yellow (concurrency), Purple (outputs)
 
 ### Remotion Composition Structure
+
 - Duration: 500 frames (16.67 seconds at 30fps)
 - Resolution: 1920x1080
 - Components:

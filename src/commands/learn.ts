@@ -1,5 +1,6 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
+import * as readline from "node:readline";
 import type { Logger } from "../logging";
 import type { SkillConfig } from "../schemas";
 import { SkillConfigSchema } from "../schemas";
@@ -7,7 +8,10 @@ import { findRootFromOptions, getSkillsPath } from "../fs/paths";
 import { loadConfig, type ConfigResolved } from "../config";
 import { loadPromptTemplate, renderPrompt, type PromptName } from "../prompts";
 import { runAgentUnion, getAgentConfigUnion } from "../agent/runner";
-import { getAllowedToolsForPhase, PHASE_TOOL_ALLOWLISTS } from "../agent/toolAllowlist";
+import {
+  getAllowedToolsForPhase,
+  PHASE_TOOL_ALLOWLISTS,
+} from "../agent/toolAllowlist";
 import { pathExists } from "../fs/util";
 import { scanItems } from "../domain/indexing";
 import { resolveId } from "../domain/resolveId";
@@ -34,7 +38,7 @@ export interface LearnOptions {
 async function determineSourceItems(
   root: string,
   options: LearnOptions,
-  logger: Logger
+  logger: Logger,
 ): Promise<{ items: any[]; context: string }> {
   const allItems = await scanItems(root);
 
@@ -50,27 +54,33 @@ async function determineSourceItems(
 
   // --phase <state>: Extract from items in specific state
   if (options.phase) {
-    const filteredItems = allItems.filter(i => i.state === options.phase);
-    logger.info(`Extracting patterns from ${filteredItems.length} items in state: ${options.phase}`);
+    const filteredItems = allItems.filter((i) => i.state === options.phase);
+    logger.info(
+      `Extracting patterns from ${filteredItems.length} items in state: ${options.phase}`,
+    );
     const context = `Source items: ${filteredItems.length} items in state '${options.phase}'`;
     return { items: filteredItems, context };
   }
 
   // --all: Extract from all completed items
   if (options.all) {
-    const completedItems = allItems.filter(i => i.state === "done");
-    logger.info(`Extracting patterns from ${completedItems.length} completed items`);
+    const completedItems = allItems.filter((i) => i.state === "done");
+    logger.info(
+      `Extracting patterns from ${completedItems.length} completed items`,
+    );
     const context = `Source items: ${completedItems.length} completed items`;
     return { items: completedItems, context };
   }
 
   // Default: extract from most recent 5 completed items
   const completedItems = allItems
-    .filter(i => i.state === "done")
+    .filter((i) => i.state === "done")
     .sort((a, b) => b.updated_at.localeCompare(a.updated_at));
 
   const recentItems = completedItems.slice(0, 5);
-  logger.info(`Extracting patterns from ${recentItems.length} recent completed items (default)`);
+  logger.info(
+    `Extracting patterns from ${recentItems.length} recent completed items (default)`,
+  );
   const context = `Source items: ${recentItems.length} recent completed items`;
   return { items: recentItems, context };
 }
@@ -91,10 +101,40 @@ async function loadExistingSkills(root: string): Promise<SkillConfig | null> {
     }
   } catch (err) {
     if ((err as NodeJS.ErrnoException).code === "ENOENT") {
-      return null;  // No existing skills.json
+      return null; // No existing skills.json
     }
     throw err;
   }
+}
+
+/**
+ * Perform append merge of skill configs.
+ * Extracted as a helper to reuse in both append and ask strategies.
+ */
+function performAppendMerge(
+  existing: SkillConfig,
+  extracted: SkillConfig,
+): SkillConfig {
+  // Merge phase_skills: keep existing, add new
+  const phaseSkills = { ...existing.phase_skills };
+  for (const [phase, skillIds] of Object.entries(extracted.phase_skills)) {
+    const existingIds = phaseSkills[phase] || [];
+    const newIds = skillIds.filter((id) => !existingIds.includes(id));
+    phaseSkills[phase] = [...existingIds, ...newIds];
+  }
+
+  // Merge skills: keep existing, add new (by ID)
+  const existingSkillsMap = new Map(existing.skills.map((s) => [s.id, s]));
+  for (const skill of extracted.skills) {
+    if (!existingSkillsMap.has(skill.id)) {
+      existingSkillsMap.set(skill.id, skill);
+    }
+  }
+
+  return {
+    phase_skills: phaseSkills,
+    skills: Array.from(existingSkillsMap.values()),
+  };
 }
 
 /**
@@ -103,42 +143,31 @@ async function loadExistingSkills(root: string): Promise<SkillConfig | null> {
 export function mergeSkillConfigs(
   existing: SkillConfig | null,
   extracted: SkillConfig,
-  strategy: "append" | "replace" | "ask"
+  strategy: "append" | "replace" | "ask",
 ): SkillConfig {
   if (!existing) {
-    return extracted;  // No existing skills, use extracted
+    return extracted; // No existing skills, use extracted
   }
 
   switch (strategy) {
     case "replace":
-      return extracted;  // Replace entirely
+      return extracted; // Replace entirely
 
     case "append":
-      // Merge phase_skills: keep existing, add new
-      const phaseSkills = { ...existing.phase_skills };
-      for (const [phase, skillIds] of Object.entries(extracted.phase_skills)) {
-        const existingIds = phaseSkills[phase] || [];
-        const newIds = skillIds.filter(id => !existingIds.includes(id));
-        phaseSkills[phase] = [...existingIds, ...newIds];
+      return performAppendMerge(existing, extracted);
+
+    case "ask": {
+      // Check if running in TTY environment
+      if (!process.stdout.isTTY) {
+        console.warn(
+          "Not a TTY environment. Falling back to 'append' merge strategy.",
+        );
+        return performAppendMerge(existing, extracted);
       }
 
-      // Merge skills: keep existing, add new (by ID)
-      const existingSkillsMap = new Map(
-        existing.skills.map(s => [s.id, s])
-      );
-      for (const skill of extracted.skills) {
-        if (!existingSkillsMap.has(skill.id)) {
-          existingSkillsMap.set(skill.id, skill);
-        }
-      }
-
-      return {
-        phase_skills: phaseSkills,
-        skills: Array.from(existingSkillsMap.values())
-      };
-
-    case "ask":
-      throw new Error("Interactive 'ask' merge strategy not yet implemented. Use 'append' or 'replace'.");
+      // Interactive merge logic will be added in Phase 2
+      throw new Error("Interactive merge logic not yet implemented.");
+    }
   }
 }
 
@@ -146,22 +175,19 @@ export function mergeSkillConfigs(
  * Validate that skill tools are allowed in their assigned phases.
  * Issues warnings but does not throw errors.
  */
-function validateSkillTools(
-  skillConfig: SkillConfig,
-  logger: Logger
-): void {
+function validateSkillTools(skillConfig: SkillConfig, logger: Logger): void {
   for (const skill of skillConfig.skills) {
     for (const [phase, skillIds] of Object.entries(skillConfig.phase_skills)) {
       if (skillIds.includes(skill.id)) {
         const phaseTools = PHASE_TOOL_ALLOWLISTS[phase];
         if (phaseTools) {
           const invalidTools = skill.tools.filter(
-            t => !phaseTools.includes(t as ToolName)
+            (t) => !phaseTools.includes(t as ToolName),
           );
           if (invalidTools.length > 0) {
             logger.warn(
               `Skill '${skill.id}' requests tools not allowed in '${phase}' phase: ` +
-              invalidTools.join(", ")
+                invalidTools.join(", "),
             );
           }
         }
@@ -179,13 +205,14 @@ function validateSkillTools(
  */
 export async function learnCommand(
   options: LearnOptions,
-  logger: Logger
+  logger: Logger,
 ): Promise<void> {
   const root = findRootFromOptions(options);
   const config = await loadConfig(root);
 
   // Determine source items
-  const { items: sourceItems, context: sourceContext } = await determineSourceItems(root, options, logger);
+  const { items: sourceItems, context: sourceContext } =
+    await determineSourceItems(root, options, logger);
 
   if (sourceItems.length === 0) {
     logger.warn("No source items found for pattern extraction");
@@ -225,7 +252,8 @@ export async function learnCommand(
     id: "learn",
     title: "Pattern Extraction",
     section: "skills",
-    overview: "Extract and compile codebase patterns into reusable Skill artifacts",
+    overview:
+      "Extract and compile codebase patterns into reusable Skill artifacts",
     item_path: root,
     branch_name: "",
     base_branch: config.base_branch,
@@ -269,7 +297,9 @@ export async function learnCommand(
 
   // Validate skills.json format
   const skillsContent = await fs.readFile(outputPath, "utf-8");
-  const extractedValidation = SkillConfigSchema.safeParse(JSON.parse(skillsContent));
+  const extractedValidation = SkillConfigSchema.safeParse(
+    JSON.parse(skillsContent),
+  );
 
   if (!extractedValidation.success) {
     const errorMsg = `Extracted skills.json format validation failed:\n${extractedValidation.error.message}`;
@@ -281,7 +311,7 @@ export async function learnCommand(
   const finalSkills = mergeSkillConfigs(
     existingSkills,
     extractedValidation.data,
-    options.merge || "append"
+    options.merge || "append",
   );
 
   // Validate tool permissions

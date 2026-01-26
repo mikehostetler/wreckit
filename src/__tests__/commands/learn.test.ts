@@ -66,11 +66,16 @@ describe("learn command", () => {
 
       // Should have both skills
       expect(result.skills).toHaveLength(2);
-      expect(result.skills.find(s => s.id === "existing-skill")).toBeDefined();
-      expect(result.skills.find(s => s.id === "new-skill")).toBeDefined();
+      expect(
+        result.skills.find((s) => s.id === "existing-skill"),
+      ).toBeDefined();
+      expect(result.skills.find((s) => s.id === "new-skill")).toBeDefined();
 
       // Should merge phase_skills
-      expect(result.phase_skills.research).toEqual(["existing-skill", "new-skill"]);
+      expect(result.phase_skills.research).toEqual([
+        "existing-skill",
+        "new-skill",
+      ]);
       expect(result.phase_skills.plan).toEqual(["new-skill"]);
     });
 
@@ -153,20 +158,60 @@ describe("learn command", () => {
       expect(result.phase_skills).toEqual(extracted.phase_skills);
     });
 
-    it("should throw error for ask strategy", () => {
-      const existing: SkillConfig = {
-        phase_skills: {},
-        skills: [],
-      };
+    describe("ask strategy", () => {
+      it("should fall back to append when not in TTY environment", () => {
+        const originalIsTTY = process.stdout.isTTY;
+        Object.defineProperty(process.stdout, "isTTY", {
+          value: false,
+          configurable: true,
+        });
 
-      const extracted: SkillConfig = {
-        phase_skills: {},
-        skills: [],
-      };
+        try {
+          const existing: SkillConfig = {
+            phase_skills: {
+              research: ["existing-skill"],
+            },
+            skills: [
+              {
+                id: "existing-skill",
+                name: "Existing Skill",
+                description: "Existing skill",
+                tools: ["Read"],
+              },
+            ],
+          };
 
-      expect(() => mergeSkillConfigs(existing, extracted, "ask")).toThrow(
-        "Interactive 'ask' merge strategy not yet implemented"
-      );
+          const extracted: SkillConfig = {
+            phase_skills: {
+              plan: ["new-skill"],
+            },
+            skills: [
+              {
+                id: "new-skill",
+                name: "New Skill",
+                description: "New skill",
+                tools: ["Grep"],
+              },
+            ],
+          };
+
+          const result = mergeSkillConfigs(existing, extracted, "ask");
+
+          // Should behave like append (fallback)
+          expect(result.skills).toHaveLength(2);
+          expect(
+            result.skills.find((s) => s.id === "existing-skill"),
+          ).toBeDefined();
+          expect(result.skills.find((s) => s.id === "new-skill")).toBeDefined();
+          expect(result.phase_skills.research).toEqual(["existing-skill"]);
+          expect(result.phase_skills.plan).toEqual(["new-skill"]);
+        } finally {
+          Object.defineProperty(process.stdout, "isTTY", {
+            value: originalIsTTY,
+            configurable: true,
+          });
+        }
+      });
     });
 
     it("should merge complex phase_skills mappings", () => {
@@ -200,7 +245,11 @@ describe("learn command", () => {
       expect(result.skills).toHaveLength(5);
 
       // phase_skills should be merged
-      expect(result.phase_skills.research).toEqual(["skill-a", "skill-b", "skill-d"]);
+      expect(result.phase_skills.research).toEqual([
+        "skill-a",
+        "skill-b",
+        "skill-d",
+      ]);
       expect(result.phase_skills.plan).toEqual(["skill-c", "skill-d"]);
       expect(result.phase_skills.implement).toEqual(["skill-e"]);
     });
@@ -240,12 +289,9 @@ describe("learn command", () => {
 
     it("should allowlist learn phase with correct tools", () => {
       const allowedTools = getAllowedToolsForPhase("learn");
-      expect(allowedTools).toEqual(expect.arrayContaining([
-        "Read",
-        "Write",
-        "Glob",
-        "Grep",
-      ]));
+      expect(allowedTools).toEqual(
+        expect.arrayContaining(["Read", "Write", "Glob", "Grep"]),
+      );
       expect(allowedTools?.length).toBe(4);
     });
   });

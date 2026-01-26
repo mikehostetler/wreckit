@@ -15,58 +15,66 @@ wreckit learn [patterns...] [options]
 
 ## Options
 
-| Option | Description |
-|--------|-------------|
-| `--item <id>` | Extract patterns from specific item (by ID, number, or slug) |
-| `--phase <state>` | Extract patterns from items in specific state (e.g., `done`, `researched`) |
-| `--all` | Extract patterns from all completed items |
-| `--output <path>` | Custom output path for skills.json (default: `.wreckit/skills.json`) |
-| `--merge <strategy>` | Merge strategy: `append` (default) or `replace` |
-| `--review` | Review extracted skills before saving (not yet implemented) |
-| `--dry-run` | Preview without writing files |
-| `--verbose` | Detailed logging |
-| `--quiet` | Errors only |
+| Option               | Description                                                                |
+| -------------------- | -------------------------------------------------------------------------- |
+| `--item <id>`        | Extract patterns from specific item (by ID, number, or slug)               |
+| `--phase <state>`    | Extract patterns from items in specific state (e.g., `done`, `researched`) |
+| `--all`              | Extract patterns from all completed items                                  |
+| `--output <path>`    | Custom output path for skills.json (default: `.wreckit/skills.json`)       |
+| `--merge <strategy>` | Merge strategy: `append` (default) or `replace`                            |
+| `--review`           | Review extracted skills before saving (not yet implemented)                |
+| `--dry-run`          | Preview without writing files                                              |
+| `--verbose`          | Detailed logging                                                           |
+| `--quiet`            | Errors only                                                                |
 
 ## Examples
 
 ### Extract from most recent completed items (default)
+
 ```bash
 wreckit learn
 ```
 
 ### Extract from specific item
+
 ```bash
 wreckit learn --item 033
 wreckit learn --item phase-specific-skill-loading
 ```
 
 ### Extract from all completed items
+
 ```bash
 wreckit learn --all
 ```
 
 ### Extract from items in specific state
+
 ```bash
 wreckit learn --phase done
 wreckit learn --phase researched
 ```
 
 ### Replace existing skills instead of merging
+
 ```bash
 wreckit learn --all --merge replace
 ```
 
 ### Dry-run to preview changes
+
 ```bash
 wreckit learn --all --dry-run
 ```
 
 ### Write to custom output path
+
 ```bash
 wreckit learn --all --output .wreckit/custom-skills.json
 ```
 
 ### Verbose output for debugging
+
 ```bash
 wreckit learn --item 033 --verbose
 ```
@@ -109,6 +117,7 @@ wreckit learn --item 033 --verbose
 ## Merge Strategies
 
 ### Append (default)
+
 Preserves existing skills and adds new ones. If a skill with the same ID exists in both configs, the existing one is kept.
 
 ```bash
@@ -116,10 +125,12 @@ wreckit learn --merge append
 ```
 
 **Behavior:**
+
 - `phase_skills`: Merges phase mappings (keeps existing, adds new)
 - `skills`: Keeps existing skills by ID, adds new ones
 
 ### Replace
+
 Overwrites entire `.wreckit/skills.json` with newly extracted skills.
 
 ```bash
@@ -127,6 +138,7 @@ wreckit learn --merge replace
 ```
 
 **Behavior:**
+
 - Replaces both `phase_skills` and `skills` entirely
 - Useful for complete regeneration of skill definitions
 
@@ -135,32 +147,38 @@ wreckit learn --merge replace
 The command validates extracted skills in two ways:
 
 ### 1. Schema Validation
+
 Ensures skills conform to `SkillConfigSchema`:
+
 - Valid JSON structure
 - Required fields present (id, name, description, tools)
 - Correct data types (arrays, strings, objects)
 - No unknown fields
 
 Example error:
+
 ```
 Error: skills.json format validation failed:
 Invalid skill definition at skills[2]: 'description' is required
 ```
 
 ### 2. Tool Permission Validation
+
 Warns if skills request tools not allowed in target phases.
 
 Example warning:
+
 ```
 Warning: Skill 'test-generation' requests tools not allowed in 'research' phase: Bash
 ```
 
 **Tool Allowlists by Phase:**
+
 - **research**: Read, Write, Glob, Grep
-- **plan**: Read, Write, Edit, Glob, Grep, mcp__wreckit__save_prd
-- **implement**: Read, Write, Edit, Glob, Grep, Bash, mcp__wreckit__update_story_status
+- **plan**: Read, Write, Edit, Glob, Grep, mcp**wreckit**save_prd
+- **implement**: Read, Write, Edit, Glob, Grep, Bash, mcp**wreckit**update_story_status
 - **pr**: Read, Glob, Grep, Bash
-- **complete**: Read, Glob, Grep, mcp__wreckit__complete
+- **complete**: Read, Glob, Grep, mcp**wreckit**complete
 
 ## Output
 
@@ -194,6 +212,7 @@ The command creates or updates `.wreckit/skills.json`:
 ```
 
 **Field Descriptions:**
+
 - `phase_skills`: Maps phase names to arrays of skill IDs
 - `skills`: Array of skill definitions
   - `id`: Unique identifier (kebab-case)
@@ -216,21 +235,25 @@ The command creates or updates `.wreckit/skills.json`:
 ### Best Practices
 
 1. **Start with dry-run**: Always preview changes before writing
+
    ```bash
    wreckit learn --all --dry-run --verbose
    ```
 
 2. **Learn from successes**: Extract patterns from particularly successful implementations
+
    ```bash
    wreckit learn --item 033
    ```
 
 3. **Review tool warnings**: Check permission warnings to catch config errors
+
    ```bash
    wreckit learn --all 2>&1 | grep -i warning
    ```
 
 4. **Iterate incrementally**: Start with recent items, expand to all over time
+
    ```bash
    # First: default (recent 5)
    wreckit learn
@@ -248,55 +271,71 @@ The command creates or updates `.wreckit/skills.json`:
 ## Troubleshooting
 
 ### No source items found
+
 ```
 Warning: No source items found for pattern extraction
 ```
+
 **Cause**: No items match the specified criteria.
 **Solution**:
+
 - Check that you have completed items with `wreckit list --state done`
 - Use `--all` to include all completed items
 - Use `--phase done` to explicitly filter for completed items
 
 ### Validation failed
+
 ```
 Error: skills.json format validation failed: ...
 ```
+
 **Cause**: Agent produced invalid output.
 **Solution**:
+
 - Try running again (agent behavior is non-deterministic)
 - Manually review `.wreckit/skills.json` if it was created
 - Check the learn prompt template for clarity
 
 ### Tool permission violations
+
 ```
 Warning: Skill '...' requests tools not allowed in '...' phase: ...
 ```
+
 **Cause**: Skill requests tools not available in the target phase.
 **Solution**:
+
 - Review the skill definition manually
 - Adjust the skill's tools or phase assignment
 - Ensure the skill is only used in appropriate phases
 
 ### Missing skills.json (not an error)
+
 ```
 No existing skills.json (will create new file)
 ```
+
 **Cause**: No existing skills file (first run).
 **Solution**: This is normal! The command will create a new file.
 
 ### Merge strategy not implemented
+
 ```
 Error: Interactive 'ask' merge strategy not yet implemented. Use 'append' or 'replace'.
 ```
+
 **Cause**: Tried to use `--merge ask` which isn't implemented yet.
 **Solution**: Use `--merge append` or `--merge replace`.
 
 ### Agent timeout
+
 ```
 Error: Agent timed out during pattern extraction
 ```
+
 **Cause**: Agent took too long to analyze items.
 **Solution**:
+
 - Reduce source items (use `--item` instead of `--all`)
 - Increase timeout in config.json
 - Try again (agent behavior varies)

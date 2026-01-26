@@ -2,13 +2,20 @@ import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import type { Logger } from "../logging";
 import type { Item } from "../schemas";
-import { findRootFromOptions, getMediaDir, getMediaOutputPath } from "../fs/paths";
+import {
+  findRootFromOptions,
+  getMediaDir,
+  getMediaOutputPath,
+} from "../fs/paths";
 import { loadConfig } from "../config";
 import { loadPromptTemplate, renderPrompt } from "../prompts";
 import { runAgentUnion, getAgentConfigUnion } from "../agent/runner";
 import { getAllowedToolsForPhase } from "../agent/toolAllowlist";
 import { loadSkillsForPhase } from "../agent/skillLoader";
-import { buildJitContext, formatContextForPrompt } from "../agent/contextBuilder";
+import {
+  buildJitContext,
+  formatContextForPrompt,
+} from "../agent/contextBuilder";
 import { pathExists } from "../fs/util";
 import { scanItems } from "../domain/indexing";
 import { resolveId } from "../domain/resolveId";
@@ -30,7 +37,7 @@ export interface SummarizeOptions {
 async function determineSourceItems(
   root: string,
   options: SummarizeOptions,
-  logger: Logger
+  logger: Logger,
 ): Promise<{ items: Item[]; context: string }> {
   const allItems = await scanItems(root);
 
@@ -46,27 +53,33 @@ async function determineSourceItems(
 
   // --phase <state>: Generate videos for items in specific state
   if (options.phase) {
-    const filteredItems = allItems.filter(i => i.state === options.phase);
-    logger.info(`Generating videos for ${filteredItems.length} items in state: ${options.phase}`);
+    const filteredItems = allItems.filter((i) => i.state === options.phase);
+    logger.info(
+      `Generating videos for ${filteredItems.length} items in state: ${options.phase}`,
+    );
     const context = `Source items: ${filteredItems.length} items in state '${options.phase}'`;
     return { items: filteredItems, context };
   }
 
   // --all: Generate videos for all completed items
   if (options.all) {
-    const completedItems = allItems.filter(i => i.state === "done");
-    logger.info(`Generating videos for ${completedItems.length} completed items`);
+    const completedItems = allItems.filter((i) => i.state === "done");
+    logger.info(
+      `Generating videos for ${completedItems.length} completed items`,
+    );
     const context = `Source items: ${completedItems.length} completed items`;
     return { items: completedItems, context };
   }
 
   // Default: generate videos for most recent 5 completed items
   const completedItems = allItems
-    .filter(i => i.state === "done")
+    .filter((i) => i.state === "done")
     .sort((a, b) => b.updated_at.localeCompare(a.updated_at));
 
   const recentItems = completedItems.slice(0, 5);
-  logger.info(`Generating videos for ${recentItems.length} recent completed items (default)`);
+  logger.info(
+    `Generating videos for ${recentItems.length} recent completed items (default)`,
+  );
   const context = `Source items: ${recentItems.length} recent completed items`;
   return { items: recentItems, context };
 }
@@ -80,13 +93,14 @@ async function determineSourceItems(
  */
 export async function summarizeCommand(
   options: SummarizeOptions,
-  logger: Logger
+  logger: Logger,
 ): Promise<void> {
   const root = findRootFromOptions(options);
   const config = await loadConfig(root);
 
   // Determine source items
-  const { items: sourceItems, context: sourceContext } = await determineSourceItems(root, options, logger);
+  const { items: sourceItems, context: sourceContext } =
+    await determineSourceItems(root, options, logger);
 
   if (sourceItems.length === 0) {
     logger.warn("No source items found for video generation");
@@ -97,9 +111,13 @@ export async function summarizeCommand(
   const skillResult = loadSkillsForPhase("media", config.skills);
 
   if (skillResult.loadedSkillIds.length > 0) {
-    logger.info(`Loaded media skills: ${skillResult.loadedSkillIds.join(", ")}`);
+    logger.info(
+      `Loaded media skills: ${skillResult.loadedSkillIds.join(", ")}`,
+    );
   } else {
-    logger.warn("No media skills loaded - agent will have basic media capabilities");
+    logger.warn(
+      "No media skills loaded - agent will have basic media capabilities",
+    );
   }
 
   // Build prompt variables (will be updated per item)
@@ -126,7 +144,7 @@ export async function summarizeCommand(
       skillResult.contextRequirements,
       item,
       config,
-      root
+      root,
     );
     const skillContext = formatContextForPrompt(context);
 
@@ -134,7 +152,7 @@ export async function summarizeCommand(
     const variables = {
       id: item.id,
       title: item.title,
-      section: item.section,
+      section: item.section ?? "items",
       overview: item.overview || "No overview provided",
       item_path: getItemDir(root, item.id),
       branch_name: item.branch || "",
@@ -155,7 +173,9 @@ export async function summarizeCommand(
       logger.info(`  ID: ${item.id}`);
       logger.info(`  Title: ${item.title}`);
       logger.info(`  Expected output: ${expectedOutputPath}`);
-      logger.info(`  Skills: ${skillResult.loadedSkillIds.join(", ") || "none"}`);
+      logger.info(
+        `  Skills: ${skillResult.loadedSkillIds.join(", ") || "none"}`,
+      );
       continue;
     }
 
@@ -181,7 +201,9 @@ export async function summarizeCommand(
 
     // Validate output video exists
     if (!(await pathExists(expectedOutputPath))) {
-      logger.warn(`  Agent completed but no video found at ${expectedOutputPath}`);
+      logger.warn(
+        `  Agent completed but no video found at ${expectedOutputPath}`,
+      );
       logger.warn(`  Agent may have created video at different location`);
       continue;
     }
@@ -196,7 +218,9 @@ export async function summarizeCommand(
     // Validate file size is reasonable (< 50MB for 30s video)
     const maxSize = 50 * 1024 * 1024; // 50MB
     if (stats.size > maxSize) {
-      logger.warn(`  Video file is very large: ${(stats.size / 1024 / 1024).toFixed(2)}MB`);
+      logger.warn(
+        `  Video file is very large: ${(stats.size / 1024 / 1024).toFixed(2)}MB`,
+      );
     }
 
     logger.info(`  ✓ Video generated: ${expectedOutputPath}`);

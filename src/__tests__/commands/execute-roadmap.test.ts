@@ -11,6 +11,7 @@ const createMockLogger = (): Logger => ({
   warn: mock(() => {}),
   error: mock(() => {}),
   debug: mock(() => {}),
+  json: mock(() => {}),
 });
 
 async function setupTestRepo(tempDir: string): Promise<void> {
@@ -38,7 +39,7 @@ async function setupTestRepo(tempDir: string): Promise<void> {
   };
   await fs.writeFile(
     path.join(wreckitDir, "config.json"),
-    JSON.stringify(config, null, 2)
+    JSON.stringify(config, null, 2),
   );
 }
 
@@ -80,7 +81,7 @@ describe("executeRoadmapCommand", () => {
 
   beforeEach(async () => {
     tempDir = await fs.mkdtemp(
-      path.join(os.tmpdir(), "wreckit-execute-roadmap-test-")
+      path.join(os.tmpdir(), "wreckit-execute-roadmap-test-"),
     );
     await setupTestRepo(tempDir);
     logger = createMockLogger();
@@ -92,7 +93,7 @@ describe("executeRoadmapCommand", () => {
 
   it("throws error when ROADMAP.md doesn't exist", async () => {
     await expect(
-      executeRoadmapCommand({ cwd: tempDir }, logger)
+      executeRoadmapCommand({ cwd: tempDir }, logger),
     ).rejects.toThrow("ROADMAP.md not found");
   });
 
@@ -123,7 +124,7 @@ describe("executeRoadmapCommand", () => {
     // Should have logged what would be created
     const infoCalls = (logger.info as any).mock.calls;
     const hasWouldCreate = infoCalls.some((call: string[]) =>
-      call[0].includes("Would create")
+      call[0].includes("Would create"),
     );
     expect(hasWouldCreate).toBe(true);
   });
@@ -180,7 +181,7 @@ describe("executeRoadmapCommand", () => {
     // Should have logged skipped items
     const infoCalls = (logger.info as any).mock.calls;
     const hasSkipped = infoCalls.some((call: string[]) =>
-      call[0].includes("Skipped")
+      call[0].includes("Skipped"),
     );
     expect(hasSkipped).toBe(true);
   });
@@ -206,7 +207,7 @@ describe("executeRoadmapCommand", () => {
     const hasNoPending = infoCalls.some(
       (call: string[]) =>
         call[0].includes("No pending objectives") ||
-        call[0].includes("All objectives may be completed")
+        call[0].includes("All objectives may be completed"),
     );
     expect(hasNoPending).toBe(true);
   });

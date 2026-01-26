@@ -5,6 +5,7 @@ This guide covers using Manim and Remotion skills for autonomous media generatio
 ## Overview
 
 Wreckit supports autonomous video generation through two media skills:
+
 - **manim-generation**: Mathematical animations using Manim (Python)
 - **remotion-generation**: React-based videos using Remotion (Node.js)
 
@@ -13,6 +14,7 @@ These skills can be loaded in the "media" phase to enable agents to generate vid
 ## Installation Prerequisites
 
 ### Manim
+
 1. Install Python 3.8 or later: https://www.python.org/downloads/
 2. Install FFmpeg: https://ffmpeg.org/download.html
 3. Install LaTeX (optional, for math rendering): https://www.latex-project.org/get/
@@ -20,6 +22,7 @@ These skills can be loaded in the "media" phase to enable agents to generate vid
 5. Verify installation: `manim --version`
 
 ### Remotion
+
 1. Install Node.js 16 or later: https://nodejs.org/
 2. Install FFmpeg: https://ffmpeg.org/download.html
 3. Initialize Remotion project: `npx create-video@latest`
@@ -71,6 +74,7 @@ Add media skills to `.wreckit/skills.json`:
 ### Media Phase Tool Permissions
 
 The media phase allows the following tools:
+
 - **Read**: Access existing code and templates
 - **Write**: Create animation scripts
 - **Glob**: Find project files
@@ -82,12 +86,14 @@ The media phase allows the following tools:
 ### Example 1: Generate Manim Animation
 
 Agent prompt:
+
 ```
 Generate a 10-second animation showing the Wreckit workflow phases.
 Use Manim and save the output to videos/workflow.mp4
 ```
 
 Agent actions:
+
 1. Create `scenes/workflow.py` using Manim API
 2. Run `manim render scenes/workflow.py WorkflowPhases -pqh`
 3. Output video: `media/videos/workflow/WorkflowPhases.mp4`
@@ -95,12 +101,14 @@ Agent actions:
 ### Example 2: Generate Remotion Video
 
 Agent prompt:
+
 ```
 Create a 30-second feature visualization for the new skill loading system.
 Use Remotion and save to feature-viz.mp4
 ```
 
 Agent actions:
+
 1. Create `compositions/FeatureViz.tsx` using Remotion API
 2. Update `root.tsx` to register composition
 3. Run `npx remotion render FeatureViz feature-viz.mp4`
@@ -163,6 +171,7 @@ Agents can copy and adapt these templates for their specific tasks.
 ## Future Enhancements
 
 Potential improvements to media skills:
+
 - Docker containerization for consistent environments
 - Progressive rendering (low-quality preview → full render)
 - Async rendering with status polling

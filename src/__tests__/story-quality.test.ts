@@ -51,7 +51,9 @@ describe("Story Quality Validation (Gap 3)", () => {
         const result = validateStoryQuality(prd, defaultOptions);
         expect(result.valid).toBe(false);
         expect(result.storyCount).toBe(0);
-        expect(result.errors.some(e => e.includes("Insufficient stories"))).toBe(true);
+        expect(
+          result.errors.some((e) => e.includes("Insufficient stories")),
+        ).toBe(true);
       });
 
       it("fails with too many stories", () => {
@@ -67,7 +69,9 @@ describe("Story Quality Validation (Gap 3)", () => {
         const result = validateStoryQuality(prd, defaultOptions);
         expect(result.valid).toBe(false);
         expect(result.storyCount).toBe(20);
-        expect(result.errors.some(e => e.includes("Too many stories"))).toBe(true);
+        expect(result.errors.some((e) => e.includes("Too many stories"))).toBe(
+          true,
+        );
       });
 
       it("allows custom story count limits", () => {
@@ -90,7 +94,9 @@ describe("Story Quality Validation (Gap 3)", () => {
 
         const result = validateStoryQuality(prd, customOptions);
         expect(result.valid).toBe(false);
-        expect(result.errors.some(e => e.includes("required at least 2"))).toBe(true);
+        expect(
+          result.errors.some((e) => e.includes("required at least 2")),
+        ).toBe(true);
       });
     });
 
@@ -131,7 +137,9 @@ describe("Story Quality Validation (Gap 3)", () => {
 
         const result = validateStoryQuality(prd, defaultOptions);
         expect(result.valid).toBe(false);
-        expect(result.storyErrors[0].errors.some(e => e.includes("US-###"))).toBe(true);
+        expect(
+          result.storyErrors[0].errors.some((e) => e.includes("US-###")),
+        ).toBe(true);
       });
 
       it("fails with missing US prefix", () => {
@@ -148,7 +156,9 @@ describe("Story Quality Validation (Gap 3)", () => {
 
         const result = validateStoryQuality(prd, defaultOptions);
         expect(result.valid).toBe(false);
-        expect(result.storyErrors[0].errors.some(e => e.includes("US-###"))).toBe(true);
+        expect(
+          result.storyErrors[0].errors.some((e) => e.includes("US-###")),
+        ).toBe(true);
       });
 
       it("allows disabling story ID format enforcement", () => {
@@ -208,7 +218,11 @@ describe("Story Quality Validation (Gap 3)", () => {
 
         const result = validateStoryQuality(prd, defaultOptions);
         expect(result.valid).toBe(false);
-        expect(result.storyErrors[0].errors.some(e => e.includes("acceptance criteria"))).toBe(true);
+        expect(
+          result.storyErrors[0].errors.some((e) =>
+            e.includes("acceptance criteria"),
+          ),
+        ).toBe(true);
       });
 
       it("fails with empty acceptance criteria array", () => {
@@ -225,7 +239,11 @@ describe("Story Quality Validation (Gap 3)", () => {
 
         const result = validateStoryQuality(prd, defaultOptions);
         expect(result.valid).toBe(false);
-        expect(result.storyErrors[0].errors.some(e => e.includes("acceptance criteria"))).toBe(true);
+        expect(
+          result.storyErrors[0].errors.some((e) =>
+            e.includes("acceptance criteria"),
+          ),
+        ).toBe(true);
       });
 
       it("fails with empty acceptance criteria strings", () => {
@@ -242,7 +260,11 @@ describe("Story Quality Validation (Gap 3)", () => {
 
         const result = validateStoryQuality(prd, defaultOptions);
         expect(result.valid).toBe(false);
-        expect(result.storyErrors[0].errors.some(e => e.includes("empty acceptance criteria"))).toBe(true);
+        expect(
+          result.storyErrors[0].errors.some((e) =>
+            e.includes("empty acceptance criteria"),
+          ),
+        ).toBe(true);
       });
 
       it("allows custom minimum acceptance criteria", () => {
@@ -264,7 +286,11 @@ describe("Story Quality Validation (Gap 3)", () => {
 
         const result = validateStoryQuality(prd, customOptions);
         expect(result.valid).toBe(false);
-        expect(result.storyErrors[0].errors.some(e => e.includes("required at least 3"))).toBe(true);
+        expect(
+          result.storyErrors[0].errors.some((e) =>
+            e.includes("required at least 3"),
+          ),
+        ).toBe(true);
       });
     });
 
@@ -272,10 +298,30 @@ describe("Story Quality Validation (Gap 3)", () => {
       it("passes with priority in valid range (1-4)", () => {
         const prd = {
           user_stories: [
-            { id: "US-001", title: "P1", acceptance_criteria: ["C1", "C2"], priority: 1 },
-            { id: "US-002", title: "P2", acceptance_criteria: ["C1", "C2"], priority: 2 },
-            { id: "US-003", title: "P3", acceptance_criteria: ["C1", "C2"], priority: 3 },
-            { id: "US-004", title: "P4", acceptance_criteria: ["C1", "C2"], priority: 4 },
+            {
+              id: "US-001",
+              title: "P1",
+              acceptance_criteria: ["C1", "C2"],
+              priority: 1,
+            },
+            {
+              id: "US-002",
+              title: "P2",
+              acceptance_criteria: ["C1", "C2"],
+              priority: 2,
+            },
+            {
+              id: "US-003",
+              title: "P3",
+              acceptance_criteria: ["C1", "C2"],
+              priority: 3,
+            },
+            {
+              id: "US-004",
+              title: "P4",
+              acceptance_criteria: ["C1", "C2"],
+              priority: 4,
+            },
           ],
         };
 
@@ -297,7 +343,9 @@ describe("Story Quality Validation (Gap 3)", () => {
 
         const result = validateStoryQuality(prd, defaultOptions);
         expect(result.valid).toBe(false);
-        expect(result.storyErrors[0].errors.some(e => e.includes("Priority"))).toBe(true);
+        expect(
+          result.storyErrors[0].errors.some((e) => e.includes("Priority")),
+        ).toBe(true);
       });
 
       it("fails with priority above maximum", () => {
@@ -314,7 +362,9 @@ describe("Story Quality Validation (Gap 3)", () => {
 
         const result = validateStoryQuality(prd, defaultOptions);
         expect(result.valid).toBe(false);
-        expect(result.storyErrors[0].errors.some(e => e.includes("Priority"))).toBe(true);
+        expect(
+          result.storyErrors[0].errors.some((e) => e.includes("Priority")),
+        ).toBe(true);
       });
 
       it("fails with negative priority", () => {
@@ -331,7 +381,9 @@ describe("Story Quality Validation (Gap 3)", () => {
 
         const result = validateStoryQuality(prd, defaultOptions);
         expect(result.valid).toBe(false);
-        expect(result.storyErrors[0].errors.some(e => e.includes("Priority"))).toBe(true);
+        expect(
+          result.storyErrors[0].errors.some((e) => e.includes("Priority")),
+        ).toBe(true);
       });
 
       it("allows custom priority range", () => {
@@ -388,7 +440,9 @@ describe("Story Quality Validation (Gap 3)", () => {
 
         const result = validateStoryQuality(prd, defaultOptions);
         expect(result.valid).toBe(false);
-        expect(result.storyErrors[0].errors.some(e => e.includes("title"))).toBe(true);
+        expect(
+          result.storyErrors[0].errors.some((e) => e.includes("title")),
+        ).toBe(true);
       });
 
       it("fails with whitespace-only title", () => {
@@ -405,7 +459,9 @@ describe("Story Quality Validation (Gap 3)", () => {
 
         const result = validateStoryQuality(prd, defaultOptions);
         expect(result.valid).toBe(false);
-        expect(result.storyErrors[0].errors.some(e => e.includes("title"))).toBe(true);
+        expect(
+          result.storyErrors[0].errors.some((e) => e.includes("title")),
+        ).toBe(true);
       });
     });
 
@@ -441,11 +497,15 @@ describe("Story Quality Validation (Gap 3)", () => {
         expect(result.storyErrors).toHaveLength(2);
 
         // First story has multiple errors
-        const story1Errors = result.storyErrors.find((e) => e.storyId === "invalid-id");
+        const story1Errors = result.storyErrors.find(
+          (e) => e.storyId === "invalid-id",
+        );
         expect(story1Errors?.errors.length).toBeGreaterThan(1);
 
         // Third story has errors
-        const story3Errors = result.storyErrors.find((e) => e.storyId === "US-003");
+        const story3Errors = result.storyErrors.find(
+          (e) => e.storyId === "US-003",
+        );
         expect(story3Errors?.errors.length).toBeGreaterThan(0);
       });
 
@@ -586,8 +646,18 @@ describe("Story Quality Validation (Gap 3)", () => {
       it("handles stories at priority boundaries", () => {
         const prd = {
           user_stories: [
-            { id: "US-001", title: "Min Priority", acceptance_criteria: ["C1", "C2"], priority: 1 },
-            { id: "US-002", title: "Max Priority", acceptance_criteria: ["C1", "C2"], priority: 4 },
+            {
+              id: "US-001",
+              title: "Min Priority",
+              acceptance_criteria: ["C1", "C2"],
+              priority: 1,
+            },
+            {
+              id: "US-002",
+              title: "Max Priority",
+              acceptance_criteria: ["C1", "C2"],
+              priority: 4,
+            },
           ],
         };
 
@@ -632,7 +702,9 @@ describe("Story Quality Validation (Gap 3)", () => {
 
         const result = verifyStoryCompletion("US-001", prd);
         expect(result.valid).toBe(true);
-        expect(result.warnings.some(w => w.includes("no acceptance criteria"))).toBe(true);
+        expect(
+          result.warnings.some((w) => w.includes("no acceptance criteria")),
+        ).toBe(true);
       });
 
       it("returns warning when story has empty acceptance criteria", () => {
@@ -649,7 +721,9 @@ describe("Story Quality Validation (Gap 3)", () => {
 
         const result = verifyStoryCompletion("US-001", prd);
         expect(result.valid).toBe(true);
-        expect(result.warnings.some(w => w.includes("empty acceptance criteria"))).toBe(true);
+        expect(
+          result.warnings.some((w) => w.includes("empty acceptance criteria")),
+        ).toBe(true);
       });
 
       it("returns warning when story is already done", () => {
@@ -666,7 +740,9 @@ describe("Story Quality Validation (Gap 3)", () => {
 
         const result = verifyStoryCompletion("US-001", prd);
         expect(result.valid).toBe(true);
-        expect(result.warnings.some(w => w.includes("already marked as done"))).toBe(true);
+        expect(
+          result.warnings.some((w) => w.includes("already marked as done")),
+        ).toBe(true);
       });
     });
 
@@ -674,7 +750,9 @@ describe("Story Quality Validation (Gap 3)", () => {
       it("returns error when PRD is null", () => {
         const result = verifyStoryCompletion("US-001", null);
         expect(result.valid).toBe(false);
-        expect(result.errors.some(e => e.includes("PRD not loaded"))).toBe(true);
+        expect(result.errors.some((e) => e.includes("PRD not loaded"))).toBe(
+          true,
+        );
       });
 
       it("returns error when story not found in PRD", () => {
@@ -691,7 +769,7 @@ describe("Story Quality Validation (Gap 3)", () => {
 
         const result = verifyStoryCompletion("US-999", prd);
         expect(result.valid).toBe(false);
-        expect(result.errors.some(e => e.includes("not found"))).toBe(true);
+        expect(result.errors.some((e) => e.includes("not found"))).toBe(true);
       });
     });
 
@@ -711,8 +789,12 @@ describe("Story Quality Validation (Gap 3)", () => {
         const result = verifyStoryCompletion("US-001", prd);
         expect(result.valid).toBe(true);
         expect(result.warnings.length).toBe(2);
-        expect(result.warnings.some(w => w.includes("empty acceptance criteria"))).toBe(true);
-        expect(result.warnings.some(w => w.includes("already marked as done"))).toBe(true);
+        expect(
+          result.warnings.some((w) => w.includes("empty acceptance criteria")),
+        ).toBe(true);
+        expect(
+          result.warnings.some((w) => w.includes("already marked as done")),
+        ).toBe(true);
       });
     });
   });
