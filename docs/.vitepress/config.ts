@@ -21,7 +21,7 @@ export default defineConfig({
       { text: 'Changelog', link: '/changelog' },
       {
         text: 'GitHub',
-        link: 'https://github.com/mikehostetler/wreckit'
+        link: 'https://github.com/jmanhype/wreckit'
       }
     ],
 
@@ -79,12 +79,12 @@ export default defineConfig({
 
     // Social links
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/mikehostetler/wreckit' }
+      { icon: 'github', link: 'https://github.com/jmanhype/wreckit' }
     ],
 
     // Edit link - helps contributors
     editLink: {
-      pattern: 'https://github.com/mikehostetler/wreckit/edit/main/docs/:path',
+      pattern: 'https://github.com/jmanhype/wreckit/edit/main/docs/:path',
       text: 'Edit this page on GitHub'
     },
 
