@@ -193,7 +193,7 @@ program
       async () => {
         const cwd = resolveCwd(globalOpts.cwd);
         const root = findRepoRoot(cwd);
-        const resolvedId = await resolveId(root, id);
+        const resolvedId = await resolveId(root, id, { logger });
         await showCommand(
           resolvedId,
           { json: options.json, cwd },
@@ -219,7 +219,7 @@ program
       async () => {
         const cwd = resolveCwd(globalOpts.cwd);
         const root = findRepoRoot(cwd);
-        const resolvedId = await resolveId(root, id);
+        const resolvedId = await resolveId(root, id, { logger });
         await runPhaseCommand(
           "research",
           resolvedId,
@@ -251,7 +251,7 @@ program
       async () => {
         const cwd = resolveCwd(globalOpts.cwd);
         const root = findRepoRoot(cwd);
-        const resolvedId = await resolveId(root, id);
+        const resolvedId = await resolveId(root, id, { logger });
         await runPhaseCommand(
           "plan",
           resolvedId,
@@ -283,7 +283,7 @@ program
       async () => {
         const cwd = resolveCwd(globalOpts.cwd);
         const root = findRepoRoot(cwd);
-        const resolvedId = await resolveId(root, id);
+        const resolvedId = await resolveId(root, id, { logger });
         await runPhaseCommand(
           "implement",
           resolvedId,
@@ -315,7 +315,7 @@ program
       async () => {
         const cwd = resolveCwd(globalOpts.cwd);
         const root = findRepoRoot(cwd);
-        const resolvedId = await resolveId(root, id);
+        const resolvedId = await resolveId(root, id, { logger });
         await runPhaseCommand(
           "pr",
           resolvedId,
@@ -346,7 +346,7 @@ program
       async () => {
         const cwd = resolveCwd(globalOpts.cwd);
         const root = findRepoRoot(cwd);
-        const resolvedId = await resolveId(root, id);
+        const resolvedId = await resolveId(root, id, { logger });
         await runPhaseCommand(
           "complete",
           resolvedId,
@@ -374,7 +374,7 @@ program
       async () => {
         const cwd = resolveCwd(globalOpts.cwd);
         const root = findRepoRoot(cwd);
-        const resolvedId = await resolveId(root, id);
+        const resolvedId = await resolveId(root, id, { logger });
         await runPhaseCommand(
           "critique",
           resolvedId,
@@ -402,7 +402,7 @@ program
       async () => {
         const cwd = resolveCwd(globalOpts.cwd);
         const root = findRepoRoot(cwd);
-        const resolvedId = await resolveId(root, id);
+        const resolvedId = await resolveId(root, id, { logger });
         const result = await rollbackCommand(
           resolvedId,
           {
@@ -436,7 +436,7 @@ program
       async () => {
         const cwd = resolveCwd(globalOpts.cwd);
         const root = findRepoRoot(cwd);
-        const resolvedId = await resolveId(root, id);
+        const resolvedId = await resolveId(root, id, { logger });
         await runCommand(
           resolvedId,
           {

@@ -201,7 +201,7 @@ export async function dreamCommand(
   const maxItems = options.maxItems || 5;
 
   // Scan existing items for deduplication and loop prevention
-  const allItems = await scanItems(root);
+  const allItems = await scanItems(root, { logger });
   const dreamerSlugs = await filterDreamerItems(root, allItems, logger);
 
   // Build summary of existing items for context

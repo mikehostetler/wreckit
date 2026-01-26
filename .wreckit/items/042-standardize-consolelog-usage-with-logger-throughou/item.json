@@ -2,14 +2,14 @@
   "schema_version": 1,
   "id": "042-standardize-consolelog-usage-with-logger-throughou",
   "title": "Standardize console.log usage with logger throughout domain layer",
-  "state": "idea",
+  "state": "implementing",
   "overview": "Direct console usage in the domain layer bypasses the logging abstraction, preventing proper log level control and making testing difficult.\n\n**Motivation:** Consistent logging through the Logger interface enables proper log levels, output redirection in tests, and unified formatting across the codebase.\n\n**Success criteria:**\n- Replace all console.log/warn/error in domain/ with logger calls\n- Pass logger to functions that need it\n- All console usage removed from domain layer\n- Tests verify log output can be captured\n\n**Technical constraints:**\n- Must maintain backward compatibility with existing output\n- Cannot change function signatures in public APIs\n- Logger interface already exists and should be used\n\n**In scope:**\n- Replace console.log in ideas-interview.ts with logger\n- Replace console.warn in indexing.ts with logger\n- Replace console.log in ideas-agent.ts with logger\n- Pass logger to domain functions that need it\n**Out of scope:**\n- Modifying the Logger interface\n- Changing logging in commands layer (already uses logger)\n- Adding new logging levels\n\n**Signals:** priority: medium",
   "branch": null,
   "pr_url": null,
   "pr_number": null,
-  "last_error": null,
+  "last_error": "Plan quality validation failed:\nMissing required sections: Implementation Plan Title, Current State, Phases\nInsufficient implementation phases: found 0, required at least 1",
   "created_at": "2026-01-25T23:03:02.982Z",
-  "updated_at": "2026-01-25T23:03:02.982Z",
+  "updated_at": "2026-01-26T05:39:32.335Z",
   "problem_statement": "Direct console usage in the domain layer bypasses the logging abstraction, preventing proper log level control and making testing difficult.",
   "motivation": "Consistent logging through the Logger interface enables proper log levels, output redirection in tests, and unified formatting across the codebase.",
   "success_criteria": [
@@ -34,6 +34,5 @@
     "Changing logging in commands layer (already uses logger)",
     "Adding new logging levels"
   ],
-  "priority_hint": "medium",
-  "source": "dreamer"
+  "priority_hint": "medium"
 }

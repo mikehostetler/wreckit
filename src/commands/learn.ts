@@ -37,11 +37,11 @@ async function determineSourceItems(
   options: LearnOptions,
   logger: Logger
 ): Promise<{ items: any[]; context: string }> {
-  const allItems = await scanItems(root);
+  const allItems = await scanItems(root, { logger });
 
   // --item <id>: Extract from specific item
   if (options.item) {
-    const resolvedId = await resolveId(root, options.item);
+    const resolvedId = await resolveId(root, options.item, { logger });
     const itemDir = getItemDir(root, resolvedId);
     const item = await readItem(itemDir);
     logger.info(`Extracting patterns from item: ${resolvedId}`);

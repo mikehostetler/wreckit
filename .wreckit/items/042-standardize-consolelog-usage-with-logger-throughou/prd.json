@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "id": "042-standardize-consolelog-usage-with-logger-throughou",
+  "branch_name": "wreckit/042-standardize-consolelog-usage-with-logger-throughou",
+  "user_stories": [
+    {
+      "id": "US-001",
+      "title": "Add logger support to scanItems function in indexing.ts",
+      "acceptance_criteria": [
+        "scanItems function accepts optional IndexOptions parameter with logger field",
+        "console.warn calls on lines 65-67 and 84-86 are replaced with logger.warn using internal logger",
+        "Internal logger falls back to global logger instance when not provided",
+        "refreshIndex function updated to pass options to scanItems",
+        "All 10+ call sites updated to pass logger: onboarding.ts, dream.ts, learn.ts, summarize.ts, orchestrator.ts (2x), doctor.ts (2x), resolveId.ts (2x)",
+        "resolveId.ts functions updated with ResolveIdOptions interface to accept and pass logger",
+        "Tests in indexing.test.ts updated to pass logger and spy on logger.warn",
+        "Type checking passes with no errors",
+        "All existing tests pass"
+      ],
+      "priority": 1,
+      "status": "pending",
+      "notes": "Low complexity, 2 console.warn calls. Must update 10+ call sites across the codebase. resolveId.ts functions need new options parameter to pass logger through to scanItems."
+    },
+    {
+      "id": "US-002",
+      "title": "Add logger support to parseIdeasWithAgent function in ideas-agent.ts",
+      "acceptance_criteria": [
+        "ParseIdeasOptions interface includes optional logger field",
+        "console.log on line 83 replaced with logger.info using internal logger",
+        "Internal logger passed to runAgentUnion call instead of global logger",
+        "Internal logger falls back to global logger instance when not provided",
+        "All 3 call sites in commands/ideas.ts updated to pass logger",
+        "Tests in ideas-agent.test.ts updated to pass mockLogger in all 6 test calls",
+        "Verbose mode output still visible with --verbose flag",
+        "No output without --verbose flag (silent by default)",
+        "Type checking passes with no errors",
+        "All existing tests pass"
+      ],
+      "priority": 2,
+      "status": "pending",
+      "notes": "Low complexity, 1 console.log call. Depends on global logger import. Must update 3 call sites in commands/ideas.ts and 6 test calls in ideas-agent.test.ts."
+    },
+    {
+      "id": "US-003",
+      "title": "Add logger support to runIdeaInterview function in ideas-interview.ts",
+      "acceptance_criteria": [
+        "InterviewOptions interface includes optional logger field",
+        "console.error calls on lines 230-232, 250-251 replaced with logger.error/warn",
+        "console.warn calls on lines 264-265 replaced with logger.warn",
+        "console.log on line 268 replaced with logger.info for success message",
+        "console.error calls on lines 425, 440 replaced with logger.warn",
+        "console.log calls for interactive UI preserved: lines 182-184, 291-296, 332-339, 346-347, 393-395, 411-412, 419, 457-458, 526-587",
+        "process.stdout.write for spinner preserved: lines 91, 94, 103, 223",
+        "Internal logger passed to buildSdkEnv and finishInterview",
+        "finishInterview function updated to accept optional logger parameter",
+        "finishInterview calls updated to pass internalLogger parameter",
+        "Colored output and formatting (fmt object) still works correctly",
+        "Interactive banners and agent responses still display with colors",
+        "Error and warning messages logged with --verbose flag",
+        "Call sites in commands/ideas.ts and onboarding.ts updated to pass logger",
+        "Type checking passes with no errors",
+        "All existing tests pass"
+      ],
+      "priority": 3,
+      "status": "pending",
+      "notes": "High complexity due to mix of interactive UI and logging. Key decision: preserve console.log for UI elements (banners, formatted responses with colors), only replace error/warning logging. Spinner process.stdout.write calls must remain. Depends on US-001 and US-002 being complete for pattern consistency."
+    },
+    {
+      "id": "US-004",
+      "title": "Verify end-to-end functionality after logger migration",
+      "acceptance_criteria": [
+        "All automated tests pass: npm test",
+        "Type checking passes: npm run typecheck",
+        "Linting passes: npm run lint",
+        "Build succeeds: npm run build",
+        "Manual test: wreckit status displays items correctly",
+        "Manual test: wreckit ideas (interactive) works with colored UI",
+        "Manual test: echo 'test' | wreckit ideas --verbose shows agent events",
+        "Manual test: wreckit doctor runs without logging errors",
+        "Manual test: wreckit onboarding flow works correctly",
+        "No console.log/warn/error remain in domain layer except for interactive UI",
+        "All domain functions accept optional logger parameter",
+        "Backward compatibility maintained - functions work without logger",
+        "grep for console. in domain/ shows only UI-related console.log in ideas-interview.ts"
+      ],
+      "priority": 4,
+      "status": "pending",
+      "notes": "Verification story. Must be completed after US-001, US-002, and US-003. Includes comprehensive manual testing of all affected commands. Final validation that migration is complete and no regressions were introduced."
+    }
+  ]
+}

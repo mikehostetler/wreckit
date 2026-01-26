@@ -14,8 +14,13 @@ import {
   InvalidJsonError,
   SchemaValidationError,
 } from "../errors";
+import { logger, type Logger } from "../logging";
 
 const ITEM_DIR_PATTERN = /^(\d+)-(.+)$/;
+
+export interface IndexOptions {
+  logger?: Logger;
+}
 
 export function parseItemId(
   id: string
@@ -50,8 +55,9 @@ export function buildIndex(items: Item[]): Index {
   };
 }
 
-export async function scanItems(root: string): Promise<Item[]> {
+export async function scanItems(root: string, options?: IndexOptions): Promise<Item[]> {
   const itemsDir = getItemsDir(root);
+  const internalLogger = options?.logger ?? logger;
 
   let entries: string[];
   try {
@@ -62,8 +68,8 @@ export async function scanItems(root: string): Promise<Item[]> {
       return [];
     }
     // Permission or I/O errors should warn, not silently return empty
-    console.warn(
-      `Warning: Cannot read items directory ${itemsDir}: ${err instanceof Error ? err.message : String(err)}`
+    internalLogger.warn(
+      `Cannot read items directory ${itemsDir}: ${err instanceof Error ? err.message : String(err)}`
     );
     return [];
   }
@@ -81,8 +87,8 @@ export async function scanItems(root: string): Promise<Item[]> {
       items.push(item);
     } catch (err) {
       const itemJsonPath = path.join(itemDirPath, "item.json");
-      console.warn(
-        `Warning: Skipping invalid item at ${itemJsonPath}: ${err instanceof Error ? err.message : String(err)}`
+      internalLogger.warn(
+        `Skipping invalid item at ${itemJsonPath}: ${err instanceof Error ? err.message : String(err)}`
       );
     }
   }
@@ -96,8 +102,8 @@ export async function scanItems(root: string): Promise<Item[]> {
   });
 }
 
-export async function refreshIndex(root: string): Promise<Index> {
-  const items = await scanItems(root);
+export async function refreshIndex(root: string, options?: IndexOptions): Promise<Index> {
+  const items = await scanItems(root, options);
   const index = buildIndex(items);
   await writeIndex(root, index);
   return index;

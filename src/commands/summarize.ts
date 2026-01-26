@@ -32,11 +32,11 @@ async function determineSourceItems(
   options: SummarizeOptions,
   logger: Logger
 ): Promise<{ items: Item[]; context: string }> {
-  const allItems = await scanItems(root);
+  const allItems = await scanItems(root, { logger });
 
   // --item <id>: Generate video for specific item
   if (options.item) {
-    const resolvedId = await resolveId(root, options.item);
+    const resolvedId = await resolveId(root, options.item, { logger });
     const itemDir = getItemDir(root, resolvedId);
     const item = await readItem(itemDir);
     logger.info(`Generating video for item: ${resolvedId}`);

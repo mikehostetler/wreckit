@@ -157,7 +157,7 @@ export async function runOnboardingIfNeeded(
     }
   }
 
-  const items = await scanItems(gitRoot);
+  const items = await scanItems(gitRoot, { logger });
   const hasIdeas = items.length > 0;
 
   if (!hasIdeas) {

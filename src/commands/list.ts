@@ -25,10 +25,10 @@ function extractTitle(rawTitle: string): string {
 
 export async function listCommand(
   options: ListOptions,
-  _logger: Logger
+  logger: Logger
 ): Promise<void> {
   const root = findRootFromOptions(options);
-  const allItems = await buildIdMap(root);
+  const allItems = await buildIdMap(root, { logger });
 
   const items = options.state
     ? allItems.filter((i) => i.state === options.state)

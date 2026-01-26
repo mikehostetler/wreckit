@@ -3,6 +3,7 @@ import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import * as os from "node:os";
 import type { Item } from "../schemas";
+import type { Logger } from "../logging";
 import {
   scanItems,
   buildIndex,
@@ -13,6 +14,16 @@ import {
   parseItemId,
   formatItemId,
 } from "../domain/indexing";
+
+function createMockLogger(): Logger {
+  return {
+    debug: () => {},
+    info: () => {},
+    warn: () => {},
+    error: () => {},
+    json: () => {},
+  };
+}
 
 function createValidItem(overrides: Partial<Item> = {}): Item {
   return {
@@ -162,9 +173,11 @@ describe("buildIndex", () => {
 
 describe("scanItems", () => {
   let tempDir: string;
+  let mockLogger: Logger;
 
   beforeEach(async () => {
     tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "wreckit-scan-test-"));
+    mockLogger = createMockLogger();
   });
 
   afterEach(async () => {
@@ -226,17 +239,15 @@ describe("scanItems", () => {
       JSON.stringify({ invalid: "data" })
     );
 
-    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const warnSpy = vi.spyOn(mockLogger, "warn");
 
-    const result = await scanItems(tempDir);
+    const result = await scanItems(tempDir, { logger: mockLogger });
 
     expect(result).toHaveLength(1);
     expect(result[0].id).toBe("001-valid");
     expect(warnSpy).toHaveBeenCalledWith(
       expect.stringContaining("Skipping invalid item")
     );
-
-    warnSpy.mockRestore();
   });
 
   it("ignores directories without number prefix", async () => {
