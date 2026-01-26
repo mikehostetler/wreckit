@@ -6,3 +6,7 @@ dist
 # Wreckit local config (may contain secrets)
 .wreckit/config.local.json*.log
 *.log
+
+# VitePress build output and cache
+docs/.vitepress/dist
+docs/.vitepress/cache
