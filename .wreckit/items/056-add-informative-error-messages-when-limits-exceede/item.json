@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "id": "056-add-informative-error-messages-when-limits-exceede",
+  "title": "Add informative error messages when limits exceeded",
+  "section": "roadmap",
+  "state": "idea",
+  "overview": "From milestone [M2] Payload Size Limits Enforcement\n\n**Motivation:** Strategic milestone: Payload Size Limits Enforcement",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-26T19:51:07.551Z",
+  "updated_at": "2026-01-26T19:51:07.551Z",
+  "motivation": "Strategic milestone: Payload Size Limits Enforcement",
+  "depends_on": [
+    "055-add-validation-max-50-ideas-120-char-titles-2000-c"
+  ],
+  "campaign": "M2"
+}

@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "id": "054-implement-payload-size-limits-in-ideas-ingestion-s",
+  "branch_name": "wreckit/054-implement-payload-size-limits-in-ideas-ingestion-s",
+  "user_stories": [
+    {
+      "id": "US-001",
+      "title": "Unify error handling between document and interview ingestion paths",
+      "acceptance_criteria": [
+        "Interview mode throws PayloadValidationError when limits are exceeded (no try-catch)",
+        "Document mode continues to throw PayloadValidationError (behavior unchanged)",
+        "Both paths provide identical error messages and security posture",
+        "Error messages include specific details about which limits were exceeded (actual vs expected values)",
+        "No silent failures - users always receive clear feedback about validation failures"
+      ],
+      "priority": 1,
+      "status": "pending",
+      "notes": "Remove try-catch block in src/domain/ideas-interview.ts:264-272. The current behavior of catching errors and returning empty array is weaker security than the fail-fast approach used in document parsing. This change ensures consistent behavior across all ingestion modes."
+    },
+    {
+      "id": "US-002",
+      "title": "Update spec to reflect payload validation implementation status",
+      "acceptance_criteria": [
+        "specs/001-ideas-ingestion.md line 305 shows payload size limits as '✅ Implemented'",
+        "Note accurately describes implementation location (src/domain/validation.ts)",
+        "Markdown formatting is correct and renders properly",
+        "No other sections of the spec require updates for this change"
+      ],
+      "priority": 2,
+      "status": "pending",
+      "notes": "The spec currently shows payload limits as '❌ Not Implemented' but they are fully implemented with comprehensive test coverage. This is a documentation-only change to reflect reality."
+    },
+    {
+      "id": "US-003",
+      "title": "Review and update downstream items 055-058",
+      "acceptance_criteria": [
+        "Item 055 (Add validation...) is reviewed and marked as done or redundant",
+        "Item 056 (Add informative error messages) is reviewed for relevance",
+        "Item 057 (Document limits...) is updated if dependency chain needs adjustment",
+        "Item 058 (Add unit tests...) is marked as done given existing 415-line test suite",
+        "Dependency chain is accurate and reflects actual implementation state",
+        "Decisions for each item are documented in item notes or status"
+      ],
+      "priority": 3,
+      "status": "pending",
+      "notes": "Items 055-058 form a dependency chain assuming the validation doesn't exist. Since validation is already implemented with comprehensive tests and error messages, these items may need to be closed or re-scoped. Item 057 (documentation) is likely still relevant as user-facing documentation is separate from implementation."
+    }
+  ]
+}

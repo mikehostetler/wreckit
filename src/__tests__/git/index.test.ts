@@ -373,7 +373,15 @@ describe("git/index", () => {
       // Log for debugging CI issues
       console.log(`[DEBUG] Checking if repo root is git: ${repoRoot}`);
       console.log(`[DEBUG] Parent would be: ${path.dirname(repoRoot)}`);
+
+      // Enable debug logging for isGitRepo
+      const oldEnv = process.env.DEBUG_IS_GIT_REPO;
+      process.env.DEBUG_IS_GIT_REPO = "true";
+
       const result = await gitModule.isGitRepo(repoRoot);
+
+      process.env.DEBUG_IS_GIT_REPO = oldEnv || "";
+
       console.log(`[DEBUG] isGitRepo returned: ${result}`);
       expect(result).toBe(true);
     });

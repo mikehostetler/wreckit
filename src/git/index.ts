@@ -316,6 +316,11 @@ export async function isGitRepo(cwd: string): Promise<boolean> {
       const ceilingDir = path.dirname(cwd);
       const env = { ...process.env, GIT_CEILING_DIRECTORIES: ceilingDir };
 
+      // Debug logging
+      if (process.env.DEBUG_IS_GIT_REPO === "true") {
+        console.error(`[isGitRepo] cwd=${cwd}, ceiling=${ceilingDir}`);
+      }
+
       proc = spawn("git", ["rev-parse", "--git-dir"], {
         cwd,
         stdio: ["pipe", "pipe", "pipe"],
@@ -332,6 +337,9 @@ export async function isGitRepo(cwd: string): Promise<boolean> {
     }
 
     proc.on("close", (code) => {
+      if (process.env.DEBUG_IS_GIT_REPO === "true") {
+        console.error(`[isGitRepo] git exit code=${code}`);
+      }
       resolve(code === 0);
     });
 
