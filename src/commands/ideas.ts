@@ -101,12 +101,18 @@ export async function ideasCommand(
   if (inputOverride !== undefined) {
     // Direct input override (for testing)
     logger.info("Parsing ideas with agent...");
-    ideas = await parseIdeasWithAgent(inputOverride, root, { verbose: options.verbose });
+    ideas = await parseIdeasWithAgent(inputOverride, root, {
+      verbose: options.verbose,
+      logger
+    });
   } else if (options.file) {
     // File input
     const input = await readFile(options.file);
     logger.info("Parsing ideas with agent...");
-    ideas = await parseIdeasWithAgent(input, root, { verbose: options.verbose });
+    ideas = await parseIdeasWithAgent(input, root, {
+      verbose: options.verbose,
+      logger
+    });
   } else if (hasStdinInput()) {
     // Piped stdin input
     const input = await readStdin();
@@ -115,7 +121,10 @@ export async function ideasCommand(
       return;
     }
     logger.info("Parsing ideas with agent...");
-    ideas = await parseIdeasWithAgent(input, root, { verbose: options.verbose });
+    ideas = await parseIdeasWithAgent(input, root, {
+      verbose: options.verbose,
+      logger
+    });
   } else {
     // No input and TTY - start interview mode
     try {

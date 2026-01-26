@@ -18,7 +18,7 @@
         "All existing tests pass"
       ],
       "priority": 1,
-      "status": "pending",
+      "status": "done",
       "notes": "Low complexity, 2 console.warn calls. Must update 10+ call sites across the codebase. resolveId.ts functions need new options parameter to pass logger through to scanItems."
     },
     {

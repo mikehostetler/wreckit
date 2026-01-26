@@ -1,6 +1,6 @@
 import { runAgentUnion, getAgentConfigUnion } from "../agent/runner";
 import { loadConfig } from "../config";
-import { logger } from "../logging";
+import { logger, type Logger } from "../logging";
 import { loadPromptTemplate } from "../prompts";
 import type { AgentEvent } from "../tui/agentEvents";
 import type { ParsedIdea } from "./ideas";
@@ -11,6 +11,7 @@ import { McpToolNotCalledError } from "../errors";
 export interface ParseIdeasOptions {
   verbose?: boolean;
   mockAgent?: boolean;
+  logger?: Logger;
 }
 
 function formatAgentEvent(event: AgentEvent): string {
@@ -43,6 +44,7 @@ export async function parseIdeasWithAgent(
 
   const resolvedConfig = await loadConfig(root);
   const config = getAgentConfigUnion(resolvedConfig);
+  const internalLogger = options.logger ?? logger;
 
   // Capture ideas via MCP tool call
   // Use ideas-only MCP server to reduce blast radius (Gap 2 mitigation)
@@ -61,7 +63,7 @@ export async function parseIdeasWithAgent(
     config,
     cwd: root,
     prompt,
-    logger,
+    logger: internalLogger,
     timeoutSeconds: resolvedConfig.timeout_seconds,
     mcpServers: { wreckit: ideasServer },
     allowedTools: ["mcp__wreckit__save_parsed_ideas"],
@@ -80,7 +82,7 @@ export async function parseIdeasWithAgent(
       if (options.verbose) {
         const formatted = formatAgentEvent(event);
         if (formatted) {
-          console.log(formatted);
+          internalLogger.info(formatted);
         }
       }
     },
