@@ -17,6 +17,12 @@ import { initCommand } from "./commands/init";
 import { rollbackCommand } from "./commands/rollback";
 import { strategyCommand } from "./commands/strategy";
 import { executeRoadmapCommand } from "./commands/execute-roadmap";
+import {
+  spriteStartCommand,
+  spriteListCommand,
+  spriteKillCommand,
+  spriteAttachCommand,
+} from "./commands/sprite";
 import { learnCommand } from "./commands/learn";
 import { dreamCommand } from "./commands/dream";
 import { summarizeCommand } from "./commands/summarize";
@@ -420,6 +426,126 @@ program
         if (!result.success) {
           throw new Error(result.error ?? "Rollback failed");
         }
+      },
+      logger,
+      {
+        verbose: globalOpts.verbose,
+        quiet: globalOpts.quiet,
+        dryRun: globalOpts.dryRun,
+        cwd: resolveCwd(globalOpts.cwd),
+      },
+    );
+  });
+
+// ============================================================================
+// Sprite Commands (Item 073)
+// ============================================================================
+
+const spriteCmd = program
+  .command("sprite")
+  .description("Manage Sprite VMs (Firecracker microVMs)")
+  .addHelpText("beforeAll", "\nCommands for managing isolated Firecracker microVMs via Wisp.\n");
+
+spriteCmd
+  .command("start <name>")
+  .description("Start a new Sprite VM")
+  .option("--memory <size>", "Memory allocation (e.g., '512MiB', '1GiB')")
+  .option("--cpus <count>", "CPU allocation (e.g., '1', '2')")
+  .option("--json", "Output as JSON")
+  .action(async (name, options, cmd) => {
+    const globalOpts = cmd.optsWithGlobals();
+    await executeCommand(
+      async () => {
+        await spriteStartCommand(
+          {
+            name,
+            memory: options.memory,
+            cpus: options.cpus,
+            cwd: resolveCwd(globalOpts.cwd),
+            json: options.json,
+          },
+          logger,
+        );
+      },
+      logger,
+      {
+        verbose: globalOpts.verbose,
+        quiet: globalOpts.quiet,
+        dryRun: globalOpts.dryRun,
+        cwd: resolveCwd(globalOpts.cwd),
+      },
+    );
+  });
+
+spriteCmd
+  .command("list")
+  .description("List all active Sprite VMs")
+  .option("--json", "Output as JSON")
+  .action(async (options, cmd) => {
+    const globalOpts = cmd.optsWithGlobals();
+    await executeCommand(
+      async () => {
+        await spriteListCommand(
+          {
+            cwd: resolveCwd(globalOpts.cwd),
+            json: options.json,
+          },
+          logger,
+        );
+      },
+      logger,
+      {
+        verbose: globalOpts.verbose,
+        quiet: globalOpts.quiet,
+        dryRun: globalOpts.dryRun,
+        cwd: resolveCwd(globalOpts.cwd),
+      },
+    );
+  });
+
+spriteCmd
+  .command("kill <name>")
+  .description("Terminate (kill) a Sprite VM")
+  .option("--json", "Output as JSON")
+  .action(async (name, options, cmd) => {
+    const globalOpts = cmd.optsWithGlobals();
+    await executeCommand(
+      async () => {
+        await spriteKillCommand(
+          {
+            name,
+            cwd: resolveCwd(globalOpts.cwd),
+            json: options.json,
+          },
+          logger,
+        );
+      },
+      logger,
+      {
+        verbose: globalOpts.verbose,
+        quiet: globalOpts.quiet,
+        dryRun: globalOpts.dryRun,
+        cwd: resolveCwd(globalOpts.cwd),
+      },
+    );
+  });
+
+spriteCmd
+  .command("attach <name>")
+  .description("Attach to a running Sprite VM")
+  .option("--json", "Output as JSON")
+  .action(async (name, options, cmd) => {
+    const globalOpts = cmd.optsWithGlobals();
+    await executeCommand(
+      async () => {
+        await spriteAttachCommand(
+          {
+            name,
+            cwd: resolveCwd(globalOpts.cwd),
+            json: options.json,
+          },
+          logger,
+        );
       },
       logger,
       {

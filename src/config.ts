@@ -151,7 +151,7 @@ export function applyOverrides(
   // Apply agent kind override if specified
   if (overrides.agentKind && overrides.agentKind !== agent.kind) {
     // Validate the agent kind
-    const validKinds = ["process", "claude_sdk", "amp_sdk", "codex_sdk", "opencode_sdk", "rlm"];
+    const validKinds = ["process", "claude_sdk", "amp_sdk", "codex_sdk", "opencode_sdk", "rlm", "sprite"];
     if (!validKinds.includes(overrides.agentKind)) {
       throw new Error(`Invalid agent kind: ${overrides.agentKind}`);
     }

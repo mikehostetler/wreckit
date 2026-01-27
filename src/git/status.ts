@@ -81,10 +81,11 @@ export function parseGitStatusPorcelain(
     const statusCodeRaw = line.substring(0, 2);
     // Trim to handle cases like "M " (modified in work tree only)
     const statusCode = statusCodeRaw.trim();
-    // Find the first space after the status codes
-    const spaceIndex = line.indexOf(" ");
-    if (spaceIndex === -1) continue;
-    const path = line.substring(spaceIndex + 1).trimStart();
+    
+    // The path always starts at index 3 (after "XY ")
+    // We don't use indexOf(" ") because it might match the leading space
+    // in " M file.txt" or spaces inside the filename
+    const path = line.substring(3);
 
     changes.push({
       path,

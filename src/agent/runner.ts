@@ -271,6 +271,21 @@ export async function runAgentUnion(options: UnionRunAgentOptions): Promise<Agen
       });
     }
 
+    case "sprite": {
+      const { runSpriteAgent } = await import("./sprite-runner.js");
+      return runSpriteAgent(config, {
+        config,
+        cwd: options.cwd,
+        prompt: options.prompt,
+        logger: options.logger,
+        dryRun: options.dryRun,
+        mockAgent: options.mockAgent,
+        onStdoutChunk: options.onStdoutChunk,
+        onStderrChunk: options.onStderrChunk,
+        timeoutSeconds: options.timeoutSeconds,
+      });
+    }
+
     default:
       return exhaustiveCheck(config);
   }

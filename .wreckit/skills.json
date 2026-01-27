@@ -4,13 +4,15 @@
       "code-exploration",
       "context-awareness",
       "dependency-analysis",
-      "documentation-analysis"
+      "documentation-analysis",
+      "pattern-detection"
     ],
     "plan": [
       "documentation-writer",
       "architecture-design",
       "user-story-breakdown",
-      "estimation"
+      "estimation",
+      "test-strategy"
     ],
     "implement": [
       "full-capability",
@@ -19,11 +21,14 @@
       "error-handling",
       "code-organization",
       "media-generation",
-      "doctor"
+      "doctor",
+      "refactoring",
+      "schema-validation"
     ],
     "pr": [
       "git-integration",
-      "verification"
+      "verification",
+      "documentation-update"
     ],
     "complete": [
       "verification",
@@ -32,6 +37,14 @@
     "media": [
       "manim-generation",
       "remotion-generation"
+    ],
+    "learn": [
+      "pattern-extraction",
+      "skill-compilation"
+    ],
+    "strategy": [
+      "codebase-analysis",
+      "roadmap-planning"
     ]
   },
   "skills": [
@@ -403,6 +416,148 @@
           "type": "phase_artifact",
           "path": "plan.md",
           "description": "Implementation plan for documentation updates"
+        }
+      ]
+    },
+    {
+      "id": "pattern-detection",
+      "name": "Pattern Detection",
+      "description": "Identifies recurring code patterns, architectural conventions, and implementation strategies across the codebase",
+      "tools": [
+        "Read",
+        "Grep",
+        "Glob"
+      ]
+    },
+    {
+      "id": "test-strategy",
+      "name": "Test Strategy",
+      "description": "Develops comprehensive testing strategies including unit tests, integration tests, and test coverage goals",
+      "tools": [
+        "Read",
+        "Grep",
+        "Glob"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": "src/__tests__/",
+          "description": "Existing test directory for patterns"
+        }
+      ]
+    },
+    {
+      "id": "refactoring",
+      "name": "Refactoring",
+      "description": "Refactors existing code while preserving behavior, improving structure, and reducing complexity",
+      "tools": [
+        "Read",
+        "Edit",
+        "Grep",
+        "Bash"
+      ],
+      "required_context": [
+        {
+          "type": "git_status",
+          "description": "Current state to understand what to refactor"
+        }
+      ]
+    },
+    {
+      "id": "schema-validation",
+      "name": "Schema Validation",
+      "description": "Implements and uses Zod schemas for runtime validation of configuration and data structures",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Grep"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": "src/schemas.ts",
+          "description": "Existing schema definitions"
+        }
+      ]
+    },
+    {
+      "id": "pattern-extraction",
+      "name": "Pattern Extraction",
+      "description": "Analyzes completed work to extract reusable patterns that can be compiled into Skill artifacts. Used by the wreckit learn command",
+      "tools": [
+        "Read",
+        "Write",
+        "Glob",
+        "Grep"
+      ],
+      "required_context": [
+        {
+          "type": "git_status",
+          "description": "Current repository state"
+        }
+      ]
+    },
+    {
+      "id": "skill-compilation",
+      "name": "Skill Compilation",
+      "description": "Compiles extracted patterns into skill definitions following the SkillConfigSchema format",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Grep"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": ".wreckit/skills.json",
+          "description": "Existing skills for merging"
+        }
+      ]
+    },
+    {
+      "id": "codebase-analysis",
+      "name": "Codebase Analysis",
+      "description": "Comprehensive codebase analysis for strategy and roadmap planning, identifying patterns and improvement opportunities",
+      "tools": [
+        "Read",
+        "Write",
+        "Glob",
+        "Grep"
+      ],
+      "required_context": [
+        {
+          "type": "git_status",
+          "description": "Current repository state"
+        },
+        {
+          "type": "file",
+          "path": "ROADMAP.md",
+          "description": "Existing roadmap for reference"
+        }
+      ]
+    },
+    {
+      "id": "roadmap-planning",
+      "name": "Roadmap Planning",
+      "description": "Creates and updates ROADMAP.md with strategic direction, milestones, and item prioritization",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Grep"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": ".wreckit/index.json",
+          "description": "Item index for roadmap planning"
+        },
+        {
+          "type": "file",
+          "path": "ROADMAP.md",
+          "description": "Existing roadmap for updates"
         }
       ]
     }
