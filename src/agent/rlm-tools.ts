@@ -2,11 +2,64 @@ import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import { exec } from "node:child_process";
 import { promisify } from "node:util";
+import * as vm from "node:vm";
 import type { AxFunction, AxFunctionJSONSchema } from "@ax-llm/ax";
 
 const execAsync = promisify(exec);
 
 export type ToolRegistry = Record<string, AxFunction>;
+
+export class JSRuntime {
+  private context: vm.Context;
+
+  constructor(initialContext: Record<string, any> = {}) {
+    this.context = vm.createContext({
+      console: {
+        log: (...args: any[]) => this.log("log", ...args),
+        error: (...args: any[]) => this.log("error", ...args),
+        warn: (...args: any[]) => this.log("warn", ...args),
+      },
+      ...initialContext,
+    });
+  }
+
+  private logs: string[] = [];
+
+  private log(level: string, ...args: any[]) {
+    this.logs.push(`[${level}] ${args.map(a => 
+      typeof a === 'object' ? JSON.stringify(a) : String(a)
+    ).join(" ")}`);
+  }
+
+  run(code: string): string {
+    this.logs = [];
+    try {
+      const result = vm.runInContext(code, this.context);
+      const output = this.logs.join("\n");
+      return output ? `${output}\nResult: ${String(result)}` : String(result);
+    } catch (error: any) {
+      return `Runtime Error: ${error.message}`;
+    }
+  }
+}
+
+// Tool factory to create a RunJS tool bound to a specific runtime instance
+export function createRunJSTool(runtime: JSRuntime): AxFunction {
+  return {
+    name: "RunJS",
+    description: "Execute JavaScript code to process data. Access the global variable 'CONTEXT_DATA' to see the user's input.",
+    parameters: {
+      type: "object",
+      properties: {
+        code: { type: "string", description: "JavaScript code to execute" },
+      },
+      required: ["code"],
+    } as AxFunctionJSONSchema,
+    func: async ({ code }: { code: string }) => {
+      return runtime.run(code);
+    },
+  };
+}
 
 const ReadTool: AxFunction = {
   name: "Read",
@@ -156,12 +209,21 @@ const ALL_TOOLS: ToolRegistry = {
   Bash: BashTool,
 };
 
-export function buildToolRegistry(allowedTools?: string[]): AxFunction[] {
-  if (!allowedTools) {
-    return Object.values(ALL_TOOLS);
+export function buildToolRegistry(allowedTools?: string[], jsRuntime?: JSRuntime): AxFunction[] {
+  let tools = allowedTools
+    ? allowedTools
+        .map((name) => ALL_TOOLS[name])
+        .filter((tool): tool is AxFunction => tool !== undefined)
+    : Object.values(ALL_TOOLS);
+
+  // If a JS runtime is provided, always add the RunJS tool (it's the core RLM mechanic)
+  // But we respect allowlists if "RunJS" is explicitly excluded (which it won't be in most cases)
+  if (jsRuntime) {
+     const runJsTool = createRunJSTool(jsRuntime);
+     if (!allowedTools || allowedTools.includes("RunJS")) {
+        tools.push(runJsTool);
+     }
   }
 
-  return allowedTools
-    .map((name) => ALL_TOOLS[name])
-    .filter((tool): tool is AxFunction => tool !== undefined);
+  return tools;
 }

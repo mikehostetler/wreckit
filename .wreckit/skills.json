@@ -1,18 +1,36 @@
 {
   "phase_skills": {
-    "research": ["code-exploration", "context-awareness"],
-    "plan": ["documentation-writer"],
-    "implement": ["full-capability"],
-    "pr": ["git-integration"],
-    "complete": ["verification"],
-    "media": ["manim-generation", "remotion-generation"]
+    "research": [
+      "code-exploration",
+      "context-awareness"
+    ],
+    "plan": [
+      "documentation-writer"
+    ],
+    "implement": [
+      "full-capability"
+    ],
+    "pr": [
+      "git-integration"
+    ],
+    "complete": [
+      "verification"
+    ],
+    "media": [
+      "manim-generation",
+      "remotion-generation"
+    ]
   },
   "skills": [
     {
       "id": "code-exploration",
       "name": "Code Exploration",
       "description": "Read-only codebase analysis with grep and glob tools",
-      "tools": ["Read", "Glob", "Grep"],
+      "tools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ],
       "required_context": [
         {
           "type": "git_status",
@@ -41,7 +59,13 @@
       "id": "documentation-writer",
       "name": "Documentation Writer",
       "description": "Read and write tools for creating plan and PRD documents",
-      "tools": ["Read", "Write", "Edit", "Glob", "Grep"],
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Glob",
+        "Grep"
+      ],
       "required_context": [
         {
           "type": "phase_artifact",
@@ -54,7 +78,15 @@
       "id": "full-capability",
       "name": "Full Implementation Capability",
       "description": "All tools available for implementation phase",
-      "tools": ["Read", "Write", "Edit", "Glob", "Grep", "Bash", "mcp__wreckit__update_story_status"],
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Glob",
+        "Grep",
+        "Bash",
+        "mcp__wreckit__update_story_status"
+      ],
       "required_context": [
         {
           "type": "phase_artifact",
@@ -72,7 +104,12 @@
       "id": "git-integration",
       "name": "Git Integration",
       "description": "Read tools for verification and bash for git operations",
-      "tools": ["Read", "Glob", "Grep", "Bash"],
+      "tools": [
+        "Read",
+        "Glob",
+        "Grep",
+        "Bash"
+      ],
       "required_context": [
         {
           "type": "git_status",
@@ -84,7 +121,11 @@
       "id": "verification",
       "name": "Verification",
       "description": "Read-only tools for final verification",
-      "tools": ["Read", "Glob", "Grep"],
+      "tools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ],
       "required_context": [
         {
           "type": "git_status",
@@ -96,20 +137,31 @@
       "id": "manim-generation",
       "name": "Manim Animation Generation",
       "description": "Generate mathematical animations using Manim engine (Python-based). Requires: Python 3.8+, FFmpeg, LaTeX. CLI: manim render scene.py SceneName -pqh. Output: MP4 files in media/videos/",
-      "tools": ["Bash", "Write", "Read", "Glob"],
+      "tools": [
+        "Bash",
+        "Write",
+        "Read",
+        "Glob"
+      ],
+      "mcp_servers": {},
       "required_context": [
         {
           "type": "git_status",
           "description": "Check for existing Manim project files"
         }
-      ],
-      "mcp_servers": {}
+      ]
     },
     {
       "id": "remotion-generation",
       "name": "Remotion Video Generation",
       "description": "Generate React-based videos using Remotion framework. Requires: Node.js 16+, FFmpeg. CLI: npx remotion render HelloWorld out/video.mp4. Output: MP4 files.",
-      "tools": ["Bash", "Write", "Read", "Glob"],
+      "tools": [
+        "Bash",
+        "Write",
+        "Read",
+        "Glob"
+      ],
+      "mcp_servers": {},
       "required_context": [
         {
           "type": "file",
@@ -120,8 +172,7 @@
           "type": "git_status",
           "description": "Check for existing Remotion project structure"
         }
-      ],
-      "mcp_servers": {}
+      ]
     }
   ]
 }

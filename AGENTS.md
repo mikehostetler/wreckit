@@ -145,9 +145,11 @@ For complete environment variable documentation including model selection variab
 - `1` — Error
 - `130` — Interrupted
 
-## RLM Mode (ReAct Loop Mode)
+## RLM Mode (Recursive Language Models)
 
-RLM mode (Recursive Loop Mode) uses the `@ax-llm/ax` library to execute agents with a true ReAct loop (Thought -> Action -> Observation).
+RLM mode implements the **Recursive Language Model** architecture (Prompt-as-Environment). Instead of passing the full prompt to the model's context window, it is offloaded to a persistent JavaScript Runtime (JSRuntime) as a global variable `CONTEXT_DATA`. The agent uses the `RunJS` tool to inspect and process this data programmatically.
+
+This allows Wreckit to handle "infinite" context by enabling the agent to read and process instructions in chunks, rather than stuffing everything into the prompt.
 
 ### Configuration
 
@@ -159,7 +161,7 @@ In `.wreckit/config.json`:
     "kind": "rlm",
     "model": "claude-sonnet-4-20250514",
     "maxIterations": 100,
-    "aiProvider": "anthropic" // or "openai" or "google"
+    "aiProvider": "anthropic" // or "zai", "openai", "google"
   }
 }
 ```
@@ -169,6 +171,7 @@ In `.wreckit/config.json`:
 | Provider | Config Value | Env Variable |
 |---|---|---|
 | Anthropic | `anthropic` | `ANTHROPIC_API_KEY` (or `ANTHROPIC_AUTH_TOKEN`) |
+| Z.AI | `zai` | `ZAI_API_KEY` (maps to Anthropic client) |
 | OpenAI | `openai` | `OPENAI_API_KEY` |
 | Google | `google` | `GOOGLE_API_KEY` |
 
@@ -182,27 +185,30 @@ wreckit --rlm run 001
 wreckit --agent rlm run 001
 ```
 
-### ReAct Loop
+### Architecture: Prompt-as-Environment
 
-Unlike the Claude SDK which abstracts the loop, RLM runs an explicit loop:
-1. **Thought:** Agent reasons about the task.
-2. **Action:** Agent selects a tool (Read, Write, Bash, etc.).
-3. **Observation:** Tool output is fed back to the agent.
-4. **Repeat:** Until completion or max iterations.
-
-This visibility helps with debugging complex tasks.
+Unlike standard agents where the prompt is in the context window:
+1. **Offload:** The user's prompt is stored in `CONTEXT_DATA` inside a `JSRuntime` (Node `vm`).
+2. **Trigger:** The agent receives a minimal trigger: *"The user's request is in CONTEXT_DATA. Use RunJS to inspect it."*
+3. **Pull:** The agent calls `RunJS({ code: "CONTEXT_DATA" })` to read the instructions.
+4. **Loop:** The agent enters a ReAct loop (Think -> Act -> Observe) to execute the task.
 
 ### Tools
 
 RLM supports:
-- **Built-in Tools:** `Read`, `Write`, `Edit`, `Glob`, `Grep`, `Bash` (implemented via `AxFunction`).
-- **MCP Tools:** Automatically adapts Claude SDK MCP servers to Ax functions.
+- **Core Tool:** `RunJS` (Execute JS code to read `CONTEXT_DATA` or perform logic).
+- **Built-in Tools:** `Read`, `Write`, `Edit`, `Glob`, `Grep`, `Bash`.
+- **MCP Tools:** Automatically adapts Claude SDK MCP servers.
 
 ### When to Use
 
-- **Complex Debugging:** When you need to see every step of reasoning.
-- **Cross-Provider:** When you want to swap between Claude, GPT-4, and Gemini easily.
-- **Fine-Grained Control:** When SDK abstractions hide too much logic.
+- **Infinite Context:** When the task instructions or input files are too large for the model's window.
+- **Complex Logic:** When the agent needs to perform calculations or logic on the input data before acting.
+- **Self-Verification:** The agent can write code to verify its own understanding of the task.
+
+### Debugging
+
+Use `--verbose` to see the `RunJS` interactions and the agent's reasoning process.
 
 ## Code Style
 
