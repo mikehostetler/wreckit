@@ -200,6 +200,255 @@ const BashTool: AxFunction = {
   },
 };
 
+// ============================================================================
+// Sprite Management Tools (US-073-007)
+// ============================================================================
+
+/**
+ * Default Sprite agent configuration for RLM tools.
+ * In a future enhancement, this could be configurable via environment or RLM runner options.
+ */
+const DEFAULT_SPRITE_CONFIG = {
+  kind: "sprite" as const,
+  wispPath: "wisp",
+  maxVMs: 5,
+  defaultMemory: "512MiB",
+  defaultCPUs: "1",
+  timeout: 300,
+};
+
+/**
+ * Simple logger for Sprite tools.
+ */
+const spriteLogger: {
+  debug: (msg: string, ...args: unknown[]) => void;
+  info: (msg: string, ...args: unknown[]) => void;
+  warn: (msg: string, ...args: unknown[]) => void;
+  error: (msg: string, ...args: unknown[]) => void;
+  json: (data: unknown) => void;
+} = {
+  debug: (msg: string, ...args: unknown[]) => console.debug(`[Sprite] ${msg}`, ...args),
+  info: (msg: string, ...args: unknown[]) => console.info(`[Sprite] ${msg}`, ...args),
+  warn: (msg: string, ...args: unknown[]) => console.warn(`[Sprite] ${msg}`, ...args),
+  error: (msg: string, ...args: unknown[]) => console.error(`[Sprite] ${msg}`, ...args),
+  json: (data: unknown) => console.log(JSON.stringify(data, null, 2)),
+};
+
+/**
+ * SpawnSpriteTool - Start a new Sprite VM.
+ *
+ * This tool allows RLM agents to create isolated Firecracker microVMs
+ * for secure, sandboxed execution environments.
+ */
+const SpawnSpriteTool: AxFunction = {
+  name: "SpawnSprite",
+  description: "Start a new Sprite VM (Firecracker microVM) for isolated, sandboxed execution. Returns connection info for the new VM.",
+  parameters: {
+    type: "object",
+    properties: {
+      name: {
+        type: "string",
+        description: "Name/ID for the Sprite VM (e.g., 'agent-session-1')",
+      },
+      memory: {
+        type: "string",
+        description: "Memory allocation for the VM (e.g., '512MiB', '1GiB'). Default: '512MiB'",
+      },
+      cpus: {
+        type: "string",
+        description: "CPU allocation for the VM (e.g., '1', '2'). Default: '1'",
+      },
+    },
+    required: ["name"],
+  } as AxFunctionJSONSchema,
+  func: async ({ name, memory, cpus }: { name: string; memory?: string; cpus?: string }) => {
+    try {
+      // Dynamic import to avoid circular dependency
+      const { startSprite } = await import("./sprite-runner.js");
+
+      const config = {
+        ...DEFAULT_SPRITE_CONFIG,
+        ...(memory && { defaultMemory: memory }),
+        ...(cpus && { defaultCPUs: cpus }),
+      };
+
+      const result = await startSprite(name, config, spriteLogger);
+
+      if (result.success) {
+        return JSON.stringify({
+          success: true,
+          message: `Started Sprite '${name}'`,
+          data: {
+            name,
+            stdout: result.stdout,
+            stderr: result.stderr,
+          },
+        }, null, 2);
+      } else {
+        return JSON.stringify({
+          success: false,
+          error: result.stderr || result.error || "Failed to start Sprite",
+        }, null, 2);
+      }
+    } catch (error: any) {
+      // Catch and return errors in JSON format (don't throw)
+      return JSON.stringify({
+        success: false,
+        error: error.message || "Unknown error starting Sprite",
+      }, null, 2);
+    }
+  },
+};
+
+/**
+ * AttachSpriteTool - Attach to a running Sprite VM.
+ *
+ * This tool allows RLM agents to attach to existing Sprite VMs
+ * for interactive sessions or to retrieve output.
+ */
+const AttachSpriteTool: AxFunction = {
+  name: "AttachSprite",
+  description: "Attach to a running Sprite VM. Returns console output from the VM.",
+  parameters: {
+    type: "object",
+    properties: {
+      name: {
+        type: "string",
+        description: "Name/ID of the Sprite VM to attach to",
+      },
+    },
+    required: ["name"],
+  } as AxFunctionJSONSchema,
+  func: async ({ name }: { name: string }) => {
+    try {
+      // Dynamic import to avoid circular dependency
+      const { attachSprite } = await import("./sprite-runner.js");
+
+      const result = await attachSprite(name, DEFAULT_SPRITE_CONFIG, spriteLogger);
+
+      if (result.success) {
+        return JSON.stringify({
+          success: true,
+          message: `Attached to Sprite '${name}'`,
+          data: {
+            name,
+            stdout: result.stdout,
+            stderr: result.stderr,
+          },
+        }, null, 2);
+      } else {
+        return JSON.stringify({
+          success: false,
+          error: result.stderr || result.error || "Failed to attach to Sprite",
+        }, null, 2);
+      }
+    } catch (error: any) {
+      // Catch and return errors in JSON format (don't throw)
+      return JSON.stringify({
+        success: false,
+        error: error.message || "Unknown error attaching to Sprite",
+      }, null, 2);
+    }
+  },
+};
+
+/**
+ * ListSpritesTool - List all active Sprite VMs.
+ *
+ * This tool allows RLM agents to query the current state of all Sprites.
+ */
+const ListSpritesTool: AxFunction = {
+  name: "ListSprites",
+  description: "List all active Sprite VMs. Returns a JSON array with Sprite information (ID, state, PID, etc.).",
+  parameters: {
+    type: "object",
+    properties: {},
+    required: [],
+  } as AxFunctionJSONSchema,
+  func: async () => {
+    try {
+      // Dynamic import to avoid circular dependency
+      const { listSprites, parseWispJson } = await import("./sprite-runner.js");
+
+      const result = await listSprites(DEFAULT_SPRITE_CONFIG, spriteLogger);
+
+      if (result.success) {
+        const sprites = parseWispJson(result.stdout, spriteLogger);
+        return JSON.stringify({
+          success: true,
+          message: `Active Sprites: ${Array.isArray(sprites) ? sprites.length : 0}`,
+          data: {
+            sprites: sprites || [],
+            rawOutput: result.stdout,
+          },
+        }, null, 2);
+      } else {
+        return JSON.stringify({
+          success: false,
+          error: result.stderr || result.error || "Failed to list Sprites",
+        }, null, 2);
+      }
+    } catch (error: any) {
+      // Catch and return errors in JSON format (don't throw)
+      return JSON.stringify({
+        success: false,
+        error: error.message || "Unknown error listing Sprites",
+      }, null, 2);
+    }
+  },
+};
+
+/**
+ * KillSpriteTool - Terminate a running Sprite VM.
+ *
+ * This tool allows RLM agents to cleanly shut down Sprite VMs when done.
+ */
+const KillSpriteTool: AxFunction = {
+  name: "KillSprite",
+  description: "Terminate (kill) a running Sprite VM. Returns success status.",
+  parameters: {
+    type: "object",
+    properties: {
+      name: {
+        type: "string",
+        description: "Name/ID of the Sprite VM to terminate",
+      },
+    },
+    required: ["name"],
+  } as AxFunctionJSONSchema,
+  func: async ({ name }: { name: string }) => {
+    try {
+      // Dynamic import to avoid circular dependency
+      const { killSprite } = await import("./sprite-runner.js");
+
+      const result = await killSprite(name, DEFAULT_SPRITE_CONFIG, spriteLogger);
+
+      if (result.success) {
+        return JSON.stringify({
+          success: true,
+          message: `Killed Sprite '${name}'`,
+          data: {
+            name,
+            stdout: result.stdout,
+            stderr: result.stderr,
+          },
+        }, null, 2);
+      } else {
+        return JSON.stringify({
+          success: false,
+          error: result.stderr || result.error || "Failed to kill Sprite",
+        }, null, 2);
+      }
+    } catch (error: any) {
+      // Catch and return errors in JSON format (don't throw)
+      return JSON.stringify({
+        success: false,
+        error: error.message || "Unknown error killing Sprite",
+      }, null, 2);
+    }
+  },
+};
+
 const ALL_TOOLS: ToolRegistry = {
   Read: ReadTool,
   Write: WriteTool,
@@ -207,6 +456,11 @@ const ALL_TOOLS: ToolRegistry = {
   Glob: GlobTool,
   Grep: GrepTool,
   Bash: BashTool,
+  // Sprite management tools (US-073-007)
+  SpawnSprite: SpawnSpriteTool,
+  AttachSprite: AttachSpriteTool,
+  ListSprites: ListSpritesTool,
+  KillSprite: KillSpriteTool,
 };
 
 export function buildToolRegistry(allowedTools?: string[], jsRuntime?: JSRuntime): AxFunction[] {

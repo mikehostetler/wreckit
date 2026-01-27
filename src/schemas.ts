@@ -69,6 +69,15 @@ export const RlmSdkAgentSchema = z.object({
   aiProvider: z.enum(["anthropic", "openai", "google", "zai"]).default("anthropic"),
 });
 
+export const SpriteAgentSchema = z.object({
+  kind: z.literal("sprite"),
+  wispPath: z.string().default("wisp").describe("Path to wisp CLI binary (default: 'wisp' from PATH)"),
+  maxVMs: z.number().default(5).describe("Maximum concurrent VMs allowed"),
+  defaultMemory: z.string().default("512MiB").describe("Default memory allocation per VM"),
+  defaultCPUs: z.string().default("1").describe("Default CPU allocation per VM"),
+  timeout: z.number().default(300).describe("Default timeout in seconds for VM operations"),
+});
+
 export const AgentConfigUnionSchema = z.discriminatedUnion("kind", [
   ProcessAgentSchema,
   ClaudeSdkAgentSchema,
@@ -76,6 +85,7 @@ export const AgentConfigUnionSchema = z.discriminatedUnion("kind", [
   CodexSdkAgentSchema,
   OpenCodeSdkAgentSchema,
   RlmSdkAgentSchema,
+  SpriteAgentSchema,
 ]);
 
 // Legacy agent config (mode-based) - for backwards compatibility
@@ -322,6 +332,7 @@ export type AmpSdkAgentConfig = z.infer<typeof AmpSdkAgentSchema>;
 export type CodexSdkAgentConfig = z.infer<typeof CodexSdkAgentSchema>;
 export type OpenCodeSdkAgentConfig = z.infer<typeof OpenCodeSdkAgentSchema>;
 export type RlmSdkAgentConfig = z.infer<typeof RlmSdkAgentSchema>;
+export type SpriteAgentConfig = z.infer<typeof SpriteAgentSchema>;
 export type AgentConfigUnion = z.infer<typeof AgentConfigUnionSchema>;
 export type BatchProgress = z.infer<typeof BatchProgressSchema>;
 
