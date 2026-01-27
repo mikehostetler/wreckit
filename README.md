@@ -68,6 +68,9 @@ wreckit ideas < IDEAS.md
 # or: echo "add dark mode" | wreckit ideas
 # or: wreckit ideas --file ROADMAP.md
 
+# Or let it dream up ideas from your TODOs
+wreckit dream
+
 # Let Ralph loose
 wreckit
 
@@ -129,6 +132,16 @@ raw → researched → planned → implementing → in_pr → done
 | `wreckit pr <id>` | implementing → in_pr |
 | `wreckit complete <id>` | in_pr → done |
 
+### Advanced Commands
+
+| Command | What It Does |
+|---------|--------------|
+| `wreckit dream` | Autonomously scans codebase for TODOs/gaps to create items |
+| `wreckit learn` | Extracts reusable patterns from completed items into skills |
+| `wreckit strategy` | Analyzes codebase to generate high-level ROADMAP.md |
+| `wreckit execute-roadmap` | Converts ROADMAP milestones into actionable items |
+| `wreckit summarize` | Generates 30-second feature visualization videos |
+
 ### Flags
 
 | Flag | What |
@@ -138,6 +151,47 @@ raw → researched → planned → implementing → in_pr → done
 | `--no-tui` | Disable TUI (CI mode) |
 | `--dry-run` | Preview, don't execute |
 | `--force` | Regenerate artifacts |
+
+---
+
+## Advanced Capabilities
+
+### 🧠 Autonomous Ideation (Dream)
+
+Wreckit can dream up its own backlog by scanning your codebase for technical debt, TODOs, and missing tests:
+
+```bash
+wreckit dream
+```
+
+It analyzes your project structure and creates items for logical next steps, ensuring you never run out of work.
+
+### 📚 Continuous Learning
+
+Wreckit learns from its own success. When items are completed, you can extract patterns:
+
+```bash
+wreckit learn
+```
+
+This compiles reusable coding patterns into `.wreckit/skills.json`, making the agent smarter and more consistent with your specific architecture over time.
+
+### 🗺️ Strategic Planning
+
+Avoid the "Feature Factory" trap with high-level strategy:
+
+1. **Analyze**: `wreckit strategy` reads your codebase and generates a `ROADMAP.md` with strategic milestones.
+2. **Execute**: `wreckit execute-roadmap` converts those milestones into granular Wreckit items.
+
+### 🎥 Autonomous Media
+
+Wreckit can generate 30-second visualization videos for your features using Manim or Remotion:
+
+```bash
+wreckit summarize --item features/001-dark-mode
+```
+
+Perfect for "Shipping" channels or social media updates.
 
 ---
 
