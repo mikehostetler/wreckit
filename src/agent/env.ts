@@ -19,7 +19,8 @@ const ALLOWED_PREFIXES = [
   "API_TIMEOUT",
   "OPENAI_",
   "GOOGLE_",
-  "ZAI_"
+  "ZAI_",
+  "SPRITES_"
 ];
 
 /**
@@ -177,4 +178,33 @@ export async function buildAxAIEnv(options: BuildAxAIEnvOptions): Promise<Record
   }
 
   return axaiEnv;
+}
+
+export interface BuildSpriteEnvOptions extends BuildSdkEnvOptions {
+  token?: string;
+}
+
+/**
+ * Build environment specifically for Sprite CLI operations.
+ * Handles Sprites.dev authentication token.
+ */
+export async function buildSpriteEnv(options: BuildSpriteEnvOptions): Promise<Record<string, string>> {
+  const { token, logger } = options;
+  const baseEnv = await buildSdkEnv(options);
+  const spriteEnv: Record<string, string> = { ...baseEnv };
+
+  // Add token if provided (from config or explicit parameter)
+  if (token) {
+    spriteEnv.SPRITES_TOKEN = token;
+    logger.debug("Sprites token loaded from config");
+  } else if (baseEnv.SPRITES_TOKEN) {
+    logger.debug("Sprites token loaded from environment");
+  }
+
+  // Redact token from logs for security
+  if (spriteEnv.SPRITES_TOKEN) {
+    logger.debug("SPRITES_TOKEN: present (redacted)");
+  }
+
+  return spriteEnv;
 }

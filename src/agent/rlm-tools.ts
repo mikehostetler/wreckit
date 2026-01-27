@@ -210,11 +210,12 @@ const BashTool: AxFunction = {
  */
 const DEFAULT_SPRITE_CONFIG = {
   kind: "sprite" as const,
-  wispPath: "wisp",
+  wispPath: "sprite",
   maxVMs: 5,
   defaultMemory: "512MiB",
   defaultCPUs: "1",
   timeout: 300,
+  token: process.env.SPRITES_TOKEN,
 };
 
 /**

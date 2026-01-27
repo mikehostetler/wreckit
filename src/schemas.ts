@@ -71,7 +71,8 @@ export const RlmSdkAgentSchema = z.object({
 
 export const SpriteAgentSchema = z.object({
   kind: z.literal("sprite"),
-  wispPath: z.string().default("wisp").describe("Path to wisp CLI binary (default: 'wisp' from PATH)"),
+  wispPath: z.string().default("sprite").describe("Path to sprite CLI binary (default: 'sprite' from PATH)"),
+  token: z.string().optional().describe("Sprites.dev authentication token (optional, can use SPRITES_TOKEN env var)"),
   maxVMs: z.number().default(5).describe("Maximum concurrent VMs allowed"),
   defaultMemory: z.string().default("512MiB").describe("Default memory allocation per VM"),
   defaultCPUs: z.string().default("1").describe("Default CPU allocation per VM"),
