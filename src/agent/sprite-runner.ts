@@ -10,11 +10,17 @@ import {
 } from "../errors";
 
 // ============================================================
-// Sprite Runner - Wisp CLI Wrapper
+// Sprite Runner - Sprites.dev CLI Wrapper
 // ============================================================
-// This module handles execution of Wisp CLI commands for managing
-// Firecracker microVMs (Sprites). It shells out to the 'wisp' binary
+// This module handles execution of Sprites.dev CLI commands for managing
+// Firecracker microVMs (Sprites). It shells out to the 'sprite' binary
 // rather than reimplementing Go logic in TypeScript.
+//
+// Commands:
+// - create: Start a new Sprite VM
+// - console: Attach to a running Sprite
+// - list: List all active Sprites
+// - delete: Terminate a Sprite
 
 /**
  * Result from running a Wisp command.
@@ -28,10 +34,10 @@ export interface WispResult {
 }
 
 /**
- * Configuration for running Wisp commands.
+ * Configuration for running Sprite/Wisp commands.
  */
 export interface WispCommandOptions {
-  /** Path to wisp CLI binary (default: 'wisp') */
+  /** Path to sprite/wisp CLI binary (default: 'sprite') */
   wispPath: string;
   /** Logger instance for debug/error output */
   logger: Logger;
@@ -41,6 +47,8 @@ export interface WispCommandOptions {
   onStdoutChunk?: (chunk: string) => void;
   /** Optional callback for stderr chunks */
   onStderrChunk?: (chunk: string) => void;
+  /** Optional authentication token for Sprites.dev */
+  token?: string;
 }
 
 /**
@@ -78,7 +86,14 @@ export async function runWispCommand(
   args: string[],
   options: WispCommandOptions
 ): Promise<WispResult> {
-  const { wispPath, logger, timeout = 300, onStdoutChunk, onStderrChunk } = options;
+  const { wispPath, logger, timeout = 300, onStdoutChunk, onStderrChunk, token } = options;
+
+  // Build environment with token if provided
+  const env: Record<string, string> = { ...process.env };
+  if (token) {
+    env.SPRITES_TOKEN = token;
+    logger.debug(`SPRITES_TOKEN: present (redacted)`);
+  }
 
   return new Promise((resolve) => {
     let stdout = "";
@@ -90,32 +105,33 @@ export async function runWispCommand(
     try {
       child = spawn(wispPath, args, {
         stdio: ["pipe", "pipe", "pipe"],
+        env,
       });
       if (!child) {
         throw new Error("spawn returned undefined");
       }
     } catch (err) {
-      // Handle ENOENT (wisp binary not found)
+      // Handle ENOENT (sprite/wisp binary not found)
       if ((err as NodeJS.ErrnoException).code === "ENOENT") {
-        logger.error(`Wisp CLI not found at: ${wispPath}`);
+        logger.error(`Sprite CLI not found at: ${wispPath}`);
         resolve({
           success: false,
           stdout: "",
           stderr: "",
           exitCode: null,
-          error: `Wisp CLI not found at '${wispPath}'. Install Wisp to enable Sprite support.`,
+          error: `Sprite CLI not found at '${wispPath}'. Install Sprite to enable Sprite support.`,
         });
         return;
       }
 
       // Handle other spawn errors
-      logger.error(`Failed to spawn wisp process: ${err}`);
+      logger.error(`Failed to spawn sprite process: ${err}`);
       resolve({
         success: false,
         stdout: "",
         stderr: "",
         exitCode: null,
-        error: `Failed to spawn wisp: ${err}`,
+        error: `Failed to spawn sprite: ${err}`,
       });
       return;
     }
@@ -124,7 +140,7 @@ export async function runWispCommand(
     if (timeout > 0) {
       timeoutId = setTimeout(() => {
         timedOut = true;
-        logger.warn(`Wisp command timed out after ${timeout} seconds`);
+        logger.warn(`Sprite command timed out after ${timeout} seconds`);
         try {
           child.kill("SIGTERM");
         } catch {
@@ -163,7 +179,7 @@ export async function runWispCommand(
     // Handle process errors
     child.on("error", (err) => {
       if (timeoutId) clearTimeout(timeoutId);
-      logger.error(`Wisp process error: ${err}`);
+      logger.error(`Sprite process error: ${err}`);
       resolve({
         success: false,
         stdout,
@@ -177,7 +193,7 @@ export async function runWispCommand(
     child.on("close", (code) => {
       if (timeoutId) clearTimeout(timeoutId);
       const success = code === 0 && !timedOut;
-      logger.debug(`Wisp exited with code ${code}`);
+      logger.debug(`Sprite exited with code ${code}`);
 
       resolve({
         success,
@@ -227,7 +243,7 @@ export function parseWispJson(output: string, logger: Logger): unknown | null {
 }
 
 /**
- * Start a new Sprite VM.
+ * Start a new Sprite VM using `sprite create` command.
  *
  * @param name - Name/ID for the Sprite
  * @param config - Sprite agent configuration
@@ -239,7 +255,7 @@ export async function startSprite(
   config: SpriteAgentConfig,
   logger: Logger
 ): Promise<WispResult> {
-  const args = ["start", name];
+  const args = ["create", name];
 
   // Add optional resource parameters
   if (config.defaultMemory) {
@@ -255,9 +271,10 @@ export async function startSprite(
     wispPath: config.wispPath,
     logger,
     timeout: config.timeout,
+    token: config.token,
   });
 
-  // Handle Wisp not found error
+  // Handle Sprite not found error
   if (result.error?.includes("not found")) {
     throw new WispNotFoundError(config.wispPath);
   }
@@ -271,7 +288,7 @@ export async function startSprite(
 }
 
 /**
- * Attach to a running Sprite VM.
+ * Attach to a running Sprite VM using `sprite console` command.
  *
  * @param name - Name/ID of the Sprite to attach to
  * @param config - Sprite agent configuration
@@ -283,7 +300,7 @@ export async function attachSprite(
   config: SpriteAgentConfig,
   logger: Logger
 ): Promise<WispResult> {
-  const args = ["attach", name];
+  const args = ["console", name];
 
   logger.debug(`Attaching to Sprite: ${config.wispPath} ${args.join(" ")}`);
 
@@ -291,9 +308,10 @@ export async function attachSprite(
     wispPath: config.wispPath,
     logger,
     timeout: config.timeout,
+    token: config.token,
   });
 
-  // Handle Wisp not found error
+  // Handle Sprite not found error
   if (result.error?.includes("not found")) {
     throw new WispNotFoundError(config.wispPath);
   }
@@ -325,9 +343,10 @@ export async function listSprites(
     wispPath: config.wispPath,
     logger,
     timeout: config.timeout,
+    token: config.token,
   });
 
-  // Handle Wisp not found error
+  // Handle Sprite not found error
   if (result.error?.includes("not found")) {
     throw new WispNotFoundError(config.wispPath);
   }
@@ -338,7 +357,7 @@ export async function listSprites(
 }
 
 /**
- * Kill (terminate) a running Sprite VM.
+ * Kill (terminate) a running Sprite VM using `sprite delete` command.
  *
  * @param name - Name/ID of the Sprite to kill
  * @param config - Sprite agent configuration
@@ -350,7 +369,7 @@ export async function killSprite(
   config: SpriteAgentConfig,
   logger: Logger
 ): Promise<WispResult> {
-  const args = ["kill", name];
+  const args = ["delete", name];
 
   logger.debug(`Killing Sprite: ${config.wispPath} ${args.join(" ")}`);
 
@@ -358,9 +377,10 @@ export async function killSprite(
     wispPath: config.wispPath,
     logger,
     timeout: config.timeout,
+    token: config.token,
   });
 
-  // Handle Wisp not found error
+  // Handle Sprite not found error
   if (result.error?.includes("not found")) {
     throw new WispNotFoundError(config.wispPath);
   }

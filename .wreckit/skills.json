@@ -23,7 +23,8 @@
       "media-generation",
       "doctor",
       "refactoring",
-      "schema-validation"
+      "schema-validation",
+      "logging-standardization"
     ],
     "pr": [
       "git-integration",
@@ -558,6 +559,23 @@
           "type": "file",
           "path": "ROADMAP.md",
           "description": "Existing roadmap for updates"
+        }
+      ]
+    },
+    {
+      "id": "logging-standardization",
+      "name": "Logging Standardization",
+      "description": "Standardizes logging throughout the codebase by replacing direct console.log/error/warn with the Logger interface. Ensures consistent log levels, output formatting, and testability. Based on patterns from item 042.",
+      "tools": [
+        "Read",
+        "Edit",
+        "Grep"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": "src/logging/index.ts",
+          "description": "Logger interface definition"
         }
       ]
     }

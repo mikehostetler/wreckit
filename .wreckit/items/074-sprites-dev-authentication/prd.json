@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "id": "074-sprites-dev-authentication",
+  "branch_name": "wreckit/074-sprites-dev-authentication",
+  "user_stories": [
+    {
+      "id": "US-074-001",
+      "title": "Secure Token Management",
+      "acceptance_criteria": [
+        "Load `SPRITES_TOKEN` from `.wreckit/config.local.json`",
+        "Load `SPRITES_TOKEN` from environment variables",
+        "Inject `SPRITES_TOKEN` into `SpriteRunner` subprocesses",
+        "Redact `SPRITES_TOKEN` from logs"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Ensure token precedence: env var > config.local.json. Never log the token."
+    },
+    {
+      "id": "US-074-002",
+      "title": "Sprite CLI Command Mapping",
+      "acceptance_criteria": [
+        "Update `SpriteRunner` to support `sprite` binary as default",
+        "Map `start` -> `sprite create`",
+        "Map `attach` -> `sprite console`",
+        "Map `kill` -> `sprite delete`",
+        "Handle JSON output parsing for `sprite` CLI if different from `wisp`"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Refactor existing runner to use these new commands."
+    },
+    {
+      "id": "US-074-003",
+      "title": "Update Schema Defaults",
+      "acceptance_criteria": [
+        "Change default `wispPath` to `sprite` in schema",
+        "Ensure `token` field is available in schema (optional, but preferred via env)"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Update defaults in src/schemas.ts."
+    }
+  ]
+}
