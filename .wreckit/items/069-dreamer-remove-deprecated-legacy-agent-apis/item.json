@@ -3,14 +3,8 @@
   "id": "069-dreamer-remove-deprecated-legacy-agent-apis",
   "title": "[DREAMER] Remove deprecated legacy agent APIs",
   "section": "analysis",
-  "state": "critique",
+  "state": "done",
   "overview": "The codebase has 11 @deprecated markers in src/agent/runner.ts for legacy agent configuration APIs. These deprecated functions (AgentConfig, RunAgentOptions, runAgent, getAgentConfig) represent old mode-based configuration that was migrated to kind-based AgentConfigUnion. While kept for backwards compatibility, they add maintenance burden and can confuse new users.",
-  "branch": null,
-  "pr_url": null,
-  "pr_number": null,
-  "last_error": null,
-  "created_at": "2026-01-27T20:00:00.000Z",
-  "updated_at": "2026-01-27T21:50:42.935Z",
   "problem_statement": "Deprecated agent APIs accumulate in the codebase, increasing cognitive load and potential for bugs. Users may unknowingly use legacy APIs, and developers must maintain compatibility layers.",
   "motivation": "Removing deprecated APIs simplifies the codebase, reduces maintenance burden, and ensures all users are on the modern kind-based agent configuration system. This aligns with the completed Item 066 (dogfood-rlm-comprehensive-refactor) which noted these deprecations.",
   "success_criteria": [
@@ -35,5 +29,11 @@
     "Changes to AgentConfigUnion or modern APIs"
   ],
   "priority_hint": "medium",
-  "urgency_hint": "Technical debt cleanup - aligns with refactor milestone"
+  "urgency_hint": "Technical debt cleanup - aligns with refactor milestone",
+  "branch": "wreckit/069-dreamer-remove-deprecated-legacy-agent-apis",
+  "pr_url": "https://github.com/jmanhype/wreckit/pull/28",
+  "pr_number": 28,
+  "last_error": null,
+  "created_at": "2026-01-27T20:00:00.000Z",
+  "updated_at": "2026-01-27T21:00:00.000Z"
 }

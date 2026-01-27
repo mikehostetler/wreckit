@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "id": "073-integrate-wisp-go-stack",
+  "title": "Integrate Wisp/Sprites Go Stack",
+  "section": "infrastructure",
+  "state": "critique",
+  "overview": "Integrate with Wisp (Sprite session manager), WebTmux, and the Sprites Firecracker platform. This allows Wreckit to orchestrate isolated microVM environments, spawning agents inside them for secure, sandboxed execution.",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-27T22:00:00.000Z",
+  "updated_at": "2026-01-27T23:08:58.711Z",
+  "problem_statement": "Wreckit currently runs locally. For dangerous or complex tasks, we need isolated, disposable environments. The Go stack (Wisp/Sprites) provides this capability.",
+  "motivation": "To enable 'Sandbox Mode' where agents run in Firecracker VMs, accessible via WebTmux, managed via Wisp CLI.",
+  "success_criteria": [
+    "New `wreckit sprite` CLI command group (start, attach, list, kill)",
+    "New `SpriteRunner` that wraps `wisp` CLI interactions",
+    "RLM tools (`spawn_sprite`, etc.) exposed to agents",
+    "Configuration support in `.wreckitrc`/`config.json`",
+    "Integration tests mocking the Wisp CLI"
+  ],
+  "technical_constraints": [
+    "Must shell out to `wisp` binary (do not rewrite logic)",
+    "Must use `execa` or `child_process`",
+    "Must integrate with existing RLM and Config systems"
+  ],
+  "scope_in_scope": [
+    "src/commands/sprite.ts",
+    "src/runners/sprite-runner.ts",
+    "src/tools/sprite-tools.ts",
+    "src/config.ts (schema updates)"
+  ],
+  "scope_out_of_scope": [
+    "Installing Wisp/Go binaries (assumed present or handled by user)",
+    "Modifying Wisp source code"
+  ],
+  "priority_hint": "high",
+  "urgency_hint": "Feature request"
+}

@@ -441,13 +441,13 @@ program
 // Sprite Commands (Item 073)
 // ============================================================================
 
-program
+const spriteCmd = program
   .command("sprite")
   .description("Manage Sprite VMs (Firecracker microVMs)")
   .addHelpText("beforeAll", "\nCommands for managing isolated Firecracker microVMs via Wisp.\n");
 
-program
-  .command("sprite start <name>")
+spriteCmd
+  .command("start <name>")
   .description("Start a new Sprite VM")
   .option("--memory <size>", "Memory allocation (e.g., '512MiB', '1GiB')")
   .option("--cpus <count>", "CPU allocation (e.g., '1', '2')")
@@ -477,8 +477,8 @@ program
     );
   });
 
-program
-  .command("sprite list")
+spriteCmd
+  .command("list")
   .description("List all active Sprite VMs")
   .option("--json", "Output as JSON")
   .action(async (options, cmd) => {
@@ -503,8 +503,8 @@ program
     );
   });
 
-program
-  .command("sprite kill <name>")
+spriteCmd
+  .command("kill <name>")
   .description("Terminate (kill) a Sprite VM")
   .option("--json", "Output as JSON")
   .action(async (name, options, cmd) => {
@@ -530,8 +530,8 @@ program
     );
   });
 
-program
-  .command("sprite attach <name>")
+spriteCmd
+  .command("attach <name>")
   .description("Attach to a running Sprite VM")
   .option("--json", "Output as JSON")
   .action(async (name, options, cmd) => {
