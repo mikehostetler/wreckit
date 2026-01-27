@@ -142,6 +142,7 @@ export class Executor {
     }
 
     const itemJson = {
+      schema_version: 1,
       id: itemId,
       title: ticket.title,
       section: "mobile",
