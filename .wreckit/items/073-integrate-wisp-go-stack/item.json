@@ -3,14 +3,8 @@
   "id": "073-integrate-wisp-go-stack",
   "title": "Integrate Wisp/Sprites Go Stack",
   "section": "infrastructure",
-  "state": "critique",
+  "state": "done",
   "overview": "Integrate with Wisp (Sprite session manager), WebTmux, and the Sprites Firecracker platform. This allows Wreckit to orchestrate isolated microVM environments, spawning agents inside them for secure, sandboxed execution.",
-  "branch": null,
-  "pr_url": null,
-  "pr_number": null,
-  "last_error": null,
-  "created_at": "2026-01-27T22:00:00.000Z",
-  "updated_at": "2026-01-27T23:08:58.711Z",
   "problem_statement": "Wreckit currently runs locally. For dangerous or complex tasks, we need isolated, disposable environments. The Go stack (Wisp/Sprites) provides this capability.",
   "motivation": "To enable 'Sandbox Mode' where agents run in Firecracker VMs, accessible via WebTmux, managed via Wisp CLI.",
   "success_criteria": [
@@ -36,5 +30,11 @@
     "Modifying Wisp source code"
   ],
   "priority_hint": "high",
-  "urgency_hint": "Feature request"
+  "urgency_hint": "Feature request",
+  "branch": "wreckit/073-integrate-wisp-go-stack",
+  "pr_url": "https://github.com/jmanhype/wreckit/pull/29",
+  "pr_number": 29,
+  "last_error": null,
+  "created_at": "2026-01-27T22:00:00.000Z",
+  "updated_at": "2026-01-27T23:00:00.000Z"
 }
