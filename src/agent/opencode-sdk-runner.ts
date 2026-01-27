@@ -1,7 +1,7 @@
 import { createOpencodeClient } from "@opencode-ai/sdk";
 import type { Logger } from "../logging";
 import type { AgentResult } from "./runner";
-import { registerSdkController, unregisterSdkController } from "./runner.js";
+import { registerSdkController, unregisterSdkController } from "./lifecycle.js";
 import type { OpenCodeSdkAgentConfig } from "../schemas";
 import type { AgentEvent } from "../tui/agentEvents";
 import { getAllowedToolsForPhase } from "./toolAllowlist";

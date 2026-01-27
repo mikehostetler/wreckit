@@ -1,7 +1,7 @@
 import { execute } from "@sourcegraph/amp-sdk";
 import type { Logger } from "../logging";
 import type { AgentResult } from "./runner";
-import { registerSdkController, unregisterSdkController } from "./runner.js";
+import { registerSdkController, unregisterSdkController } from "./lifecycle.js";
 import type { AmpSdkAgentConfig } from "../schemas";
 import type { AgentEvent } from "../tui/agentEvents";
 import { getAllowedToolsForPhase } from "./toolAllowlist";

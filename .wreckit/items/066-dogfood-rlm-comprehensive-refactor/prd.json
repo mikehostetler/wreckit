@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "id": "066-dogfood-rlm-comprehensive-refactor",
+  "branch_name": "wreckit/066-dogfood-rlm-comprehensive-refactor",
+  "user_stories": [
+    {
+      "id": "US-001",
+      "title": "Extract lifecycle management to dedicated module",
+      "acceptance_criteria": [
+        "New file src/agent/lifecycle.ts created with registerSdkController, unregisterSdkController, registerProcessAgent, unregisterProcessAgent, terminateAllAgents functions",
+        "All SDK runners (claude-sdk-runner.ts, amp-sdk-runner.ts, rlm-runner.ts, etc.) import lifecycle functions from ./lifecycle.js instead of ./runner.js",
+        "src/agent/runner.ts imports lifecycle functions from ./lifecycle.js and re-exports them",
+        "src/agent/index.ts exports lifecycle functions from lifecycle module",
+        "All existing tests pass without modification (bun test)",
+        "Type checking passes (bun run typecheck)",
+        "Lifecycle management still works (process cleanup on exit verified manually)"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Pure extraction of existing code from runner.ts lines 7-54. No behavior change, only moving code to new module and updating imports. This is the safest first step. Added registerProcessAgent/unregisterProcessAgent for consistency."
+    },
+    {
+      "id": "US-002",
+      "title": "Extract process runner to dedicated module",
+      "acceptance_criteria": [
+        "New file src/agent/process-runner.ts created with runProcessAgent function",
+        "runProcessAgent accepts ProcessAgentConfig (union format) instead of legacy AgentConfig",
+        "runProcessAgent uses lifecycle module (registerProcessAgent/unregisterProcessAgent) instead of direct Set manipulation",
+        "src/agent/runner.ts imports runProcessAgent from ./process-runner.js",
+        "Process agent execution works correctly (wreckit --agent process run 001)",
+        "Timeout handling works (SIGTERM after timeout, SIGKILL after 5 seconds)",
+        "Completion signal detection works (config.completion_signal)",
+        "Stdout/stderr streaming works (onStdoutChunk, onStderrChunk callbacks)",
+        "All existing tests pass",
+        "Type checking passes"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Process agent is already a self-contained 110-line function. Moving it to a separate file reduces runner.ts by ~110 lines. The key change is accepting union config directly instead of converting from legacy format. Uses lifecycle module for process registration. Created runLegacyProcessAgent wrapper for backward compatibility with legacy runAgent()."
+    },
+    {
+      "id": "US-003",
+      "title": "Update Claude SDK runner to accept union config directly",
+      "acceptance_criteria": [
+        "runClaudeSdkAgent accepts ClaudeSdkAgentConfig (union format) in options object",
+        "runClaudeSdkAgent defines ClaudeRunAgentOptions interface matching modern SDK runner pattern",
+        "runClaudeSdkAgent uses timeoutSeconds from options instead of config.timeout_seconds",
+        "runClaudeSdkAgent uses config.model and config.max_tokens directly from union config",
+        "Legacy runAgent() converts to union config before calling runAgentUnion",
+        "Claude SDK agent execution works (wreckit --agent claude_sdk run 001)",
+        "All existing tests pass (especially src/__tests__/agent.test.ts)",
+        "Type checking passes",
+        "No conversion logic in dispatch switch statement for claude_sdk case"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "This eliminates the wasteful union → legacy → union conversion for claude_sdk case. The dispatch now passes the union config directly, just like amp/codex/opencode/rlm cases. Standardizes Claude SDK runner on the same pattern as other modern SDK runners. Legacy runAgent() creates ClaudeSdkAgentConfig with default model/max_tokens."
+    },
+    {
+      "id": "US-004",
+      "title": "Simplify dispatch logic to remove conversion overhead",
+      "acceptance_criteria": [
+        "runAgentUnion switch statement passes union configs directly to all runners",
+        "No conversion logic in process case (lines 390-413 in current runner.ts)",
+        "No conversion logic in claude_sdk case (lines 416-440 in current runner.ts)",
+        "All 6 agent kinds (process, claude_sdk, amp_sdk, codex_sdk, opencode_sdk, rlm) dispatch cleanly",
+        "Legacy runAgent() function still works (converts legacy config to union, calls runAgentUnion)",
+        "Mock-agent mode works with all agent kinds",
+        "Dry-run mode works with all agent kinds",
+        "All existing tests pass (428 tests)",
+        "Type checking passes"
+      ],
+      "priority": 4,
+      "status": "done",
+      "notes": "This is the core optimization. The dispatch system is now a pure switch statement that passes union configs directly. No more conversion overhead. The legacy runAgent() is maintained as a compatibility wrapper that converts legacy config to union format before calling the appropriate runner. Process case now calls process-runner.runProcessAgent directly with union config."
+    },
+    {
+      "id": "US-005",
+      "title": "Update documentation and add module comments",
+      "acceptance_criteria": [
+        "src/agent/runner.ts has clear section headers (Type Definitions, New API, Legacy API)",
+        "All exported functions have JSDoc comments with @deprecated tags on legacy API",
+        "src/agent/lifecycle.ts has JSDoc comments on all exports",
+        "src/agent/process-runner.ts has JSDoc comments on all exports",
+        "src/agent/index.ts has clear deprecation warnings in comments",
+        "Code is self-documenting (clear names, obvious purpose)",
+        "No documentation build errors",
+        "Type checking passes"
+      ],
+      "priority": 5,
+      "status": "done",
+      "notes": "Documentation ensures future developers understand the module boundaries and the distinction between legacy (deprecated) and new (preferred) APIs. This is critical for maintainability. JSDoc comments help IDE autocomplete and generate documentation. Added comprehensive JSDoc comments to all exported functions with examples and migration guides."
+    }
+  ]
+}
