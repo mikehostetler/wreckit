@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "id": "067-code-archaeology-wreckit",
+  "title": "Code Archaeology: Forensic Analysis of Wreckit",
+  "section": "analysis",
+  "state": "researched",
+  "overview": "A deep-dive forensic analysis of the Wreckit codebase. Not documentation, but archaeology: tracing the evolution of key modules, identifying hidden technical debt, uncovering copy-pasted patterns, and mapping the 'DNA' of the project from its origins to the new RLM architecture.",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-27T18:00:00.000Z",
+  "updated_at": "2026-01-27T17:40:24.340Z",
+  "problem_statement": "Documentation describes what the code *should* do. We need to know what the code *actually* is, how it got here, and where the bodies are buried.",
+  "motivation": "To understand the true state of the system after rapid evolution and self-refactoring, enabling better strategic decisions for future 'meta' improvements.",
+  "success_criteria": [
+    "Comprehensive report on code evolution (Git history analysis)",
+    "Identification of top 5 technical debt hotspots",
+    "Analysis of test coverage vs. reality",
+    "Map of 'load-bearing' legacy code"
+  ],
+  "technical_constraints": [
+    "Must use --rlm to analyze full context",
+    "Must look at git logs, not just current HEAD"
+  ],
+  "scope_in_scope": [
+    "src/ directory",
+    ".wreckit/ structure",
+    "git history",
+    "test suite patterns"
+  ],
+  "scope_out_of_scope": [
+    "node_modules",
+    "external docs"
+  ],
+  "priority_hint": "low",
+  "urgency_hint": "Strategic insight"
+}
