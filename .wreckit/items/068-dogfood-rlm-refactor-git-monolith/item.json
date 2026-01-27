@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "id": "068-dogfood-rlm-refactor-git-monolith",
+  "title": "Dogfood RLM: Refactor Git Monolith",
+  "section": "maintenance",
+  "state": "critique",
+  "overview": "The Code Archaeology report (Item 067) identified `src/git/index.ts` as a 1200+ line 'God Object' and a top technical debt hotspot. We will use the RLM agent to break this monolith into focused modules: `branch.ts`, `pr.ts`, `status.ts`, and `validation.ts`.",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-27T19:00:00.000Z",
+  "updated_at": "2026-01-27T18:06:27.111Z",
+  "problem_statement": "`src/git/index.ts` is too large, hard to maintain, and serializes all operations via a global mutex. It violates the single-responsibility principle.",
+  "motivation": "To prove RLM's capability to handle massive refactors (1200+ lines context) and to execute the strategic recommendations from the archaeology report.",
+  "success_criteria": [
+    "Split `src/git/index.ts` into at least 3 sub-modules",
+    "Maintain 100% backward compatibility (exports)",
+    "All git integration tests pass",
+    "RLM agent performs the refactor autonomously"
+  ],
+  "technical_constraints": [
+    "Must use `--rlm`",
+    "Must verify using the existing git test suite"
+  ],
+  "scope_in_scope": [
+    "src/git/index.ts",
+    "src/git/branch.ts",
+    "src/git/pr.ts"
+  ],
+  "scope_out_of_scope": [
+    "Changing git behavior",
+    "New git features"
+  ],
+  "priority_hint": "high",
+  "urgency_hint": "Archaeology finding"
+}
