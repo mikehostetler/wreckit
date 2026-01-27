@@ -98,7 +98,12 @@ export class Orchestrator {
     }
 
     this.sessionStore.updateSessionMode(sessionId, "synthesize");
+    await this.telegram.sendMessage(chatId, "🔄 Synthesizing notes... (this may take a minute)");
 
+    this.runSynthesisAsync(sessionId, chatId);
+  }
+
+  private async runSynthesisAsync(sessionId: string, chatId: string): Promise<void> {
     try {
       const synthesizer = new Synthesizer(this.config, this.sessionStore);
       const result = await synthesizer.synthesize(sessionId);
@@ -124,7 +129,9 @@ export class Orchestrator {
         message += "\n";
       }
 
-      message += `${result.spec.mobileNote}\n\n`;
+      if (result.spec?.mobileNote) {
+        message += `${result.spec.mobileNote}\n\n`;
+      }
       message += `Say \`go\` or \`execute\` to start implementation.`;
 
       await this.telegram.sendMessage(chatId, message);

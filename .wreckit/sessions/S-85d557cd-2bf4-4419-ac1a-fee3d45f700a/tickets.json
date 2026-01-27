@@ -1,0 +1,41 @@
+{
+  "tickets": [
+    {
+      "id": "T-001",
+      "title": "Audit Helius API Usage and Recent Changes",
+      "description": "Locate all Helius API calls within the repository. Specifically, identify calls made or modified 'today' (last 24 hours) by reviewing git history and runtime logs. Document the specific endpoints, the functions invoking them, and the context of their usage.",
+      "priority": "medium",
+      "acceptanceCriteria": [
+        "A list of all files and functions containing Helius API calls.",
+        "A git diff or log summary showing changes to these calls in the last 24 hours.",
+        "Documentation of the specific Helius endpoints being utilized."
+      ],
+      "observationIds": [
+        "OBS-001"
+      ],
+      "estimatedComplexity": "medium",
+      "dependencies": []
+    },
+    {
+      "id": "T-002",
+      "title": "Document Token Data Schema (Raw and Internal)",
+      "description": "Retrieve and document the current token data structure. This task requires providing JSON samples for both the raw API response received from the data source and the internal application model/interface used within the codebase.",
+      "priority": "medium",
+      "acceptanceCriteria": [
+        "Sample JSON representing the raw API response for a token.",
+        "Sample JSON representing the internal application model/interface for a token.",
+        "Documentation explaining the mapping or transformation between the raw and internal structures."
+      ],
+      "observationIds": [
+        "OBS-002"
+      ],
+      "estimatedComplexity": "small",
+      "dependencies": []
+    }
+  ],
+  "meta": {
+    "totalTickets": 2,
+    "blockedTickets": 0,
+    "readyTickets": 2
+  }
+}

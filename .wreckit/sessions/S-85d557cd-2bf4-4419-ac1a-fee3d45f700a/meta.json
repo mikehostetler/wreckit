@@ -1,6 +1,6 @@
 {
   "id": "S-85d557cd-2bf4-4419-ac1a-fee3d45f700a",
-  "mode": "capture",
+  "mode": "synthesize",
   "repo": {
     "owner": "noahchristian",
     "name": "polymarket-aggregator",
@@ -8,7 +8,7 @@
     "defaultBranch": "main"
   },
   "createdAt": "2026-01-27T20:50:17.596Z",
-  "updatedAt": "2026-01-27T20:55:57.482Z",
+  "updatedAt": "2026-01-27T21:04:59.078Z",
   "noteCount": 2,
   "lastActivityAt": "2026-01-27T20:55:57.481Z",
   "userId": "1630993666",

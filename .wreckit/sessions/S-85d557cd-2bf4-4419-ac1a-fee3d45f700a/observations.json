@@ -1,0 +1,30 @@
+{
+  "observations": [
+    {
+      "id": "OBS-001",
+      "summary": "Locate Helius API calls in the repository",
+      "details": "Find code snippets or endpoints for the Helius calls made today.",
+      "priority": "medium",
+      "tags": [
+        "api",
+        "helius",
+        "code-search"
+      ]
+    },
+    {
+      "id": "OBS-002",
+      "summary": "Retrieve current token data structure",
+      "details": "Provide sample JSON showing the fields currently retrieved for a token.",
+      "priority": "medium",
+      "tags": [
+        "data-structure",
+        "json",
+        "token"
+      ]
+    }
+  ],
+  "meta": {
+    "totalNotes": 2,
+    "extractedObservations": 2
+  }
+}

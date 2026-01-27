@@ -38,38 +38,51 @@ export class ZAIClient implements LLMClient {
   ): Promise<LLMResponse> {
     const { temperature = 0.7, maxTokens = 4096 } = options;
 
-    const response = await fetch(this.baseUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${this.apiKey}`,
-      },
-      body: JSON.stringify({
-        model: this.model,
-        messages: messages.map((m) => ({ role: m.role, content: m.content })),
-        temperature,
-        max_tokens: maxTokens,
-      }),
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 120000);
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      log.error(`Z.AI API error: ${response.status} - ${errorText}`);
-      throw new Error(`Z.AI API error: ${response.status}`);
+    try {
+      const response = await fetch(this.baseUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${this.apiKey}`,
+        },
+        body: JSON.stringify({
+          model: this.model,
+          messages: messages.map((m) => ({ role: m.role, content: m.content })),
+          temperature,
+          max_tokens: maxTokens,
+        }),
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        log.error(`Z.AI API error: ${response.status} - ${errorText}`);
+        throw new Error(`Z.AI API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const content = data.choices?.[0]?.message?.content || "";
+
+      return {
+        content,
+        usage: data.usage
+          ? {
+              promptTokens: data.usage.prompt_tokens,
+              completionTokens: data.usage.completion_tokens,
+            }
+          : undefined,
+      };
+    } catch (error) {
+      clearTimeout(timeoutId);
+      if (error instanceof Error && error.name === "AbortError") {
+        throw new Error("LLM request timed out after 120 seconds");
+      }
+      throw error;
     }
-
-    const data = await response.json();
-    const content = data.choices?.[0]?.message?.content || "";
-
-    return {
-      content,
-      usage: data.usage
-        ? {
-            promptTokens: data.usage.prompt_tokens,
-            completionTokens: data.usage.completion_tokens,
-          }
-        : undefined,
-    };
   }
 
   async chatJSON<T>(
