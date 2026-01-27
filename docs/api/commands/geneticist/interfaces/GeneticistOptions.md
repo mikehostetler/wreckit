@@ -6,7 +6,7 @@
 
 # Interface: GeneticistOptions
 
-Defined in: commands/geneticist.ts:19
+Defined in: [commands/geneticist.ts:19](https://github.com/jmanhype/wreckit/blob/d2cfffe493bd4fb4f86dbd7fbd82c596c0a86c1d/src/commands/geneticist.ts#L19)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: commands/geneticist.ts:19
 
 > `optional` **autoMerge**: `boolean`
 
-Defined in: commands/geneticist.ts:21
+Defined in: [commands/geneticist.ts:21](https://github.com/jmanhype/wreckit/blob/d2cfffe493bd4fb4f86dbd7fbd82c596c0a86c1d/src/commands/geneticist.ts#L21)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: commands/geneticist.ts:21
 
 > `optional` **cwd**: `string`
 
-Defined in: commands/geneticist.ts:22
+Defined in: [commands/geneticist.ts:22](https://github.com/jmanhype/wreckit/blob/d2cfffe493bd4fb4f86dbd7fbd82c596c0a86c1d/src/commands/geneticist.ts#L22)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: commands/geneticist.ts:22
 
 > `optional` **dryRun**: `boolean`
 
-Defined in: commands/geneticist.ts:20
+Defined in: [commands/geneticist.ts:20](https://github.com/jmanhype/wreckit/blob/d2cfffe493bd4fb4f86dbd7fbd82c596c0a86c1d/src/commands/geneticist.ts#L20)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: commands/geneticist.ts:20
 
 > `optional` **minErrorCount**: `number`
 
-Defined in: commands/geneticist.ts:25
+Defined in: [commands/geneticist.ts:25](https://github.com/jmanhype/wreckit/blob/d2cfffe493bd4fb4f86dbd7fbd82c596c0a86c1d/src/commands/geneticist.ts#L25)
 
 ***
 
@@ -46,7 +46,7 @@ Defined in: commands/geneticist.ts:25
 
 > `optional` **timeWindowHours**: `number`
 
-Defined in: commands/geneticist.ts:24
+Defined in: [commands/geneticist.ts:24](https://github.com/jmanhype/wreckit/blob/d2cfffe493bd4fb4f86dbd7fbd82c596c0a86c1d/src/commands/geneticist.ts#L24)
 
 ***
 
@@ -54,4 +54,4 @@ Defined in: commands/geneticist.ts:24
 
 > `optional` **verbose**: `boolean`
 
-Defined in: commands/geneticist.ts:23
+Defined in: [commands/geneticist.ts:23](https://github.com/jmanhype/wreckit/blob/d2cfffe493bd4fb4f86dbd7fbd82c596c0a86c1d/src/commands/geneticist.ts#L23)

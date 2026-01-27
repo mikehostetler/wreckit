@@ -23,8 +23,8 @@ import {
   runGhCommand,
 } from "../../git";
 
-import type { AgentConfig, RunAgentOptions } from "../../agent";
-import { runAgent } from "../../agent";
+import type { AgentConfigUnion, UnionRunAgentOptions } from "../../agent";
+import { runAgentUnion } from "../../agent";
 
 import { initCommand, NotGitRepoError } from "../../commands/init";
 
@@ -245,16 +245,14 @@ describe("Dry-Run Edge Cases (Tests 12-18)", () => {
       tempDir = await setupTempWreckitRepo();
       const logger = createMockLogger();
 
-      const config: AgentConfig = {
-        mode: "process",
+      const config: AgentConfigUnion = {
+        kind: "process",
         command: "claude",
         args: ["--dangerously-skip-permissions", "--print"],
         completion_signal: "<promise>COMPLETE</promise>",
-        timeout_seconds: 3600,
-        max_iterations: 100,
       };
 
-      const options: RunAgentOptions = {
+      const options: UnionRunAgentOptions = {
         config,
         cwd: tempDir,
         prompt: "Test prompt for agent",
@@ -262,7 +260,7 @@ describe("Dry-Run Edge Cases (Tests 12-18)", () => {
         dryRun: true,
       };
 
-      const result = await runAgent(options);
+      const result = await runAgentUnion(options);
 
       expect(result.success).toBe(true);
       expect(result.completionDetected).toBe(true);
@@ -275,16 +273,14 @@ describe("Dry-Run Edge Cases (Tests 12-18)", () => {
       tempDir = await setupTempWreckitRepo();
       const logger = createMockLogger();
 
-      const config: AgentConfig = {
-        mode: "process",
+      const config: AgentConfigUnion = {
+        kind: "process",
         command: "amp",
         args: ["--dangerously-allow-all"],
         completion_signal: "COMPLETE",
-        timeout_seconds: 1800,
-        max_iterations: 50,
       };
 
-      const options: RunAgentOptions = {
+      const options: UnionRunAgentOptions = {
         config,
         cwd: tempDir,
         prompt: "Implementation prompt",
@@ -292,7 +288,7 @@ describe("Dry-Run Edge Cases (Tests 12-18)", () => {
         dryRun: true,
       };
 
-      await runAgent(options);
+      await runAgentUnion(options);
 
       const dryRunMessages = logger.messages.filter((m) =>
         m.includes("[dry-run]"),
@@ -306,16 +302,14 @@ describe("Dry-Run Edge Cases (Tests 12-18)", () => {
       const logger = createMockLogger();
 
       const testPrompt = "A".repeat(1000);
-      const config: AgentConfig = {
-        mode: "process",
+      const config: AgentConfigUnion = {
+        kind: "process",
         command: "claude",
         args: [],
         completion_signal: "DONE",
-        timeout_seconds: 60,
-        max_iterations: 1,
       };
 
-      const options: RunAgentOptions = {
+      const options: UnionRunAgentOptions = {
         config,
         cwd: tempDir,
         prompt: testPrompt,
@@ -323,7 +317,7 @@ describe("Dry-Run Edge Cases (Tests 12-18)", () => {
         dryRun: true,
       };
 
-      await runAgent(options);
+      await runAgentUnion(options);
 
       expect(logger.messages.some((m) => m.includes("1000 characters"))).toBe(
         true,
@@ -334,16 +328,14 @@ describe("Dry-Run Edge Cases (Tests 12-18)", () => {
       tempDir = await setupTempWreckitRepo();
       const logger = createMockLogger();
 
-      const config: AgentConfig = {
-        mode: "process",
+      const config: AgentConfigUnion = {
+        kind: "process",
         command: "claude",
         args: [],
         completion_signal: "COMPLETE",
-        timeout_seconds: 60,
-        max_iterations: 1,
       };
 
-      const options: RunAgentOptions = {
+      const options: UnionRunAgentOptions = {
         config,
         cwd: tempDir,
         prompt: "Test",
@@ -352,7 +344,7 @@ describe("Dry-Run Edge Cases (Tests 12-18)", () => {
         mockAgent: true,
       };
 
-      const result = await runAgent(options);
+      const result = await runAgentUnion(options);
 
       expect(result.output).toBe("[dry-run] No output");
       expect(result.output).not.toContain("[mock-agent]");
@@ -515,16 +507,14 @@ describe("Dry-Run Edge Cases (Tests 12-18)", () => {
         gitOptions,
       );
 
-      const agentConfig: AgentConfig = {
-        mode: "process",
+      const agentConfig: AgentConfigUnion = {
+        kind: "process",
         command: "claude",
         args: ["--dangerously-skip-permissions", "--print"],
         completion_signal: "<promise>COMPLETE</promise>",
-        timeout_seconds: 3600,
-        max_iterations: 100,
       };
 
-      await runAgent({
+      await runAgentUnion({
         config: agentConfig,
         cwd: tempDir,
         prompt: "Implement the feature",

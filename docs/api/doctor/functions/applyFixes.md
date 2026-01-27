@@ -8,7 +8,7 @@
 
 > **applyFixes**(`root`, `diagnostics`, `logger`): `Promise`\<\{ `backupSessionId`: `string` \| `null`; `results`: [`FixResult`](../interfaces/FixResult.md)[]; \}\>
 
-Defined in: [doctor.ts:655](https://github.com/mikehostetler/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/doctor.ts#L655)
+Defined in: [doctor.ts:655](https://github.com/jmanhype/wreckit/blob/d2cfffe493bd4fb4f86dbd7fbd82c596c0a86c1d/src/doctor.ts#L655)
 
 ## Parameters
 

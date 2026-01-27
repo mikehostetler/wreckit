@@ -6,12 +6,15 @@
 
 # Function: getAgentConfigUnion()
 
-> **getAgentConfigUnion**(`config`): \{ `args`: `string`[]; `command`: `string`; `completion_signal`: `string`; `kind`: `"process"`; \} \| \{ `kind`: `"claude_sdk"`; `max_tokens`: `number`; `model`: `string`; `tools?`: `string`[]; \} \| \{ `kind`: `"amp_sdk"`; `model?`: `string`; \} \| \{ `kind`: `"codex_sdk"`; `model`: `string`; \} \| \{ `kind`: `"opencode_sdk"`; \}
+> **getAgentConfigUnion**(`config`): \{ `args`: `string`[]; `command`: `string`; `completion_signal`: `string`; `kind`: `"process"`; \} \| \{ `kind`: `"claude_sdk"`; `max_tokens`: `number`; `model`: `string`; `tools?`: `string`[]; \} \| \{ `kind`: `"amp_sdk"`; `model?`: `string`; \} \| \{ `kind`: `"codex_sdk"`; `model`: `string`; \} \| \{ `kind`: `"opencode_sdk"`; \} \| \{ `aiProvider`: `"anthropic"` \| `"openai"` \| `"google"` \| `"zai"`; `kind`: `"rlm"`; `maxIterations`: `number`; `model`: `string`; \}
 
-Defined in: [agent/runner.ts:92](https://github.com/mikehostetler/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/agent/runner.ts#L92)
+Defined in: [agent/runner.ts:60](https://github.com/jmanhype/wreckit/blob/d2cfffe493bd4fb4f86dbd7fbd82c596c0a86c1d/src/agent/runner.ts#L60)
 
 Get agent configuration in union format from resolved config.
-This is the new helper that replaces getAgentConfig.
+
+This is the **new** helper that returns the discriminated union format
+directly from the resolved config. Use this with `runAgentUnion` for
+the modern agent dispatch system.
 
 ## Parameters
 
@@ -19,6 +22,17 @@ This is the new helper that replaces getAgentConfig.
 
 `ConfigResolved`
 
+The resolved wreckit configuration
+
 ## Returns
 
-\{ `args`: `string`[]; `command`: `string`; `completion_signal`: `string`; `kind`: `"process"`; \} \| \{ `kind`: `"claude_sdk"`; `max_tokens`: `number`; `model`: `string`; `tools?`: `string`[]; \} \| \{ `kind`: `"amp_sdk"`; `model?`: `string`; \} \| \{ `kind`: `"codex_sdk"`; `model`: `string`; \} \| \{ `kind`: `"opencode_sdk"`; \}
+\{ `args`: `string`[]; `command`: `string`; `completion_signal`: `string`; `kind`: `"process"`; \} \| \{ `kind`: `"claude_sdk"`; `max_tokens`: `number`; `model`: `string`; `tools?`: `string`[]; \} \| \{ `kind`: `"amp_sdk"`; `model?`: `string`; \} \| \{ `kind`: `"codex_sdk"`; `model`: `string`; \} \| \{ `kind`: `"opencode_sdk"`; \} \| \{ `aiProvider`: `"anthropic"` \| `"openai"` \| `"google"` \| `"zai"`; `kind`: `"rlm"`; `maxIterations`: `number`; `model`: `string`; \}
+
+The agent configuration in union format (AgentConfigUnion)
+
+## Example
+
+```typescript
+const agentConfig = getAgentConfigUnion(resolvedConfig);
+const result = await runAgentUnion({ config: agentConfig, cwd: "/project", ... });
+```

@@ -2,19 +2,32 @@
   "phase_skills": {
     "research": [
       "code-exploration",
-      "context-awareness"
+      "context-awareness",
+      "dependency-analysis",
+      "documentation-analysis"
     ],
     "plan": [
-      "documentation-writer"
+      "documentation-writer",
+      "architecture-design",
+      "user-story-breakdown",
+      "estimation"
     ],
     "implement": [
-      "full-capability"
+      "full-capability",
+      "test-driven-development",
+      "test-coverage-analysis",
+      "error-handling",
+      "code-organization",
+      "media-generation",
+      "doctor"
     ],
     "pr": [
-      "git-integration"
+      "git-integration",
+      "verification"
     ],
     "complete": [
-      "verification"
+      "verification",
+      "documentation-update"
     ],
     "media": [
       "manim-generation",
@@ -171,6 +184,225 @@
         {
           "type": "git_status",
           "description": "Check for existing Remotion project structure"
+        }
+      ]
+    },
+    {
+      "id": "dependency-analysis",
+      "name": "Dependency Analysis",
+      "description": "Analyzes item dependencies and execution order. Uses Read and Grep to understand depends_on fields, campaign groupings, and dependency chains between items. Critical for orchestrator-safe planning.",
+      "tools": [
+        "Read",
+        "Grep",
+        "Glob"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": ".wreckit/index.json",
+          "description": "Item index for dependency analysis"
+        }
+      ]
+    },
+    {
+      "id": "documentation-analysis",
+      "name": "Documentation Analysis",
+      "description": "Reads and analyzes existing documentation (README.md, docs/, inline comments) to understand system behavior and design decisions. Essential for research phase to avoid duplicating work.",
+      "tools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": "README.md",
+          "description": "Project README for overview"
+        },
+        {
+          "type": "file",
+          "path": "docs/",
+          "description": "Documentation directory"
+        }
+      ]
+    },
+    {
+      "id": "architecture-design",
+      "name": "Architecture Design",
+      "description": "Analyzes and designs system architecture. Understands existing patterns, module boundaries, and design principles. Uses Read and Grep to study code organization and architectural decisions.",
+      "tools": [
+        "Read",
+        "Grep",
+        "Glob"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": "docs/architecture/",
+          "description": "Architecture documentation"
+        }
+      ]
+    },
+    {
+      "id": "user-story-breakdown",
+      "name": "User Story Breakdown",
+      "description": "Breaks down features into implementable user stories with acceptance criteria. Creates structured PRD with stories that include title, description, acceptance criteria, and priority.",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit"
+      ],
+      "mcp_servers": {
+        "wreckit": {
+          "tools": [
+            "save_prd"
+          ]
+        }
+      },
+      "required_context": [
+        {
+          "type": "phase_artifact",
+          "path": "research.md",
+          "description": "Research for story breakdown"
+        }
+      ]
+    },
+    {
+      "id": "estimation",
+      "name": "Effort Estimation",
+      "description": "Estimates implementation effort based on codebase complexity, file counts, dependency depth, and historical patterns. Uses Read and Glob to analyze scope and provide realistic effort estimates.",
+      "tools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ]
+    },
+    {
+      "id": "test-driven-development",
+      "name": "Test-Driven Development",
+      "description": "Follows TDD practices: write tests first, implement code to pass tests, refactor. Uses Write for test files, Bash for running tests (bun test, npm test), and Read for understanding test patterns in the codebase.",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": "src/__tests__/",
+          "description": "Existing test directory for patterns"
+        }
+      ]
+    },
+    {
+      "id": "test-coverage-analysis",
+      "name": "Test Coverage Analysis",
+      "description": "Analyzes test coverage and writes comprehensive tests for uncovered code. Uses Bun test coverage reports, Grep to find untested code paths, and Write to create new tests. Based on patterns from item 043 (TUI test coverage).",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Grep",
+        "Bash"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": "src/__tests__/",
+          "description": "Test directory for coverage analysis"
+        }
+      ]
+    },
+    {
+      "id": "error-handling",
+      "name": "Error Handling",
+      "description": "Implements proper error handling using WreckitError classes, error codes, and recovery patterns. Uses Read to understand error types, Grep to find unhandled errors, and Edit to add try-catch blocks and error propagation.",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Grep"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": "src/errors.ts",
+          "description": "Error type definitions"
+        }
+      ]
+    },
+    {
+      "id": "code-organization",
+      "name": "Code Organization",
+      "description": "Organizes code into logical modules, follows existing patterns, and maintains file structure conventions. Uses Glob to understand project layout, Read to study patterns, and Edit to refactor organization.",
+      "tools": [
+        "Read",
+        "Edit",
+        "Glob",
+        "Grep"
+      ]
+    },
+    {
+      "id": "media-generation",
+      "name": "Media Generation",
+      "description": "Generates video content using Manim (Python animations) and Remotion (React videos). Uses Bash to run manim/npx commands, Write to create scene files, and Read to understand media layer patterns.",
+      "tools": [
+        "Bash",
+        "Write",
+        "Read",
+        "Glob"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": ".wreckit/media/",
+          "description": "Media directory for generated content"
+        }
+      ]
+    },
+    {
+      "id": "doctor",
+      "name": "Agent Doctor",
+      "description": "Emergency environment repair and self-healing capability. Detects and fixes git locks, npm failures, JSON corruption, and state mismatches. Uses Bash for repair commands (rm, npm install, git), Read for diagnosis, and Write for fixes. Based on item 038 patterns.",
+      "tools": [
+        "Bash",
+        "Read",
+        "Write",
+        "Grep"
+      ],
+      "required_context": [
+        {
+          "type": "git_status",
+          "description": "Git state for lock detection"
+        },
+        {
+          "type": "file",
+          "path": ".git/index.lock",
+          "description": "Check for git lock files"
+        },
+        {
+          "type": "file",
+          "path": "package.json",
+          "description": "Check for npm dependencies"
+        }
+      ]
+    },
+    {
+      "id": "documentation-update",
+      "name": "Documentation Update",
+      "description": "Updates documentation (README.md, docs/, code comments) to reflect implemented changes. Uses Read to understand existing docs, Write to update documentation, and Grep to find outdated references.",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Grep"
+      ],
+      "required_context": [
+        {
+          "type": "phase_artifact",
+          "path": "plan.md",
+          "description": "Implementation plan for documentation updates"
         }
       ]
     }
