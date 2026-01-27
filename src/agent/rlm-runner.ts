@@ -1,9 +1,9 @@
 import type { Logger } from "../logging";
 import type { AgentResult } from "./runner";
-import { registerSdkController, unregisterSdkController } from "./runner.js";
+import { registerSdkController, unregisterSdkController } from "./lifecycle.js";
 import type { RlmSdkAgentConfig } from "../schemas";
 import type { AgentEvent } from "../tui/agentEvents";
-import { buildToolRegistry } from "./rlm-tools.js";
+import { buildToolRegistry, JSRuntime } from "./rlm-tools.js";
 import { buildAxAIEnv } from "./env.js";
 import { adaptMcpServersToAxTools } from "./mcp/mcporterAdapter.js";
 import {
@@ -116,8 +116,16 @@ export async function runRlmAgent(
       throw new Error(`Unsupported provider: ${config.aiProvider}`);
     }
 
-    // 3. Initialize Tools
-    const builtInTools = buildToolRegistry(options.allowedTools);
+    // 3. Initialize JS Runtime (The "RLM" Core)
+    // We inject the prompt into the runtime environment instead of the context window.
+    const jsRuntime = new JSRuntime({
+      CONTEXT_DATA: prompt,
+      cwd: cwd,
+    });
+
+    // 4. Initialize Tools
+    // Pass the runtime so the RunJS tool is available and bound to our context
+    const builtInTools = buildToolRegistry(options.allowedTools, jsRuntime);
     
     let mcpTools: AxFunction[] = [];
     if (options.mcpServers) {
@@ -130,22 +138,22 @@ export async function runRlmAgent(
       logger.debug(`Loaded ${tools.length} tools for agent (${mcpTools.length} from MCP)`);
     }
 
-    // 4. Initialize Agent
+    // 5. Initialize Agent
     const agent = new AxAgent({
       ai,
       name: "Wreckit Agent",
-      description: "Autonomous coding agent",
-      signature: `
-        "You are an expert software engineer tasked with implementing code changes."
-        "You have access to file system tools and shell."
-        "Follow the instructions carefully and validate your work."
-        input: string "The user request or prompt"
-        output: string "The final response or summary of actions"
+      description: `
+        You are an expert software engineer.
+        The user's request is stored in the global variable 'CONTEXT_DATA' within your JavaScript runtime.
+        DO NOT assume you know the request. You MUST inspect 'CONTEXT_DATA' using the RunJS tool.
+        You have access to file system tools and shell.
+        Follow the instructions carefully and validate your work.
       `,
+      signature: 'task:string "The trigger message" -> answer:string "The final response", justification:string "Detailed reasoning"',
       functions: tools
     });
 
-    // 5. Setup Timeout
+    // 6. Setup Timeout
     if (options.timeoutSeconds && options.timeoutSeconds > 0) {
       timeoutId = setTimeout(() => {
         abortController.abort();
@@ -153,13 +161,17 @@ export async function runRlmAgent(
       }, options.timeoutSeconds * 1000);
     }
 
-    // 6. Run ReAct Loop
+    // 7. Run ReAct Loop
     logger.info(`Starting RLM agent (model: ${config.model})`);
     
     let fullOutput = "";
     
+    // Instead of passing the full prompt, we pass a trigger message.
+    // The agent must "pull" the prompt from the runtime.
+    const rlmTrigger = "The user's request has been loaded into the global variable `CONTEXT_DATA`. Use the `RunJS` tool to inspect it and begin the task.";
+    
     // AxAgent.streamingForward returns an async generator
-    const stream = agent.streamingForward(ai, { input: prompt });
+    const stream = agent.streamingForward(ai, { task: rlmTrigger });
 
     for await (const chunk of stream) {
       if (abortController.signal.aborted) {
@@ -192,7 +204,7 @@ export async function runRlmAgent(
       }
     }
 
-    // 7. Cleanup & Return
+    // 8. Cleanup & Return
     if (timeoutId) clearTimeout(timeoutId);
 
     return {

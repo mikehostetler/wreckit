@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "id": "066-dogfood-rlm-comprehensive-refactor",
+  "title": "Dogfood RLM: Comprehensive Refactor of Agent Runner",
+  "section": "maintenance",
+  "state": "implementing",
+  "overview": "Use the newly implemented Recursive Language Model (RLM) mode to perform a comprehensive refactor of `src/agent/runner.ts` and related files. The goal is to prove RLM's ability to handle large contexts (the entire agent module) and perform complex architectural improvements that standard agents struggle with.",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": "Plan quality validation failed:\nMissing required sections: Implementation Plan Title, Current State, Phases\nInsufficient implementation phases: found 0, required at least 1",
+  "created_at": "2026-01-27T12:00:00.000Z",
+  "updated_at": "2026-01-27T16:42:55.102Z",
+  "problem_statement": "The `src/agent/runner.ts` file has grown complex with multiple agent kinds, experimental SDKs, and dispatch logic. Standard agents often lose context when refactoring such core files.",
+  "motivation": "To validate the RLM architecture in a real-world scenario (dogfooding) and improve the maintainability of the agent runner code.",
+  "success_criteria": [
+    "Successfully run `wreckit run 066 --rlm`",
+    "RLM agent reads the entire `src/agent` directory as context",
+    "RLM agent refactors `runAgentUnion` to be more modular",
+    "All tests pass after refactor",
+    "No regression in existing agent modes"
+  ],
+  "technical_constraints": [
+    "Must use `--rlm` flag",
+    "Must not break existing SDK runners"
+  ],
+  "scope_in_scope": [
+    "Refactor `src/agent/runner.ts`",
+    "Extract dispatcher logic",
+    "Simplify type definitions if possible"
+  ],
+  "scope_out_of_scope": [
+    "Refactoring other modules",
+    "Changing public API"
+  ],
+  "priority_hint": "medium",
+  "urgency_hint": "Post-feature verification"
+}

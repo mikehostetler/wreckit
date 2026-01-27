@@ -1,12 +1,29 @@
 import { query, type Options } from "@anthropic-ai/claude-agent-sdk";
 import type { Logger } from "../logging";
-import type { AgentConfig, AgentResult, RunAgentOptions } from "./runner.js";
-import { registerSdkController, unregisterSdkController } from "./runner.js";
+import type { AgentResult } from "./runner";
+import { registerSdkController, unregisterSdkController } from "./lifecycle.js";
 import type { AgentEvent } from "../tui/agentEvents";
+import type { ClaudeSdkAgentConfig } from "../schemas";
 import { buildSdkEnv } from "./env.js";
 
-export async function runClaudeSdkAgent(options: RunAgentOptions, config: AgentConfig): Promise<AgentResult> {
-  const { cwd, prompt, logger, onStdoutChunk, onStderrChunk, onAgentEvent } = options;
+export interface ClaudeRunAgentOptions {
+  config: ClaudeSdkAgentConfig;
+  cwd: string;
+  prompt: string;
+  logger: Logger;
+  dryRun?: boolean;
+  mockAgent?: boolean;
+  onStdoutChunk?: (chunk: string) => void;
+  onStderrChunk?: (chunk: string) => void;
+  onAgentEvent?: (event: AgentEvent) => void;
+  mcpServers?: Record<string, unknown>;
+  allowedTools?: string[];
+  timeoutSeconds?: number;
+}
+
+export async function runClaudeSdkAgent(options: ClaudeRunAgentOptions): Promise<AgentResult> {
+  const { config, cwd, prompt, logger, onStdoutChunk, onStderrChunk, onAgentEvent } = options;
+  const timeoutSeconds = options.timeoutSeconds ?? 3600;
   let output = "";
   let timedOut = false;
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
@@ -17,12 +34,12 @@ export async function runClaudeSdkAgent(options: RunAgentOptions, config: AgentC
 
   try {
     // Set up timeout
-    if (config.timeout_seconds > 0) {
+    if (timeoutSeconds > 0) {
       timeoutId = setTimeout(() => {
         timedOut = true;
-        logger.warn(`SDK agent timed out after ${config.timeout_seconds} seconds`);
+        logger.warn(`SDK agent timed out after ${timeoutSeconds} seconds`);
         abortController.abort();
-      }, config.timeout_seconds * 1000);
+      }, timeoutSeconds * 1000);
     }
 
     // Build environment from ~/.claude/settings.json, process.env, and .wreckit/config*.json
@@ -40,6 +57,14 @@ export async function runClaudeSdkAgent(options: RunAgentOptions, config: AgentC
       // Restrict tools if allowedTools is specified (guardrail to prevent unwanted actions)
       ...(options.allowedTools && { tools: options.allowedTools }),
     };
+
+    // Add model config if specified
+    if (config.model || config.max_tokens) {
+      (sdkOptions as any).model = config.model || "claude-sonnet-4-20250514";
+      if (config.max_tokens) {
+        (sdkOptions as any).max_tokens = config.max_tokens;
+      }
+    }
 
     // Run the agent via SDK
     for await (const message of query({ prompt, options: sdkOptions })) {
