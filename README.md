@@ -93,6 +93,7 @@ raw → researched → planned → implementing → in_pr → done
 | `researched` | Agent analyzed codebase, wrote `research.md` |
 | `planned` | Agent created `plan.md` + `prd.json` with user stories |
 | `implementing` | Agent coding through stories, committing as it goes |
+| `critique` | Adversarial agent reviews code for bugs and security issues |
 | `in_pr` | PR opened, awaiting your review |
 | `done` | Merged. Ralph did it. |
 
@@ -120,6 +121,9 @@ raw → researched → planned → implementing → in_pr → done
 | `wreckit status` | List all items with state |
 | `wreckit run <id>` | Run single item through all phases |
 | `wreckit next` | Run the next incomplete item |
+| `wreckit list` | List items with optional filtering |
+| `wreckit show <id>` | Show item details |
+| `wreckit rollback <id>` | Rollback a direct-merge item |
 | `wreckit doctor` | Validate items, find issues |
 
 ### Phase Commands (for debugging)
@@ -129,6 +133,7 @@ raw → researched → planned → implementing → in_pr → done
 | `wreckit research <id>` | raw → researched |
 | `wreckit plan <id>` | researched → planned |
 | `wreckit implement <id>` | planned → implementing |
+| `wreckit critique <id>` | implementing → critique |
 | `wreckit pr <id>` | implementing → in_pr |
 | `wreckit complete <id>` | in_pr → done |
 
@@ -148,9 +153,16 @@ raw → researched → planned → implementing → in_pr → done
 |------|------|
 | `--verbose` | More logs |
 | `--quiet` | Errors only |
+| `--debug` | Output structured JSON logs |
 | `--no-tui` | Disable TUI (CI mode) |
 | `--dry-run` | Preview, don't execute |
 | `--force` | Regenerate artifacts |
+| `--parallel <n>` | Process N items in parallel |
+| `--no-resume` | Start fresh batch run |
+| `--retry-failed` | Retry failed items on resume |
+| `--no-healing` | Disable self-healing |
+| `--cwd <path>` | Override working directory |
+| `--mock-agent` | Simulate agent responses |
 
 ---
 
