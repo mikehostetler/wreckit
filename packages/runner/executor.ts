@@ -128,7 +128,13 @@ export class Executor {
   }
 
   private async createWreckitItem(ticket: Ticket): Promise<string | null> {
-    const itemId = `${this.sessionId.slice(2, 10)}/${ticket.id.toLowerCase()}`;
+    const ticketNum = ticket.id.replace(/\D/g, "").padStart(3, "0");
+    const slug = ticket.title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "")
+      .slice(0, 30);
+    const itemId = `${ticketNum}-${slug}`;
     const itemDir = join(this.repoPath, ".wreckit", "items", itemId);
 
     if (!existsSync(itemDir)) {
@@ -138,7 +144,7 @@ export class Executor {
     const itemJson = {
       id: itemId,
       title: ticket.title,
-      section: this.sessionId.slice(2, 10),
+      section: "mobile",
       state: "idea",
       overview: `${ticket.description}\n\nAcceptance Criteria:\n${ticket.acceptanceCriteria.map((c) => `- ${c}`).join("\n")}`,
       priority_hint: ticket.priority,
@@ -152,34 +158,33 @@ export class Executor {
 
     writeFileSync(join(itemDir, "item.json"), JSON.stringify(itemJson, null, 2));
 
-    const indexPath = join(this.repoPath, ".wreckit", "index.json");
-    let index: { items: { id: string; state: string; title: string }[] } = { items: [] };
-    if (existsSync(indexPath)) {
-      try {
-        index = JSON.parse(readFileSync(indexPath, "utf-8"));
-      } catch {
-        index = { items: [] };
-      }
-    }
-
-    const existing = index.items.findIndex((i) => i.id === itemId);
-    if (existing >= 0) {
-      index.items[existing] = { id: itemId, state: "idea", title: ticket.title };
-    } else {
-      index.items.push({ id: itemId, state: "idea", title: ticket.title });
-    }
-    writeFileSync(indexPath, JSON.stringify(index, null, 2));
-
     this.log(`Created Wreckit item: ${itemId}`);
     return itemId;
   }
+
+  private itemShortId: number = 0;
 
   private async runWreckitPhase(
     itemId: string,
     phase: RunPhase
   ): Promise<{ success: boolean; error?: string; prUrl?: string; prNumber?: number }> {
-    return new Promise((resolve) => {
-      const args = [phase, itemId, "--cwd", this.repoPath];
+    return new Promise(async (resolve) => {
+      if (this.itemShortId === 0) {
+        const { execSync } = await import("child_process");
+        try {
+          const listOutput = execSync(
+            `bun run ./src/index.ts list --cwd "${this.repoPath}" --json 2>/dev/null || echo "[]"`,
+            { cwd: join(this.repoPath, "..", "WreckitGo"), encoding: "utf-8" }
+          );
+          const items = JSON.parse(listOutput.trim() || "[]");
+          const found = items.findIndex((i: { id: string }) => i.id === itemId);
+          this.itemShortId = found >= 0 ? found + 1 : 1;
+        } catch {
+          this.itemShortId = 1;
+        }
+      }
+
+      const args = [phase, String(this.itemShortId), "--cwd", this.repoPath];
 
       this.log(`Running: wreckit ${args.join(" ")}`);
 
