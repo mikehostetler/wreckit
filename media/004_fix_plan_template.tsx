@@ -73,21 +73,21 @@ export const PlanTemplateFix = () => {
     frame,
     [INTRO_END - 30, INTRO_END, PROBLEM_END - 30, PROBLEM_END],
     [0, 1, 1, 0],
-    { extrapolateRight: "clamp" }
+    { extrapolateRight: "clamp" },
   );
 
   const fixOpacity = interpolate(
     frame,
     [PROBLEM_END - 30, PROBLEM_END, FIX_END - 30, FIX_END],
     [0, 1, 1, 0],
-    { extrapolateRight: "clamp" }
+    { extrapolateRight: "clamp" },
   );
 
   const successOpacity = interpolate(
     frame,
     [FIX_END - 30, FIX_END, SUCCESS_END - 30],
     [0, 1, 1],
-    { extrapolateRight: "clamp" }
+    { extrapolateRight: "clamp" },
   );
 
   // Spring animation for sections
@@ -194,8 +194,8 @@ export const PlanTemplateFix = () => {
                       section.status === "mismatch"
                         ? "rgba(239, 68, 68, 0.2)"
                         : section.status === "missing"
-                        ? "rgba(239, 68, 68, 0.1)"
-                        : "transparent",
+                          ? "rgba(239, 68, 68, 0.1)"
+                          : "transparent",
                     borderRadius: 8,
                     transform: `scale(${sectionScale})`,
                   }}
@@ -207,9 +207,7 @@ export const PlanTemplateFix = () => {
                     style={{
                       fontSize: 24,
                       color:
-                        section.status === "match"
-                          ? COLORS.green
-                          : COLORS.red,
+                        section.status === "match" ? COLORS.green : COLORS.red,
                     }}
                   >
                     {section.name}
@@ -243,9 +241,7 @@ export const PlanTemplateFix = () => {
                     borderRadius: 8,
                   }}
                 >
-                  <span style={{ fontSize: 28, color: COLORS.green }}>
-                    ✓
-                  </span>
+                  <span style={{ fontSize: 28, color: COLORS.green }}>✓</span>
                   <span style={{ fontSize: 24, color: COLORS.text }}>
                     {section.name}
                   </span>
@@ -341,9 +337,7 @@ export const PlanTemplateFix = () => {
                 ## Current State Analysis
               </span>
               <span style={{ margin: "0 16px" }}>→</span>
-              <span style={{ color: COLORS.green }}>
-                ## Current State
-              </span>
+              <span style={{ color: COLORS.green }}>## Current State</span>
             </div>
           </div>
 
@@ -373,9 +367,7 @@ export const PlanTemplateFix = () => {
                 lineHeight: 1.6,
               }}
             >
-              <div style={{ color: COLORS.red }}>
-                ### Phase 1: Setup
-              </div>
+              <div style={{ color: COLORS.red }}>### Phase 1: Setup</div>
               <div style={{ color: COLORS.green, marginTop: 8 }}>
                 ## Phases
                 <br />

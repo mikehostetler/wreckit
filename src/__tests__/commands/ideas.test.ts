@@ -1,4 +1,13 @@
-import { describe, expect, it, beforeEach, afterEach, mock, spyOn, vi } from "bun:test";
+import {
+  describe,
+  expect,
+  it,
+  beforeEach,
+  afterEach,
+  mock,
+  spyOn,
+  vi,
+} from "bun:test";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import * as os from "node:os";
@@ -8,7 +17,8 @@ import type { ParsedIdea } from "../../domain/ideas";
 // Import real git module for passthrough in mock
 import * as gitModule from "../../git";
 
-const mockedParseIdeasWithAgent = vi.fn<(text: string, root: string) => Promise<ParsedIdea[]>>();
+const mockedParseIdeasWithAgent =
+  vi.fn<(text: string, root: string) => Promise<ParsedIdea[]>>();
 const mockedRunIdeaInterview = vi.fn<(root: string) => Promise<ParsedIdea[]>>();
 const mockedRunSimpleInterview = vi.fn<() => Promise<ParsedIdea[]>>();
 const mockedHasUncommittedChanges = vi.fn<() => Promise<boolean>>();
@@ -91,7 +101,10 @@ describe("ideasCommand", () => {
 
   it("creates items from file input", async () => {
     const ideasFile = path.join(tempDir, "ideas.md");
-    await fs.writeFile(ideasFile, "# Add dark mode\nTheme support\n\n# Fix bug\nBroken login");
+    await fs.writeFile(
+      ideasFile,
+      "# Add dark mode\nTheme support\n\n# Fix bug\nBroken login",
+    );
 
     mockedParseIdeasWithAgent.mockResolvedValue([
       { title: "Add dark mode", description: "Theme support" },
@@ -153,7 +166,10 @@ describe("ideasCommand", () => {
     ]);
 
     const consoleSpy = spyOn(console, "log");
-    await ideasCommand({ file: ideasFile, dryRun: true, cwd: tempDir }, mockLogger);
+    await ideasCommand(
+      { file: ideasFile, dryRun: true, cwd: tempDir },
+      mockLogger,
+    );
 
     const itemsDir = path.join(tempDir, ".wreckit", "items");
     await expect(fs.access(itemsDir)).rejects.toThrow();
@@ -178,7 +194,9 @@ describe("ideasCommand", () => {
     await ideasCommand({ file: ideasFile, cwd: tempDir }, mockLogger);
 
     const calls = consoleSpy.mock.calls.map((c) => String(c[0]));
-    expect(calls.some((c) => c.includes("Skipped 1 existing items"))).toBe(true);
+    expect(calls.some((c) => c.includes("Skipped 1 existing items"))).toBe(
+      true,
+    );
     consoleSpy.mockRestore();
   });
 
@@ -216,7 +234,11 @@ describe("ideasCommand", () => {
       { title: "Fix test bug", description: "" },
     ]);
 
-    await ideasCommand({ cwd: tempDir }, mockLogger, "# Test feature\n# Fix test bug");
+    await ideasCommand(
+      { cwd: tempDir },
+      mockLogger,
+      "# Test feature\n# Fix test bug",
+    );
 
     const itemsDir = path.join(tempDir, ".wreckit", "items");
     const entries = await fs.readdir(itemsDir);
@@ -255,7 +277,9 @@ describe("readFile", () => {
   it("throws FileNotFoundError with correct message", async () => {
     const filePath = path.join(tempDir, "nonexistent.txt");
 
-    await expect(readFile(filePath)).rejects.toThrow(`File not found: ${filePath}`);
+    await expect(readFile(filePath)).rejects.toThrow(
+      `File not found: ${filePath}`,
+    );
   });
 });
 
@@ -272,7 +296,9 @@ describe("ideasCommand - git warnings", () => {
     // Default: in a git repo with no uncommitted changes
     mockedIsGitRepo.mockResolvedValue(true);
     mockedHasUncommittedChanges.mockResolvedValue(false);
-    mockedParseIdeasWithAgent.mockResolvedValue([{ title: "Test idea", description: "" }]);
+    mockedParseIdeasWithAgent.mockResolvedValue([
+      { title: "Test idea", description: "" },
+    ]);
   });
 
   afterEach(async () => {
@@ -289,9 +315,13 @@ describe("ideasCommand - git warnings", () => {
     await ideasCommand({ file: ideasFile, cwd: tempDir }, mockLogger);
 
     // Should have warning message
-    const warningMessages = mockLogger.messages.filter((m) => m.startsWith("warn:"));
+    const warningMessages = mockLogger.messages.filter((m) =>
+      m.startsWith("warn:"),
+    );
     expect(warningMessages.length).toBeGreaterThan(0);
-    expect(warningMessages.some((m) => m.includes("uncommitted changes"))).toBe(true);
+    expect(warningMessages.some((m) => m.includes("uncommitted changes"))).toBe(
+      true,
+    );
   });
 
   it("does not warn when repo is clean", async () => {
@@ -304,8 +334,12 @@ describe("ideasCommand - git warnings", () => {
     await ideasCommand({ file: ideasFile, cwd: tempDir }, mockLogger);
 
     // Should not have warning message
-    const warningMessages = mockLogger.messages.filter((m) => m.startsWith("warn:"));
-    expect(warningMessages.some((m) => m.includes("uncommitted changes"))).toBe(false);
+    const warningMessages = mockLogger.messages.filter((m) =>
+      m.startsWith("warn:"),
+    );
+    expect(warningMessages.some((m) => m.includes("uncommitted changes"))).toBe(
+      false,
+    );
   });
 
   it("does not warn in dry-run mode even with changes", async () => {
@@ -315,11 +349,18 @@ describe("ideasCommand - git warnings", () => {
     const ideasFile = path.join(tempDir, "ideas.md");
     await fs.writeFile(ideasFile, "# Test idea");
 
-    await ideasCommand({ file: ideasFile, cwd: tempDir, dryRun: true }, mockLogger);
+    await ideasCommand(
+      { file: ideasFile, cwd: tempDir, dryRun: true },
+      mockLogger,
+    );
 
     // Should not have warning message in dry-run
-    const warningMessages = mockLogger.messages.filter((m) => m.startsWith("warn:"));
-    expect(warningMessages.some((m) => m.includes("uncommitted changes"))).toBe(false);
+    const warningMessages = mockLogger.messages.filter((m) =>
+      m.startsWith("warn:"),
+    );
+    expect(warningMessages.some((m) => m.includes("uncommitted changes"))).toBe(
+      false,
+    );
   });
 
   it("does not warn outside git repo", async () => {
@@ -332,7 +373,11 @@ describe("ideasCommand - git warnings", () => {
     await ideasCommand({ file: ideasFile, cwd: tempDir }, mockLogger);
 
     // Should not have warning message (and should not error)
-    const warningMessages = mockLogger.messages.filter((m) => m.startsWith("warn:"));
-    expect(warningMessages.some((m) => m.includes("uncommitted changes"))).toBe(false);
+    const warningMessages = mockLogger.messages.filter((m) =>
+      m.startsWith("warn:"),
+    );
+    expect(warningMessages.some((m) => m.includes("uncommitted changes"))).toBe(
+      false,
+    );
   });
 });

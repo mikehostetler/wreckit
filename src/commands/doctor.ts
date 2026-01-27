@@ -31,7 +31,7 @@ function formatDiagnostic(d: Diagnostic): string {
 
 export async function doctorCommand(
   options: DoctorOptions,
-  logger: Logger
+  logger: Logger,
 ): Promise<void> {
   const root = findRootFromOptions(options);
   const result = await runDoctor(root, { fix: options.fix }, logger);
@@ -39,7 +39,7 @@ export async function doctorCommand(
   const { diagnostics, fixes, backupSessionId } = result;
 
   if (diagnostics.length === 0) {
-    logger.info("✓ No issues found");
+    console.log("✓ No issues found");
     return;
   }
 
@@ -50,60 +50,57 @@ export async function doctorCommand(
   };
 
   if (grouped.error.length > 0) {
-    logger.info(`Errors (${grouped.error.length}):`);
+    console.log(`Errors (${grouped.error.length}):`);
     for (const d of grouped.error) {
-      logger.info(`  ✗ ${formatDiagnostic(d)}`);
+      console.log(`  ✗ ${formatDiagnostic(d)}`);
     }
   }
 
   if (grouped.warning.length > 0) {
-    logger.info(`Warnings (${grouped.warning.length}):`);
+    console.log(`Warnings (${grouped.warning.length}):`);
     for (const d of grouped.warning) {
-      logger.info(`  ⚠ ${formatDiagnostic(d)}`);
+      console.log(`  ⚠ ${formatDiagnostic(d)}`);
     }
   }
 
   if (grouped.info.length > 0) {
-    logger.info(`Info (${grouped.info.length}):`);
+    console.log(`Info (${grouped.info.length}):`);
     for (const d of grouped.info) {
-      logger.info(`  ℹ ${formatDiagnostic(d)}`);
+      console.log(`  ℹ ${formatDiagnostic(d)}`);
     }
   }
 
   if (fixes && fixes.length > 0) {
-    logger.info("");
-    logger.info("Fixes applied:");
+    console.log("");
+    console.log("Fixes applied:");
     for (const fix of fixes) {
       const status = fix.fixed ? "✓" : "✗";
       const itemPrefix = fix.diagnostic.itemId
         ? `[${fix.diagnostic.itemId}] `
         : "";
-      logger.info(`  ${status} ${itemPrefix}${fix.message}`);
+      console.log(`  ${status} ${itemPrefix}${fix.message}`);
     }
 
     const fixedCount = fixes.filter((f) => f.fixed).length;
     const failedCount = fixes.length - fixedCount;
-    logger.info("");
-    logger.info(`Fixed ${fixedCount} issue(s), ${failedCount} failed`);
+    console.log("");
+    console.log(`Fixed ${fixedCount} issue(s), ${failedCount} failed`);
 
     // Show backup session info
     if (backupSessionId) {
-      logger.info("");
-      logger.info(`Backup created: .wreckit/backups/${backupSessionId}/`);
+      console.log("");
+      console.log(`Backup created: .wreckit/backups/${backupSessionId}/`);
     }
-  } else if (
-    diagnostics.some((d) => d.fixable) &&
-    !options.fix
-  ) {
-    logger.info("");
-    logger.info("Run with --fix to auto-fix recoverable issues");
+  } else if (diagnostics.some((d) => d.fixable) && !options.fix) {
+    console.log("");
+    console.log("Run with --fix to auto-fix recoverable issues");
   }
 
   const remainingErrors = options.fix
     ? diagnostics.filter(
         (d) =>
           d.severity === "error" &&
-          !fixes?.some((f) => f.diagnostic === d && f.fixed)
+          !fixes?.some((f) => f.diagnostic === d && f.fixed),
       )
     : grouped.error;
 

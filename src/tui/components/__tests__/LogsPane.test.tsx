@@ -40,7 +40,10 @@ describe("LogsPane", () => {
       const height = 20;
       const scrollOffset = 50;
 
-      const effectiveOffset = Math.min(scrollOffset, Math.max(0, logs.length - height + 1));
+      const effectiveOffset = Math.min(
+        scrollOffset,
+        Math.max(0, logs.length - height + 1),
+      );
 
       expect(effectiveOffset).toBe(50); // min(50, max(0, 100 - 20 + 1)) = min(50, 81) = 50
     });
@@ -50,7 +53,10 @@ describe("LogsPane", () => {
       const height = 20;
       const scrollOffset = 200; // Too large
 
-      const effectiveOffset = Math.min(scrollOffset, Math.max(0, logs.length - height + 1));
+      const effectiveOffset = Math.min(
+        scrollOffset,
+        Math.max(0, logs.length - height + 1),
+      );
 
       expect(effectiveOffset).toBe(81); // min(200, 81) = 81
     });
@@ -60,7 +66,10 @@ describe("LogsPane", () => {
       const height = 20;
       const scrollOffset = -10;
 
-      const effectiveOffset = Math.min(scrollOffset, Math.max(0, logs.length - height + 1));
+      const effectiveOffset = Math.min(
+        scrollOffset,
+        Math.max(0, logs.length - height + 1),
+      );
 
       expect(effectiveOffset).toBe(-10); // min(-10, 81) = -10
     });
@@ -70,7 +79,10 @@ describe("LogsPane", () => {
       const height = 20;
       const scrollOffset = 5;
 
-      const effectiveOffset = Math.min(scrollOffset, Math.max(0, logs.length - height + 1));
+      const effectiveOffset = Math.min(
+        scrollOffset,
+        Math.max(0, logs.length - height + 1),
+      );
 
       expect(effectiveOffset).toBe(0); // min(5, max(0, 10 - 20 + 1)) = min(5, 0) = 0
     });
@@ -80,7 +92,10 @@ describe("LogsPane", () => {
       const height = 20;
       const scrollOffset = 5;
 
-      const effectiveOffset = Math.min(scrollOffset, Math.max(0, logs.length - height + 1));
+      const effectiveOffset = Math.min(
+        scrollOffset,
+        Math.max(0, logs.length - height + 1),
+      );
 
       expect(effectiveOffset).toBe(1); // min(5, max(0, 20 - 20 + 1)) = min(5, 1) = 1
     });
@@ -90,7 +105,10 @@ describe("LogsPane", () => {
       const height = 20;
       const scrollOffset = 5;
 
-      const effectiveOffset = Math.min(scrollOffset, Math.max(0, logs.length - height + 1));
+      const effectiveOffset = Math.min(
+        scrollOffset,
+        Math.max(0, logs.length - height + 1),
+      );
 
       expect(effectiveOffset).toBe(0); // min(5, max(0, 0 - 20 + 1)) = min(5, 0) = 0
     });
@@ -102,7 +120,10 @@ describe("LogsPane", () => {
       const height = 20;
       const scrollOffset = 10;
 
-      const effectiveOffset = Math.min(scrollOffset, Math.max(0, logs.length - height + 1));
+      const effectiveOffset = Math.min(
+        scrollOffset,
+        Math.max(0, logs.length - height + 1),
+      );
       const startIdx = Math.max(0, logs.length - height + 1 - effectiveOffset);
 
       expect(startIdx).toBe(71); // max(0, 100 - 20 + 1 - 10) = max(0, 71) = 71
@@ -134,7 +155,10 @@ describe("LogsPane", () => {
       const height = 20;
       const scrollOffset = 81; // maxOffset
 
-      const effectiveOffset = Math.min(scrollOffset, Math.max(0, logs.length - height + 1));
+      const effectiveOffset = Math.min(
+        scrollOffset,
+        Math.max(0, logs.length - height + 1),
+      );
       const startIdx = Math.max(0, logs.length - height + 1 - effectiveOffset);
 
       expect(startIdx).toBe(0); // max(0, 100 - 20 + 1 - 81) = max(0, 0) = 0
@@ -145,7 +169,10 @@ describe("LogsPane", () => {
       const height = 20;
       const scrollOffset = 200; // Beyond max
 
-      const effectiveOffset = Math.min(scrollOffset, Math.max(0, logs.length - height + 1));
+      const effectiveOffset = Math.min(
+        scrollOffset,
+        Math.max(0, logs.length - height + 1),
+      );
       const startIdx = Math.max(0, logs.length - height + 1 - effectiveOffset);
 
       expect(startIdx).toBe(0); // max(0, negative) = 0
@@ -202,7 +229,10 @@ describe("LogsPane", () => {
       const height = 20;
       const scrollOffset = 0;
 
-      const effectiveOffset = Math.min(scrollOffset, Math.max(0, logs.length - height + 1));
+      const effectiveOffset = Math.min(
+        scrollOffset,
+        Math.max(0, logs.length - height + 1),
+      );
       const startIdx = Math.max(0, logs.length - height + 1 - effectiveOffset);
       const isAtBottom = effectiveOffset === 0;
       const isAtTop = startIdx === 0;
@@ -325,7 +355,10 @@ describe("LogsPane", () => {
       const height = 20;
       const scrollOffset = 0;
 
-      const effectiveOffset = Math.min(scrollOffset, Math.max(0, logs.length - height + 1));
+      const effectiveOffset = Math.min(
+        scrollOffset,
+        Math.max(0, logs.length - height + 1),
+      );
       const startIdx = Math.max(0, logs.length - height + 1 - effectiveOffset);
       const endIdx = startIdx + height - 1;
       const visibleLogs = logs.slice(startIdx, endIdx);
@@ -339,7 +372,10 @@ describe("LogsPane", () => {
       const height = 20;
       const scrollOffset = 0;
 
-      const effectiveOffset = Math.min(scrollOffset, Math.max(0, logs.length - height + 1));
+      const effectiveOffset = Math.min(
+        scrollOffset,
+        Math.max(0, logs.length - height + 1),
+      );
       const startIdx = Math.max(0, logs.length - height + 1 - effectiveOffset);
       const endIdx = startIdx + height - 1;
 
@@ -358,7 +394,8 @@ describe("LogsPane", () => {
     });
 
     it("handles special characters in log lines", () => {
-      const logWithSpecialChars = "Error: [ERROR] Failed to parse JSON at line 123";
+      const logWithSpecialChars =
+        "Error: [ERROR] Failed to parse JSON at line 123";
       const result = truncate(logWithSpecialChars, 50);
 
       expect(result).toContain("Error:");

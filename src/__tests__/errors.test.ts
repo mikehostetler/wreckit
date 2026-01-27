@@ -31,7 +31,10 @@ describe("ErrorCodes", () => {
 
   it("has consistent code values matching their key names", () => {
     // Codes should match their key names
-    for (const [key, value] of Object.entries(ErrorCodes)) {
+    for (const [key, value] of Object.entries(ErrorCodes) as [
+      string,
+      string,
+    ][]) {
       expect(value).toBe(key);
     }
   });
@@ -74,7 +77,11 @@ describe("ErrorCodes", () => {
 describe("Phase Errors", () => {
   describe("PhaseFailedError", () => {
     it("creates error with phase and itemId", () => {
-      const error = new PhaseFailedError("research", "item-123", "Agent timed out");
+      const error = new PhaseFailedError(
+        "research",
+        "item-123",
+        "Agent timed out",
+      );
       expect(error.phase).toBe("research");
       expect(error.itemId).toBe("item-123");
       expect(error.message).toBe("Agent timed out");
@@ -91,7 +98,10 @@ describe("Phase Errors", () => {
 
   describe("PhaseValidationError", () => {
     it("creates error with phase", () => {
-      const error = new PhaseValidationError("implement", "Not all stories done");
+      const error = new PhaseValidationError(
+        "implement",
+        "Not all stories done",
+      );
       expect(error.phase).toBe("implement");
       expect(error.message).toBe("Not all stories done");
       expect(error.code).toBe(ErrorCodes.PHASE_VALIDATION);
@@ -107,7 +117,11 @@ describe("Phase Errors", () => {
 
   describe("TransitionError", () => {
     it("creates error with state transition info", () => {
-      const error = new TransitionError("idea", "implementing", "Cannot skip states");
+      const error = new TransitionError(
+        "idea",
+        "implementing",
+        "Cannot skip states",
+      );
       expect(error.fromState).toBe("idea");
       expect(error.toState).toBe("implementing");
       expect(error.message).toBe("Cannot skip states");
@@ -188,7 +202,9 @@ describe("Quality Errors", () => {
       const errors = ["Story US-001 has no acceptance criteria"];
       const error = new StoryQualityError(errors);
       expect(error.errors).toEqual(errors);
-      expect(error.message).toContain("Story US-001 has no acceptance criteria");
+      expect(error.message).toContain(
+        "Story US-001 has no acceptance criteria",
+      );
       expect(error.code).toBe(ErrorCodes.STORY_QUALITY);
       expect(error.name).toBe("StoryQualityError");
     });
@@ -300,7 +316,7 @@ describe("Git Errors", () => {
       const error = new RemoteValidationError(
         "origin",
         "git@github.com:other/repo.git",
-        ["github.com/myorg/"]
+        ["github.com/myorg/"],
       );
       expect(error.remoteName).toBe("origin");
       expect(error.actualUrl).toBe("git@github.com:other/repo.git");

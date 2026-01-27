@@ -75,7 +75,11 @@ describe("idempotent phase operations", () => {
     it("reading researched item preserves state", async () => {
       const item = makeItem({ state: "researched" });
       await writeItem(itemDir, item);
-      await fs.writeFile(path.join(itemDir, "research.md"), "# Research", "utf-8");
+      await fs.writeFile(
+        path.join(itemDir, "research.md"),
+        "# Research",
+        "utf-8",
+      );
 
       const readBackItem = await readItem(itemDir);
 
@@ -90,7 +94,11 @@ describe("idempotent phase operations", () => {
       const prd = makePrd([makeStory({ status: "pending" })]);
 
       await writeItem(itemDir, item);
-      await fs.writeFile(path.join(itemDir, "research.md"), "# Research", "utf-8");
+      await fs.writeFile(
+        path.join(itemDir, "research.md"),
+        "# Research",
+        "utf-8",
+      );
       await fs.writeFile(path.join(itemDir, "plan.md"), "# Plan", "utf-8");
       await writeJsonPretty(path.join(itemDir, "prd.json"), prd);
 
@@ -100,9 +108,18 @@ describe("idempotent phase operations", () => {
       expect(readBackItem.updated_at).toBe(item.updated_at);
 
       // Verify artifacts exist
-      const researchExists = await fs.stat(path.join(itemDir, "research.md")).then(() => true).catch(() => false);
-      const planExists = await fs.stat(path.join(itemDir, "plan.md")).then(() => true).catch(() => false);
-      const prdExists = await fs.stat(path.join(itemDir, "prd.json")).then(() => true).catch(() => false);
+      const researchExists = await fs
+        .stat(path.join(itemDir, "research.md"))
+        .then(() => true)
+        .catch(() => false);
+      const planExists = await fs
+        .stat(path.join(itemDir, "plan.md"))
+        .then(() => true)
+        .catch(() => false);
+      const prdExists = await fs
+        .stat(path.join(itemDir, "prd.json"))
+        .then(() => true)
+        .catch(() => false);
 
       expect(researchExists).toBe(true);
       expect(planExists).toBe(true);
@@ -128,10 +145,18 @@ describe("idempotent phase operations", () => {
       const item1 = makeItem({ state: "idea" });
       await writeItem(itemDir, item1);
 
-      const item2 = { ...item1, state: "researched" as const, updated_at: "2024-01-02T00:00:00.000Z" };
+      const item2 = {
+        ...item1,
+        state: "researched" as const,
+        updated_at: "2024-01-02T00:00:00.000Z",
+      };
       await writeItem(itemDir, item2);
 
-      const item3 = { ...item2, state: "planned" as const, updated_at: "2024-01-03T00:00:00.000Z" };
+      const item3 = {
+        ...item2,
+        state: "planned" as const,
+        updated_at: "2024-01-03T00:00:00.000Z",
+      };
       await writeItem(itemDir, item3);
 
       const finalItem = await readItem(itemDir);
@@ -163,7 +188,11 @@ describe("state artifact consistency", () => {
       const prd = makePrd([makeStory()]);
 
       await writeItem(itemDir, item);
-      await fs.writeFile(path.join(itemDir, "research.md"), "# Research", "utf-8");
+      await fs.writeFile(
+        path.join(itemDir, "research.md"),
+        "# Research",
+        "utf-8",
+      );
       await fs.writeFile(path.join(itemDir, "plan.md"), "# Plan", "utf-8");
       await writeJsonPretty(path.join(itemDir, "prd.json"), prd);
 
@@ -178,7 +207,11 @@ describe("state artifact consistency", () => {
     it("researched state requires research.md", async () => {
       const item = makeItem({ state: "researched" });
       await writeItem(itemDir, item);
-      await fs.writeFile(path.join(itemDir, "research.md"), "# Research Notes", "utf-8");
+      await fs.writeFile(
+        path.join(itemDir, "research.md"),
+        "# Research Notes",
+        "utf-8",
+      );
 
       const files = await fs.readdir(itemDir);
       expect(files).toContain("item.json");

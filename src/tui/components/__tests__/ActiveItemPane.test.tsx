@@ -119,7 +119,7 @@ describe("ActiveItemPane", () => {
       const activeState = "implementing";
 
       const workflowLine = WORKFLOW_STATES.map((s) =>
-        s === activeState ? `[${s}]` : s
+        s === activeState ? `[${s}]` : s,
       ).join(" → ");
 
       expect(workflowLine).toContain("[implementing]");
@@ -129,7 +129,7 @@ describe("ActiveItemPane", () => {
       const activeState = "implementing";
 
       const workflowLine = WORKFLOW_STATES.map((s) =>
-        s === activeState ? `[${s}]` : s
+        s === activeState ? `[${s}]` : s,
       ).join(" → ");
 
       expect(workflowLine).toContain("idea");
@@ -140,7 +140,7 @@ describe("ActiveItemPane", () => {
       const activeState = "planned";
 
       const workflowLine = WORKFLOW_STATES.map((s) =>
-        s === activeState ? `[${s}]` : s
+        s === activeState ? `[${s}]` : s,
       ).join(" → ");
 
       expect(workflowLine).toContain(" → ");
@@ -151,7 +151,7 @@ describe("ActiveItemPane", () => {
       const activeState = "unknown";
 
       const workflowLine = WORKFLOW_STATES.map((s) =>
-        s === activeState ? `[${s}]` : s
+        s === activeState ? `[${s}]` : s,
       ).join(" → ");
 
       // No brackets should appear since "unknown" is not in WORKFLOW_STATES

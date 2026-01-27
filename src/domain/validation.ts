@@ -30,7 +30,7 @@ export function hasPendingStories(prd: Prd | null): boolean {
 }
 
 export function canEnterResearched(
-  ctx: Pick<ValidationContext, "hasResearchMd">
+  ctx: Pick<ValidationContext, "hasResearchMd">,
 ): ValidationResult {
   if (!ctx.hasResearchMd) {
     return { valid: false, reason: "research.md does not exist" };
@@ -39,7 +39,7 @@ export function canEnterResearched(
 }
 
 export function canEnterPlanned(
-  ctx: Pick<ValidationContext, "hasPlanMd" | "prd">
+  ctx: Pick<ValidationContext, "hasPlanMd" | "prd">,
 ): ValidationResult {
   if (!ctx.hasPlanMd) {
     return { valid: false, reason: "plan.md does not exist" };
@@ -51,7 +51,7 @@ export function canEnterPlanned(
 }
 
 export function canEnterImplementing(
-  ctx: Pick<ValidationContext, "prd">
+  ctx: Pick<ValidationContext, "prd">,
 ): ValidationResult {
   if (!hasPendingStories(ctx.prd)) {
     return {
@@ -63,7 +63,7 @@ export function canEnterImplementing(
 }
 
 export function canEnterInPr(
-  ctx: Pick<ValidationContext, "prd" | "hasPr">
+  ctx: Pick<ValidationContext, "prd" | "hasPr">,
 ): ValidationResult {
   if (!allStoriesDone(ctx.prd)) {
     return { valid: false, reason: "not all stories are done" };
@@ -75,7 +75,7 @@ export function canEnterInPr(
 }
 
 export function canEnterDone(
-  ctx: Pick<ValidationContext, "prMerged">
+  ctx: Pick<ValidationContext, "prMerged">,
 ): ValidationResult {
   if (!ctx.prMerged) {
     return { valid: false, reason: "PR not merged" };
@@ -86,7 +86,7 @@ export function canEnterDone(
 export function validateTransition(
   current: WorkflowState,
   target: WorkflowState,
-  ctx: ValidationContext
+  ctx: ValidationContext,
 ): ValidationResult {
   const allowed = getAllowedNextStates(current);
   if (!allowed.includes(target)) {
@@ -149,23 +149,29 @@ function validateSingleIdea(idea: ParsedIdea, index: number): string[] {
   if (idea.title && idea.title.length > PAYLOAD_LIMITS.MAX_TITLE_LENGTH) {
     errors.push(
       `Idea #${index + 1}: Title exceeds ${PAYLOAD_LIMITS.MAX_TITLE_LENGTH} characters ` +
-        `(${idea.title.length} characters)`
+        `(${idea.title.length} characters)`,
     );
   }
 
   // Check description length
-  if (idea.description && idea.description.length > PAYLOAD_LIMITS.MAX_DESCRIPTION_LENGTH) {
+  if (
+    idea.description &&
+    idea.description.length > PAYLOAD_LIMITS.MAX_DESCRIPTION_LENGTH
+  ) {
     errors.push(
       `Idea #${index + 1}: Description exceeds ${PAYLOAD_LIMITS.MAX_DESCRIPTION_LENGTH} characters ` +
-        `(${idea.description.length} characters)`
+        `(${idea.description.length} characters)`,
     );
   }
 
   // Check success criteria count
-  if (idea.successCriteria && idea.successCriteria.length > PAYLOAD_LIMITS.MAX_SUCCESS_CRITERIA_ITEMS) {
+  if (
+    idea.successCriteria &&
+    idea.successCriteria.length > PAYLOAD_LIMITS.MAX_SUCCESS_CRITERIA_ITEMS
+  ) {
     errors.push(
       `Idea #${index + 1}: Success criteria exceeds ${PAYLOAD_LIMITS.MAX_SUCCESS_CRITERIA_ITEMS} items ` +
-        `(${idea.successCriteria.length} items)`
+        `(${idea.successCriteria.length} items)`,
     );
   }
 
@@ -186,13 +192,15 @@ function validateSingleIdea(idea: ParsedIdea, index: number): string[] {
  * @param ideas - Array of parsed ideas to validate
  * @returns Validation result with errors array
  */
-export function validatePayloadLimits(ideas: ParsedIdea[]): PayloadValidationErrorDetails {
+export function validatePayloadLimits(
+  ideas: ParsedIdea[],
+): PayloadValidationErrorDetails {
   const errors: string[] = [];
 
   // Check total idea count
   if (ideas.length > PAYLOAD_LIMITS.MAX_IDEAS) {
     errors.push(
-      `Too many ideas: maximum ${PAYLOAD_LIMITS.MAX_IDEAS} ideas per ingestion, got ${ideas.length}`
+      `Too many ideas: maximum ${PAYLOAD_LIMITS.MAX_IDEAS} ideas per ingestion, got ${ideas.length}`,
     );
   }
 
@@ -206,10 +214,12 @@ export function validatePayloadLimits(ideas: ParsedIdea[]): PayloadValidationErr
   const totalSize = calculateJsonSize(ideas);
   if (totalSize > PAYLOAD_LIMITS.MAX_TOTAL_PAYLOAD_SIZE_BYTES) {
     const sizeKb = (totalSize / 1024).toFixed(2);
-    const maxKb = (PAYLOAD_LIMITS.MAX_TOTAL_PAYLOAD_SIZE_BYTES / 1024).toFixed(0);
+    const maxKb = (PAYLOAD_LIMITS.MAX_TOTAL_PAYLOAD_SIZE_BYTES / 1024).toFixed(
+      0,
+    );
     errors.push(
       `Total payload size exceeds ${maxKb} KB ` +
-        `(${sizeKb} KB / ${totalSize} bytes)`
+        `(${sizeKb} KB / ${totalSize} bytes)`,
     );
   }
 
@@ -229,7 +239,9 @@ export function validatePayloadLimits(ideas: ParsedIdea[]): PayloadValidationErr
 export function assertPayloadLimits(ideas: ParsedIdea[]): void {
   const result = validatePayloadLimits(ideas);
   if (!result.valid) {
-    const message = "Payload validation failed:\n" + result.errors.map((e) => `  - ${e}`).join("\n");
+    const message =
+      "Payload validation failed:\n" +
+      result.errors.map((e) => `  - ${e}`).join("\n");
     throw new (require("../errors").PayloadValidationError)(message);
   }
 }
@@ -316,7 +328,7 @@ function countCitations(text: string): number {
 function extractSectionContent(
   content: string,
   startSection: string,
-  endSection?: string
+  endSection?: string,
 ): string {
   const lines = content.split("\n");
   let inSection = false;
@@ -324,7 +336,10 @@ function extractSectionContent(
 
   // Normalize section names for comparison (case-insensitive, remove # prefix)
   const normalizeSection = (section: string) =>
-    section.replace(/^#+\s*/, "").toLowerCase().trim();
+    section
+      .replace(/^#+\s*/, "")
+      .toLowerCase()
+      .trim();
 
   const normalizedStart = normalizeSection(startSection);
   const normalizedEnd = endSection ? normalizeSection(endSection) : null;
@@ -364,7 +379,10 @@ function extractSectionContent(
  * @param requiredSections - List of required section names
  * @returns Array of missing section names
  */
-function findMissingSections(content: string, requiredSections: string[]): string[] {
+function findMissingSections(
+  content: string,
+  requiredSections: string[],
+): string[] {
   const missing: string[] = [];
   const normalizedContent = content.toLowerCase();
 
@@ -407,7 +425,7 @@ function findMissingSections(content: string, requiredSections: string[]): strin
  */
 export function validateResearchQuality(
   content: string,
-  options: Partial<ResearchQualityOptions> = {}
+  options: Partial<ResearchQualityOptions> = {},
 ): ResearchQualityResult {
   const opts: ResearchQualityOptions = {
     ...DEFAULT_RESEARCH_QUALITY_OPTIONS,
@@ -423,11 +441,19 @@ export function validateResearchQuality(
   }
 
   // Extract and validate Summary section
-  const summaryContent = extractSectionContent(content, "Summary", "Current State Analysis");
+  const summaryContent = extractSectionContent(
+    content,
+    "Summary",
+    "Current State Analysis",
+  );
   const summaryLength = summaryContent.length;
 
   // Extract and validate Current State Analysis section
-  const analysisContent = extractSectionContent(content, "Current State Analysis", "Key Files");
+  const analysisContent = extractSectionContent(
+    content,
+    "Current State Analysis",
+    "Key Files",
+  );
   const analysisLength = analysisContent.length;
 
   // Count citations in the entire document
@@ -436,21 +462,21 @@ export function validateResearchQuality(
   // Validate citation density
   if (citations < opts.minCitations) {
     errors.push(
-      `Insufficient citations: found ${citations}, required at least ${opts.minCitations} file:line references`
+      `Insufficient citations: found ${citations}, required at least ${opts.minCitations} file:line references`,
     );
   }
 
   // Validate summary length
   if (summaryLength < opts.minSummaryLength) {
     errors.push(
-      `Summary section too short: ${summaryLength} characters, required at least ${opts.minSummaryLength}`
+      `Summary section too short: ${summaryLength} characters, required at least ${opts.minSummaryLength}`,
     );
   }
 
   // Validate analysis length
   if (analysisLength < opts.minAnalysisLength) {
     errors.push(
-      `Current State Analysis section too short: ${analysisLength} characters, required at least ${opts.minAnalysisLength}`
+      `Current State Analysis section too short: ${analysisLength} characters, required at least ${opts.minAnalysisLength}`,
     );
   }
 
@@ -516,7 +542,11 @@ export const DEFAULT_PLAN_QUALITY_OPTIONS: PlanQualityOptions = {
  */
 function countPhases(content: string): number {
   // Find the Phases section
-  const phasesSection = extractSectionContent(content, "Phases", "Testing Strategy");
+  const phasesSection = extractSectionContent(
+    content,
+    "Phases",
+    "Testing Strategy",
+  );
   if (!phasesSection) {
     return 0;
   }
@@ -534,7 +564,10 @@ function countPhases(content: string): number {
  * @param requiredSections - List of required section names
  * @returns Array of missing section names
  */
-function findMissingPlanSections(content: string, requiredSections: string[]): string[] {
+function findMissingPlanSections(
+  content: string,
+  requiredSections: string[],
+): string[] {
   const missing: string[] = [];
   const normalizedContent = content.toLowerCase();
 
@@ -575,7 +608,7 @@ function findMissingPlanSections(content: string, requiredSections: string[]): s
  */
 export function validatePlanQuality(
   content: string,
-  options: Partial<PlanQualityOptions> = {}
+  options: Partial<PlanQualityOptions> = {},
 ): PlanQualityResult {
   const opts: PlanQualityOptions = {
     ...DEFAULT_PLAN_QUALITY_OPTIONS,
@@ -585,7 +618,10 @@ export function validatePlanQuality(
   const errors: string[] = [];
 
   // Check for required sections
-  const missingSections = findMissingPlanSections(content, opts.requiredSections);
+  const missingSections = findMissingPlanSections(
+    content,
+    opts.requiredSections,
+  );
   if (missingSections.length > 0) {
     errors.push(`Missing required sections: ${missingSections.join(", ")}`);
   }
@@ -596,7 +632,7 @@ export function validatePlanQuality(
   // Validate minimum phases
   if (phases < opts.minPhases) {
     errors.push(
-      `Insufficient implementation phases: found ${phases}, required at least ${opts.minPhases}`
+      `Insufficient implementation phases: found ${phases}, required at least ${opts.minPhases}`,
     );
   }
 
@@ -682,8 +718,13 @@ function isValidStoryId(storyId: string): boolean {
  * @returns Array of error messages (empty if valid)
  */
 function validateSingleStory(
-  story: { id: string; title: string; acceptance_criteria: string[]; priority: number },
-  options: StoryQualityOptions
+  story: {
+    id: string;
+    title: string;
+    acceptance_criteria: string[];
+    priority: number;
+  },
+  options: StoryQualityOptions,
 ): string[] {
   const errors: string[] = [];
 
@@ -701,20 +742,25 @@ function validateSingleStory(
   if (story.acceptance_criteria.length < options.minAcceptanceCriteria) {
     errors.push(
       `Insufficient acceptance criteria: ${story.acceptance_criteria.length}, ` +
-      `required at least ${options.minAcceptanceCriteria}`
+        `required at least ${options.minAcceptanceCriteria}`,
     );
   }
 
   // Check for non-empty acceptance criteria
-  const emptyCriteria = story.acceptance_criteria.filter((c) => !c || c.trim().length === 0);
+  const emptyCriteria = story.acceptance_criteria.filter(
+    (c) => !c || c.trim().length === 0,
+  );
   if (emptyCriteria.length > 0) {
     errors.push(`Contains ${emptyCriteria.length} empty acceptance criteria`);
   }
 
   // Check priority range
-  if (story.priority < options.minPriority || story.priority > options.maxPriority) {
+  if (
+    story.priority < options.minPriority ||
+    story.priority > options.maxPriority
+  ) {
     errors.push(
-      `Priority ${story.priority} outside valid range [${options.minPriority}, ${options.maxPriority}]`
+      `Priority ${story.priority} outside valid range [${options.minPriority}, ${options.maxPriority}]`,
     );
   }
 
@@ -741,8 +787,15 @@ function validateSingleStory(
  * @returns Validation result with details
  */
 export function validateStoryQuality(
-  prd: { user_stories: Array<{ id: string; title: string; acceptance_criteria: string[]; priority: number }> },
-  options: Partial<StoryQualityOptions> = {}
+  prd: {
+    user_stories: Array<{
+      id: string;
+      title: string;
+      acceptance_criteria: string[];
+      priority: number;
+    }>;
+  },
+  options: Partial<StoryQualityOptions> = {},
 ): StoryQualityResult {
   const opts: StoryQualityOptions = {
     ...DEFAULT_STORY_QUALITY_OPTIONS,
@@ -755,10 +808,14 @@ export function validateStoryQuality(
   // Validate story count
   const storyCount = prd.user_stories.length;
   if (storyCount < opts.minStories) {
-    errors.push(`Insufficient stories: ${storyCount}, required at least ${opts.minStories}`);
+    errors.push(
+      `Insufficient stories: ${storyCount}, required at least ${opts.minStories}`,
+    );
   }
   if (storyCount > opts.maxStories) {
-    errors.push(`Too many stories: ${storyCount}, maximum ${opts.maxStories} allowed`);
+    errors.push(
+      `Too many stories: ${storyCount}, maximum ${opts.maxStories} allowed`,
+    );
   }
 
   // Validate each story
@@ -777,7 +834,7 @@ export function validateStoryQuality(
   for (const storyError of storyErrors) {
     errors.push(
       `Story "${storyError.storyId}" (${storyError.storyTitle}): ` +
-      storyError.errors.join("; ")
+        storyError.errors.join("; "),
     );
   }
 
@@ -818,7 +875,14 @@ export interface StoryCompletionVerification {
  */
 export function verifyStoryCompletion(
   storyId: string,
-  prd: { user_stories: Array<{ id: string; title: string; acceptance_criteria: string[]; status: string }> } | null
+  prd: {
+    user_stories: Array<{
+      id: string;
+      title: string;
+      acceptance_criteria: string[];
+      status: string;
+    }>;
+  } | null,
 ): StoryCompletionVerification {
   const warnings: string[] = [];
   const errors: string[] = [];
@@ -838,9 +902,13 @@ export function verifyStoryCompletion(
     warnings.push(`Story ${storyId} has no acceptance criteria defined`);
   }
 
-  const emptyCriteria = story.acceptance_criteria.filter((c) => !c || c.trim().length === 0);
+  const emptyCriteria = story.acceptance_criteria.filter(
+    (c) => !c || c.trim().length === 0,
+  );
   if (emptyCriteria.length > 0) {
-    warnings.push(`Story ${storyId} has ${emptyCriteria.length} empty acceptance criteria`);
+    warnings.push(
+      `Story ${storyId} has ${emptyCriteria.length} empty acceptance criteria`,
+    );
   }
 
   if (story.status === "done") {

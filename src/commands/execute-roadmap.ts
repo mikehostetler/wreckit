@@ -7,11 +7,7 @@ import {
   extractPendingObjectives,
   extractAllObjectives,
 } from "../domain/roadmap";
-import {
-  persistItems,
-  generateSlug,
-  type ParsedIdea,
-} from "../domain/ideas";
+import { persistItems, generateSlug, type ParsedIdea } from "../domain/ideas";
 import { pathExists } from "../fs/util";
 
 export interface ExecuteRoadmapOptions {
@@ -33,7 +29,7 @@ export interface ExecuteRoadmapOptions {
  */
 export async function executeRoadmapCommand(
   options: ExecuteRoadmapOptions,
-  logger: Logger
+  logger: Logger,
 ): Promise<void> {
   const root = findRootFromOptions(options);
   const roadmapPath = getRoadmapPath(root);
@@ -41,7 +37,7 @@ export async function executeRoadmapCommand(
   // Check if ROADMAP.md exists
   if (!(await pathExists(roadmapPath))) {
     throw new Error(
-      "ROADMAP.md not found. Run 'wreckit strategy' first to create it."
+      "ROADMAP.md not found. Run 'wreckit strategy' first to create it.",
     );
   }
 
@@ -58,7 +54,7 @@ export async function executeRoadmapCommand(
     logger.info(
       options.includeDone
         ? "No objectives found in active milestones"
-        : "No pending objectives found in active milestones. All objectives may be completed."
+        : "No pending objectives found in active milestones. All objectives may be completed.",
     );
     return;
   }
@@ -76,7 +72,9 @@ export async function executeRoadmapCommand(
 
   for (const [milestoneId, milestoneObjectives] of objectivesByMilestone) {
     // Sort by original index to ensure proper ordering for linear dependencies
-    const sorted = [...milestoneObjectives].sort((a, b) => (a as any).index - (b as any).index);
+    const sorted = [...milestoneObjectives].sort(
+      (a, b) => (a as any).index - (b as any).index,
+    );
 
     let previousSlug: string | null = null;
 
@@ -107,7 +105,9 @@ export async function executeRoadmapCommand(
     logger.info(`Would create ${ideas.length} items from ROADMAP.md:`);
     for (const idea of ideas) {
       const slug = generateSlug(idea.title);
-      logger.info(`  ${slug} [Campaign: ${idea.campaign}]${idea.dependsOn ? ` (Depends on: ${idea.dependsOn.join(", ")})` : ""}`);
+      logger.info(
+        `  ${slug} [Campaign: ${idea.campaign}]${idea.dependsOn ? ` (Depends on: ${idea.dependsOn.join(", ")})` : ""}`,
+      );
     }
     return;
   }
@@ -121,7 +121,9 @@ export async function executeRoadmapCommand(
   }
 
   if (result.created.length > 0) {
-    logger.info(`Created ${result.created.length} items from ROADMAP milestones:`);
+    logger.info(
+      `Created ${result.created.length} items from ROADMAP milestones:`,
+    );
     for (const item of result.created) {
       logger.info(`  ${item.id}`);
     }

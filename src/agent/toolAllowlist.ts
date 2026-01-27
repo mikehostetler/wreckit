@@ -37,7 +37,7 @@ export const AVAILABLE_TOOLS = {
   wreckit_save_dream_ideas: "mcp__wreckit-dream__save_dream_ideas",
 } as const;
 
-export type ToolName = typeof AVAILABLE_TOOLS[keyof typeof AVAILABLE_TOOLS];
+export type ToolName = (typeof AVAILABLE_TOOLS)[keyof typeof AVAILABLE_TOOLS];
 
 /**
  * Tool allowlists for each workflow phase.

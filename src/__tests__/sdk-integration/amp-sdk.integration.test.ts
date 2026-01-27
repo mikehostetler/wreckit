@@ -1,37 +1,34 @@
+/**
+ * Integration tests for Amp SDK runner.
+ *
+ * These tests mock the @sourcegraph/amp-sdk module to test:
+ * - Basic execution flow
+ * - Error handling
+ * - Dry run mode
+ *
+ * No API credentials required - all SDK calls are mocked.
+ */
 import { describe, it, expect, mock, beforeEach, vi } from "bun:test";
 import type { Logger } from "../../logging";
 import type { AmpSdkAgentConfig } from "../../schemas";
 import type { AgentEvent } from "../../tui/agentEvents";
 
-// Mock SDK message types for testing
-interface MockSdkMessage {
-  type: "assistant" | "tool_result" | "result" | "error";
-  message?: { content: any[] };
-  content?: any[];
-  result?: string;
-  tool_use_id?: string;
-  subtype?: string;
-}
-
-// Create async generator for mock SDK query
-function createMockQuery(messages: MockSdkMessage[]) {
-  return async function* mockQuery(_opts: any): AsyncGenerator<MockSdkMessage> {
-    for (const msg of messages) {
-      yield msg;
-    }
-  };
-}
-
 // Mock the SDK module before importing the runner
-const mockedQuery = vi.fn();
+const mockedExecute = vi.fn();
 
-mock.module("@anthropic-ai/claude-agent-sdk", () => ({
-  query: mockedQuery,
+mock.module("@sourcegraph/amp-sdk", () => ({
+  execute: mockedExecute,
 }));
 
 // Mock buildSdkEnv to avoid filesystem access
 mock.module("../../agent/env.js", () => ({
   buildSdkEnv: vi.fn(() => Promise.resolve({})),
+}));
+
+// Mock the controller registration functions
+mock.module("../../agent/runner.js", () => ({
+  registerSdkController: vi.fn(),
+  unregisterSdkController: vi.fn(),
 }));
 
 // Import after mocking
@@ -61,19 +58,9 @@ describe("Amp SDK Integration", () => {
     vi.clearAllMocks();
   });
 
-  describe("message formatting", () => {
-    it("formats assistant text messages correctly", async () => {
-      const messages: MockSdkMessage[] = [
-        {
-          type: "assistant",
-          message: {
-            content: [{ type: "text", text: "Hello, I am Claude." }],
-          },
-        },
-        { type: "result", result: "Task completed" },
-      ];
-
-      mockedQuery.mockImplementation(createMockQuery(messages));
+  describe("successful execution", () => {
+    it("returns success with string result", async () => {
+      mockedExecute.mockResolvedValue("Task completed successfully");
 
       const result = await runAmpSdkAgent({
         config: createDefaultConfig(),
@@ -83,502 +70,32 @@ describe("Amp SDK Integration", () => {
       });
 
       expect(result.success).toBe(true);
-      expect(result.output).toContain("Hello, I am Claude.");
-    });
-
-    it("formats assistant tool_use messages correctly", async () => {
-      const messages: MockSdkMessage[] = [
-        {
-          type: "assistant",
-          message: {
-            content: [
-              {
-                type: "tool_use",
-                id: "tool-123",
-                name: "Read",
-                input: { file_path: "/test.txt" },
-              },
-            ],
-          },
-        },
-        { type: "result", result: "Done" },
-      ];
-
-      mockedQuery.mockImplementation(createMockQuery(messages));
-
-      const result = await runAmpSdkAgent({
-        config: createDefaultConfig(),
-        cwd: "/tmp/test",
-        prompt: "test prompt",
-        logger: mockLogger,
-      });
-
-      expect(result.success).toBe(true);
-      expect(result.output).toContain("```tool");
-      expect(result.output).toContain("Read");
-      expect(result.output).toContain("/test.txt");
-    });
-
-    it("formats tool_result messages correctly", async () => {
-      const messages: MockSdkMessage[] = [
-        {
-          type: "tool_result",
-          result: "File contents here",
-          tool_use_id: "tool-123",
-        },
-        { type: "result", result: "Done" },
-      ];
-
-      mockedQuery.mockImplementation(createMockQuery(messages));
-
-      const result = await runAmpSdkAgent({
-        config: createDefaultConfig(),
-        cwd: "/tmp/test",
-        prompt: "test prompt",
-        logger: mockLogger,
-      });
-
-      expect(result.success).toBe(true);
-      expect(result.output).toContain("```result");
-      expect(result.output).toContain("File contents here");
-    });
-
-    it("formats result messages correctly", async () => {
-      const messages: MockSdkMessage[] = [
-        { type: "result", result: "Final output text" },
-      ];
-
-      mockedQuery.mockImplementation(createMockQuery(messages));
-
-      const result = await runAmpSdkAgent({
-        config: createDefaultConfig(),
-        cwd: "/tmp/test",
-        prompt: "test prompt",
-        logger: mockLogger,
-      });
-
-      expect(result.success).toBe(true);
-      expect(result.output).toContain("Final output text");
-    });
-
-    it("formats error messages correctly", async () => {
-      const messages: MockSdkMessage[] = [
-        { type: "error", message: "Something went wrong" } as any,
-        { type: "result", result: "" },
-      ];
-
-      mockedQuery.mockImplementation(createMockQuery(messages));
-
-      const result = await runAmpSdkAgent({
-        config: createDefaultConfig(),
-        cwd: "/tmp/test",
-        prompt: "test prompt",
-        logger: mockLogger,
-      });
-
-      expect(result.success).toBe(true);
-      expect(result.output).toContain("Error:");
-      expect(result.output).toContain("Something went wrong");
-    });
-  });
-
-  describe("event emission", () => {
-    it("emits assistant_text events for text blocks", async () => {
-      const messages: MockSdkMessage[] = [
-        {
-          type: "assistant",
-          message: {
-            content: [{ type: "text", text: "Hello world" }],
-          },
-        },
-        { type: "result", result: "" },
-      ];
-
-      mockedQuery.mockImplementation(createMockQuery(messages));
-
-      const emittedEvents: AgentEvent[] = [];
-
-      await runAmpSdkAgent({
-        config: createDefaultConfig(),
-        cwd: "/tmp/test",
-        prompt: "test prompt",
-        logger: mockLogger,
-        onAgentEvent: (event) => emittedEvents.push(event),
-      });
-
-      const textEvents = emittedEvents.filter((e) => e.type === "assistant_text");
-      expect(textEvents.length).toBe(1);
-      expect(textEvents[0]).toEqual({ type: "assistant_text", text: "Hello world" });
-    });
-
-    it("emits tool_started events for tool_use blocks", async () => {
-      const messages: MockSdkMessage[] = [
-        {
-          type: "assistant",
-          message: {
-            content: [
-              {
-                type: "tool_use",
-                id: "tool-456",
-                name: "Bash",
-                input: { command: "ls -la" },
-              },
-            ],
-          },
-        },
-        { type: "result", result: "" },
-      ];
-
-      mockedQuery.mockImplementation(createMockQuery(messages));
-
-      const emittedEvents: AgentEvent[] = [];
-
-      await runAmpSdkAgent({
-        config: createDefaultConfig(),
-        cwd: "/tmp/test",
-        prompt: "test prompt",
-        logger: mockLogger,
-        onAgentEvent: (event) => emittedEvents.push(event),
-      });
-
-      const toolStartedEvents = emittedEvents.filter((e) => e.type === "tool_started");
-      expect(toolStartedEvents.length).toBe(1);
-      expect(toolStartedEvents[0]).toEqual({
-        type: "tool_started",
-        toolUseId: "tool-456",
-        toolName: "Bash",
-        input: { command: "ls -la" },
-      });
-    });
-
-    it("emits tool_result events", async () => {
-      const messages: MockSdkMessage[] = [
-        {
-          type: "tool_result",
-          result: "command output",
-          tool_use_id: "tool-789",
-        },
-        { type: "result", result: "" },
-      ];
-
-      mockedQuery.mockImplementation(createMockQuery(messages));
-
-      const emittedEvents: AgentEvent[] = [];
-
-      await runAmpSdkAgent({
-        config: createDefaultConfig(),
-        cwd: "/tmp/test",
-        prompt: "test prompt",
-        logger: mockLogger,
-        onAgentEvent: (event) => emittedEvents.push(event),
-      });
-
-      const resultEvents = emittedEvents.filter((e) => e.type === "tool_result");
-      expect(resultEvents.length).toBe(1);
-      expect(resultEvents[0]).toEqual({
-        type: "tool_result",
-        toolUseId: "tool-789",
-        result: "command output",
-      });
-    });
-
-    it("emits run_result events", async () => {
-      const messages: MockSdkMessage[] = [
-        { type: "result", result: "completed", subtype: "success" },
-      ];
-
-      mockedQuery.mockImplementation(createMockQuery(messages));
-
-      const emittedEvents: AgentEvent[] = [];
-
-      await runAmpSdkAgent({
-        config: createDefaultConfig(),
-        cwd: "/tmp/test",
-        prompt: "test prompt",
-        logger: mockLogger,
-        onAgentEvent: (event) => emittedEvents.push(event),
-      });
-
-      const runResultEvents = emittedEvents.filter((e) => e.type === "run_result");
-      expect(runResultEvents.length).toBe(1);
-      expect(runResultEvents[0]).toEqual({ type: "run_result", subtype: "success" });
-    });
-
-    it("emits error events", async () => {
-      const messages: MockSdkMessage[] = [
-        { type: "error", message: "Test error message" } as any,
-        { type: "result", result: "" },
-      ];
-
-      mockedQuery.mockImplementation(createMockQuery(messages));
-
-      const emittedEvents: AgentEvent[] = [];
-
-      await runAmpSdkAgent({
-        config: createDefaultConfig(),
-        cwd: "/tmp/test",
-        prompt: "test prompt",
-        logger: mockLogger,
-        onAgentEvent: (event) => emittedEvents.push(event),
-      });
-
-      const errorEvents = emittedEvents.filter((e) => e.type === "error");
-      expect(errorEvents.length).toBe(1);
-      expect(errorEvents[0]).toEqual({ type: "error", message: "Test error message" });
-    });
-  });
-
-  describe("error handling", () => {
-    it("handles authentication errors with helpful message", async () => {
-      mockedQuery.mockImplementation(() => {
-        throw new Error("Invalid API key provided");
-      });
-
-      const result = await runAmpSdkAgent({
-        config: createDefaultConfig(),
-        cwd: "/tmp/test",
-        prompt: "test prompt",
-        logger: mockLogger,
-      });
-
-      expect(result.success).toBe(false);
-      expect(result.output).toContain("Authentication Error");
-      expect(result.output).toContain("API key");
-      expect(result.output).toContain("wreckit sdk-info");
-    });
-
-    it("handles 401 errors as authentication errors", async () => {
-      mockedQuery.mockImplementation(() => {
-        throw new Error("Request failed with status 401");
-      });
-
-      const result = await runAmpSdkAgent({
-        config: createDefaultConfig(),
-        cwd: "/tmp/test",
-        prompt: "test prompt",
-        logger: mockLogger,
-      });
-
-      expect(result.success).toBe(false);
-      expect(result.output).toContain("Authentication Error");
-    });
-
-    it("handles rate limit errors", async () => {
-      mockedQuery.mockImplementation(() => {
-        throw new Error("rate limit exceeded");
-      });
-
-      const result = await runAmpSdkAgent({
-        config: createDefaultConfig(),
-        cwd: "/tmp/test",
-        prompt: "test prompt",
-        logger: mockLogger,
-      });
-
-      expect(result.success).toBe(false);
-      expect(result.output).toContain("Rate limit exceeded");
-      expect(result.output).toContain("try again later");
-    });
-
-    it("handles 429 errors as rate limit errors", async () => {
-      mockedQuery.mockImplementation(() => {
-        throw new Error("Request failed with status 429");
-      });
-
-      const result = await runAmpSdkAgent({
-        config: createDefaultConfig(),
-        cwd: "/tmp/test",
-        prompt: "test prompt",
-        logger: mockLogger,
-      });
-
-      expect(result.success).toBe(false);
-      expect(result.output).toContain("Rate limit exceeded");
-    });
-
-    it("handles context window errors", async () => {
-      mockedQuery.mockImplementation(() => {
-        throw new Error("context length exceeded maximum");
-      });
-
-      const result = await runAmpSdkAgent({
-        config: createDefaultConfig(),
-        cwd: "/tmp/test",
-        prompt: "test prompt",
-        logger: mockLogger,
-      });
-
-      expect(result.success).toBe(false);
-      expect(result.output).toContain("Context error");
-      expect(result.output).toContain("smaller pieces");
-    });
-
-    it("handles token limit errors as context errors", async () => {
-      mockedQuery.mockImplementation(() => {
-        throw new Error("Request too large: too many tokens");
-      });
-
-      const result = await runAmpSdkAgent({
-        config: createDefaultConfig(),
-        cwd: "/tmp/test",
-        prompt: "test prompt",
-        logger: mockLogger,
-      });
-
-      expect(result.success).toBe(false);
-      expect(result.output).toContain("Context error");
-    });
-
-    it("handles network errors", async () => {
-      mockedQuery.mockImplementation(() => {
-        throw new Error("ECONNREFUSED: Connection refused");
-      });
-
-      const result = await runAmpSdkAgent({
-        config: createDefaultConfig(),
-        cwd: "/tmp/test",
-        prompt: "test prompt",
-        logger: mockLogger,
-      });
-
-      expect(result.success).toBe(false);
-      expect(result.output).toContain("Network error");
-      expect(result.output).toContain("internet connection");
-    });
-
-    it("handles DNS errors as network errors", async () => {
-      mockedQuery.mockImplementation(() => {
-        throw new Error("ENOTFOUND: getaddrinfo failed");
-      });
-
-      const result = await runAmpSdkAgent({
-        config: createDefaultConfig(),
-        cwd: "/tmp/test",
-        prompt: "test prompt",
-        logger: mockLogger,
-      });
-
-      expect(result.success).toBe(false);
-      expect(result.output).toContain("Network error");
-    });
-
-    it("handles generic errors with error message", async () => {
-      mockedQuery.mockImplementation(() => {
-        throw new Error("Unexpected server error");
-      });
-
-      const result = await runAmpSdkAgent({
-        config: createDefaultConfig(),
-        cwd: "/tmp/test",
-        prompt: "test prompt",
-        logger: mockLogger,
-      });
-
-      expect(result.success).toBe(false);
-      expect(result.output).toContain("Error:");
-      expect(result.output).toContain("Unexpected server error");
-      expect(result.exitCode).toBe(1);
-    });
-  });
-
-  describe("stdout/stderr callback routing", () => {
-    it("calls stdout callback for non-error messages", async () => {
-      const messages: MockSdkMessage[] = [
-        {
-          type: "assistant",
-          message: {
-            content: [{ type: "text", text: "Normal message" }],
-          },
-        },
-        { type: "result", result: "" },
-      ];
-
-      mockedQuery.mockImplementation(createMockQuery(messages));
-
-      const stdoutChunks: string[] = [];
-      const stderrChunks: string[] = [];
-
-      await runAmpSdkAgent({
-        config: createDefaultConfig(),
-        cwd: "/tmp/test",
-        prompt: "test prompt",
-        logger: mockLogger,
-        onStdoutChunk: (chunk) => stdoutChunks.push(chunk),
-        onStderrChunk: (chunk) => stderrChunks.push(chunk),
-      });
-
-      expect(stdoutChunks.length).toBeGreaterThan(0);
-      expect(stdoutChunks.join("")).toContain("Normal message");
-      // Error messages not present, so stderr should be empty
-      const stderrContent = stderrChunks.join("");
-      expect(stderrContent).not.toContain("Normal message");
-    });
-
-    it("calls stderr callback for error messages", async () => {
-      const messages: MockSdkMessage[] = [
-        { type: "error", message: "Error occurred" } as any,
-        { type: "result", result: "" },
-      ];
-
-      mockedQuery.mockImplementation(createMockQuery(messages));
-
-      const stdoutChunks: string[] = [];
-      const stderrChunks: string[] = [];
-
-      await runAmpSdkAgent({
-        config: createDefaultConfig(),
-        cwd: "/tmp/test",
-        prompt: "test prompt",
-        logger: mockLogger,
-        onStdoutChunk: (chunk) => stdoutChunks.push(chunk),
-        onStderrChunk: (chunk) => stderrChunks.push(chunk),
-      });
-
-      expect(stderrChunks.length).toBeGreaterThan(0);
-      expect(stderrChunks.join("")).toContain("Error occurred");
-    });
-  });
-
-  describe("successful completion", () => {
-    it("returns success with accumulated output", async () => {
-      const messages: MockSdkMessage[] = [
-        {
-          type: "assistant",
-          message: {
-            content: [{ type: "text", text: "Step 1 complete. " }],
-          },
-        },
-        {
-          type: "assistant",
-          message: {
-            content: [{ type: "text", text: "Step 2 complete." }],
-          },
-        },
-        { type: "result", result: "All done!" },
-      ];
-
-      mockedQuery.mockImplementation(createMockQuery(messages));
-
-      const result = await runAmpSdkAgent({
-        config: createDefaultConfig(),
-        cwd: "/tmp/test",
-        prompt: "test prompt",
-        logger: mockLogger,
-      });
-
-      expect(result.success).toBe(true);
-      expect(result.timedOut).toBe(false);
+      expect(result.output).toBe("Task completed successfully");
       expect(result.exitCode).toBe(0);
       expect(result.completionDetected).toBe(true);
-      expect(result.output).toContain("Step 1 complete");
-      expect(result.output).toContain("Step 2 complete");
-      expect(result.output).toContain("All done!");
     });
 
-    it("passes prompt to SDK query", async () => {
-      const messages: MockSdkMessage[] = [{ type: "result", result: "done" }];
+    it("returns success with object result (stringified)", async () => {
+      mockedExecute.mockResolvedValue({
+        status: "done",
+        files: ["a.ts", "b.ts"],
+      });
 
-      mockedQuery.mockImplementation(createMockQuery(messages));
+      const result = await runAmpSdkAgent({
+        config: createDefaultConfig(),
+        cwd: "/tmp/test",
+        prompt: "test prompt",
+        logger: mockLogger,
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.output).toContain("done");
+      expect(result.output).toContain("a.ts");
+      expect(result.exitCode).toBe(0);
+    });
+
+    it("passes prompt to SDK execute", async () => {
+      mockedExecute.mockResolvedValue("done");
 
       await runAmpSdkAgent({
         config: createDefaultConfig(),
@@ -587,72 +104,113 @@ describe("Amp SDK Integration", () => {
         logger: mockLogger,
       });
 
-      expect(mockedQuery).toHaveBeenCalled();
-      const callArgs = mockedQuery.mock.calls[0][0];
+      expect(mockedExecute).toHaveBeenCalled();
+      const callArgs = mockedExecute.mock.calls[0][0];
       expect(callArgs.prompt).toBe("My specific test prompt");
     });
 
-    it("passes cwd to SDK options", async () => {
-      const messages: MockSdkMessage[] = [{ type: "result", result: "done" }];
+    it("calls stdout callback with output", async () => {
+      mockedExecute.mockResolvedValue("Agent output here");
 
-      mockedQuery.mockImplementation(createMockQuery(messages));
+      const stdoutChunks: string[] = [];
 
       await runAmpSdkAgent({
         config: createDefaultConfig(),
-        cwd: "/custom/working/dir",
-        prompt: "test",
+        cwd: "/tmp/test",
+        prompt: "test prompt",
         logger: mockLogger,
+        onStdoutChunk: (chunk) => stdoutChunks.push(chunk),
       });
 
-      expect(mockedQuery).toHaveBeenCalled();
-      const callArgs = mockedQuery.mock.calls[0][0];
-      expect(callArgs.options.cwd).toBe("/custom/working/dir");
+      expect(stdoutChunks.length).toBe(1);
+      expect(stdoutChunks[0]).toBe("Agent output here");
     });
   });
 
-  describe("SDK options", () => {
-    it("passes mcpServers option to SDK", async () => {
-      const messages: MockSdkMessage[] = [{ type: "result", result: "done" }];
+  describe("error handling", () => {
+    it("handles SDK errors", async () => {
+      mockedExecute.mockRejectedValue(new Error("SDK execution failed"));
 
-      mockedQuery.mockImplementation(createMockQuery(messages));
-
-      const mcpServers = {
-        wreckit: { command: "node", args: ["server.js"] },
-      };
-
-      await runAmpSdkAgent({
+      const result = await runAmpSdkAgent({
         config: createDefaultConfig(),
         cwd: "/tmp/test",
-        prompt: "test",
+        prompt: "test prompt",
         logger: mockLogger,
-        mcpServers,
       });
 
-      const callArgs = mockedQuery.mock.calls[0][0];
-      expect(callArgs.options.mcpServers).toEqual(mcpServers);
+      expect(result.success).toBe(false);
+      expect(result.output).toContain("Error:");
+      expect(result.output).toContain("SDK execution failed");
+      expect(result.exitCode).toBe(1);
     });
 
-    it("passes tools option when allowedTools specified", async () => {
-      const messages: MockSdkMessage[] = [{ type: "result", result: "done" }];
+    it("handles network errors", async () => {
+      mockedExecute.mockRejectedValue(
+        new Error("ECONNREFUSED: Connection refused"),
+      );
 
-      mockedQuery.mockImplementation(createMockQuery(messages));
+      const result = await runAmpSdkAgent({
+        config: createDefaultConfig(),
+        cwd: "/tmp/test",
+        prompt: "test prompt",
+        logger: mockLogger,
+      });
 
+      expect(result.success).toBe(false);
+      expect(result.output).toContain("ECONNREFUSED");
+      expect(result.exitCode).toBe(1);
+    });
+
+    it("handles non-Error exceptions", async () => {
+      mockedExecute.mockRejectedValue("String error");
+
+      const result = await runAmpSdkAgent({
+        config: createDefaultConfig(),
+        cwd: "/tmp/test",
+        prompt: "test prompt",
+        logger: mockLogger,
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.output).toContain("String error");
+      expect(result.exitCode).toBe(1);
+    });
+  });
+
+  describe("dry run mode", () => {
+    it("returns success without calling SDK in dry run", async () => {
+      const result = await runAmpSdkAgent({
+        config: createDefaultConfig(),
+        cwd: "/tmp/test",
+        prompt: "test prompt",
+        logger: mockLogger,
+        dryRun: true,
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.output).toContain("[dry-run]");
+      expect(mockedExecute).not.toHaveBeenCalled();
+    });
+
+    it("logs tool restrictions in dry run", async () => {
       await runAmpSdkAgent({
         config: createDefaultConfig(),
         cwd: "/tmp/test",
-        prompt: "test",
+        prompt: "test prompt",
         logger: mockLogger,
+        dryRun: true,
         allowedTools: ["Read", "Glob"],
       });
 
-      const callArgs = mockedQuery.mock.calls[0][0];
-      expect(callArgs.options.tools).toEqual(["Read", "Glob"]);
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        expect.stringContaining("Read"),
+      );
     });
+  });
 
-    it("sets bypassPermissions mode", async () => {
-      const messages: MockSdkMessage[] = [{ type: "result", result: "done" }];
-
-      mockedQuery.mockImplementation(createMockQuery(messages));
+  describe("configuration options", () => {
+    it("passes signal to SDK for abort handling", async () => {
+      mockedExecute.mockResolvedValue("done");
 
       await runAmpSdkAgent({
         config: createDefaultConfig(),
@@ -661,9 +219,40 @@ describe("Amp SDK Integration", () => {
         logger: mockLogger,
       });
 
-      const callArgs = mockedQuery.mock.calls[0][0];
-      expect(callArgs.options.permissionMode).toBe("bypassPermissions");
-      expect(callArgs.options.allowDangerouslySkipPermissions).toBe(true);
+      expect(mockedExecute).toHaveBeenCalled();
+      const callArgs = mockedExecute.mock.calls[0][0];
+      expect(callArgs.signal).toBeDefined();
+      expect(callArgs.signal instanceof AbortSignal).toBe(true);
+    });
+  });
+
+  describe("logging", () => {
+    it("logs execution start", async () => {
+      mockedExecute.mockResolvedValue("done");
+
+      await runAmpSdkAgent({
+        config: createDefaultConfig(),
+        cwd: "/tmp/test",
+        prompt: "test",
+        logger: mockLogger,
+      });
+
+      expect(mockLogger.info).toHaveBeenCalledWith("Executing Amp SDK...");
+    });
+
+    it("logs errors on failure", async () => {
+      mockedExecute.mockRejectedValue(new Error("Test error"));
+
+      await runAmpSdkAgent({
+        config: createDefaultConfig(),
+        cwd: "/tmp/test",
+        prompt: "test",
+        logger: mockLogger,
+      });
+
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        expect.stringContaining("Test error"),
+      );
     });
   });
 });

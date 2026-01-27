@@ -21,9 +21,10 @@ function formatAgentEvent(event: AgentEvent): string {
     case "tool_started":
       return `🔧 Tool: ${event.toolName}`;
     case "tool_result":
-      const preview = typeof event.result === "string" 
-        ? event.result.slice(0, 100) 
-        : JSON.stringify(event.result).slice(0, 100);
+      const preview =
+        typeof event.result === "string"
+          ? event.result.slice(0, 100)
+          : JSON.stringify(event.result).slice(0, 100);
       return `   └─ Result: ${preview}${preview.length >= 100 ? "..." : ""}`;
     case "run_result":
       return `✅ ${event.subtype || "Complete"}`;
@@ -37,7 +38,7 @@ function formatAgentEvent(event: AgentEvent): string {
 export async function parseIdeasWithAgent(
   text: string,
   root: string,
-  options: ParseIdeasOptions = {}
+  options: ParseIdeasOptions = {},
 ): Promise<ParsedIdea[]> {
   const template = await loadPromptTemplate(root, "ideas");
   const prompt = template.replace("{{input}}", text);
@@ -99,7 +100,7 @@ export async function parseIdeasWithAgent(
     throw new McpToolNotCalledError(
       "Agent did not call the required MCP tool (save_parsed_ideas). " +
         "The agent must use the structured tool call to save ideas. " +
-        "JSON fallback has been removed for security reasons."
+        "JSON fallback has been removed for security reasons.",
     );
   }
 

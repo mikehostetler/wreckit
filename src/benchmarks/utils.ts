@@ -12,7 +12,7 @@ import type { Environment, Metric } from "./schema";
  * @returns Object containing the result and duration in milliseconds
  */
 export async function measure<T>(
-  fn: () => Promise<T>
+  fn: () => Promise<T>,
 ): Promise<{ result: T; durationMs: number }> {
   const start = performance.now();
   const result = await fn();
@@ -30,7 +30,7 @@ export async function measure<T>(
  */
 export async function benchmark(
   fn: () => Promise<void>,
-  options: { iterations?: number; warmup?: number } = {}
+  options: { iterations?: number; warmup?: number } = {},
 ): Promise<number[]> {
   const { iterations = 10, warmup = 2 } = options;
 
@@ -57,7 +57,7 @@ export async function benchmark(
  * @returns Object with computed statistics (excluding name and unit)
  */
 export function calculateStats(
-  samples: number[]
+  samples: number[],
 ): Omit<Metric, "name" | "unit"> {
   if (samples.length === 0) {
     return {
@@ -101,10 +101,7 @@ export function calculateStats(
  * @returns Absolute path to the temp directory
  */
 export function makeTempDir(prefix = "wreckit-bench"): string {
-  return path.join(
-    os.tmpdir(),
-    `${prefix}-${randomBytes(8).toString("hex")}`
-  );
+  return path.join(os.tmpdir(), `${prefix}-${randomBytes(8).toString("hex")}`);
 }
 
 /**

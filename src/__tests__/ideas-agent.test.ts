@@ -21,10 +21,12 @@ function createMockLogger(): Logger {
  */
 async function setupWreckitDir(baseDir: string): Promise<void> {
   await fs.mkdir(path.join(baseDir, ".wreckit"), { recursive: true });
-  await fs.mkdir(path.join(baseDir, ".wreckit", "prompts"), { recursive: true });
+  await fs.mkdir(path.join(baseDir, ".wreckit", "prompts"), {
+    recursive: true,
+  });
   await fs.writeFile(
     path.join(baseDir, ".wreckit", "prompts", "ideas.md"),
-    "Extract ideas from: {{input}}"
+    "Extract ideas from: {{input}}",
   );
   await fs.writeFile(
     path.join(baseDir, ".wreckit", "config.json"),
@@ -40,7 +42,7 @@ async function setupWreckitDir(baseDir: string): Promise<void> {
       },
       max_iterations: 100,
       timeout_seconds: 3600,
-    })
+    }),
   );
 }
 
@@ -49,7 +51,9 @@ describe("parseIdeasWithAgent - MCP Tool Requirement Enforcement", () => {
   let mockLogger: Logger;
 
   beforeEach(async () => {
-    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "wreckit-ideas-agent-test-"));
+    tempDir = await fs.mkdtemp(
+      path.join(os.tmpdir(), "wreckit-ideas-agent-test-"),
+    );
     await setupWreckitDir(tempDir);
     mockLogger = createLogger({ verbose: false });
   });
@@ -67,8 +71,7 @@ describe("parseIdeasWithAgent - MCP Tool Requirement Enforcement", () => {
       parseIdeasWithAgent(input, tempDir, {
         verbose: false,
         mockAgent: true,
-        logger: mockLogger,
-      })
+      }),
     ).rejects.toThrow(McpToolNotCalledError);
   });
 
@@ -76,13 +79,17 @@ describe("parseIdeasWithAgent - MCP Tool Requirement Enforcement", () => {
     const input = "Any input";
 
     try {
-      await parseIdeasWithAgent(input, tempDir, { mockAgent: true, logger: mockLogger });
+      await parseIdeasWithAgent(input, tempDir, { mockAgent: true });
       throw new Error("Expected McpToolNotCalledError but got none");
     } catch (error) {
       expect(error).toBeInstanceOf(McpToolNotCalledError);
       expect((error as McpToolNotCalledError).message).toContain("MCP tool");
-      expect((error as McpToolNotCalledError).message).toContain("save_parsed_ideas");
-      expect((error as McpToolNotCalledError).message).toContain("JSON fallback");
+      expect((error as McpToolNotCalledError).message).toContain(
+        "save_parsed_ideas",
+      );
+      expect((error as McpToolNotCalledError).message).toContain(
+        "JSON fallback",
+      );
     }
   });
 
@@ -90,7 +97,7 @@ describe("parseIdeasWithAgent - MCP Tool Requirement Enforcement", () => {
     const input = "Test input";
 
     try {
-      await parseIdeasWithAgent(input, tempDir, { mockAgent: true, logger: mockLogger });
+      await parseIdeasWithAgent(input, tempDir, { mockAgent: true });
       throw new Error("Expected McpToolNotCalledError but got none");
     } catch (error) {
       expect(error).toBeInstanceOf(McpToolNotCalledError);
@@ -102,12 +109,12 @@ describe("parseIdeasWithAgent - MCP Tool Requirement Enforcement", () => {
 
 describe("parseIdeasWithAgent - Security: No JSON Fallback", () => {
   let tempDir: string;
-  let mockLogger: Logger;
 
   beforeEach(async () => {
-    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "wreckit-security-test-"));
+    tempDir = await fs.mkdtemp(
+      path.join(os.tmpdir(), "wreckit-security-test-"),
+    );
     await setupWreckitDir(tempDir);
-    mockLogger = createLogger({ verbose: false });
   });
 
   afterEach(async () => {
@@ -120,7 +127,7 @@ describe("parseIdeasWithAgent - Security: No JSON Fallback", () => {
     const input = "Agent output with JSON array";
 
     await expect(
-      parseIdeasWithAgent(input, tempDir, { mockAgent: true, logger: mockLogger })
+      parseIdeasWithAgent(input, tempDir, { mockAgent: true }),
     ).rejects.toThrow(McpToolNotCalledError);
   });
 
@@ -130,7 +137,7 @@ describe("parseIdeasWithAgent - Security: No JSON Fallback", () => {
     const input = "# Add feature\nDescription here";
 
     await expect(
-      parseIdeasWithAgent(input, tempDir, { mockAgent: true, logger: mockLogger })
+      parseIdeasWithAgent(input, tempDir, { mockAgent: true }),
     ).rejects.toThrow(McpToolNotCalledError);
   });
 
@@ -138,7 +145,7 @@ describe("parseIdeasWithAgent - Security: No JSON Fallback", () => {
     const input = "Test input";
 
     try {
-      await parseIdeasWithAgent(input, tempDir, { mockAgent: true, logger: mockLogger });
+      await parseIdeasWithAgent(input, tempDir, { mockAgent: true });
       throw new Error("Expected McpToolNotCalledError");
     } catch (error) {
       expect(error).toBeInstanceOf(McpToolNotCalledError);
@@ -146,4 +153,3 @@ describe("parseIdeasWithAgent - Security: No JSON Fallback", () => {
     }
   });
 });
-

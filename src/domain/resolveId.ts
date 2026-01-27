@@ -14,7 +14,10 @@ export interface ResolveIdOptions {
   logger?: Logger;
 }
 
-export async function buildIdMap(root: string, options?: ResolveIdOptions): Promise<ResolvedItem[]> {
+export async function buildIdMap(
+  root: string,
+  options?: ResolveIdOptions,
+): Promise<ResolvedItem[]> {
   const internalLogger = options?.logger ?? logger;
   const items = await scanItems(root, { logger: internalLogger });
   return items.map((item, index) => ({
@@ -76,7 +79,11 @@ function findBySlugSuffix(items: Item[], input: string): Item[] {
  * Throws AmbiguousIdError if multiple items match at any tier.
  * Throws ItemNotFoundError if no items match.
  */
-export async function resolveId(root: string, input: string, options?: ResolveIdOptions): Promise<string> {
+export async function resolveId(
+  root: string,
+  input: string,
+  options?: ResolveIdOptions,
+): Promise<string> {
   const internalLogger = options?.logger ?? logger;
   const items = await scanItems(root, { logger: internalLogger });
 
@@ -94,7 +101,7 @@ export async function resolveId(root: string, input: string, options?: ResolveId
   if (numericMatches.length > 1) {
     throw new AmbiguousIdError(
       input,
-      numericMatches.map((item) => item.id)
+      numericMatches.map((item) => item.id),
     );
   }
 
@@ -106,7 +113,7 @@ export async function resolveId(root: string, input: string, options?: ResolveId
   if (slugMatches.length > 1) {
     throw new AmbiguousIdError(
       input,
-      slugMatches.map((item) => item.id)
+      slugMatches.map((item) => item.id),
     );
   }
 

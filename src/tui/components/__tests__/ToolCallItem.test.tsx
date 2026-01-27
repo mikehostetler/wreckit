@@ -15,7 +15,8 @@ mock.module("ink", () => ({
 mock.module("../colors", () => ({
   getToolColor: (toolName: string) => "blue",
   formatToolInput: (input: any) => JSON.stringify(input).slice(0, 50),
-  formatToolResult: (toolName: string, result: any, maxLen: number) => "Result OK",
+  formatToolResult: (toolName: string, result: any, maxLen: number) =>
+    "Result OK",
 }));
 
 describe("ToolCallItem", () => {
@@ -23,7 +24,12 @@ describe("ToolCallItem", () => {
     it("shows ▶ for running status", () => {
       const tool = createMockToolExecution({ status: "running" });
 
-      const statusIcon = tool.status === "running" ? "▶" : tool.status === "completed" ? "✓" : "✗";
+      const statusIcon =
+        tool.status === "running"
+          ? "▶"
+          : tool.status === "completed"
+            ? "✓"
+            : "✗";
 
       expect(statusIcon).toBe("▶");
     });
@@ -31,7 +37,12 @@ describe("ToolCallItem", () => {
     it("shows ✓ for completed status", () => {
       const tool = createMockToolExecution({ status: "completed" });
 
-      const statusIcon = tool.status === "running" ? "▶" : tool.status === "completed" ? "✓" : "✗";
+      const statusIcon =
+        tool.status === "running"
+          ? "▶"
+          : tool.status === "completed"
+            ? "✓"
+            : "✗";
 
       expect(statusIcon).toBe("✓");
     });
@@ -39,7 +50,12 @@ describe("ToolCallItem", () => {
     it("shows ✗ for error status", () => {
       const tool = createMockToolExecution({ status: "error" });
 
-      const statusIcon = tool.status === "running" ? "▶" : tool.status === "completed" ? "✓" : "✗";
+      const statusIcon =
+        tool.status === "running"
+          ? "▶"
+          : tool.status === "completed"
+            ? "✓"
+            : "✗";
 
       expect(statusIcon).toBe("✗");
     });
@@ -71,9 +87,10 @@ describe("ToolCallItem", () => {
       });
       const maxInputLen = 20;
       const inputSummary = JSON.stringify(tool.input).slice(0, 50);
-      const shortInput = inputSummary.length > maxInputLen
-        ? inputSummary.slice(0, maxInputLen - 1) + "…"
-        : inputSummary;
+      const shortInput =
+        inputSummary.length > maxInputLen
+          ? inputSummary.slice(0, maxInputLen - 1) + "…"
+          : inputSummary;
 
       expect(shortInput.length).toBe(maxInputLen);
       expect(shortInput).toContain("…");
@@ -86,9 +103,10 @@ describe("ToolCallItem", () => {
       });
       const maxInputLen = 50;
       const inputSummary = JSON.stringify(tool.input).slice(0, 50);
-      const shortInput = inputSummary.length > maxInputLen
-        ? inputSummary.slice(0, maxInputLen - 1) + "…"
-        : inputSummary;
+      const shortInput =
+        inputSummary.length > maxInputLen
+          ? inputSummary.slice(0, maxInputLen - 1) + "…"
+          : inputSummary;
 
       expect(shortInput).toBe(inputSummary);
       expect(shortInput).not.toContain("…");
@@ -240,7 +258,8 @@ describe("ToolCallItem", () => {
       const tool = createMockToolExecution({ status: "running" });
 
       const isRunning = tool.status === "running";
-      const isCompleted = tool.status === "completed" || tool.status === "error";
+      const isCompleted =
+        tool.status === "completed" || tool.status === "error";
 
       expect(isRunning).toBe(true);
       expect(isCompleted).toBe(false);
@@ -250,7 +269,8 @@ describe("ToolCallItem", () => {
       const tool = createMockToolExecution({ status: "completed" });
 
       const isRunning = tool.status === "running";
-      const isCompleted = tool.status === "completed" || tool.status === "error";
+      const isCompleted =
+        tool.status === "completed" || tool.status === "error";
 
       expect(isRunning).toBe(false);
       expect(isCompleted).toBe(true);

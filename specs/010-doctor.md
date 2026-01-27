@@ -24,27 +24,27 @@ Fixes must be conservative. Prefer resetting to a known-good earlier state over 
 
 ### Guardrails Required
 
-| Guardrail | Purpose |
-|-----------|---------|
-| **No Data Deletion** | Fixes never delete artifacts or items |
+| Guardrail                 | Purpose                                |
+| ------------------------- | -------------------------------------- |
+| **No Data Deletion**      | Fixes never delete artifacts or items  |
 | **State Regression Only** | Fixes move state backward, not forward |
-| **Explicit Reporting** | All fixes are logged with before/after |
-| **Dry-Run Support** | `--fix` required for mutations |
+| **Explicit Reporting**    | All fixes are logged with before/after |
+| **Dry-Run Support**       | `--fix` required for mutations         |
 
 ---
 
 ## Diagnostic Codes
 
-| Code | Severity | Description | Fixable |
-|------|----------|-------------|---------|
-| `MISSING_CONFIG` | warning | config.json missing (defaults used) | No |
-| `INVALID_CONFIG` | error | config.json invalid JSON or schema | No |
-| `MISSING_ITEM_JSON` | error | item.json missing in item directory | No |
-| `INVALID_ITEM_JSON` | error | item.json invalid JSON or schema | No |
-| `INVALID_PRD` | error | prd.json invalid JSON or schema | No |
-| `STATE_FILE_MISMATCH` | warning | State doesn't match artifact presence | Yes |
-| `INDEX_STALE` | warning | index.json out of sync with items | Yes |
-| `MISSING_PROMPTS` | info | prompts directory missing | Yes |
+| Code                  | Severity | Description                           | Fixable |
+| --------------------- | -------- | ------------------------------------- | ------- |
+| `MISSING_CONFIG`      | warning  | config.json missing (defaults used)   | No      |
+| `INVALID_CONFIG`      | error    | config.json invalid JSON or schema    | No      |
+| `MISSING_ITEM_JSON`   | error    | item.json missing in item directory   | No      |
+| `INVALID_ITEM_JSON`   | error    | item.json invalid JSON or schema      | No      |
+| `INVALID_PRD`         | error    | prd.json invalid JSON or schema       | No      |
+| `STATE_FILE_MISMATCH` | warning  | State doesn't match artifact presence | Yes     |
+| `INDEX_STALE`         | warning  | index.json out of sync with items     | Yes     |
+| `MISSING_PROMPTS`     | info     | prompts directory missing             | Yes     |
 
 ---
 
@@ -68,12 +68,12 @@ For each directory in `.wreckit/items/` matching `^\d{3}-`:
 
 ### State/Artifact Consistency
 
-| State | Required Artifacts | Diagnostic |
-|-------|-------------------|------------|
-| `researched` | `research.md` | `STATE_FILE_MISMATCH` if missing |
-| `planned` | `plan.md` AND `prd.json` | `STATE_FILE_MISMATCH` if either missing |
-| `implementing` | `prd.json` with pending stories | `STATE_FILE_MISMATCH` if no pending |
-| `in_pr` | `pr_url` and `branch` set | `STATE_FILE_MISMATCH` if null |
+| State          | Required Artifacts              | Diagnostic                              |
+| -------------- | ------------------------------- | --------------------------------------- |
+| `researched`   | `research.md`                   | `STATE_FILE_MISMATCH` if missing        |
+| `planned`      | `plan.md` AND `prd.json`        | `STATE_FILE_MISMATCH` if either missing |
+| `implementing` | `prd.json` with pending stories | `STATE_FILE_MISMATCH` if no pending     |
+| `in_pr`        | `pr_url` and `branch` set       | `STATE_FILE_MISMATCH` if null           |
 
 ### Index Validation
 
@@ -96,11 +96,11 @@ For each directory in `.wreckit/items/` matching `^\d{3}-`:
 
 ```typescript
 interface Diagnostic {
-  itemId: string | null;   // null for global issues
+  itemId: string | null; // null for global issues
   severity: "error" | "warning" | "info";
-  code: string;            // e.g., "STATE_FILE_MISMATCH"
-  message: string;         // Human-readable description
-  fixable: boolean;        // Whether --fix can repair this
+  code: string; // e.g., "STATE_FILE_MISMATCH"
+  message: string; // Human-readable description
+  fixable: boolean; // Whether --fix can repair this
 }
 ```
 
@@ -112,14 +112,15 @@ interface Diagnostic {
 
 Regress state to match available artifacts:
 
-| Current State | Missing Artifact | New State |
-|---------------|------------------|-----------|
-| `researched` | `research.md` | `idea` |
-| `planned` | both `plan.md` and `prd.json` | `researched` if has research, else `idea` |
-| `planned` | only `plan.md` | Not fixable |
-| `planned` | only `prd.json` | Not fixable |
+| Current State | Missing Artifact              | New State                                 |
+| ------------- | ----------------------------- | ----------------------------------------- |
+| `researched`  | `research.md`                 | `idea`                                    |
+| `planned`     | both `plan.md` and `prd.json` | `researched` if has research, else `idea` |
+| `planned`     | only `plan.md`                | Not fixable                               |
+| `planned`     | only `prd.json`               | Not fixable                               |
 
 **Behavior:**
+
 1. Read current `item.json`
 2. Determine correct state based on artifacts
 3. Update state and `updated_at`
@@ -148,8 +149,8 @@ Create default prompt templates:
 ```typescript
 interface FixResult {
   diagnostic: Diagnostic;
-  fixed: boolean;          // Whether fix was applied
-  message: string;         // What was done or why it failed
+  fixed: boolean; // Whether fix was applied
+  message: string; // What was done or why it failed
 }
 ```
 
@@ -182,11 +183,11 @@ wreckit doctor --fix
 
 ## Error Handling
 
-| Error Condition | Behavior |
-|-----------------|----------|
-| Cannot read item.json | Report diagnostic, skip item |
-| Fix fails (permission, etc.) | Report in fix result, continue |
-| No `.wreckit/` directory | Return empty diagnostics (not initialized) |
+| Error Condition              | Behavior                                   |
+| ---------------------------- | ------------------------------------------ |
+| Cannot read item.json        | Report diagnostic, skip item               |
+| Fix fails (permission, etc.) | Report in fix result, continue             |
+| No `.wreckit/` directory     | Return empty diagnostics (not initialized) |
 
 ---
 
@@ -233,30 +234,30 @@ Fixed 2 issues
 
 ## Exit Codes
 
-| Code | Meaning |
-|------|---------|
-| 0 | No errors (warnings/info OK) |
-| 1 | Errors found (or fix failed) |
+| Code | Meaning                      |
+| ---- | ---------------------------- |
+| 0    | No errors (warnings/info OK) |
+| 1    | Errors found (or fix failed) |
 
 ---
 
 ## Implementation Status
 
-| Feature | Status | Notes |
-|---------|--------|-------|
-| **Core doctor command** | ✅ Implemented | See `src/doctor.ts` |
-| **Config validation** | ✅ Implemented | `MISSING_CONFIG`, `INVALID_CONFIG` |
-| **Item validation** | ✅ Implemented | `MISSING_ITEM_JSON`, `INVALID_ITEM_JSON` |
-| **PRD validation** | ✅ Implemented | `INVALID_PRD` |
-| **State/artifact consistency** | ✅ Implemented | `STATE_FILE_MISMATCH` |
-| **Index validation** | ✅ Implemented | `INDEX_STALE` |
-| **Prompts validation** | ✅ Implemented | `MISSING_PROMPTS` |
-| **Story quality validation** | ✅ Implemented | `POOR_STORY_QUALITY` |
-| **Fix: STATE_FILE_MISMATCH** | ✅ Implemented | Regresses state to match artifacts |
-| **Fix: INDEX_STALE** | ✅ Implemented | Regenerates index.json |
-| **Fix: MISSING_PROMPTS** | ✅ Implemented | Creates default templates |
-| **--fix flag** | ✅ Implemented | Auto-fix recoverable issues |
-| **Exit codes** | ✅ Implemented | 0 (no errors), 1 (errors found) |
+| Feature                        | Status         | Notes                                    |
+| ------------------------------ | -------------- | ---------------------------------------- |
+| **Core doctor command**        | ✅ Implemented | See `src/doctor.ts`                      |
+| **Config validation**          | ✅ Implemented | `MISSING_CONFIG`, `INVALID_CONFIG`       |
+| **Item validation**            | ✅ Implemented | `MISSING_ITEM_JSON`, `INVALID_ITEM_JSON` |
+| **PRD validation**             | ✅ Implemented | `INVALID_PRD`                            |
+| **State/artifact consistency** | ✅ Implemented | `STATE_FILE_MISMATCH`                    |
+| **Index validation**           | ✅ Implemented | `INDEX_STALE`                            |
+| **Prompts validation**         | ✅ Implemented | `MISSING_PROMPTS`                        |
+| **Story quality validation**   | ✅ Implemented | `POOR_STORY_QUALITY`                     |
+| **Fix: STATE_FILE_MISMATCH**   | ✅ Implemented | Regresses state to match artifacts       |
+| **Fix: INDEX_STALE**           | ✅ Implemented | Regenerates index.json                   |
+| **Fix: MISSING_PROMPTS**       | ✅ Implemented | Creates default templates                |
+| **--fix flag**                 | ✅ Implemented | Auto-fix recoverable issues              |
+| **Exit codes**                 | ✅ Implemented | 0 (no errors), 1 (errors found)          |
 
 ---
 

@@ -7,6 +7,7 @@ Successfully generated media content for the **Benchmarking Suite for Resumabili
 ## Deliverables
 
 ### ✅ 1. Manim Animation (Python)
+
 - **File**: `media/benchmarking_suite_visualization.py`
 - **Status**: RENDERED SUCCESSFULLY
 - **Output**: `media/media/videos/benchmarking_suite_visualization/480p15/BenchmarkingSuiteScene.mp4`
@@ -16,6 +17,7 @@ Successfully generated media content for the **Benchmarking Suite for Resumabili
 - **Resolution**: 854x480 (480p15)
 
 **Scene Contents**:
+
 1. Title: "Benchmarking Suite - Resumability & Concurrency Scaling"
 2. Architecture diagram with three components:
    - Resumability module (green)
@@ -29,6 +31,7 @@ Successfully generated media content for the **Benchmarking Suite for Resumabili
 7. Summary checklist of all features
 
 ### ✅ 2. Remotion Composition (React/TypeScript)
+
 - **File**: `media/benchmarking-suite-composition.tsx`
 - **Root**: `media/remotion-root.tsx`
 - **Status**: READY TO RENDER
@@ -36,6 +39,7 @@ Successfully generated media content for the **Benchmarking Suite for Resumabili
 - **Resolution**: 1920x1080
 
 **Composition Contents**:
+
 1. Title sequence with spring animation
 2. Resumability metrics section:
    - Animated metric boxes
@@ -80,26 +84,34 @@ media/
 ## Visualization Features
 
 ### Benchmarking Suite Architecture
+
 The animations clearly show:
+
 - **Modular design**: Separate components for resumability, concurrency, and scaling
 - **Centralized metrics collection**: Purple metrics collector component
 - **Data flow**: Arrows showing how benchmarks feed into metrics generation
 
 ### Resumability Measurements
+
 Visual representations of:
+
 - Resume time tracking (2.3s example metric)
 - State size monitoring (1.2MB example metric)
 - Overhead calculation (0.1% example metric)
 - Progress through 5 checkpoint stages
 
 ### Concurrency Scaling
+
 Animated displays of:
+
 - Throughput scaling across 1, 2, 4, 6, 8 threads
 - Efficiency calculation (90% at 10 threads)
 - Linear scaling visualization with bar charts
 
 ### Output Formats
+
 Clear presentation of all three required formats:
+
 - **JSON**: Structured, machine-readable format
 - **Markdown**: Human-readable documentation format
 - **CSV**: Spreadsheet-compatible for analysis and plotting

@@ -54,14 +54,14 @@ export function createTuiState(items: IndexItem[]): TuiState {
     logs: [],
     showLogs: false,
     activityByItem: Object.fromEntries(
-      items.map((item) => [item.id, { thoughts: [], tools: [] }])
+      items.map((item) => [item.id, { thoughts: [], tools: [] }]),
     ),
   };
 }
 
 export function updateTuiState(
   state: TuiState,
-  update: Partial<TuiState>
+  update: Partial<TuiState>,
 ): TuiState {
   return { ...state, ...update };
 }
@@ -104,7 +104,11 @@ export function padToWidth(str: string, width: number): string {
   return str.padEnd(width);
 }
 
-function renderHorizontalLine(width: number, left: string, right: string): string {
+function renderHorizontalLine(
+  width: number,
+  left: string,
+  right: string,
+): string {
   return left + "─".repeat(width - 2) + right;
 }
 
@@ -137,7 +141,9 @@ export function renderDashboard(state: TuiState, width = 80): string {
     } else {
       for (const item of state.items) {
         const icon = getStateIcon(item.state);
-        const storyInfo = item.currentStoryId ? ` [${item.currentStoryId}]` : "";
+        const storyInfo = item.currentStoryId
+          ? ` [${item.currentStoryId}]`
+          : "";
         const itemLine = `${icon} ${padToWidth(item.id, 30)} ${padToWidth(item.state, 14)}${storyInfo}`;
         lines.push("│ " + padToWidth(itemLine, innerWidth) + " │");
       }

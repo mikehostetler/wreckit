@@ -1,4 +1,12 @@
-import { describe, it, expect, beforeEach, afterEach, mock, spyOn } from "bun:test";
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  mock,
+  spyOn,
+} from "bun:test";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import * as os from "node:os";
@@ -199,7 +207,7 @@ describe("runAgent", () => {
     expect(result.timedOut).toBe(true);
     expect(result.completionDetected).toBe(false);
     expect(mockLogger.warn).toHaveBeenCalledWith(
-      expect.stringContaining("timed out")
+      expect.stringContaining("timed out"),
     );
   }, 5000);
 
@@ -228,7 +236,7 @@ describe("runAgent", () => {
     expect(result.exitCode).toBe(0);
     expect(result.output).toBe("[dry-run] No output");
     expect(mockLogger.info).toHaveBeenCalledWith(
-      expect.stringContaining("[dry-run]")
+      expect.stringContaining("[dry-run]"),
     );
   });
 
@@ -354,10 +362,10 @@ describe("runAgent", () => {
     expect(result.exitCode).toBe(0);
     expect(result.output).toBe("[dry-run] No output");
     expect(mockLogger.info).toHaveBeenCalledWith(
-      expect.stringContaining("[dry-run]")
+      expect.stringContaining("[dry-run]"),
     );
     expect(mockLogger.info).toHaveBeenCalledWith(
-      expect.stringContaining("SDK agent")
+      expect.stringContaining("SDK agent"),
     );
   });
 
@@ -386,7 +394,7 @@ describe("runAgent", () => {
     expect(result.exitCode).toBe(0);
     expect(result.output).toContain("[mock-agent]");
     expect(mockLogger.info).toHaveBeenCalledWith(
-      expect.stringContaining("[mock-agent]")
+      expect.stringContaining("[mock-agent]"),
     );
   });
 });

@@ -56,10 +56,7 @@ describe("concurrent modification handling", () => {
       const item2 = makeItem({ state: "researched", title: "Version 2" });
 
       // Simulate concurrent writes
-      await Promise.all([
-        writeItem(itemDir, item1),
-        writeItem(itemDir, item2),
-      ]);
+      await Promise.all([writeItem(itemDir, item1), writeItem(itemDir, item2)]);
 
       // One of them should win (last-write-wins)
       const finalItem = await readItem(itemDir);
@@ -104,16 +101,14 @@ describe("concurrent modification handling", () => {
 
       for (let i = 0; i < 5; i++) {
         // Writer
-        operations.push(
-          writeItem(itemDir, { ...item, title: `Write ${i}` })
-        );
+        operations.push(writeItem(itemDir, { ...item, title: `Write ${i}` }));
         // Reader
         operations.push(
           readItem(itemDir).then((readItem) => {
             // Each read should return a complete, valid item
             expect(readItem.schema_version).toBe(1);
             expect(readItem.id).toBe("test/001-test");
-          })
+          }),
         );
       }
 
@@ -165,7 +160,11 @@ describe("file locking scenarios", () => {
 
     // Rapid sequential updates
     for (let i = 0; i < 20; i++) {
-      const updated = { ...item, title: `Rapid Update ${i}`, updated_at: new Date().toISOString() };
+      const updated = {
+        ...item,
+        title: `Rapid Update ${i}`,
+        updated_at: new Date().toISOString(),
+      };
       await writeItem(itemDir, updated);
     }
 

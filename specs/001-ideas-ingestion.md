@@ -22,14 +22,14 @@ The ideas phase operates under a strict **extraction-only** security model. The 
 
 ### Core Guardrails
 
-| Guardrail | Purpose |
-|-----------|---------|
-| **Tool Allowlist** | Agent can ONLY call the designated idea-saving tool; all other tools are blocked |
-| **No Filesystem Access** | Read, Write, Edit tools are not in the allowlist |
-| **No Command Execution** | Bash, shell, and command tools are not in the allowlist |
-| **No Codebase Access** | Grep, Search, Glob tools are not in the allowlist |
-| **Data Capture Only** | The allowed tool captures ideas in-memory; it does not write to disk directly |
-| **Schema Validation** | All captured ideas are validated against a strict schema before acceptance |
+| Guardrail                | Purpose                                                                          |
+| ------------------------ | -------------------------------------------------------------------------------- |
+| **Tool Allowlist**       | Agent can ONLY call the designated idea-saving tool; all other tools are blocked |
+| **No Filesystem Access** | Read, Write, Edit tools are not in the allowlist                                 |
+| **No Command Execution** | Bash, shell, and command tools are not in the allowlist                          |
+| **No Codebase Access**   | Grep, Search, Glob tools are not in the allowlist                                |
+| **Data Capture Only**    | The allowed tool captures ideas in-memory; it does not write to disk directly    |
+| **Schema Validation**    | All captured ideas are validated against a strict schema before acceptance       |
 
 ### What the Agent Cannot Do
 
@@ -52,13 +52,14 @@ If tool restrictions cannot be enforced, the phase must **abort** rather than pr
 
 The `wreckit ideas` command supports three input modes:
 
-| Mode | Trigger | Description |
-|------|---------|-------------|
-| **Piped stdin** | `wreckit ideas < FILE` or `cat file \| wreckit ideas` | Reads from stdin when input is piped |
-| **File input** | `wreckit ideas --file PATH` | Reads from a specified file path |
-| **Interactive interview** | `wreckit ideas` (no stdin) | Launches a conversational interview session |
+| Mode                      | Trigger                                               | Description                                 |
+| ------------------------- | ----------------------------------------------------- | ------------------------------------------- |
+| **Piped stdin**           | `wreckit ideas < FILE` or `cat file \| wreckit ideas` | Reads from stdin when input is piped        |
+| **File input**            | `wreckit ideas --file PATH`                           | Reads from a specified file path            |
+| **Interactive interview** | `wreckit ideas` (no stdin)                            | Launches a conversational interview session |
 
 **Priority order:**
+
 1. `--file PATH` flag
 2. Piped stdin
 3. Interactive interview (fallback when running in terminal with no input)
@@ -157,11 +158,11 @@ If the conversational interview fails, the system automatically falls back to th
 
 If the agent attempts to call a tool not in the allowlist (filesystem access, bash, etc.):
 
-| Scenario | Expected Behavior |
-|----------|-------------------|
-| Agent calls `Read` tool | Tool call blocked; error surfaced |
-| Agent calls `Bash` tool | Tool call blocked; error surfaced |
-| Agent calls `Edit` tool | Tool call blocked; error surfaced |
+| Scenario                   | Expected Behavior                                  |
+| -------------------------- | -------------------------------------------------- |
+| Agent calls `Read` tool    | Tool call blocked; error surfaced                  |
+| Agent calls `Bash` tool    | Tool call blocked; error surfaced                  |
+| Agent calls `Edit` tool    | Tool call blocked; error surfaced                  |
 | Agent calls wrong MCP tool | Tool call blocked; only idea-saving tool permitted |
 
 The agent run may continue or abort depending on the error, but **no side-effect occurs**.
@@ -170,11 +171,11 @@ The agent run may continue or abort depending on the error, but **no side-effect
 
 If the designated idea-saving tool fails or isn't called:
 
-| Scenario | Expected Behavior |
-|----------|-------------------|
-| Tool call fails (schema validation) | Error returned to agent; may retry or fail |
-| Tool never called | Falls back to JSON parsing from output |
-| Fallback JSON parsing fails | Phase fails with "Agent did not return valid JSON array" |
+| Scenario                            | Expected Behavior                                        |
+| ----------------------------------- | -------------------------------------------------------- |
+| Tool call fails (schema validation) | Error returned to agent; may retry or fail               |
+| Tool never called                   | Falls back to JSON parsing from output                   |
+| Fallback JSON parsing fails         | Phase fails with "Agent did not return valid JSON array" |
 
 **Note:** The JSON fallback weakens the "must use structured tool call" guarantee. Consider this a known gap that trades security for resilience.
 
@@ -182,23 +183,23 @@ If the designated idea-saving tool fails or isn't called:
 
 All captured ideas are validated against a strict schema:
 
-| Validation | Failure Behavior |
-|------------|------------------|
-| Missing required field (title) | Idea rejected |
-| Invalid field type | Idea rejected |
-| Malformed structure | Entire payload rejected |
+| Validation                     | Failure Behavior        |
+| ------------------------------ | ----------------------- |
+| Missing required field (title) | Idea rejected           |
+| Invalid field type             | Idea rejected           |
+| Malformed structure            | Entire payload rejected |
 
 ### Payload Size Limits (Recommended)
 
 To prevent denial-of-service or cost blowups, the following limits should be enforced:
 
-| Limit | Recommended Value |
-|-------|-------------------|
-| Maximum ideas per ingestion | 50 |
-| Title length | 120 characters |
-| Description length | 2000 characters |
-| Success criteria items | 20 |
-| Total payload size | 100 KB |
+| Limit                       | Recommended Value |
+| --------------------------- | ----------------- |
+| Maximum ideas per ingestion | 50                |
+| Title length                | 120 characters    |
+| Description length          | 2000 characters   |
+| Success criteria items      | 20                |
+| Total payload size          | 100 KB            |
 
 Payloads exceeding these limits should be rejected with a clear error.
 
@@ -290,20 +291,20 @@ wreckit ideas --cwd /path   # Override working directory
 
 ## Implementation Status
 
-| Feature | Status | Notes |
-|---------|--------|-------|
-| **Piped stdin input** | ✅ Implemented | `wreckit ideas < FILE` works |
-| **File input** | ✅ Implemented | `--file PATH` flag works |
-| **Interactive interview** | ✅ Implemented | Launches AI conversation when no input |
-| **Fallback interview** | ✅ Implemented | Field-by-field fallback on AI failure |
-| **MCP tool: save_interview_ideas** | ✅ Implemented | See `src/agent/mcp/wreckitMcpServer.ts` |
-| **MCP tool: save_parsed_ideas** | ✅ Implemented | See `src/agent/mcp/wreckitMcpServer.ts` |
-| **Tool allowlist enforcement** | ✅ Implemented | See `src/agent/toolAllowlist.ts` |
-| **Schema validation** | ✅ Implemented | Zod schemas in `src/schemas.ts` |
-| **Deduplication by slug** | ✅ Implemented | Existing items skipped |
-| **Dry-run mode** | ✅ Implemented | `--dry-run` flag works |
-| **Payload size limits** | ❌ Not Implemented | Recommended limits not enforced |
-| **Social engineering prevention** | 🔶 Partial | Prompt instructions only |
+| Feature                            | Status             | Notes                                   |
+| ---------------------------------- | ------------------ | --------------------------------------- |
+| **Piped stdin input**              | ✅ Implemented     | `wreckit ideas < FILE` works            |
+| **File input**                     | ✅ Implemented     | `--file PATH` flag works                |
+| **Interactive interview**          | ✅ Implemented     | Launches AI conversation when no input  |
+| **Fallback interview**             | ✅ Implemented     | Field-by-field fallback on AI failure   |
+| **MCP tool: save_interview_ideas** | ✅ Implemented     | See `src/agent/mcp/wreckitMcpServer.ts` |
+| **MCP tool: save_parsed_ideas**    | ✅ Implemented     | See `src/agent/mcp/wreckitMcpServer.ts` |
+| **Tool allowlist enforcement**     | ✅ Implemented     | See `src/agent/toolAllowlist.ts`        |
+| **Schema validation**              | ✅ Implemented     | Zod schemas in `src/schemas.ts`         |
+| **Deduplication by slug**          | ✅ Implemented     | Existing items skipped                  |
+| **Dry-run mode**                   | ✅ Implemented     | `--dry-run` flag works                  |
+| **Payload size limits**            | ❌ Not Implemented | Recommended limits not enforced         |
+| **Social engineering prevention**  | 🔶 Partial         | Prompt instructions only                |
 
 ---
 

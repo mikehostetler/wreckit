@@ -13,11 +13,8 @@ mock.module("node:child_process", () => ({
   spawn: mockedSpawn,
 }));
 
-const {
-  getCurrentBranch,
-  branchExists,
-  ensureBranch,
-} = await import("../../git");
+const { getCurrentBranch, branchExists, ensureBranch } =
+  await import("../../git");
 
 function createMockLogger(): Logger {
   return {
@@ -61,7 +58,7 @@ function mockSpawnOnce(stdout: string, exitCode: number): void {
 }
 
 function mockSpawnSequence(
-  responses: Array<{ stdout: string; exitCode: number }>
+  responses: Array<{ stdout: string; exitCode: number }>,
 ): void {
   for (const r of responses) {
     mockSpawnOnce(r.stdout, r.exitCode);
@@ -70,7 +67,7 @@ function mockSpawnSequence(
 
 /**
  * Edge Case Tests 51-55: Branch Detection Edge Cases
- * 
+ *
  * From EDGE_CASE_TEST_PLAN.md Section 3: Branch Detection Edge Cases
  */
 describe("Branch Operations Edge Cases", () => {
@@ -81,7 +78,7 @@ describe("Branch Operations Edge Cases", () => {
 
   /**
    * Test 51: Current branch equals base_branch
-   * 
+   *
    * Setup: On `main`, `base_branch: "main"`
    * Command: Branch creation
    * Expected: Creates new branch from `main`; no unnecessary switches
@@ -89,9 +86,9 @@ describe("Branch Operations Edge Cases", () => {
   describe("Test 51: Current branch equals base_branch", () => {
     it("creates new branch directly from main without unnecessary checkout", async () => {
       mockSpawnSequence([
-        { stdout: "", exitCode: 1 },       // branchExists: branch doesn't exist
-        { stdout: "", exitCode: 0 },       // checkout main (required by ensureBranch)
-        { stdout: "", exitCode: 0 },       // checkout -b wreckit/item-1
+        { stdout: "", exitCode: 1 }, // branchExists: branch doesn't exist
+        { stdout: "", exitCode: 0 }, // checkout main (required by ensureBranch)
+        { stdout: "", exitCode: 0 }, // checkout -b wreckit/item-1
       ]);
       const logger = createMockLogger();
       const options: GitOptions = { cwd: "/repo", logger };
@@ -101,36 +98,36 @@ describe("Branch Operations Edge Cases", () => {
       expect(result.branchName).toBe("wreckit/item-1");
       expect(result.created).toBe(true);
       expect(logger.info).toHaveBeenCalledWith(
-        expect.stringContaining("Creating branch")
+        expect.stringContaining("Creating branch"),
       );
-      
+
       // Verify the git commands called
       expect(mockedSpawn).toHaveBeenCalledTimes(3);
       expect(mockedSpawn).toHaveBeenNthCalledWith(
         1,
         "git",
         ["show-ref", "--verify", "--quiet", "refs/heads/wreckit/item-1"],
-        expect.any(Object)
+        expect.any(Object),
       );
       expect(mockedSpawn).toHaveBeenNthCalledWith(
         2,
         "git",
         ["checkout", "main"],
-        expect.any(Object)
+        expect.any(Object),
       );
       expect(mockedSpawn).toHaveBeenNthCalledWith(
         3,
         "git",
         ["checkout", "-b", "wreckit/item-1"],
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
     it("creates branch from main when already on main", async () => {
       mockSpawnSequence([
-        { stdout: "", exitCode: 1 },       // branchExists: branch doesn't exist
-        { stdout: "", exitCode: 0 },       // checkout main (idempotent)
-        { stdout: "", exitCode: 0 },       // checkout -b wreckit/raw-1
+        { stdout: "", exitCode: 1 }, // branchExists: branch doesn't exist
+        { stdout: "", exitCode: 0 }, // checkout main (idempotent)
+        { stdout: "", exitCode: 0 }, // checkout -b wreckit/raw-1
       ]);
       const logger = createMockLogger();
       const options: GitOptions = { cwd: "/repo", logger };
@@ -144,7 +141,7 @@ describe("Branch Operations Edge Cases", () => {
 
   /**
    * Test 52: Current branch is feature branch
-   * 
+   *
    * Setup: On `feature/foo`, `base_branch: "main"`
    * Command: `run raw/1`
    * Expected: Switches to `main` before creating `wreckit/...` branch
@@ -152,9 +149,9 @@ describe("Branch Operations Edge Cases", () => {
   describe("Test 52: Current branch is feature branch", () => {
     it("switches to base branch before creating wreckit branch", async () => {
       mockSpawnSequence([
-        { stdout: "", exitCode: 1 },       // branchExists: wreckit/raw-1 doesn't exist
-        { stdout: "", exitCode: 0 },       // checkout main (switch from feature/foo)
-        { stdout: "", exitCode: 0 },       // checkout -b wreckit/raw-1
+        { stdout: "", exitCode: 1 }, // branchExists: wreckit/raw-1 doesn't exist
+        { stdout: "", exitCode: 0 }, // checkout main (switch from feature/foo)
+        { stdout: "", exitCode: 0 }, // checkout -b wreckit/raw-1
       ]);
       const logger = createMockLogger();
       const options: GitOptions = { cwd: "/repo", logger };
@@ -163,49 +160,54 @@ describe("Branch Operations Edge Cases", () => {
 
       expect(result.branchName).toBe("wreckit/raw-1");
       expect(result.created).toBe(true);
-      
+
       // Verify it first checked out base branch (main) before creating
       expect(mockedSpawn).toHaveBeenNthCalledWith(
         2,
         "git",
         ["checkout", "main"],
-        expect.any(Object)
+        expect.any(Object),
       );
       expect(mockedSpawn).toHaveBeenNthCalledWith(
         3,
         "git",
         ["checkout", "-b", "wreckit/raw-1"],
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
     it("uses configured base_branch when switching", async () => {
       mockSpawnSequence([
-        { stdout: "", exitCode: 1 },       // branchExists: branch doesn't exist
-        { stdout: "", exitCode: 0 },       // checkout master (the configured base)
-        { stdout: "", exitCode: 0 },       // checkout -b wreckit/feature-2
+        { stdout: "", exitCode: 1 }, // branchExists: branch doesn't exist
+        { stdout: "", exitCode: 0 }, // checkout master (the configured base)
+        { stdout: "", exitCode: 0 }, // checkout -b wreckit/feature-2
       ]);
       const logger = createMockLogger();
       const options: GitOptions = { cwd: "/repo", logger };
 
-      const result = await ensureBranch("master", "wreckit/", "feature-2", options);
+      const result = await ensureBranch(
+        "master",
+        "wreckit/",
+        "feature-2",
+        options,
+      );
 
       expect(result.branchName).toBe("wreckit/feature-2");
       expect(result.created).toBe(true);
-      
+
       // Should checkout master as base branch
       expect(mockedSpawn).toHaveBeenNthCalledWith(
         2,
         "git",
         ["checkout", "master"],
-        expect.any(Object)
+        expect.any(Object),
       );
     });
   });
 
   /**
    * Test 53: Detached HEAD
-   * 
+   *
    * Setup: Checkout specific commit
    * Command: `wreckit run raw/1`
    * Expected: `getCurrentBranch` fails; clear error about detached HEAD
@@ -232,7 +234,7 @@ describe("Branch Operations Edge Cases", () => {
       };
 
       await expect(getCurrentBranch(options)).rejects.toThrow(
-        "Failed to get current branch"
+        "Failed to get current branch",
       );
     });
 
@@ -244,14 +246,14 @@ describe("Branch Operations Edge Cases", () => {
       };
 
       await expect(getCurrentBranch(options)).rejects.toThrow(
-        "Failed to get current branch"
+        "Failed to get current branch",
       );
     });
   });
 
   /**
    * Test 54: Branch already exists
-   * 
+   *
    * Setup: Branch `wreckit/raw-1` exists
    * Command: `run raw/1`
    * Expected: Logs "exists, switching to it"; `created: false`
@@ -259,8 +261,8 @@ describe("Branch Operations Edge Cases", () => {
   describe("Test 54: Branch already exists", () => {
     it("switches to existing branch and returns created: false", async () => {
       mockSpawnSequence([
-        { stdout: "", exitCode: 0 },       // branchExists: branch exists
-        { stdout: "", exitCode: 0 },       // checkout wreckit/raw-1
+        { stdout: "", exitCode: 0 }, // branchExists: branch exists
+        { stdout: "", exitCode: 0 }, // checkout wreckit/raw-1
       ]);
       const logger = createMockLogger();
       const options: GitOptions = { cwd: "/repo", logger };
@@ -270,14 +272,14 @@ describe("Branch Operations Edge Cases", () => {
       expect(result.branchName).toBe("wreckit/raw-1");
       expect(result.created).toBe(false);
       expect(logger.info).toHaveBeenCalledWith(
-        expect.stringContaining("exists, switching")
+        expect.stringContaining("exists, switching"),
       );
     });
 
     it("logs correct message when branch exists", async () => {
       mockSpawnSequence([
-        { stdout: "", exitCode: 0 },       // branchExists: branch exists
-        { stdout: "", exitCode: 0 },       // checkout wreckit/item-1
+        { stdout: "", exitCode: 0 }, // branchExists: branch exists
+        { stdout: "", exitCode: 0 }, // checkout wreckit/item-1
       ]);
       const logger = createMockLogger();
       const options: GitOptions = { cwd: "/repo", logger };
@@ -285,14 +287,14 @@ describe("Branch Operations Edge Cases", () => {
       await ensureBranch("main", "wreckit/", "item-1", options);
 
       expect(logger.info).toHaveBeenCalledWith(
-        "Branch wreckit/item-1 exists, switching to it"
+        "Branch wreckit/item-1 exists, switching to it",
       );
     });
 
     it("does not attempt to create branch when it exists", async () => {
       mockSpawnSequence([
-        { stdout: "", exitCode: 0 },       // branchExists: branch exists
-        { stdout: "", exitCode: 0 },       // checkout wreckit/existing-branch
+        { stdout: "", exitCode: 0 }, // branchExists: branch exists
+        { stdout: "", exitCode: 0 }, // checkout wreckit/existing-branch
       ]);
       const logger = createMockLogger();
       const options: GitOptions = { cwd: "/repo", logger };
@@ -304,14 +306,14 @@ describe("Branch Operations Edge Cases", () => {
       expect(mockedSpawn).not.toHaveBeenCalledWith(
         "git",
         ["checkout", "-b", expect.any(String)],
-        expect.any(Object)
+        expect.any(Object),
       );
     });
   });
 
   /**
    * Test 55: Branch existence query failure
-   * 
+   *
    * Setup: Simulate `git show-ref` failure
    * Command: Branch creation
    * Expected: `branchExists` returns `false`; attempts creation, propagates error if that fails
@@ -330,7 +332,7 @@ describe("Branch Operations Edge Cases", () => {
       expect(mockedSpawn).toHaveBeenCalledWith(
         "git",
         ["show-ref", "--verify", "--quiet", "refs/heads/nonexistent-branch"],
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -348,24 +350,29 @@ describe("Branch Operations Edge Cases", () => {
 
     it("ensureBranch attempts creation when branchExists returns false due to failure", async () => {
       mockSpawnSequence([
-        { stdout: "", exitCode: 128 },     // branchExists fails (git error)
-        { stdout: "", exitCode: 0 },       // checkout main
-        { stdout: "", exitCode: 0 },       // checkout -b wreckit/new-item
+        { stdout: "", exitCode: 128 }, // branchExists fails (git error)
+        { stdout: "", exitCode: 0 }, // checkout main
+        { stdout: "", exitCode: 0 }, // checkout -b wreckit/new-item
       ]);
       const logger = createMockLogger();
       const options: GitOptions = { cwd: "/repo", logger };
 
-      const result = await ensureBranch("main", "wreckit/", "new-item", options);
+      const result = await ensureBranch(
+        "main",
+        "wreckit/",
+        "new-item",
+        options,
+      );
 
       expect(result.branchName).toBe("wreckit/new-item");
       expect(result.created).toBe(true);
       expect(logger.info).toHaveBeenCalledWith(
-        expect.stringContaining("Creating branch")
+        expect.stringContaining("Creating branch"),
       );
     });
 
     it("handles show-ref returning empty output gracefully", async () => {
-      mockSpawnOnce("", 2);  // Unusual exit code
+      mockSpawnOnce("", 2); // Unusual exit code
       const options: GitOptions = {
         cwd: "/repo",
         logger: createMockLogger(),
@@ -380,7 +387,7 @@ describe("Branch Operations Edge Cases", () => {
       const createMockProcessWithStderr = (
         stdout: string,
         stderr: string,
-        exitCode: number
+        exitCode: number,
       ): MockProcess => {
         const stdoutOn = vi.fn((event: string, cb: (data: Buffer) => void) => {
           if (event === "data" && stdout) {
@@ -392,11 +399,13 @@ describe("Branch Operations Edge Cases", () => {
             setTimeout(() => cb(Buffer.from(stderr)), 0);
           }
         });
-        const onFn = vi.fn((event: string, cb: (code: number | null) => void) => {
-          if (event === "close") {
-            setTimeout(() => cb(exitCode), 10);
-          }
-        });
+        const onFn = vi.fn(
+          (event: string, cb: (code: number | null) => void) => {
+            if (event === "close") {
+              setTimeout(() => cb(exitCode), 10);
+            }
+          },
+        );
 
         return {
           stdout: { on: stdoutOn },
@@ -410,7 +419,11 @@ describe("Branch Operations Edge Cases", () => {
       // checkout main succeeds
       mockSpawnOnce("", 0);
       // checkout -b fails (could fail for various reasons)
-      const failProc = createMockProcessWithStderr("", "fatal: branch already exists", 128);
+      const failProc = createMockProcessWithStderr(
+        "",
+        "fatal: branch already exists",
+        128,
+      );
       mockedSpawn.mockReturnValueOnce(failProc as never);
 
       const logger = createMockLogger();
@@ -418,7 +431,7 @@ describe("Branch Operations Edge Cases", () => {
 
       // ensureBranch should throw when branch creation fails
       await expect(
-        ensureBranch("main", "wreckit/", "problem-branch", options)
+        ensureBranch("main", "wreckit/", "problem-branch", options),
       ).rejects.toThrow("Failed to create branch wreckit/problem-branch");
     });
   });
@@ -429,14 +442,19 @@ describe("Branch Operations Edge Cases", () => {
   describe("Additional branch operation edge cases", () => {
     it("handles custom branch prefix correctly", async () => {
       mockSpawnSequence([
-        { stdout: "", exitCode: 1 },       // branchExists
-        { stdout: "", exitCode: 0 },       // checkout main
-        { stdout: "", exitCode: 0 },       // checkout -b
+        { stdout: "", exitCode: 1 }, // branchExists
+        { stdout: "", exitCode: 0 }, // checkout main
+        { stdout: "", exitCode: 0 }, // checkout -b
       ]);
       const logger = createMockLogger();
       const options: GitOptions = { cwd: "/repo", logger };
 
-      const result = await ensureBranch("main", "feature/wreckit-", "item-5", options);
+      const result = await ensureBranch(
+        "main",
+        "feature/wreckit-",
+        "item-5",
+        options,
+      );
 
       expect(result.branchName).toBe("feature/wreckit-item-5");
       expect(result.created).toBe(true);
@@ -466,7 +484,12 @@ describe("Branch Operations Edge Cases", () => {
       const logger = createMockLogger();
       const options: GitOptions = { cwd: "/repo", logger };
 
-      const result = await ensureBranch("main", "wreckit/", "section-001-add-feature", options);
+      const result = await ensureBranch(
+        "main",
+        "wreckit/",
+        "section-001-add-feature",
+        options,
+      );
 
       expect(result.branchName).toBe("wreckit/section-001-add-feature");
     });
@@ -475,13 +498,18 @@ describe("Branch Operations Edge Cases", () => {
       const logger = createMockLogger();
       const options: GitOptions = { cwd: "/repo", logger, dryRun: true };
 
-      const result = await ensureBranch("main", "wreckit/", "dry-run-item", options);
+      const result = await ensureBranch(
+        "main",
+        "wreckit/",
+        "dry-run-item",
+        options,
+      );
 
       expect(result.branchName).toBe("wreckit/dry-run-item");
       expect(result.created).toBe(true);
       expect(mockedSpawn).not.toHaveBeenCalled();
       expect(logger.info).toHaveBeenCalledWith(
-        expect.stringContaining("[dry-run]")
+        expect.stringContaining("[dry-run]"),
       );
     });
   });

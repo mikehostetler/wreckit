@@ -3,10 +3,15 @@ import type { Item, WorkflowState } from "../schemas";
 import type { PhaseResult, WorkflowOptions } from "./itemWorkflow";
 import { getAgentConfigUnion, runAgentUnion } from "../agent/runner";
 import { loadPromptTemplate, renderPrompt } from "../prompts";
-import { getItemDir, getProgressLogPath, getPlanPath, getPrdPath, getResearchPath } from "../fs/paths";
+import {
+  getItemDir,
+  getProgressLogPath,
+  getPlanPath,
+  getPrdPath,
+  getResearchPath,
+} from "../fs/paths";
 import { readItem, writeItem } from "../fs/json";
 import { getGitStatus, type GitFileChange } from "../git";
-import type { Logger } from "../logging";
 
 interface CritiqueResult {
   status: "approved" | "rejected";
@@ -14,7 +19,7 @@ interface CritiqueResult {
   critique: string;
 }
 
-function parseCritiqueJson(output: string, logger?: Logger): CritiqueResult | null {
+function parseCritiqueJson(output: string): CritiqueResult | null {
   try {
     // Strategy 1: Look for JSON markdown block
     const codeBlockMatch = output.match(/```json\s*([\s\S]*?)\s*```/);
@@ -24,12 +29,7 @@ function parseCritiqueJson(output: string, logger?: Logger): CritiqueResult | nu
         if (parsed.status === "approved" || parsed.status === "rejected") {
           return parsed as CritiqueResult;
         }
-      } catch (error) {
-        logger?.debug(
-          `Failed to parse JSON markdown block in critique output: ` +
-          `${error instanceof Error ? error.message : String(error)}`
-        );
-      }
+      } catch {}
     }
 
     // Strategy 2: Find the last valid JSON object in the output (in case of multiple or trailing text)
@@ -41,29 +41,20 @@ function parseCritiqueJson(output: string, logger?: Logger): CritiqueResult | nu
           if (parsed.status === "approved" || parsed.status === "rejected") {
             return parsed as CritiqueResult;
           }
-        } catch (error) {
-          // Log and continue to next match
-          logger?.debug(
-            `Failed to parse JSON object ${i + 1}/${matches.length} in critique output: ` +
-            `${error instanceof Error ? error.message : String(error)}`
-          );
+        } catch {
           continue;
         }
       }
     }
     return null;
-  } catch (error) {
-    logger?.debug(
-      `Unexpected error during critique JSON parsing: ` +
-      `${error instanceof Error ? error.message : String(error)}`
-    );
+  } catch {
     return null;
   }
 }
 
 export async function runPhaseCritique(
   itemId: string,
-  options: WorkflowOptions
+  options: WorkflowOptions,
 ): Promise<PhaseResult> {
   const {
     root,
@@ -77,11 +68,11 @@ export async function runPhaseCritique(
 
   let item = await readItem(getItemDir(root, itemId));
   const itemDir = getItemDir(root, item.id);
-  
+
   if (item.state !== "implementing" && item.state !== "critique") {
     // If we are in 'planned', it means we regressed. Allow it to fail gracefully so runCommand can pick up 'implement' next.
     if (item.state === "planned") {
-       return { success: true, item };
+      return { success: true, item };
     }
     return {
       success: false,
@@ -96,11 +87,15 @@ export async function runPhaseCritique(
   }
 
   const template = await loadPromptTemplate(root, "critique");
-  
+
   // Load context for variables
-  const plan = await fs.readFile(getPlanPath(root, item.id), "utf-8").catch(() => "");
-  const prd = await fs.readFile(getPrdPath(root, item.id), "utf-8").catch(() => "");
-  
+  const plan = await fs
+    .readFile(getPlanPath(root, item.id), "utf-8")
+    .catch(() => "");
+  const prd = await fs
+    .readFile(getPrdPath(root, item.id), "utf-8")
+    .catch(() => "");
+
   const variables = {
     id: item.id,
     title: item.title,
@@ -112,7 +107,7 @@ export async function runPhaseCritique(
     branch_name: item.branch || "unknown",
     base_branch: config.base_branch,
     completion_signal: "JSON_OUTPUT",
-    sdk_mode: true
+    sdk_mode: true,
   };
 
   const prompt = renderPrompt(template, variables);
@@ -129,7 +124,13 @@ export async function runPhaseCritique(
     onStdoutChunk: onAgentOutput,
     onStderrChunk: onAgentOutput,
     onAgentEvent,
-    allowedTools: ["read_file", "run_shell_command", "glob", "search_file_content", "list_directory"], // Read-only tools
+    allowedTools: [
+      "read_file",
+      "run_shell_command",
+      "glob",
+      "search_file_content",
+      "list_directory",
+    ], // Read-only tools
   });
 
   if (dryRun) {
@@ -144,9 +145,13 @@ export async function runPhaseCritique(
 
   // TECHNICAL FAILURE HANDLING (Self-Healing)
   if (!result.success) {
-    const error = result.timedOut ? "Critic timed out (complexity too high)" : `Critic failed: ${result.output.slice(0, 100)}...`;
-    logger.warn(`Critique technical failure: ${error}. Regressing to 'planned' for simplification.`);
-    
+    const error = result.timedOut
+      ? "Critic timed out (complexity too high)"
+      : `Critic failed: ${result.output.slice(0, 100)}...`;
+    logger.warn(
+      `Critique technical failure: ${error}. Regressing to 'planned' for simplification.`,
+    );
+
     // Regress to planned to force re-implementation/simplification
     item = { ...item, state: "planned", last_error: error };
     await writeItem(itemDir, item);
@@ -154,8 +159,8 @@ export async function runPhaseCritique(
     return { success: true, item };
   }
 
-  const critique = parseCritiqueJson(result.output, logger);
-  
+  const critique = parseCritiqueJson(result.output);
+
   if (!critique) {
     const error = "Critic failed to output valid JSON decision";
     logger.error(error);
@@ -173,12 +178,12 @@ export async function runPhaseCritique(
 
   if (critique.status === "rejected") {
     logger.warn(`Critic REJECTED implementation: ${critique.reason}`);
-    
+
     // REGRESSION LOOP: Move back to planned
-    item = { 
-      ...item, 
-      state: "planned", 
-      last_error: `Critique Failed: ${critique.reason}` 
+    item = {
+      ...item,
+      state: "planned",
+      last_error: `Critique Failed: ${critique.reason}`,
     };
     await writeItem(itemDir, item);
     return { success: true, item };

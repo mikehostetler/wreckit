@@ -11,6 +11,7 @@ const createMockLogger = (): Logger => ({
   warn: mock(() => {}),
   error: mock(() => {}),
   debug: mock(() => {}),
+  json: mock(() => {}),
 });
 
 async function setupTestRepo(tempDir: string): Promise<void> {
@@ -38,7 +39,7 @@ async function setupTestRepo(tempDir: string): Promise<void> {
   };
   await fs.writeFile(
     path.join(wreckitDir, "config.json"),
-    JSON.stringify(config, null, 2)
+    JSON.stringify(config, null, 2),
   );
 }
 
@@ -47,7 +48,9 @@ describe("strategyCommand", () => {
   let logger: Logger;
 
   beforeEach(async () => {
-    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "wreckit-strategy-test-"));
+    tempDir = await fs.mkdtemp(
+      path.join(os.tmpdir(), "wreckit-strategy-test-"),
+    );
     await setupTestRepo(tempDir);
     logger = createMockLogger();
   });
@@ -62,11 +65,14 @@ describe("strategyCommand", () => {
         dryRun: true,
         cwd: tempDir,
       },
-      logger
+      logger,
     );
 
     const roadmapPath = path.join(tempDir, "ROADMAP.md");
-    const exists = await fs.access(roadmapPath).then(() => true).catch(() => false);
+    const exists = await fs
+      .access(roadmapPath)
+      .then(() => true)
+      .catch(() => false);
     expect(exists).toBe(false);
 
     // Should have logged dry-run info
@@ -82,13 +88,13 @@ describe("strategyCommand", () => {
       {
         cwd: tempDir,
       },
-      logger
+      logger,
     );
 
     // Should have logged skip message
     const infoCalls = (logger.info as any).mock.calls;
     const hasSkipMessage = infoCalls.some((call: string[]) =>
-      call[0].includes("ROADMAP.md already exists")
+      call[0].includes("ROADMAP.md already exists"),
     );
     expect(hasSkipMessage).toBe(true);
   });
@@ -100,7 +106,7 @@ describe("strategyCommand", () => {
         cwd: tempDir,
         analyzeDirs: ["src", "lib", "tests"],
       },
-      logger
+      logger,
     );
 
     // Should have logged the analyze dirs
@@ -109,7 +115,7 @@ describe("strategyCommand", () => {
       (call: string[]) =>
         call[0].includes("src") &&
         call[0].includes("lib") &&
-        call[0].includes("tests")
+        call[0].includes("tests"),
     );
     expect(hasAnalyzeDirs).toBe(true);
   });

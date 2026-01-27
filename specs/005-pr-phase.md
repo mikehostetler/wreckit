@@ -21,36 +21,36 @@ Nothing ships without verification. The PR phase must validate that work is comp
 
 ### Guardrails Required
 
-| Guardrail | Purpose |
-|-----------|---------|
-| **Completion Verification** | All stories must be marked done |
-| **Git State Validation** | Clean working tree, correct branch, valid remote |
-| **Quality Gate** | Tests/lint/typecheck pass before push |
-| **Branch Protection** | Correct branch, no force-push, no history rewrite |
-| **Conflict Detection** | No merge conflicts or in-progress operations |
-| **Secret Scanning** | No credentials or sensitive data in diff |
+| Guardrail                   | Purpose                                           |
+| --------------------------- | ------------------------------------------------- |
+| **Completion Verification** | All stories must be marked done                   |
+| **Git State Validation**    | Clean working tree, correct branch, valid remote  |
+| **Quality Gate**            | Tests/lint/typecheck pass before push             |
+| **Branch Protection**       | Correct branch, no force-push, no history rewrite |
+| **Conflict Detection**      | No merge conflicts or in-progress operations      |
+| **Secret Scanning**         | No credentials or sensitive data in diff          |
 
 ### Critical Gaps (Current State)
 
 The current implementation has significant gaps:
 
-| Gap | Risk | Severity |
-|-----|------|----------|
+| Gap                               | Risk                                                      | Severity |
+| --------------------------------- | --------------------------------------------------------- | -------- |
 | **Preflight/commit ordering bug** | Preflight rejects dirty state, but auto-commit never runs | Critical |
-| **No test/lint gate** | Broken code can be pushed | High |
-| **No secret scanning** | Credentials can be committed | High |
-| **Direct merge bypasses review** | Broken code ships immediately | High |
-| **No conflict pre-check** | Merge failures leave repo in bad state | Medium |
-| **No remote validation** | Could push to wrong repository | Medium |
+| **No test/lint gate**             | Broken code can be pushed                                 | High     |
+| **No secret scanning**            | Credentials can be committed                              | High     |
+| **Direct merge bypasses review**  | Broken code ships immediately                             | High     |
+| **No conflict pre-check**         | Merge failures leave repo in bad state                    | Medium   |
+| **No remote validation**          | Could push to wrong repository                            | Medium   |
 
 ---
 
 ## State Transitions
 
-| Mode   | Transition                  |
-|--------|-----------------------------|
-| PR     | `implementing` → `in_pr`    |
-| Direct | `implementing` → `done`     |
+| Mode   | Transition               |
+| ------ | ------------------------ |
+| PR     | `implementing` → `in_pr` |
+| Direct | `implementing` → `done`  |
 
 ## Triggers
 
@@ -92,23 +92,23 @@ Validates the git repository state before proceeding.
 
 ### Current Checks
 
-| Check | Validation | Recovery |
-|-------|------------|----------|
-| Is git repo | `.git` directory exists | Initialize with `git init` |
-| Not detached HEAD | Attached to a branch | Checkout a branch |
-| Clean working tree | No uncommitted changes | Auto-commit or stash |
+| Check              | Validation              | Recovery                   |
+| ------------------ | ----------------------- | -------------------------- |
+| Is git repo        | `.git` directory exists | Initialize with `git init` |
+| Not detached HEAD  | Attached to a branch    | Checkout a branch          |
+| Clean working tree | No uncommitted changes  | Auto-commit or stash       |
 
 ### Missing Checks (Recommended)
 
-| Check | Purpose | Risk if Missing |
-|-------|---------|-----------------|
-| Remote exists | Ensure push target configured | Push fails with confusing error |
-| Correct remote URL | Prevent pushing to wrong repo | Code pushed to wrong repository |
-| No merge in progress | Detect `.git/MERGE_HEAD` | Merge completes unexpectedly |
-| No rebase in progress | Detect `.git/REBASE_HEAD` | Rebase completes unexpectedly |
-| No unmerged paths | Detect conflict markers | Conflict markers committed |
-| Base branch up-to-date | Fetch before branching | Branch from stale base |
-| Branch not diverged | Local matches upstream | Push rejection |
+| Check                  | Purpose                       | Risk if Missing                 |
+| ---------------------- | ----------------------------- | ------------------------------- |
+| Remote exists          | Ensure push target configured | Push fails with confusing error |
+| Correct remote URL     | Prevent pushing to wrong repo | Code pushed to wrong repository |
+| No merge in progress   | Detect `.git/MERGE_HEAD`      | Merge completes unexpectedly    |
+| No rebase in progress  | Detect `.git/REBASE_HEAD`     | Rebase completes unexpectedly   |
+| No unmerged paths      | Detect conflict markers       | Conflict markers committed      |
+| Base branch up-to-date | Fetch before branching        | Branch from stale base          |
+| Branch not diverged    | Local matches upstream        | Push rejection                  |
 
 ### Failure Behavior
 
@@ -195,12 +195,12 @@ Merges directly to the base branch without a pull request.
 
 Direct mode bypasses critical safeguards:
 
-| Bypassed Safeguard | Risk |
-|--------------------|------|
-| PR review | No human verification of changes |
+| Bypassed Safeguard        | Risk                                |
+| ------------------------- | ----------------------------------- |
+| PR review                 | No human verification of changes    |
 | GitHub branch protections | Circumvents required reviews/checks |
-| CI required checks | Broken code ships immediately |
-| CODEOWNERS review | Domain experts not notified |
+| CI required checks        | Broken code ships immediately       |
+| CODEOWNERS review         | Domain experts not notified         |
 
 **Recommendation:** Direct mode should be:
 
@@ -254,11 +254,13 @@ This is a **warning only** - the PR is still created with defaults.
 Occurs when feature branch cannot be cleanly merged into base.
 
 **Current Behavior:**
+
 - Merge fails with error
 - Repo may be left in mid-merge state
 - No automatic cleanup
 
 **Recommended Behavior:**
+
 - Detect conflicts before starting merge
 - On failure, run `git merge --abort` to restore clean state
 - Return structured recovery steps
@@ -271,14 +273,14 @@ The PR phase should include quality gates before pushing:
 
 ### Pre-Push Verification
 
-| Gate | Purpose | Configurable |
-|------|---------|--------------|
-| Stories complete | All PRD stories marked done | No (required) |
-| Tests pass | Run configured test command | Yes |
-| Lint passes | Run configured lint command | Yes |
-| Typecheck passes | Run configured typecheck command | Yes |
-| Build succeeds | Run configured build command | Yes |
-| No secrets | Scan diff for credential patterns | Yes |
+| Gate             | Purpose                           | Configurable  |
+| ---------------- | --------------------------------- | ------------- |
+| Stories complete | All PRD stories marked done       | No (required) |
+| Tests pass       | Run configured test command       | Yes           |
+| Lint passes      | Run configured lint command       | Yes           |
+| Typecheck passes | Run configured typecheck command  | Yes           |
+| Build succeeds   | Run configured build command      | Yes           |
+| No secrets       | Scan diff for credential patterns | Yes           |
 
 ### Configuration
 
@@ -308,14 +310,14 @@ Before commit/push, scan for common credential patterns:
 
 ### Patterns to Detect
 
-| Pattern | Example |
-|---------|---------|
-| Private keys | `BEGIN PRIVATE KEY`, `BEGIN RSA PRIVATE KEY` |
-| AWS keys | `AKIA...` (20 character key IDs) |
-| GitHub tokens | `ghp_`, `github_pat_`, `gho_` |
-| Slack tokens | `xoxb-`, `xoxp-` |
-| Generic secrets | `password=`, `secret=`, `api_key=` |
-| Env files | `.env` additions |
+| Pattern         | Example                                      |
+| --------------- | -------------------------------------------- |
+| Private keys    | `BEGIN PRIVATE KEY`, `BEGIN RSA PRIVATE KEY` |
+| AWS keys        | `AKIA...` (20 character key IDs)             |
+| GitHub tokens   | `ghp_`, `github_pat_`, `gho_`                |
+| Slack tokens    | `xoxb-`, `xoxp-`                             |
+| Generic secrets | `password=`, `secret=`, `api_key=`           |
+| Env files       | `.env` additions                             |
 
 ### Behavior
 
@@ -329,19 +331,19 @@ Before commit/push, scan for common credential patterns:
 
 ### PR Mode Recovery
 
-| Scenario | Recovery |
-|----------|----------|
-| PR creation failed | Fix issue, re-run `wreckit pr <id>` |
-| PR exists but needs update | Re-run updates existing PR |
-| PR merged incorrectly | Use GitHub "Revert" feature |
+| Scenario                   | Recovery                            |
+| -------------------------- | ----------------------------------- |
+| PR creation failed         | Fix issue, re-run `wreckit pr <id>` |
+| PR exists but needs update | Re-run updates existing PR          |
+| PR merged incorrectly      | Use GitHub "Revert" feature         |
 
 ### Direct Mode Recovery
 
-| Scenario | Recovery |
-|----------|----------|
+| Scenario             | Recovery                                      |
+| -------------------- | --------------------------------------------- |
 | Merge failed mid-way | Run `git merge --abort`, fix conflicts, retry |
-| Bad code merged | Manual `git revert <sha>` on base branch |
-| Need to undo | Rollback to recorded SHA (if captured) |
+| Bad code merged      | Manual `git revert <sha>` on base branch      |
+| Need to undo         | Rollback to recorded SHA (if captured)        |
 
 ### Rollback Anchors (Recommended)
 
@@ -352,6 +354,7 @@ Before direct merge, capture rollback information:
 3. Optionally create backup ref: `refs/wreckit/backup/<item-id>`
 
 This enables recovery commands:
+
 - `git reset --hard <rollback_sha>` (local)
 - `git push --force origin <base_branch>` (requires force-push permission)
 
@@ -359,34 +362,37 @@ This enables recovery commands:
 
 The PR phase is designed to be safely re-runnable.
 
-| Scenario | Behavior |
-|----------|----------|
-| PR already exists | Updates existing PR |
-| Branch already pushed | No-op on push (already up-to-date) |
-| Partial failure | Resumes from failed step |
-| Auth fixed | Retries previously failed operations |
+| Scenario              | Behavior                             |
+| --------------------- | ------------------------------------ |
+| PR already exists     | Updates existing PR                  |
+| Branch already pushed | No-op on push (already up-to-date)   |
+| Partial failure       | Resumes from failed step             |
+| Auth fixed            | Retries previously failed operations |
 
 ## Configuration Options
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `base_branch` | string | `"main"` | Target branch for PRs/merges |
-| `branch_prefix` | string | `"wreckit/"` | Prefix for feature branches |
-| `merge_mode` | `"pr"` or `"direct"` | `"pr"` | How to deliver completed work |
+| Option          | Type                 | Default      | Description                   |
+| --------------- | -------------------- | ------------ | ----------------------------- |
+| `base_branch`   | string               | `"main"`     | Target branch for PRs/merges  |
+| `branch_prefix` | string               | `"wreckit/"` | Prefix for feature branches   |
+| `merge_mode`    | `"pr"` or `"direct"` | `"pr"`       | How to deliver completed work |
 
 ### Example Configurations
 
 **Standard PR Workflow:**
+
 - `base_branch`: `main`
 - `branch_prefix`: `wreckit/`
 - `merge_mode`: `pr`
 
 **Direct Merge (Greenfield):**
+
 - `base_branch`: `main`
 - `branch_prefix`: `wreckit/`
 - `merge_mode`: `direct`
 
 **Develop Branch Target:**
+
 - `base_branch`: `develop`
 - `branch_prefix`: `feature/wreckit-`
 - `merge_mode`: `pr`
@@ -395,23 +401,23 @@ The PR phase is designed to be safely re-runnable.
 
 ## Implementation Status
 
-| Feature | Status | Notes |
-|---------|--------|-------|
-| **Core PR phase** | ✅ Implemented | See `src/workflow/itemWorkflow.ts:runPhasePr` |
-| **PR mode (create/update PR)** | ✅ Implemented | Uses `gh` CLI |
-| **Direct mode (merge to base)** | ✅ Implemented | Configurable via `merge_mode` |
-| **Branch management** | ✅ Implemented | Creates/switches to feature branch |
-| **Auto-commit** | ✅ Implemented | Commits uncommitted changes |
-| **PR description generation** | ✅ Implemented | Agent generates title/body |
-| **Git preflight checks** | ✅ Implemented | Validates repo state |
-| **Pre-push quality gates** | ✅ Implemented | See `src/git/quality.ts:runPrePushQualityGates` |
-| **Secret scanning** | ✅ Implemented | See `src/git/quality.ts:scanForSecrets` |
-| **Conflict pre-check** | ✅ Implemented | See `src/git/index.ts:checkMergeConflicts` |
-| **Remote URL validation** | ✅ Implemented | See `src/git/index.ts:validateRemoteUrl` |
-| **Mergeability check after PR** | ✅ Implemented | See `src/git/index.ts:checkPrMergeability` |
-| **State transitions** | ✅ Implemented | `implementing` → `in_pr` (PR mode) or `done` (direct) |
-| **Error handling** | ✅ Implemented | `last_error` set on failure |
-| **Dry-run mode** | ✅ Implemented | `--dry-run` flag works |
+| Feature                         | Status         | Notes                                                 |
+| ------------------------------- | -------------- | ----------------------------------------------------- |
+| **Core PR phase**               | ✅ Implemented | See `src/workflow/itemWorkflow.ts:runPhasePr`         |
+| **PR mode (create/update PR)**  | ✅ Implemented | Uses `gh` CLI                                         |
+| **Direct mode (merge to base)** | ✅ Implemented | Configurable via `merge_mode`                         |
+| **Branch management**           | ✅ Implemented | Creates/switches to feature branch                    |
+| **Auto-commit**                 | ✅ Implemented | Commits uncommitted changes                           |
+| **PR description generation**   | ✅ Implemented | Agent generates title/body                            |
+| **Git preflight checks**        | ✅ Implemented | Validates repo state                                  |
+| **Pre-push quality gates**      | ✅ Implemented | See `src/git/quality.ts:runPrePushQualityGates`       |
+| **Secret scanning**             | ✅ Implemented | See `src/git/quality.ts:scanForSecrets`               |
+| **Conflict pre-check**          | ✅ Implemented | See `src/git/index.ts:checkMergeConflicts`            |
+| **Remote URL validation**       | ✅ Implemented | See `src/git/index.ts:validateRemoteUrl`              |
+| **Mergeability check after PR** | ✅ Implemented | See `src/git/index.ts:checkPrMergeability`            |
+| **State transitions**           | ✅ Implemented | `implementing` → `in_pr` (PR mode) or `done` (direct) |
+| **Error handling**              | ✅ Implemented | `last_error` set on failure                           |
+| **Dry-run mode**                | ✅ Implemented | `--dry-run` flag works                                |
 
 ---
 
@@ -440,6 +446,7 @@ The PR phase is designed to be safely re-runnable.
 Direct merge mode skips PR review, CI checks, and branch protections.
 
 **Status:** Fixed - Same quality gates run before direct merge. Rollback anchors implemented:
+
 - `rollback_sha` captured before merge and stored in item metadata
 - `wreckit rollback <id>` command resets base branch to pre-merge state
 - Rollback instructions logged during merge

@@ -83,9 +83,14 @@ describe("ItemsPane", () => {
 
       // Simulate the scroll calculation from ItemsPane
       const height = 10;
-      const activeIndex = state.items.findIndex((item) => item.id === state.currentItem);
+      const activeIndex = state.items.findIndex(
+        (item) => item.id === state.currentItem,
+      );
       const middleOffset = Math.floor(height / 2);
-      const scrollOffset = Math.max(0, Math.min(activeIndex - middleOffset, state.items.length - height));
+      const scrollOffset = Math.max(
+        0,
+        Math.min(activeIndex - middleOffset, state.items.length - height),
+      );
 
       expect(scrollOffset).toBe(0); // item5 - 5 = 0
     });
@@ -101,9 +106,14 @@ describe("ItemsPane", () => {
       });
 
       const height = 10;
-      const activeIndex = state.items.findIndex((item) => item.id === state.currentItem);
+      const activeIndex = state.items.findIndex(
+        (item) => item.id === state.currentItem,
+      );
       const middleOffset = Math.floor(height / 2);
-      const scrollOffset = Math.max(0, Math.min(activeIndex - middleOffset, state.items.length - height));
+      const scrollOffset = Math.max(
+        0,
+        Math.min(activeIndex - middleOffset, state.items.length - height),
+      );
 
       expect(scrollOffset).toBe(10); // item15 - 5 = 10
     });
@@ -119,10 +129,15 @@ describe("ItemsPane", () => {
       });
 
       const height = 10;
-      const activeIndex = state.items.findIndex((item) => item.id === state.currentItem);
+      const activeIndex = state.items.findIndex(
+        (item) => item.id === state.currentItem,
+      );
       const middleOffset = Math.floor(height / 2);
       const maxOffset = state.items.length - height;
-      const scrollOffset = Math.max(0, Math.min(activeIndex - middleOffset, maxOffset));
+      const scrollOffset = Math.max(
+        0,
+        Math.min(activeIndex - middleOffset, maxOffset),
+      );
 
       expect(scrollOffset).toBe(maxOffset); // Should be limited to 10
     });
@@ -138,11 +153,16 @@ describe("ItemsPane", () => {
       });
 
       const height = 10;
-      const activeIndex = state.items.findIndex((item) => item.id === state.currentItem);
+      const activeIndex = state.items.findIndex(
+        (item) => item.id === state.currentItem,
+      );
       let scrollOffset = 0;
       if (activeIndex >= 0) {
         const middleOffset = Math.floor(height / 2);
-        scrollOffset = Math.max(0, Math.min(activeIndex - middleOffset, state.items.length - height));
+        scrollOffset = Math.max(
+          0,
+          Math.min(activeIndex - middleOffset, state.items.length - height),
+        );
       }
 
       expect(scrollOffset).toBe(0);
@@ -159,9 +179,14 @@ describe("ItemsPane", () => {
       });
 
       const height = 10;
-      const activeIndex = state.items.findIndex((item) => item.id === state.currentItem);
+      const activeIndex = state.items.findIndex(
+        (item) => item.id === state.currentItem,
+      );
       const middleOffset = Math.floor(height / 2);
-      const scrollOffset = Math.max(0, Math.min(activeIndex - middleOffset, state.items.length - height));
+      const scrollOffset = Math.max(
+        0,
+        Math.min(activeIndex - middleOffset, state.items.length - height),
+      );
 
       expect(scrollOffset).toBe(0); // maxOffset is negative, so Math.max(0, negative) = 0
     });
@@ -213,7 +238,8 @@ describe("ItemsPane", () => {
       const height = 10;
       const showScrollIndicator = true;
 
-      const showMoreBelow = showScrollIndicator && scrollOffset + height < itemsLength;
+      const showMoreBelow =
+        showScrollIndicator && scrollOffset + height < itemsLength;
 
       expect(showMoreBelow).toBe(true);
     });
@@ -224,7 +250,8 @@ describe("ItemsPane", () => {
       const height = 10;
       const showScrollIndicator = true;
 
-      const showMoreBelow = showScrollIndicator && scrollOffset + height < itemsLength;
+      const showMoreBelow =
+        showScrollIndicator && scrollOffset + height < itemsLength;
 
       expect(showMoreBelow).toBe(false); // 10 + 10 = 20, not < 20
     });

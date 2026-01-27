@@ -1,4 +1,13 @@
-import { describe, it, expect, mock, spyOn, beforeEach, afterEach, vi } from "bun:test";
+import {
+  describe,
+  it,
+  expect,
+  mock,
+  spyOn,
+  beforeEach,
+  afterEach,
+  vi,
+} from "bun:test";
 import type { IndexItem } from "../schemas";
 import type { Logger } from "../logging";
 import {
@@ -36,7 +45,10 @@ describe("TUI", () => {
     it("creates state from items", () => {
       const items = [
         createTestItem({ id: "foundation/001-core-types", state: "done" }),
-        createTestItem({ id: "foundation/002-api-layer", state: "implementing" }),
+        createTestItem({
+          id: "foundation/002-api-layer",
+          state: "implementing",
+        }),
         createTestItem({ id: "features/001-auth", state: "idea" }),
       ];
 
@@ -272,13 +284,19 @@ describe("TUI", () => {
       originalLog = console.log;
       console.clear = vi.fn();
       console.log = vi.fn();
-      Object.defineProperty(process.stdin, "isTTY", { value: false, configurable: true });
+      Object.defineProperty(process.stdin, "isTTY", {
+        value: false,
+        configurable: true,
+      });
     });
 
     afterEach(() => {
       console.clear = originalClear;
       console.log = originalLog;
-      Object.defineProperty(process.stdin, "isTTY", { value: originalIsTTY, configurable: true });
+      Object.defineProperty(process.stdin, "isTTY", {
+        value: originalIsTTY,
+        configurable: true,
+      });
     });
 
     it("creates runner without error", () => {
@@ -319,7 +337,9 @@ describe("TUI", () => {
       runner.update({ currentItem: "test" });
 
       expect(callback).toHaveBeenCalledTimes(2);
-      expect(callback).toHaveBeenLastCalledWith(expect.objectContaining({ currentItem: "test" }));
+      expect(callback).toHaveBeenLastCalledWith(
+        expect.objectContaining({ currentItem: "test" }),
+      );
     });
 
     it("unsubscribe stops notifications", () => {
@@ -370,7 +390,7 @@ describe("TUI", () => {
       progress.fail("item1", "something went wrong");
 
       expect(logger.error).toHaveBeenCalledWith(
-        "[item1] ✗ failed: something went wrong"
+        "[item1] ✗ failed: something went wrong",
       );
     });
   });

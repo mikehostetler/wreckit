@@ -94,41 +94,61 @@ export const LegacyAgentConfigSchema = z.object({
  * Context requirement for a skill.
  * Specifies what context the skill needs for JIT loading.
  */
-export const SkillContextRequirementSchema = z.object({
-  type: z.enum(["file", "git_status", "item_metadata", "phase_artifact"]),
-  path: z.string().optional(), // For type="file" or type="phase_artifact"
-  description: z.string().optional(),
-}).optional();
+export const SkillContextRequirementSchema = z
+  .object({
+    type: z.enum(["file", "git_status", "item_metadata", "phase_artifact"]),
+    path: z.string().optional(), // For type="file" or type="phase_artifact"
+    description: z.string().optional(),
+  })
+  .optional();
 
 /**
  * A skill defines reusable capabilities (tools, MCP servers, context)
  * that can be loaded for specific phases.
  */
-export const SkillSchema = z.object({
-  id: z.string().describe("Unique skill identifier (e.g., 'code-analysis', 'test-generation')"),
-  name: z.string().describe("Human-readable skill name"),
-  description: z.string().describe("What this skill provides and when to use it"),
-  tools: z.array(z.string()).describe("Tool names required by this skill"),
-  mcp_servers: z.record(z.string(), z.any()).optional().describe("MCP servers to attach (advanced usage)"),
-  required_context: z.array(SkillContextRequirementSchema).optional().describe("JIT context requirements"),
-}).strict();
+export const SkillSchema = z
+  .object({
+    id: z
+      .string()
+      .describe(
+        "Unique skill identifier (e.g., 'code-analysis', 'test-generation')",
+      ),
+    name: z.string().describe("Human-readable skill name"),
+    description: z
+      .string()
+      .describe("What this skill provides and when to use it"),
+    tools: z.array(z.string()).describe("Tool names required by this skill"),
+    mcp_servers: z
+      .record(z.string(), z.any())
+      .optional()
+      .describe("MCP servers to attach (advanced usage)"),
+    required_context: z
+      .array(SkillContextRequirementSchema)
+      .optional()
+      .describe("JIT context requirements"),
+  })
+  .strict();
 
 /**
  * Maps phase names to skill IDs that should be loaded for that phase.
  */
 export const PhaseSkillsMappingSchema = z.record(
   z.string(), // phase name (e.g., "research", "implement")
-  z.array(z.string()) // array of skill IDs
+  z.array(z.string()), // array of skill IDs
 );
 
 /**
  * Skill configuration for wreckit.
  * Maps phases to skills and defines the skill library.
  */
-export const SkillConfigSchema = z.object({
-  phase_skills: PhaseSkillsMappingSchema.describe("Phase -> skill IDs mapping"),
-  skills: z.array(SkillSchema).describe("Available skill definitions"),
-}).strict();
+export const SkillConfigSchema = z
+  .object({
+    phase_skills: PhaseSkillsMappingSchema.describe(
+      "Phase -> skill IDs mapping",
+    ),
+    skills: z.array(SkillSchema).describe("Available skill definitions"),
+  })
+  .strict();
 
 // ============================================================
 // Doctor Configuration Schema (Item 038 - Agent Doctor Self-Healing Runtime)
@@ -149,12 +169,25 @@ export const DoctorAutoRepairModeSchema = z.union([
 /**
  * Doctor configuration for automatic self-healing
  */
-export const DoctorConfigSchema = z.object({
-  enabled: z.boolean().default(true).describe("Enable automatic self-healing"),
-  auto_repair: DoctorAutoRepairModeSchema.default("safe-only").describe("What repairs are allowed"),
-  max_retries: z.number().default(3).describe("Max retry attempts after healing"),
-  timeout_ms: z.number().default(300000).describe("Timeout for healing operations (default 5 minutes)"),
-}).strict();
+export const DoctorConfigSchema = z
+  .object({
+    enabled: z
+      .boolean()
+      .default(true)
+      .describe("Enable automatic self-healing"),
+    auto_repair: DoctorAutoRepairModeSchema.default("safe-only").describe(
+      "What repairs are allowed",
+    ),
+    max_retries: z
+      .number()
+      .default(3)
+      .describe("Max retry attempts after healing"),
+    timeout_ms: z
+      .number()
+      .default(300000)
+      .describe("Timeout for healing operations (default 5 minutes)"),
+  })
+  .strict();
 
 export const ConfigSchema = z.object({
   schema_version: z.number().default(1),
@@ -261,8 +294,14 @@ export const BatchProgressSchema = z.object({
   skipped: z.array(z.string()), // Already done at session start
 
   // Healing metrics (Item 038)
-  healing_attempts: z.number().default(0).describe("Number of healing attempts this session"),
-  last_healing_at: z.string().nullable().describe("ISO timestamp of last healing event"),
+  healing_attempts: z
+    .number()
+    .default(0)
+    .describe("Number of healing attempts this session"),
+  last_healing_at: z
+    .string()
+    .nullable()
+    .describe("ISO timestamp of last healing event"),
 });
 
 export type WorkflowState = z.infer<typeof ItemStateSchema>;
@@ -287,7 +326,9 @@ export type AgentConfigUnion = z.infer<typeof AgentConfigUnionSchema>;
 export type BatchProgress = z.infer<typeof BatchProgressSchema>;
 
 // Type exports for skill configuration (Item 033)
-export type SkillContextRequirement = z.infer<typeof SkillContextRequirementSchema>;
+export type SkillContextRequirement = z.infer<
+  typeof SkillContextRequirementSchema
+>;
 export type Skill = z.infer<typeof SkillSchema>;
 export type PhaseSkillsMapping = z.infer<typeof PhaseSkillsMappingSchema>;
 export type SkillConfig = z.infer<typeof SkillConfigSchema>;

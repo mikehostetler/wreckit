@@ -54,9 +54,8 @@ describe("Footer", () => {
       const completedCount = 5;
       const totalCount = 10;
 
-      const progressPercent = totalCount > 0
-        ? Math.round((completedCount / totalCount) * 100)
-        : 0;
+      const progressPercent =
+        totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
       expect(progressPercent).toBe(50);
     });
@@ -65,9 +64,8 @@ describe("Footer", () => {
       const completedCount = 0;
       const totalCount = 0;
 
-      const progressPercent = totalCount > 0
-        ? Math.round((completedCount / totalCount) * 100)
-        : 0;
+      const progressPercent =
+        totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
       expect(progressPercent).toBe(0);
     });
@@ -76,9 +74,8 @@ describe("Footer", () => {
       const completedCount = 3;
       const totalCount = 10;
 
-      const progressPercent = totalCount > 0
-        ? Math.round((completedCount / totalCount) * 100)
-        : 0;
+      const progressPercent =
+        totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
       expect(progressPercent).toBe(30);
     });
@@ -87,9 +84,8 @@ describe("Footer", () => {
       const completedCount = 10;
       const totalCount = 10;
 
-      const progressPercent = totalCount > 0
-        ? Math.round((completedCount / totalCount) * 100)
-        : 0;
+      const progressPercent =
+        totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
       expect(progressPercent).toBe(100);
     });
@@ -133,7 +129,8 @@ describe("Footer", () => {
       const filledWidth = 10;
       const barWidth = 20;
 
-      const progressBar = "█".repeat(filledWidth) + "░".repeat(barWidth - filledWidth);
+      const progressBar =
+        "█".repeat(filledWidth) + "░".repeat(barWidth - filledWidth);
 
       expect(progressBar).toHaveLength(20);
       expect(progressBar.slice(0, 10)).toBe("██████████");
@@ -144,7 +141,8 @@ describe("Footer", () => {
       const filledWidth = 0;
       const barWidth = 20;
 
-      const progressBar = "█".repeat(filledWidth) + "░".repeat(barWidth - filledWidth);
+      const progressBar =
+        "█".repeat(filledWidth) + "░".repeat(barWidth - filledWidth);
 
       expect(progressBar).toBe("░░░░░░░░░░░░░░░░░░░░");
     });
@@ -153,7 +151,8 @@ describe("Footer", () => {
       const filledWidth = 20;
       const barWidth = 20;
 
-      const progressBar = "█".repeat(filledWidth) + "░".repeat(barWidth - filledWidth);
+      const progressBar =
+        "█".repeat(filledWidth) + "░".repeat(barWidth - filledWidth);
 
       expect(progressBar).toBe("████████████████████");
     });
@@ -195,7 +194,10 @@ describe("Footer", () => {
       const progressText = "Progress: 5/10 complete | Runtime: 00:00:00";
       const barWidth = 20;
 
-      const padding = Math.max(0, width - 4 - progressText.length - barWidth - 4);
+      const padding = Math.max(
+        0,
+        width - 4 - progressText.length - barWidth - 4,
+      );
 
       expect(padding).toBeGreaterThan(0);
     });

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "bun:test";
 import {
-  WorkflowStateSchema,
+  ItemStateSchema,
   StoryStatusSchema,
   ConfigSchema,
   ItemSchema,
@@ -11,16 +11,24 @@ import {
   BatchProgressSchema,
 } from "../schemas";
 
-describe("WorkflowStateSchema", () => {
+describe("ItemStateSchema", () => {
   it("accepts valid states", () => {
-    const states = ["idea", "researched", "planned", "implementing", "in_pr", "done"];
+    const states = [
+      "idea",
+      "researched",
+      "planned",
+      "implementing",
+      "critique",
+      "in_pr",
+      "done",
+    ] as const;
     for (const state of states) {
-      expect(WorkflowStateSchema.parse(state)).toBe(state);
+      expect(ItemStateSchema.parse(state)).toBe(state);
     }
   });
 
   it("rejects invalid state", () => {
-    expect(() => WorkflowStateSchema.parse("invalid")).toThrow();
+    expect(() => ItemStateSchema.parse("invalid")).toThrow();
   });
 });
 
@@ -108,7 +116,7 @@ describe("ItemSchema", () => {
       last_error: null,
       created_at: "2025-01-12T00:00:00Z",
       updated_at: "2025-01-12T00:00:00Z",
-    };
+    } as const;
     const result = ItemSchema.parse(item);
     expect(result).toEqual(item);
   });
@@ -244,7 +252,7 @@ describe("StorySchema", () => {
       title: "Story title",
       acceptance_criteria: ["Criterion 1", "Criterion 2"],
       priority: 1,
-      status: "pending",
+      status: "pending" as const,
       notes: "",
     };
     const result = StorySchema.parse(story);
@@ -287,7 +295,7 @@ describe("StorySchema", () => {
 describe("PrdSchema", () => {
   it("parses valid prd from SPEC", () => {
     const prd = {
-      schema_version: 1,
+      schema_version: 1 as const,
       id: "section/001-slug",
       branch_name: "wreckit/001-slug",
       user_stories: [
@@ -296,7 +304,7 @@ describe("PrdSchema", () => {
           title: "Story title",
           acceptance_criteria: ["Criterion 1", "Criterion 2"],
           priority: 1,
-          status: "pending",
+          status: "pending" as const,
           notes: "",
         },
       ],
@@ -331,7 +339,7 @@ describe("IndexItemSchema", () => {
       id: "foundation/001-core-types",
       state: "idea",
       title: "Core Types",
-    };
+    } as const;
     const result = IndexItemSchema.parse(indexItem);
     expect(result).toEqual(indexItem);
   });
@@ -372,7 +380,11 @@ describe("IndexSchema", () => {
     const index = {
       schema_version: 1,
       items: [
-        { id: "foundation/001-core-types", state: "idea", title: "Core Types" },
+        {
+          id: "foundation/001-core-types",
+          state: "idea" as const,
+          title: "Core Types",
+        },
       ],
       generated_at: "2025-01-12T00:00:00Z",
     };
@@ -401,7 +413,7 @@ describe("IndexSchema", () => {
 describe("BatchProgressSchema", () => {
   it("parses valid batch progress", () => {
     const progress = {
-      schema_version: 1,
+      schema_version: 1 as const,
       session_id: "abc-123",
       pid: 12345,
       started_at: "2025-01-12T00:00:00Z",
@@ -409,9 +421,11 @@ describe("BatchProgressSchema", () => {
       parallel: 1,
       queued_items: ["001-test", "002-test"],
       current_item: "001-test",
-      completed: [],
-      failed: [],
-      skipped: [],
+      completed: [] as string[],
+      failed: [] as string[],
+      skipped: [] as string[],
+      healing_attempts: 0,
+      last_healing_at: null,
     };
     const result = BatchProgressSchema.parse(progress);
     expect(result).toEqual(progress);
@@ -430,6 +444,8 @@ describe("BatchProgressSchema", () => {
       completed: ["001-done"],
       failed: [],
       skipped: ["002-skip"],
+      healing_attempts: 0,
+      last_healing_at: null,
     };
     const result = BatchProgressSchema.parse(progress);
     expect(result.current_item).toBeNull();

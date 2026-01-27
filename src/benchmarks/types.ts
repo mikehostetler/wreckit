@@ -71,5 +71,5 @@ export type BenchmarkProgressCallback = (
   phase: string,
   current: number,
   total: number,
-  message?: string
+  message?: string,
 ) => void;

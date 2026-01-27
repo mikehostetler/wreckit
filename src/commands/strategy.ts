@@ -34,7 +34,7 @@ export interface StrategyOptions {
  */
 export async function strategyCommand(
   options: StrategyOptions,
-  logger: Logger
+  logger: Logger,
 ): Promise<void> {
   const root = findRootFromOptions(options);
   const config = await loadConfig(root);
@@ -42,9 +42,7 @@ export async function strategyCommand(
 
   // Check if ROADMAP.md exists (skip unless --force)
   if (!options.force && (await pathExists(roadmapPath))) {
-    logger.info(
-      "ROADMAP.md already exists. Use --force to regenerate."
-    );
+    logger.info("ROADMAP.md already exists. Use --force to regenerate.");
     return;
   }
 
@@ -125,7 +123,7 @@ export async function strategyCommand(
     const error = formatViolations(comparison, "strategy");
     logger.error(error);
     throw new Error(
-      "Strategy phase modified files other than ROADMAP.md. This violates the strategy phase constraints."
+      "Strategy phase modified files other than ROADMAP.md. This violates the strategy phase constraints.",
     );
   }
 
@@ -139,5 +137,7 @@ export async function strategyCommand(
     throw new Error(errorMsg);
   }
 
-  logger.info(`Strategy analysis complete. ROADMAP.md created at ${roadmapPath}`);
+  logger.info(
+    `Strategy analysis complete. ROADMAP.md created at ${roadmapPath}`,
+  );
 }

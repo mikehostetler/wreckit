@@ -30,7 +30,7 @@ export const program = new Command();
 program
   .name("wreckit")
   .description(
-    "A CLI tool for turning ideas into automated PRs through an autonomous agent loop"
+    "A CLI tool for turning ideas into automated PRs through an autonomous agent loop",
   )
   .version("0.0.1")
   .option("--verbose", "Enable verbose output")
@@ -41,7 +41,7 @@ program
   .option("--dry-run", "Show what would be done without making changes")
   .option(
     "--mock-agent",
-    "Simulate agent responses without calling the real agent"
+    "Simulate agent responses without calling the real agent",
   )
   .option("--parallel <n>", "Process N items in parallel (default: 1)", "1")
   .option("--no-resume", "Start fresh batch run, ignoring saved progress")
@@ -83,7 +83,7 @@ program.action(async () => {
           noHealing: opts.noHealing, // Pass through --no-healing flag (Item 038)
           agentKind, // Pass agent kind override
         },
-        logger
+        logger,
       );
 
       if (result.completed.length > 0) {
@@ -108,37 +108,37 @@ program.action(async () => {
       dryRun: opts.dryRun,
       noTui: opts.noTui,
       tuiDebug: opts.tuiDebug,
-    }
+    },
   );
 });
 
 program
-   .command("ideas")
-   .description("Ingest ideas from stdin, file, or interactive interview")
-   .option("-f, --file <path>", "Read ideas from file instead of stdin")
-   .action(async (options, cmd) => {
-     const globalOpts = cmd.optsWithGlobals();
-     await executeCommand(
-       async () => {
-         await ideasCommand(
-           {
-             file: options.file,
-             dryRun: globalOpts.dryRun,
-             cwd: resolveCwd(globalOpts.cwd),
-             verbose: globalOpts.verbose,
-           },
-           logger
-         );
-       },
-       logger,
-       {
-         verbose: globalOpts.verbose,
-         quiet: globalOpts.quiet,
-         dryRun: globalOpts.dryRun,
-         cwd: resolveCwd(globalOpts.cwd),
-       }
-     );
-   });
+  .command("ideas")
+  .description("Ingest ideas from stdin, file, or interactive interview")
+  .option("-f, --file <path>", "Read ideas from file instead of stdin")
+  .action(async (options, cmd) => {
+    const globalOpts = cmd.optsWithGlobals();
+    await executeCommand(
+      async () => {
+        await ideasCommand(
+          {
+            file: options.file,
+            dryRun: globalOpts.dryRun,
+            cwd: resolveCwd(globalOpts.cwd),
+            verbose: globalOpts.verbose,
+          },
+          logger,
+        );
+      },
+      logger,
+      {
+        verbose: globalOpts.verbose,
+        quiet: globalOpts.quiet,
+        dryRun: globalOpts.dryRun,
+        cwd: resolveCwd(globalOpts.cwd),
+      },
+    );
+  });
 
 program
   .command("status")
@@ -150,7 +150,7 @@ program
       async () => {
         await statusCommand(
           { json: options.json, cwd: resolveCwd(globalOpts.cwd) },
-          logger
+          logger,
         );
       },
       logger,
@@ -158,7 +158,7 @@ program
         verbose: globalOpts.verbose,
         quiet: globalOpts.quiet,
         cwd: resolveCwd(globalOpts.cwd),
-      }
+      },
     );
   });
 
@@ -166,7 +166,10 @@ program
   .command("list")
   .description("List items with optional filtering")
   .option("--json", "Output as JSON")
-  .option("--state <state>", "Filter by state (idea, researched, planned, implementing, in_pr, done)")
+  .option(
+    "--state <state>",
+    "Filter by state (idea, researched, planned, implementing, in_pr, done)",
+  )
   .action(async (options, cmd) => {
     const globalOpts = cmd.optsWithGlobals();
     await executeCommand(
@@ -177,7 +180,7 @@ program
             state: options.state,
             cwd: resolveCwd(globalOpts.cwd),
           },
-          logger
+          logger,
         );
       },
       logger,
@@ -185,7 +188,7 @@ program
         verbose: globalOpts.verbose,
         quiet: globalOpts.quiet,
         cwd: resolveCwd(globalOpts.cwd),
-      }
+      },
     );
   });
 
@@ -199,19 +202,15 @@ program
       async () => {
         const cwd = resolveCwd(globalOpts.cwd);
         const root = findRepoRoot(cwd);
-        const resolvedId = await resolveId(root, id, { logger });
-        await showCommand(
-          resolvedId,
-          { json: options.json, cwd },
-          logger
-        );
+        const resolvedId = await resolveId(root, id);
+        await showCommand(resolvedId, { json: options.json, cwd }, logger);
       },
       logger,
       {
         verbose: globalOpts.verbose,
         quiet: globalOpts.quiet,
         cwd: resolveCwd(globalOpts.cwd),
-      }
+      },
     );
   });
 
@@ -225,7 +224,7 @@ program
       async () => {
         const cwd = resolveCwd(globalOpts.cwd);
         const root = findRepoRoot(cwd);
-        const resolvedId = await resolveId(root, id, { logger });
+        const resolvedId = await resolveId(root, id);
         await runPhaseCommand(
           "research",
           resolvedId,
@@ -234,7 +233,7 @@ program
             dryRun: globalOpts.dryRun,
             cwd,
           },
-          logger
+          logger,
         );
       },
       logger,
@@ -243,7 +242,7 @@ program
         quiet: globalOpts.quiet,
         dryRun: globalOpts.dryRun,
         cwd: resolveCwd(globalOpts.cwd),
-      }
+      },
     );
   });
 
@@ -257,7 +256,7 @@ program
       async () => {
         const cwd = resolveCwd(globalOpts.cwd);
         const root = findRepoRoot(cwd);
-        const resolvedId = await resolveId(root, id, { logger });
+        const resolvedId = await resolveId(root, id);
         await runPhaseCommand(
           "plan",
           resolvedId,
@@ -266,7 +265,7 @@ program
             dryRun: globalOpts.dryRun,
             cwd,
           },
-          logger
+          logger,
         );
       },
       logger,
@@ -275,7 +274,7 @@ program
         quiet: globalOpts.quiet,
         dryRun: globalOpts.dryRun,
         cwd: resolveCwd(globalOpts.cwd),
-      }
+      },
     );
   });
 
@@ -289,7 +288,7 @@ program
       async () => {
         const cwd = resolveCwd(globalOpts.cwd);
         const root = findRepoRoot(cwd);
-        const resolvedId = await resolveId(root, id, { logger });
+        const resolvedId = await resolveId(root, id);
         await runPhaseCommand(
           "implement",
           resolvedId,
@@ -298,7 +297,7 @@ program
             dryRun: globalOpts.dryRun,
             cwd,
           },
-          logger
+          logger,
         );
       },
       logger,
@@ -307,7 +306,7 @@ program
         quiet: globalOpts.quiet,
         dryRun: globalOpts.dryRun,
         cwd: resolveCwd(globalOpts.cwd),
-      }
+      },
     );
   });
 
@@ -321,7 +320,7 @@ program
       async () => {
         const cwd = resolveCwd(globalOpts.cwd);
         const root = findRepoRoot(cwd);
-        const resolvedId = await resolveId(root, id, { logger });
+        const resolvedId = await resolveId(root, id);
         await runPhaseCommand(
           "pr",
           resolvedId,
@@ -330,7 +329,7 @@ program
             dryRun: globalOpts.dryRun,
             cwd,
           },
-          logger
+          logger,
         );
       },
       logger,
@@ -339,7 +338,7 @@ program
         quiet: globalOpts.quiet,
         dryRun: globalOpts.dryRun,
         cwd: resolveCwd(globalOpts.cwd),
-      }
+      },
     );
   });
 
@@ -352,12 +351,12 @@ program
       async () => {
         const cwd = resolveCwd(globalOpts.cwd);
         const root = findRepoRoot(cwd);
-        const resolvedId = await resolveId(root, id, { logger });
+        const resolvedId = await resolveId(root, id);
         await runPhaseCommand(
           "complete",
           resolvedId,
           { dryRun: globalOpts.dryRun, cwd },
-          logger
+          logger,
         );
       },
       logger,
@@ -366,7 +365,7 @@ program
         quiet: globalOpts.quiet,
         dryRun: globalOpts.dryRun,
         cwd: resolveCwd(globalOpts.cwd),
-      }
+      },
     );
   });
 
@@ -380,12 +379,12 @@ program
       async () => {
         const cwd = resolveCwd(globalOpts.cwd);
         const root = findRepoRoot(cwd);
-        const resolvedId = await resolveId(root, id, { logger });
+        const resolvedId = await resolveId(root, id);
         await runPhaseCommand(
           "critique",
           resolvedId,
           { force: options.force, dryRun: globalOpts.dryRun, cwd },
-          logger
+          logger,
         );
       },
       logger,
@@ -394,7 +393,7 @@ program
         quiet: globalOpts.quiet,
         dryRun: globalOpts.dryRun,
         cwd: resolveCwd(globalOpts.cwd),
-      }
+      },
     );
   });
 
@@ -408,7 +407,7 @@ program
       async () => {
         const cwd = resolveCwd(globalOpts.cwd);
         const root = findRepoRoot(cwd);
-        const resolvedId = await resolveId(root, id, { logger });
+        const resolvedId = await resolveId(root, id);
         const result = await rollbackCommand(
           resolvedId,
           {
@@ -416,7 +415,7 @@ program
             dryRun: globalOpts.dryRun,
             cwd,
           },
-          logger
+          logger,
         );
         if (!result.success) {
           throw new Error(result.error ?? "Rollback failed");
@@ -428,7 +427,7 @@ program
         quiet: globalOpts.quiet,
         dryRun: globalOpts.dryRun,
         cwd: resolveCwd(globalOpts.cwd),
-      }
+      },
     );
   });
 
@@ -442,7 +441,7 @@ program
       async () => {
         const cwd = resolveCwd(globalOpts.cwd);
         const root = findRepoRoot(cwd);
-        const resolvedId = await resolveId(root, id, { logger });
+        const resolvedId = await resolveId(root, id);
         await runCommand(
           resolvedId,
           {
@@ -450,7 +449,7 @@ program
             dryRun: globalOpts.dryRun,
             cwd,
           },
-          logger
+          logger,
         );
       },
       logger,
@@ -459,7 +458,7 @@ program
         quiet: globalOpts.quiet,
         dryRun: globalOpts.dryRun,
         cwd: resolveCwd(globalOpts.cwd),
-      }
+      },
     );
   });
 
@@ -489,7 +488,7 @@ program
             cwd: resolveCwd(globalOpts.cwd),
             mockAgent: globalOpts.mockAgent,
           },
-          logger
+          logger,
         );
 
         if (result.itemId === null) {
@@ -509,7 +508,7 @@ program
         noTui: globalOpts.noTui,
         tuiDebug: globalOpts.tuiDebug,
         cwd: resolveCwd(globalOpts.cwd),
-      }
+      },
     );
   });
 
@@ -523,7 +522,7 @@ program
       async () => {
         await doctorCommand(
           { fix: options.fix, cwd: resolveCwd(globalOpts.cwd) },
-          logger
+          logger,
         );
       },
       logger,
@@ -531,7 +530,7 @@ program
         verbose: globalOpts.verbose,
         quiet: globalOpts.quiet,
         cwd: resolveCwd(globalOpts.cwd),
-      }
+      },
     );
   });
 
@@ -545,7 +544,7 @@ program
       async () => {
         await initCommand(
           { force: options.force, cwd: resolveCwd(globalOpts.cwd) },
-          logger
+          logger,
         );
       },
       logger,
@@ -553,7 +552,7 @@ program
         verbose: globalOpts.verbose,
         quiet: globalOpts.quiet,
         cwd: resolveCwd(globalOpts.cwd),
-      }
+      },
     );
   });
 
@@ -591,7 +590,7 @@ program
             verbose: globalOpts.verbose,
             analyzeDirs: options.analyzeDirs,
           },
-          logger
+          logger,
         );
       },
       logger,
@@ -600,7 +599,7 @@ program
         quiet: globalOpts.quiet,
         dryRun: globalOpts.dryRun,
         cwd: resolveCwd(globalOpts.cwd),
-      }
+      },
     );
   });
 
@@ -619,7 +618,7 @@ program
             verbose: globalOpts.verbose,
             includeDone: options.includeDone,
           },
-          logger
+          logger,
         );
       },
       logger,
@@ -628,18 +627,29 @@ program
         quiet: globalOpts.quiet,
         dryRun: globalOpts.dryRun,
         cwd: resolveCwd(globalOpts.cwd),
-      }
+      },
     );
   });
 
 program
   .command("learn [patterns...]")
-  .description("Extract and compile codebase patterns into reusable Skill artifacts")
+  .description(
+    "Extract and compile codebase patterns into reusable Skill artifacts",
+  )
   .option("--item <id>", "Extract patterns from specific item")
-  .option("--phase <state>", "Extract patterns from items in specific phase state")
+  .option(
+    "--phase <state>",
+    "Extract patterns from items in specific phase state",
+  )
   .option("--all", "Extract patterns from all completed items")
-  .option("--output <path>", "Output path for skills.json (default: .wreckit/skills.json)")
-  .option("--merge <strategy>", "Merge strategy: append|replace|ask (default: append)")
+  .option(
+    "--output <path>",
+    "Output path for skills.json (default: .wreckit/skills.json)",
+  )
+  .option(
+    "--merge <strategy>",
+    "Merge strategy: append|replace|ask (default: append)",
+  )
   .option("--review", "Review extracted skills before saving")
   .action(async (patterns, options, cmd) => {
     const globalOpts = cmd.optsWithGlobals();
@@ -658,7 +668,7 @@ program
             cwd: resolveCwd(globalOpts.cwd),
             verbose: globalOpts.verbose,
           },
-          logger
+          logger,
         );
       },
       logger,
@@ -667,15 +677,25 @@ program
         quiet: globalOpts.quiet,
         dryRun: globalOpts.dryRun,
         cwd: resolveCwd(globalOpts.cwd),
-      }
+      },
     );
   });
 
 program
   .command("dream")
-  .description("Autonomous ideation: Scan codebase for TODOs and gaps to generate new roadmap items")
-  .option("--max-items <number>", "Maximum number of items to generate (default: 5)", "5")
-  .option("--source <type>", "Filter by source type: todo, gap, debt, or all (default)", "all")
+  .description(
+    "Autonomous ideation: Scan codebase for TODOs and gaps to generate new roadmap items",
+  )
+  .option(
+    "--max-items <number>",
+    "Maximum number of items to generate (default: 5)",
+    "5",
+  )
+  .option(
+    "--source <type>",
+    "Filter by source type: todo, gap, debt, or all (default)",
+    "all",
+  )
   .action(async (options, cmd) => {
     const globalOpts = cmd.optsWithGlobals();
     await executeCommand(
@@ -688,7 +708,7 @@ program
             cwd: resolveCwd(globalOpts.cwd),
             verbose: globalOpts.verbose,
           },
-          logger
+          logger,
         );
       },
       logger,
@@ -697,13 +717,15 @@ program
         quiet: globalOpts.quiet,
         dryRun: globalOpts.dryRun,
         cwd: resolveCwd(globalOpts.cwd),
-      }
+      },
     );
   });
 
 program
   .command("summarize")
-  .description("Generate 30-second feature visualization videos for completed items")
+  .description(
+    "Generate 30-second feature visualization videos for completed items",
+  )
   .option("--item <id>", "Generate video for specific item")
   .option("--phase <state>", "Generate videos for items in specific state")
   .option("--all", "Generate videos for all completed items")
@@ -720,7 +742,7 @@ program
             cwd: resolveCwd(globalOpts.cwd),
             verbose: globalOpts.verbose,
           },
-          logger
+          logger,
         );
       },
       logger,
@@ -729,7 +751,7 @@ program
         quiet: globalOpts.quiet,
         dryRun: globalOpts.dryRun,
         cwd: resolveCwd(globalOpts.cwd),
-      }
+      },
     );
   });
 
