@@ -215,7 +215,7 @@
         "All tests pass with 'npm test -- src/__tests__/commands/sprite.test.ts'"
       ],
       "priority": 4,
-      "status": "pending",
+      "status": "done",
       "notes": "Use Bun's spyOn to mock spawn, not mock.module. Return a mock ChildProcess that emits fake stdout/stderr. Follow the pattern from src/__tests__/commands/init.test.ts."
     },
     {
@@ -232,7 +232,7 @@
         "Documentation is accurate and matches actual implementation"
       ],
       "priority": 4,
-      "status": "pending",
+      "status": "done",
       "notes": "This is user-facing documentation. It should be clear, concise, and include practical examples. The troubleshooting section should cover the most common issues users will encounter."
     }
   ]
