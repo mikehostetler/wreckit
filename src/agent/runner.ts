@@ -488,6 +488,23 @@ export async function runAgentUnion(options: UnionRunAgentOptions): Promise<Agen
       });
     }
 
+    case "rlm": {
+      const { runRlmAgent } = await import("./rlm-runner.js");
+      return runRlmAgent({
+        config,
+        cwd: options.cwd,
+        prompt: options.prompt,
+        logger: options.logger,
+        dryRun: options.dryRun,
+        onStdoutChunk: options.onStdoutChunk,
+        onStderrChunk: options.onStderrChunk,
+        onAgentEvent: options.onAgentEvent,
+        mcpServers: options.mcpServers,
+        allowedTools: options.allowedTools,
+        timeoutSeconds: options.timeoutSeconds,
+      });
+    }
+
     default:
       return exhaustiveCheck(config);
   }

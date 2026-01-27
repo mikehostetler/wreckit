@@ -62,12 +62,20 @@ export const OpenCodeSdkAgentSchema = z.object({
   kind: z.literal("opencode_sdk"),
 });
 
+export const RlmSdkAgentSchema = z.object({
+  kind: z.literal("rlm"),
+  model: z.string().default("claude-sonnet-4-20250514"),
+  maxIterations: z.number().default(100),
+  aiProvider: z.enum(["anthropic", "openai", "google", "zai"]).default("anthropic"),
+});
+
 export const AgentConfigUnionSchema = z.discriminatedUnion("kind", [
   ProcessAgentSchema,
   ClaudeSdkAgentSchema,
   AmpSdkAgentSchema,
   CodexSdkAgentSchema,
   OpenCodeSdkAgentSchema,
+  RlmSdkAgentSchema,
 ]);
 
 // Legacy agent config (mode-based) - for backwards compatibility
@@ -274,6 +282,7 @@ export type ClaudeSdkAgentConfig = z.infer<typeof ClaudeSdkAgentSchema>;
 export type AmpSdkAgentConfig = z.infer<typeof AmpSdkAgentSchema>;
 export type CodexSdkAgentConfig = z.infer<typeof CodexSdkAgentSchema>;
 export type OpenCodeSdkAgentConfig = z.infer<typeof OpenCodeSdkAgentSchema>;
+export type RlmSdkAgentConfig = z.infer<typeof RlmSdkAgentSchema>;
 export type AgentConfigUnion = z.infer<typeof AgentConfigUnionSchema>;
 export type BatchProgress = z.infer<typeof BatchProgressSchema>;
 

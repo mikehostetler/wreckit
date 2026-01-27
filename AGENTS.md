@@ -105,6 +105,7 @@ TypeScript CLI built with Bun. Key directories:
 | `codex_sdk` | Codex SDK (experimental) |
 | `opencode_sdk` | OpenCode SDK (experimental) |
 | `process` | External CLI process |
+| `rlm` | RLM Mode (ReAct Loop Mode) via @ax-llm/ax |
 
 See [README.md](./README.md#agent-options) for configuration examples for each kind.
 
@@ -143,6 +144,65 @@ For complete environment variable documentation including model selection variab
 - `0` — Success
 - `1` — Error
 - `130` — Interrupted
+
+## RLM Mode (ReAct Loop Mode)
+
+RLM mode (Recursive Loop Mode) uses the `@ax-llm/ax` library to execute agents with a true ReAct loop (Thought -> Action -> Observation).
+
+### Configuration
+
+In `.wreckit/config.json`:
+
+```json
+{
+  "agent": {
+    "kind": "rlm",
+    "model": "claude-sonnet-4-20250514",
+    "maxIterations": 100,
+    "aiProvider": "anthropic" // or "openai" or "google"
+  }
+}
+```
+
+### Provider Support
+
+| Provider | Config Value | Env Variable |
+|---|---|---|
+| Anthropic | `anthropic` | `ANTHROPIC_API_KEY` (or `ANTHROPIC_AUTH_TOKEN`) |
+| OpenAI | `openai` | `OPENAI_API_KEY` |
+| Google | `google` | `GOOGLE_API_KEY` |
+
+### CLI Usage
+
+```bash
+# Use RLM for a single run
+wreckit --rlm run 001
+
+# Or specify explicitly
+wreckit --agent rlm run 001
+```
+
+### ReAct Loop
+
+Unlike the Claude SDK which abstracts the loop, RLM runs an explicit loop:
+1. **Thought:** Agent reasons about the task.
+2. **Action:** Agent selects a tool (Read, Write, Bash, etc.).
+3. **Observation:** Tool output is fed back to the agent.
+4. **Repeat:** Until completion or max iterations.
+
+This visibility helps with debugging complex tasks.
+
+### Tools
+
+RLM supports:
+- **Built-in Tools:** `Read`, `Write`, `Edit`, `Glob`, `Grep`, `Bash` (implemented via `AxFunction`).
+- **MCP Tools:** Automatically adapts Claude SDK MCP servers to Ax functions.
+
+### When to Use
+
+- **Complex Debugging:** When you need to see every step of reasoning.
+- **Cross-Provider:** When you want to swap between Claude, GPT-4, and Gemini easily.
+- **Fine-Grained Control:** When SDK abstractions hide too much logic.
 
 ## Code Style
 

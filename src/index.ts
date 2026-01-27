@@ -47,7 +47,9 @@ program
   .option("--no-resume", "Start fresh batch run, ignoring saved progress")
   .option("--retry-failed", "Include previously failed items when resuming")
   .option("--no-healing", "Disable automatic self-healing (Item 038)")
-  .option("--cwd <path>", "Override the working directory");
+  .option("--cwd <path>", "Override the working directory")
+  .option("--agent <kind>", "Agent kind to use (claude_sdk, amp_sdk, codex_sdk, opencode_sdk, rlm)")
+  .option("--rlm", "Shorthand for --agent rlm");
 
 program.action(async () => {
   const opts = program.opts();
@@ -64,6 +66,9 @@ program.action(async () => {
         return;
       }
 
+      // Determine agent kind from flags (--rlm takes precedence over --agent)
+      const agentKind = opts.rlm ? "rlm" : opts.agent;
+
       const result = await orchestrateAll(
         {
           force: false,
@@ -76,6 +81,7 @@ program.action(async () => {
           noResume: opts.noResume,
           retryFailed: opts.retryFailed,
           noHealing: opts.noHealing, // Pass through --no-healing flag (Item 038)
+          agentKind, // Pass agent kind override
         },
         logger
       );

@@ -42,6 +42,7 @@ export interface ConfigOverrides {
   completionSignal?: string;
   maxIterations?: number;
   timeoutSeconds?: number;
+  agentKind?: string;
 }
 
 export const DEFAULT_CONFIG: ConfigResolved = {
@@ -147,6 +148,22 @@ export function applyOverrides(
 ): ConfigResolved {
   let agent = config.agent;
 
+  // Apply agent kind override if specified
+  if (overrides.agentKind && overrides.agentKind !== agent.kind) {
+    // Validate the agent kind
+    const validKinds = ["process", "claude_sdk", "amp_sdk", "codex_sdk", "opencode_sdk", "rlm"];
+    if (!validKinds.includes(overrides.agentKind)) {
+      throw new Error(`Invalid agent kind: ${overrides.agentKind}`);
+    }
+
+    // For now, we just override the kind field
+    // In a full implementation, you'd want to preserve other config fields
+    agent = {
+      ...agent,
+      kind: overrides.agentKind as any,
+    };
+  }
+
   // Apply overrides only for process mode (where command/args/completion_signal are relevant)
   if (agent.kind === "process") {
     const hasProcessOverrides = overrides.agentCommand !== undefined ||
@@ -156,9 +173,9 @@ export function applyOverrides(
     if (hasProcessOverrides) {
       agent = {
         ...agent,
-        command: overrides.agentCommand ?? agent.command,
-        args: overrides.agentArgs ?? agent.args,
-        completion_signal: overrides.completionSignal ?? agent.completion_signal,
+        command: overrides.agentCommand ?? (agent as any).command,
+        args: overrides.agentArgs ?? (agent as any).args,
+        completion_signal: overrides.completionSignal ?? (agent as any).completion_signal,
       };
     }
   }

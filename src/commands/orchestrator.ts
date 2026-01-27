@@ -88,6 +88,8 @@ export interface OrchestratorOptions {
   retryFailed?: boolean;
   /** If true, disable automatic self-healing (Item 038) */
   noHealing?: boolean;
+  /** Override agent kind (e.g., 'rlm', 'claude_sdk') */
+  agentKind?: string;
 }
 
 export interface OrchestratorResult {
@@ -108,10 +110,10 @@ export async function orchestrateAll(
   options: OrchestratorOptions,
   logger: Logger
 ): Promise<OrchestratorResult> {
-  const { force = false, dryRun = false, noTui = false, tuiDebug = false, cwd, mockAgent = false, parallel = 1, noHealing = false } = options;
+  const { force = false, dryRun = false, noTui = false, tuiDebug = false, cwd, mockAgent = false, parallel = 1, noHealing = false, agentKind } = options;
 
   const root = findRootFromOptions(options);
-  const config = await loadConfig(root);
+  const config = await loadConfig(root, agentKind ? { agentKind } : undefined);
 
   const items = await scanItems(root);
 
@@ -500,10 +502,10 @@ export async function orchestrateNext(
   options: OrchestratorOptions,
   logger: Logger
 ): Promise<{ itemId: string | null; success: boolean }> {
-  const { force = false, dryRun = false, cwd, mockAgent = false } = options;
+  const { force = false, dryRun = false, cwd, mockAgent = false, agentKind } = options;
 
   const root = findRootFromOptions(options);
-  const config = await loadConfig(root);
+  const config = await loadConfig(root, agentKind ? { agentKind } : undefined);
 
   const nextItemId = await getNextIncompleteItem(root);
 

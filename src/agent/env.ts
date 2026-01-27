@@ -13,7 +13,14 @@ import * as path from "node:path";
 import * as os from "node:os";
 import type { Logger } from "../logging";
 
-const ALLOWED_PREFIXES = ["ANTHROPIC_", "CLAUDE_CODE_", "API_TIMEOUT"];
+const ALLOWED_PREFIXES = [
+  "ANTHROPIC_",
+  "CLAUDE_CODE_",
+  "API_TIMEOUT",
+  "OPENAI_",
+  "GOOGLE_",
+  "ZAI_"
+];
 
 /**
  * Read env from ~/.claude/settings.json
@@ -105,4 +112,51 @@ export async function buildSdkEnv(options: BuildSdkEnvOptions): Promise<Record<s
   }
 
   return sdkEnv;
+}
+
+export interface BuildAxAIEnvOptions extends BuildSdkEnvOptions {
+  provider: "anthropic" | "openai" | "google" | "zai";
+}
+
+/**
+ * Build environment specifically for AxAI providers.
+ */
+export async function buildAxAIEnv(options: BuildAxAIEnvOptions): Promise<Record<string, string>> {
+  const { provider, logger } = options;
+  const baseEnv = await buildSdkEnv(options);
+  const axaiEnv: Record<string, string> = { ...baseEnv };
+
+  if (provider === "anthropic") {
+    // Map ANTHROPIC_AUTH_TOKEN to ANTHROPIC_API_KEY if present (for custom endpoints like Zai)
+    if (axaiEnv.ANTHROPIC_AUTH_TOKEN && !axaiEnv.ANTHROPIC_API_KEY) {
+      axaiEnv.ANTHROPIC_API_KEY = axaiEnv.ANTHROPIC_AUTH_TOKEN;
+      logger.debug("Mapped ANTHROPIC_AUTH_TOKEN to ANTHROPIC_API_KEY for AxAI");
+    }
+  } else if (provider === "zai") {
+    // Z.AI support
+    // 1. Check for ZAI_API_KEY, fallback to ANTHROPIC_AUTH_TOKEN
+    if (axaiEnv.ZAI_API_KEY) {
+      axaiEnv.ANTHROPIC_API_KEY = axaiEnv.ZAI_API_KEY;
+    } else if (axaiEnv.ANTHROPIC_AUTH_TOKEN) {
+      axaiEnv.ANTHROPIC_API_KEY = axaiEnv.ANTHROPIC_AUTH_TOKEN;
+    }
+    
+    // 2. Set default base URL for Z.AI if not already set (via ANTHROPIC_BASE_URL)
+    if (!axaiEnv.ANTHROPIC_BASE_URL) {
+      axaiEnv.ANTHROPIC_BASE_URL = "https://api.z.ai/api/anthropic";
+      logger.debug("Set default ANTHROPIC_BASE_URL for Z.AI provider");
+    }
+  } else if (provider === "openai") {
+    // Ensure OPENAI_API_KEY is present
+    if (!axaiEnv.OPENAI_API_KEY) {
+      logger.warn("OPENAI_API_KEY not found in environment");
+    }
+  } else if (provider === "google") {
+    // Ensure GOOGLE_API_KEY is present
+    if (!axaiEnv.GOOGLE_API_KEY) {
+      logger.warn("GOOGLE_API_KEY not found in environment");
+    }
+  }
+
+  return axaiEnv;
 }
