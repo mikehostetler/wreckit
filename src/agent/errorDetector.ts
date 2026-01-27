@@ -10,7 +10,11 @@ import type { AgentResult } from "./runner";
 /**
  * Error types that can be automatically healed
  */
-export type ErrorType = "git_lock" | "npm_failure" | "json_corruption" | "unknown";
+export type ErrorType =
+  | "git_lock"
+  | "npm_failure"
+  | "json_corruption"
+  | "unknown";
 
 /**
  * Error diagnosis with confidence score and repair suggestions
@@ -27,7 +31,9 @@ export interface ErrorDiagnosis {
  * Detects recoverable errors in agent execution results.
  * Returns null if error is not recoverable.
  */
-export function detectRecoverableError(result: AgentResult): ErrorDiagnosis | null {
+export function detectRecoverableError(
+  result: AgentResult,
+): ErrorDiagnosis | null {
   // Successful execution - no error to detect
   if (result.success) {
     return null;
@@ -84,7 +90,10 @@ function extractStderr(output: string): string {
 /**
  * Detect git lock errors (.git/index.lock)
  */
-function detectGitLockError(output: string, stderr: string): ErrorDiagnosis | null {
+function detectGitLockError(
+  output: string,
+  stderr: string,
+): ErrorDiagnosis | null {
   const combined = `${output}\n${stderr}`;
 
   // Git lock error patterns (from real git error messages)
@@ -106,7 +115,9 @@ function detectGitLockError(output: string, stderr: string): ErrorDiagnosis | nu
   }
 
   // Require at least 2 strong indicators or 1 very specific one
-  const hasSpecificLock = combined.includes(".git/index.lock") || combined.includes("another git process");
+  const hasSpecificLock =
+    combined.includes(".git/index.lock") ||
+    combined.includes("another git process");
   const hasMultipleIndicators = matchedPatterns.length >= 2;
 
   if (hasSpecificLock || hasMultipleIndicators) {
@@ -125,7 +136,10 @@ function detectGitLockError(output: string, stderr: string): ErrorDiagnosis | nu
 /**
  * Detect npm failure errors
  */
-function detectNpmFailure(output: string, stderr: string): ErrorDiagnosis | null {
+function detectNpmFailure(
+  output: string,
+  stderr: string,
+): ErrorDiagnosis | null {
   const combined = `${output}\n${stderr}`;
 
   // npm error patterns
@@ -162,7 +176,10 @@ function detectNpmFailure(output: string, stderr: string): ErrorDiagnosis | null
 /**
  * Detect JSON corruption errors
  */
-function detectJsonCorruption(output: string, stderr: string): ErrorDiagnosis | null {
+function detectJsonCorruption(
+  output: string,
+  stderr: string,
+): ErrorDiagnosis | null {
   const combined = `${output}\n${stderr}`;
 
   // JSON error patterns
@@ -184,8 +201,11 @@ function detectJsonCorruption(output: string, stderr: string): ErrorDiagnosis | 
   }
 
   // Also check for .json file references in error
-  const hasJsonFileReference = combined.includes(".json") || combined.includes("config.json") ||
-                               combined.includes("index.json") || combined.includes("batch-progress.json");
+  const hasJsonFileReference =
+    combined.includes(".json") ||
+    combined.includes("config.json") ||
+    combined.includes("index.json") ||
+    combined.includes("batch-progress.json");
 
   // Require at least 1 JSON-specific indicator and file reference
   if (matchedPatterns.length >= 1 && hasJsonFileReference) {

@@ -18,7 +18,7 @@ export function findRepoRoot(startCwd: string): string {
 
     if (hasWreckit && !hasGit) {
       throw new RepoNotFoundError(
-        `Found .wreckit at ${current} but no .git directory`
+        `Found .wreckit at ${current} but no .git directory`,
       );
     }
 
@@ -26,7 +26,7 @@ export function findRepoRoot(startCwd: string): string {
   }
 
   throw new RepoNotFoundError(
-    "Could not find repository root with .git and .wreckit directories"
+    "Could not find repository root with .git and .wreckit directories",
   );
 }
 

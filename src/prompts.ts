@@ -3,7 +3,17 @@ import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import { getPromptsDir, getWreckitDir } from "./fs/paths";
 
-export type PromptName = "research" | "plan" | "implement" | "ideas" | "pr" | "strategy" | "learn" | "media";
+export type PromptName =
+  | "research"
+  | "plan"
+  | "implement"
+  | "ideas"
+  | "pr"
+  | "strategy"
+  | "learn"
+  | "media"
+  | "interview"
+  | "critique";
 
 export interface PromptVariables {
   id: string;
@@ -39,7 +49,7 @@ export async function getDefaultTemplate(name: PromptName): Promise<string> {
 
 export async function loadPromptTemplate(
   root: string,
-  name: PromptName
+  name: PromptName,
 ): Promise<string> {
   const promptPath = getPromptTemplatePath(root, name);
 
@@ -56,21 +66,27 @@ export async function loadPromptTemplate(
 
 export function renderPrompt(
   template: string,
-  variables: PromptVariables
+  variables: PromptVariables,
 ): string {
   let result = template;
 
   // Handle simple {{#if}} conditionals
-  result = result.replace(/\{\{#if (\w+)\}\}([\s\S]*?)\{\{\/if\}\}/g, (_, varName, content) => {
-    const value = (variables as any)[varName];
-    return value ? content : "";
-  });
+  result = result.replace(
+    /\{\{#if (\w+)\}\}([\s\S]*?)\{\{\/if\}\}/g,
+    (_, varName, content) => {
+      const value = (variables as any)[varName];
+      return value ? content : "";
+    },
+  );
 
   // Handle simple {{#ifnot}} conditionals (inverse)
-  result = result.replace(/\{\{#ifnot (\w+)\}\}([\s\S]*?)\{\{\/ifnot\}\}/g, (_, varName, content) => {
-    const value = (variables as any)[varName];
-    return !value ? content : "";
-  });
+  result = result.replace(
+    /\{\{#ifnot (\w+)\}\}([\s\S]*?)\{\{\/ifnot\}\}/g,
+    (_, varName, content) => {
+      const value = (variables as any)[varName];
+      return !value ? content : "";
+    },
+  );
 
   const varMap: Record<string, string | undefined> = {
     id: variables.id,
@@ -101,7 +117,13 @@ export async function initPromptTemplates(root: string): Promise<void> {
   const promptsDir = getPromptsDir(root);
   await fs.mkdir(promptsDir, { recursive: true });
 
-  const promptNames: PromptName[] = ["research", "plan", "implement", "ideas", "pr"];
+  const promptNames: PromptName[] = [
+    "research",
+    "plan",
+    "implement",
+    "ideas",
+    "pr",
+  ];
 
   for (const name of promptNames) {
     const filePath = getPromptTemplatePath(root, name);

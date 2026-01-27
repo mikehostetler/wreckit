@@ -48,7 +48,8 @@ function createPinoLogger(options?: LoggerOptions): pino.Logger {
     messageFormat: (log, messageKey) => {
       const msg = log[messageKey];
       if (log.level === 30) return msg as string;
-      const levelLabel = log.level === 40 ? "WARN" : log.level === 50 ? "ERROR" : "DEBUG";
+      const levelLabel =
+        log.level === 40 ? "WARN" : log.level === 50 ? "ERROR" : "DEBUG";
       return `${levelLabel}: ${msg}`;
     },
     singleLine: true,

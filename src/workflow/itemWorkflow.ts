@@ -5,7 +5,10 @@ import { PrdSchema } from "../schemas";
 import type { ConfigResolved } from "../config";
 import type { Logger } from "../logging";
 import type { AgentEvent } from "../tui/agentEvents";
-import type { ValidationContext, StoryCompletionVerification } from "../domain/validation";
+import type {
+  ValidationContext,
+  StoryCompletionVerification,
+} from "../domain/validation";
 import {
   validateTransition,
   allStoriesDone,
@@ -37,10 +40,17 @@ import {
   type PromptVariables,
 } from "../prompts";
 import { runAgentUnion, getAgentConfigUnion } from "../agent/runner";
-import { runAgentWithHealing, doctorConfigToHealingConfig, type HealingConfig } from "../agent/healingRunner";
+import {
+  runAgentWithHealing,
+  doctorConfigToHealingConfig,
+  type HealingConfig,
+} from "../agent/healingRunner";
 import { getAllowedToolsForPhase } from "../agent/toolAllowlist";
 import { loadSkillsForPhase } from "../agent/skillLoader";
-import { buildJitContext, formatContextForPrompt } from "../agent/contextBuilder";
+import {
+  buildJitContext,
+  formatContextForPrompt,
+} from "../agent/contextBuilder";
 import {
   ensureBranch,
   hasUncommittedChanges,
@@ -129,7 +139,7 @@ async function loadPrdSafe(itemDir: string): Promise<Prd | null> {
 
 export async function buildValidationContext(
   root: string,
-  item: Item
+  item: Item,
 ): Promise<ValidationContext> {
   const itemDir = getItemDir(root, item.id);
   const researchPath = getResearchPath(root, item.id);
@@ -187,7 +197,9 @@ async function buildPromptVariables(
   // Determine completion_signal and sdk_mode based on agent kind
   const agent = config.agent;
   const isProcessMode = agent.kind === "process";
-  const completionSignal = isProcessMode ? agent.completion_signal : "<promise>COMPLETE</promise>";
+  const completionSignal = isProcessMode
+    ? agent.completion_signal
+    : "<promise>COMPLETE</promise>";
 
   // Build skill context if phase specified and skills configured (Item 033)
   let skillContext: string | undefined;
@@ -199,19 +211,26 @@ async function buildPromptVariables(
         skillResult.contextRequirements,
         item,
         config,
-        root
+        root,
       );
       skillContext = formatContextForPrompt(context);
 
       // Log context loading for transparency
       if (skillResult.loadedSkillIds.length > 0) {
-        logger.info(`Loaded skills for phase '${phase}': ${skillResult.loadedSkillIds.join(", ")}`);
+        console.log(
+          `Loaded skills for phase '${phase}': ${skillResult.loadedSkillIds.join(", ")}`,
+        );
       }
-      if (Object.keys(context.files).length > 0 || Object.keys(context.artifacts).length > 0) {
-        logger.info(`JIT context: ${Object.keys(context.files).length} file(s), ${Object.keys(context.artifacts).length} artifact(s)`);
+      if (
+        Object.keys(context.files).length > 0 ||
+        Object.keys(context.artifacts).length > 0
+      ) {
+        console.log(
+          `JIT context: ${Object.keys(context.files).length} file(s), ${Object.keys(context.artifacts).length} artifact(s)`,
+        );
       }
       if (context.errors.length > 0) {
-        logger.warn(`Context loading errors: ${context.errors.join("; ")}`);
+        console.warn(`Context loading errors: ${context.errors.join("; ")}`);
       }
     }
   }
@@ -236,7 +255,7 @@ async function buildPromptVariables(
 
 export async function runPhaseResearch(
   itemId: string,
-  options: WorkflowOptions
+  options: WorkflowOptions,
 ): Promise<PhaseResult> {
   const {
     root,
@@ -278,7 +297,12 @@ export async function runPhaseResearch(
   }
 
   const template = await loadPromptTemplate(root, "research");
-  const baseVariables = await buildPromptVariables(root, item, config, "research"); // Add phase
+  const baseVariables = await buildPromptVariables(
+    root,
+    item,
+    config,
+    "research",
+  ); // Add phase
 
   const itemDir = getItemDir(root, item.id);
   const agentConfig = getAgentConfigUnion(config);
@@ -287,9 +311,8 @@ export async function runPhaseResearch(
   const skillResult = loadSkillsForPhase("research", config.skills);
 
   // Capture git status before running agent for read-only enforcement
-  const beforeStatus: GitFileChange[] = dryRun || mockAgent
-    ? []
-    : await getGitStatus({ cwd: root, logger });
+  const beforeStatus: GitFileChange[] =
+    dryRun || mockAgent ? [] : await getGitStatus({ cwd: root, logger });
 
   let attempt = 0;
   const maxAttempts = 3;
@@ -299,7 +322,9 @@ export async function runPhaseResearch(
   while (attempt < maxAttempts) {
     attempt++;
     if (attempt > 1) {
-      logger.warn(`Research validation failed (attempt ${attempt - 1}/${maxAttempts}). Retrying...`);
+      logger.warn(
+        `Research validation failed (attempt ${attempt - 1}/${maxAttempts}). Retrying...`,
+      );
     }
 
     // Append validation feedback to prompt if this is a retry
@@ -309,10 +334,12 @@ export async function runPhaseResearch(
     }
 
     // Build healing config (Item 038)
-    const doctorConfig = config.doctor || {};
+    const doctorConfig = config.doctor;
     const healingConfig: HealingConfig = doctorConfigToHealingConfig({
-      ...doctorConfig,
-      enabled: !noHealing && (doctorConfig.enabled ?? true),
+      enabled: !noHealing && (doctorConfig?.enabled ?? true),
+      auto_repair: doctorConfig?.auto_repair,
+      max_retries: doctorConfig?.max_retries,
+      timeout_ms: doctorConfig?.timeout_ms,
     });
 
     // Run agent with healing (Item 038)
@@ -320,24 +347,28 @@ export async function runPhaseResearch(
       ? runAgentWithHealing
       : runAgentUnion;
 
-    const result = await agentRunner({
-      config: agentConfig,
-      cwd: itemDir,
-      prompt,
-      logger,
-      dryRun,
-      mockAgent,
-      timeoutSeconds: config.timeout_seconds,
-      onStdoutChunk: onAgentOutput,
-      onStderrChunk: onAgentOutput,
-      onAgentEvent,
-      // Merge skill MCP servers (Item 033)
-      mcpServers: {
-        ...(skillResult.mcpServers || {}),
+    const result = await agentRunner(
+      {
+        config: agentConfig,
+        cwd: itemDir,
+        prompt,
+        logger,
+        dryRun,
+        mockAgent,
+        timeoutSeconds: config.timeout_seconds,
+        onStdoutChunk: onAgentOutput,
+        onStderrChunk: onAgentOutput,
+        onAgentEvent,
+        // Merge skill MCP servers (Item 033)
+        mcpServers: {
+          ...(skillResult.mcpServers || {}),
+        },
+        // Use skill-merged tool allowlist (or phase tools if no skills)
+        allowedTools: skillResult.allowedTools,
       },
-      // Use skill-merged tool allowlist (or phase tools if no skills)
-      allowedTools: skillResult.allowedTools,
-    }, healingConfig, itemId);
+      healingConfig,
+      itemId,
+    );
 
     if (dryRun) {
       return { success: true, item };
@@ -355,7 +386,7 @@ export async function runPhaseResearch(
         : `Agent failed with exit code ${result.exitCode}`;
       validationError = null; // System error, not validation error
       // Don't retry on system errors (unless we want to?) - for now, break
-      break; 
+      break;
     }
 
     if (!(await pathExists(researchPath))) {
@@ -376,7 +407,7 @@ export async function runPhaseResearch(
 
     logger.info(
       `Research quality validation passed: ${qualityResult.citations} citations, ` +
-      `${qualityResult.summaryLength} char summary, ${qualityResult.analysisLength} char analysis`
+        `${qualityResult.summaryLength} char summary, ${qualityResult.analysisLength} char analysis`,
     );
 
     // Enforce read-only behavior: check for unauthorized file modifications
@@ -421,7 +452,7 @@ export async function runPhaseResearch(
 
 export async function runPhasePlan(
   itemId: string,
-  options: WorkflowOptions
+  options: WorkflowOptions,
 ): Promise<PhaseResult> {
   const {
     root,
@@ -465,9 +496,8 @@ export async function runPhasePlan(
   const agentConfig = getAgentConfigUnion(config);
 
   // Capture git status before running agent for design-only enforcement
-  const beforeStatus: GitFileChange[] = dryRun || mockAgent
-    ? []
-    : await getGitStatus({ cwd: root, logger });
+  const beforeStatus: GitFileChange[] =
+    dryRun || mockAgent ? [] : await getGitStatus({ cwd: root, logger });
 
   let attempt = 0;
   const maxAttempts = 3;
@@ -477,7 +507,9 @@ export async function runPhasePlan(
   while (attempt < maxAttempts) {
     attempt++;
     if (attempt > 1) {
-      logger.warn(`Plan validation failed (attempt ${attempt - 1}/${maxAttempts}). Retrying...`);
+      logger.warn(
+        `Plan validation failed (attempt ${attempt - 1}/${maxAttempts}). Retrying...`,
+      );
     }
 
     // Append validation feedback to prompt if this is a retry
@@ -532,7 +564,7 @@ export async function runPhasePlan(
         ? "Agent timed out"
         : `Agent failed with exit code ${result.exitCode}`;
       validationError = null; // System error
-      break; 
+      break;
     }
 
     if (!(await pathExists(planPath))) {
@@ -552,14 +584,16 @@ export async function runPhasePlan(
     }
 
     logger.info(
-      `Plan quality validation passed: ${planQualityResult.phases} implementation phase(s)`
+      `Plan quality validation passed: ${planQualityResult.phases} implementation phase(s)`,
     );
 
     // If PRD was captured via MCP tool, write it to disk
     if (capturedPrd !== null) {
       const prd = capturedPrd as Prd;
       await writePrd(itemDir, prd);
-      logger.info(`PRD saved via MCP tool with ${prd.user_stories.length} stories`);
+      logger.info(
+        `PRD saved via MCP tool with ${prd.user_stories.length} stories`,
+      );
     }
 
     // Check if prd.json exists (from MCP or direct file write)
@@ -586,7 +620,7 @@ export async function runPhasePlan(
 
     logger.info(
       `Story quality validation passed: ${storyQualityResult.storyCount} story/stories, ` +
-      `${storyQualityResult.failedStoryCount} failed`
+        `${storyQualityResult.failedStoryCount} failed`,
     );
 
     // Enforce design-only behavior: check for unauthorized file modifications (Gap 1)
@@ -602,7 +636,7 @@ export async function runPhasePlan(
 
     const comparison = await compareGitStatus(beforeStatus, compareOptions);
     if (!comparison.valid) {
-      const error = formatViolations(comparison, 'plan');
+      const error = formatViolations(comparison, "plan");
       logger.error(error);
       item = { ...item, last_error: error };
       await saveItem(root, item);
@@ -635,7 +669,7 @@ export async function runPhasePlan(
 
 export async function runPhaseImplement(
   itemId: string,
-  options: WorkflowOptions
+  options: WorkflowOptions,
 ): Promise<PhaseResult> {
   const {
     root,
@@ -667,7 +701,12 @@ export async function runPhaseImplement(
     await saveItem(root, item);
 
     const template = await loadPromptTemplate(root, "implement");
-    const variables = await buildPromptVariables(root, item, config, "implement"); // Add phase
+    const variables = await buildPromptVariables(
+      root,
+      item,
+      config,
+      "implement",
+    ); // Add phase
     const prompt = renderPrompt(template, variables);
     const agentConfig = getAgentConfigUnion(config);
 
@@ -735,20 +774,28 @@ export async function runPhaseImplement(
     const currentStory = pendingStories[0];
     onStoryChanged?.({ id: currentStory.id, title: currentStory.title });
     logger.info(
-      `Implementing story ${currentStory.id} (iteration ${iteration}/${maxIterations})`
+      `Implementing story ${currentStory.id} (iteration ${iteration}/${maxIterations})`,
     );
 
     // Capture git status before running agent for scope enforcement (Gap 2)
-    const beforeStatus: GitFileChange[] = dryRun || mockAgent
-      ? []
-      : await getGitStatus({ cwd: root, logger });
+    const beforeStatus: GitFileChange[] =
+      dryRun || mockAgent ? [] : await getGitStatus({ cwd: root, logger });
 
     const template = await loadPromptTemplate(root, "implement");
-    const variables = await buildPromptVariables(root, item, config, "implement"); // Add phase
+    const variables = await buildPromptVariables(
+      root,
+      item,
+      config,
+      "implement",
+    ); // Add phase
     const prompt = renderPrompt(template, variables);
 
     // Create MCP server to capture story status updates with verification
-    const storyUpdates: Array<{ storyId: string; status: StoryStatus; verification: StoryCompletionVerification | null }> = [];
+    const storyUpdates: Array<{
+      storyId: string;
+      status: StoryStatus;
+      verification: StoryCompletionVerification | null;
+    }> = [];
     const wreckitServer = createWreckitMcpServer({
       getPrd: () => prd,
       onUpdateStoryStatus: (storyId, status, verification) => {
@@ -806,15 +853,23 @@ export async function runPhaseImplement(
 
     const comparison = await compareGitStatus(beforeStatus, compareOptions);
     if (comparison.allChanges.length > 0) {
-      const changedFiles = comparison.allChanges.map(c => `${c.statusCode} ${c.path}`).join(", ");
-      logger.info(`Story ${currentStory.id} changed ${comparison.allChanges.length} file(s): ${changedFiles}`);
+      const changedFiles = comparison.allChanges
+        .map((c) => `${c.statusCode} ${c.path}`)
+        .join(", ");
+      logger.info(
+        `Story ${currentStory.id} changed ${comparison.allChanges.length} file(s): ${changedFiles}`,
+      );
 
       // If there are any changes to the wreckit metadata or config files outside the item directory, warn about scope creep
-      const wreckitSystemPaths = comparison.allChanges.filter(c =>
-        c.path.startsWith(".wreckit/") && !c.path.startsWith(`.wreckit/items/${item.id}/`)
+      const wreckitSystemPaths = comparison.allChanges.filter(
+        (c) =>
+          c.path.startsWith(".wreckit/") &&
+          !c.path.startsWith(`.wreckit/items/${item.id}/`),
       );
       if (wreckitSystemPaths.length > 0) {
-        logger.warn(`Story ${currentStory.id} modified wreckit system files: ${wreckitSystemPaths.map(c => c.path).join(", ")}`);
+        logger.warn(
+          `Story ${currentStory.id} modified wreckit system files: ${wreckitSystemPaths.map((c) => c.path).join(", ")}`,
+        );
       }
     }
 
@@ -824,7 +879,9 @@ export async function runPhaseImplement(
         const story = prd.user_stories.find((s) => s.id === update.storyId);
         if (story) {
           story.status = update.status;
-          logger.info(`Story ${update.storyId} marked as '${update.status}' via MCP`);
+          logger.info(
+            `Story ${update.storyId} marked as '${update.status}' via MCP`,
+          );
 
           // Log verification warnings (Gap 1: Acceptance Criteria Verification)
           if (update.verification) {
@@ -886,16 +943,16 @@ function formatPreflightErrors(errors: GitPreflightError[]): string {
 function parsePrJson(output: string): { title: string; body: string } | null {
   const startMarker = "PR_JSON_START";
   const endMarker = "PR_JSON_END";
-  
+
   const startIdx = output.indexOf(startMarker);
   const endIdx = output.indexOf(endMarker);
-  
+
   if (startIdx === -1 || endIdx === -1 || endIdx <= startIdx) {
     return null;
   }
-  
+
   const jsonStr = output.slice(startIdx + startMarker.length, endIdx).trim();
-  
+
   try {
     const parsed = JSON.parse(jsonStr);
     if (typeof parsed.title === "string" && typeof parsed.body === "string") {
@@ -909,7 +966,7 @@ function parsePrJson(output: string): { title: string; body: string } | null {
 
 export async function runPhasePr(
   itemId: string,
-  options: WorkflowOptions
+  options: WorkflowOptions,
 ): Promise<PhaseResult> {
   const {
     root,
@@ -949,7 +1006,7 @@ export async function runPhasePr(
     config.base_branch,
     config.branch_prefix,
     itemSlug,
-    gitOptions
+    gitOptions,
   );
 
   // Verify we're actually on the expected branch
@@ -982,7 +1039,10 @@ export async function runPhasePr(
   // Pre-flight git state checks (now that changes are committed)
   // Only check for issues that would prevent push/PR operations
   if (!dryRun) {
-    const preflight = await checkGitPreflight({ ...gitOptions, checkRemoteSync: false });
+    const preflight = await checkGitPreflight({
+      ...gitOptions,
+      checkRemoteSync: false,
+    });
     if (!preflight.valid) {
       const error = formatPreflightErrors(preflight.errors);
       item = { ...item, last_error: error };
@@ -1030,7 +1090,7 @@ export async function runPhasePr(
     const remoteValidation: RemoteValidationResult = await validateRemoteUrl(
       "origin",
       config.pr_checks.allowed_remote_patterns,
-      gitOptions
+      gitOptions,
     );
 
     if (!remoteValidation.valid) {
@@ -1065,11 +1125,11 @@ export async function runPhasePr(
         "Direct mode bypasses PR review, CI checks, and branch protections.",
         "",
         "To enable direct merge mode, add to your .wreckit/config.json:",
-        '  {',
+        "  {",
         '    "pr_checks": {',
         '      "allow_unsafe_direct_merge": true',
-        '    }',
-        '  }',
+        "    }",
+        "  }",
         "",
         "Direct mode should only be used for:",
         "  - Greenfield projects with no production risk",
@@ -1084,7 +1144,7 @@ export async function runPhasePr(
     // Warn about direct mode risks
     logger.warn(
       "DIRECT MERGE MODE ENABLED: This bypasses PR review, CI checks, " +
-      "and branch protections. Only use for greenfield projects with no production risk."
+        "and branch protections. Only use for greenfield projects with no production risk.",
     );
 
     // Check for merge conflicts before attempting merge (Gap 5: Conflict Pre-Check)
@@ -1093,7 +1153,7 @@ export async function runPhasePr(
       const conflictCheck = await checkMergeConflicts(
         config.base_branch,
         branchResult.branchName,
-        gitOptions
+        gitOptions,
       );
 
       if (conflictCheck.hasConflicts) {
@@ -1111,8 +1171,12 @@ export async function runPhasePr(
     if (!dryRun) {
       try {
         rollbackSha = await getBranchSha(config.base_branch, gitOptions);
-        logger.info(`Rollback anchor: ${config.base_branch} is at ${rollbackSha}`);
-        logger.info(`To rollback: git reset --hard ${rollbackSha} && git push --force origin ${config.base_branch}`);
+        logger.info(
+          `Rollback anchor: ${config.base_branch} is at ${rollbackSha}`,
+        );
+        logger.info(
+          `To rollback: git reset --hard ${rollbackSha} && git push --force origin ${config.base_branch}`,
+        );
       } catch (err) {
         const error = `Failed to capture rollback SHA: ${err instanceof Error ? err.message : String(err)}`;
         item = { ...item, last_error: error };
@@ -1127,7 +1191,7 @@ export async function runPhasePr(
         config.base_branch,
         branchResult.branchName,
         commitMessage,
-        gitOptions
+        gitOptions,
       );
 
       // Verify merge landed on remote (Spec 006 Gap 2: Direct Mode Verification)
@@ -1135,12 +1199,15 @@ export async function runPhasePr(
       if (!dryRun) {
         try {
           // Fetch the remote base branch to verify our merge is there
-          await runGitCommand(["fetch", "origin", config.base_branch], gitOptions);
+          await runGitCommand(
+            ["fetch", "origin", config.base_branch],
+            gitOptions,
+          );
 
           // Get the local HEAD SHA
           const localHeadResult = await runGitCommand(
             ["rev-parse", config.base_branch],
-            gitOptions
+            gitOptions,
           );
           if (localHeadResult.exitCode !== 0) {
             throw new Error("Failed to get local HEAD SHA");
@@ -1150,7 +1217,7 @@ export async function runPhasePr(
           // Get the remote HEAD SHA
           const remoteHeadResult = await runGitCommand(
             ["rev-parse", `origin/${config.base_branch}`],
-            gitOptions
+            gitOptions,
           );
           if (remoteHeadResult.exitCode !== 0) {
             throw new Error("Failed to get remote HEAD SHA");
@@ -1161,16 +1228,19 @@ export async function runPhasePr(
           if (localHeadSha !== remoteHeadSha) {
             logger.warn(
               `Merge verification warning: local HEAD (${localHeadSha}) does not match remote HEAD (${remoteHeadSha}). ` +
-              `This is expected if the push to origin failed or was skipped.`
+                `This is expected if the push to origin failed or was skipped.`,
             );
           } else {
             logger.info(
-              `Direct merge verified: local and remote ${config.base_branch} both at ${localHeadSha}`
+              `Direct merge verified: local and remote ${config.base_branch} both at ${localHeadSha}`,
             );
           }
         } catch (verifyErr) {
-          const verifyError = verifyErr instanceof Error ? verifyErr.message : String(verifyErr);
-          logger.warn(`Direct merge verification skipped or failed: ${verifyError}`);
+          const verifyError =
+            verifyErr instanceof Error ? verifyErr.message : String(verifyErr);
+          logger.warn(
+            `Direct merge verification skipped or failed: ${verifyError}`,
+          );
         }
       }
     } catch (err) {
@@ -1198,14 +1268,18 @@ export async function runPhasePr(
     const progressPath = getProgressLogPath(root, item.id);
     const logEntry = `[${completedAt}] Completed: Direct merge to ${config.base_branch}\n`;
     if (rollbackSha) {
-      await fs.appendFile(progressPath, `${logEntry}Rollback SHA: ${rollbackSha}\n`, "utf-8");
+      await fs.appendFile(
+        progressPath,
+        `${logEntry}Rollback SHA: ${rollbackSha}\n`,
+        "utf-8",
+      );
     } else {
       await fs.appendFile(progressPath, logEntry, "utf-8");
     }
 
     logger.info(
       `Merged ${itemId} directly to ${config.base_branch} (direct mode)` +
-      (rollbackSha ? ` - Rollback SHA: ${rollbackSha}` : "")
+        (rollbackSha ? ` - Rollback SHA: ${rollbackSha}` : ""),
     );
 
     // Branch cleanup for direct mode (Gap 4: Branch Cleanup)
@@ -1216,16 +1290,21 @@ export async function runPhasePr(
         {
           ...gitOptions,
           deleteRemote: config.branch_cleanup.delete_remote,
-        }
+        },
       );
       if (cleanupResult.error) {
         logger.warn(`Branch cleanup warning: ${cleanupResult.error}`);
       }
     } else if (!dryRun) {
       // Switch back to base branch even if cleanup is disabled
-      const checkoutResult = await runGitCommand(["checkout", config.base_branch], gitOptions);
+      const checkoutResult = await runGitCommand(
+        ["checkout", config.base_branch],
+        gitOptions,
+      );
       if (checkoutResult.exitCode !== 0) {
-        logger.warn(`Failed to switch back to ${config.base_branch}: ${checkoutResult.stdout}`);
+        logger.warn(
+          `Failed to switch back to ${config.base_branch}: ${checkoutResult.stdout}`,
+        );
       }
     }
 
@@ -1282,13 +1361,17 @@ export async function runPhasePr(
           prBody = parsed.body;
           logger.info("Generated PR description using Claude");
         } else {
-          logger.warn("Could not parse PR JSON from agent output, using default description");
+          logger.warn(
+            "Could not parse PR JSON from agent output, using default description",
+          );
         }
       } else {
         logger.warn("Agent failed to generate PR description, using default");
       }
     } catch (err) {
-      logger.warn(`Failed to generate PR description: ${err instanceof Error ? err.message : String(err)}`);
+      logger.warn(
+        `Failed to generate PR description: ${err instanceof Error ? err.message : String(err)}`,
+      );
     }
   }
 
@@ -1300,7 +1383,7 @@ export async function runPhasePr(
       branchResult.branchName,
       prTitle,
       prBody,
-      gitOptions
+      gitOptions,
     );
   } catch (err) {
     const error = err instanceof Error ? err.message : String(err);
@@ -1314,7 +1397,7 @@ export async function runPhasePr(
   if (!dryRun && prResult.created) {
     const mergeability: PrMergeabilityResult = await checkPrMergeability(
       prResult.number,
-      gitOptions
+      gitOptions,
     );
 
     if (mergeability.determined) {
@@ -1325,14 +1408,14 @@ export async function runPhasePr(
         // The user can resolve conflicts in the PR
         logger.warn(
           `PR #${prResult.number} has merge conflicts and may not be mergeable. ` +
-          `Please resolve conflicts in the PR or rebase.`
+            `Please resolve conflicts in the PR or rebase.`,
         );
       }
     } else {
       // GitHub hasn't calculated mergeability yet
       logger.info(
         `PR #${prResult.number} created. Mergeability status not yet available ` +
-        `from GitHub (may take a moment).`
+          `from GitHub (may take a moment).`,
       );
     }
   }
@@ -1350,14 +1433,19 @@ export async function runPhasePr(
   logger.info(
     `${prResult.created ? "Created" : "Updated"} PR for ${itemId}: ${
       prResult.url
-    }`
+    }`,
   );
 
   // Switch back to base branch after PR creation
   if (!dryRun) {
-    const checkoutResult = await runGitCommand(["checkout", config.base_branch], gitOptions);
+    const checkoutResult = await runGitCommand(
+      ["checkout", config.base_branch],
+      gitOptions,
+    );
     if (checkoutResult.exitCode !== 0) {
-      logger.warn(`Failed to switch back to ${config.base_branch}: ${checkoutResult.stdout}`);
+      logger.warn(
+        `Failed to switch back to ${config.base_branch}: ${checkoutResult.stdout}`,
+      );
     }
   }
 
@@ -1366,7 +1454,7 @@ export async function runPhasePr(
 
 export async function runPhaseComplete(
   itemId: string,
-  options: WorkflowOptions
+  options: WorkflowOptions,
 ): Promise<PhaseResult> {
   const { root, config, logger, dryRun = false } = options;
 
@@ -1431,22 +1519,26 @@ export async function runPhaseComplete(
   if (prDetails.headRefName !== expectedBranch) {
     logger.warn(
       `PR head branch ${prDetails.headRefName} differs from expected ${expectedBranch}. ` +
-      `This may indicate the wrong PR was merged.`
+        `This may indicate the wrong PR was merged.`,
     );
   }
 
   // Log completion metadata for audit trail (Spec 006 Gap 5: Audit Trail)
   logger.info(
     `PR #${item.pr_number} merged at ${prDetails.mergedAt}` +
-    (prDetails.mergeCommitOid ? ` (commit: ${prDetails.mergeCommitOid})` : "") +
-    (prDetails.checksPassed !== null ? ` - CI checks: ${prDetails.checksPassed ? "PASSED" : "FAILED/UNKNOWN"}` : "")
+      (prDetails.mergeCommitOid
+        ? ` (commit: ${prDetails.mergeCommitOid})`
+        : "") +
+      (prDetails.checksPassed !== null
+        ? ` - CI checks: ${prDetails.checksPassed ? "PASSED" : "FAILED/UNKNOWN"}`
+        : ""),
   );
 
   // Warn if CI checks didn't pass
   if (prDetails.checksPassed === false) {
     logger.warn(
       `PR #${item.pr_number} was merged but CI checks did not pass. ` +
-      `This may indicate force-merge or bypassed review.`
+        `This may indicate force-merge or bypassed review.`,
     );
   }
 
@@ -1467,7 +1559,11 @@ export async function runPhaseComplete(
   const progressPath = getProgressLogPath(root, item.id);
   const logEntry = `[${completedAt}] Completed: PR #${item.pr_number} merged to ${prDetails.baseRefName} at ${prDetails.mergedAt}\n`;
   if (prDetails.mergeCommitOid) {
-    await fs.appendFile(progressPath, `${logEntry}Merge commit: ${prDetails.mergeCommitOid}\n`, "utf-8");
+    await fs.appendFile(
+      progressPath,
+      `${logEntry}Merge commit: ${prDetails.mergeCommitOid}\n`,
+      "utf-8",
+    );
   } else {
     await fs.appendFile(progressPath, logEntry, "utf-8");
   }
@@ -1476,22 +1572,23 @@ export async function runPhaseComplete(
 
   // Branch cleanup for PR mode (Gap 4: Branch Cleanup)
   if (config.branch_cleanup.enabled && item.branch) {
-    const cleanupResult = await cleanupBranch(
-      item.branch,
-      config.base_branch,
-      {
-        ...gitOptions,
-        deleteRemote: config.branch_cleanup.delete_remote,
-      }
-    );
+    const cleanupResult = await cleanupBranch(item.branch, config.base_branch, {
+      ...gitOptions,
+      deleteRemote: config.branch_cleanup.delete_remote,
+    });
     if (cleanupResult.error) {
       logger.warn(`Branch cleanup warning: ${cleanupResult.error}`);
     }
   } else if (!dryRun) {
     // Switch back to base branch even if cleanup is disabled
-    const checkoutResult = await runGitCommand(["checkout", config.base_branch], gitOptions);
+    const checkoutResult = await runGitCommand(
+      ["checkout", config.base_branch],
+      gitOptions,
+    );
     if (checkoutResult.exitCode !== 0) {
-      logger.warn(`Failed to switch back to ${config.base_branch}: ${checkoutResult.stdout}`);
+      logger.warn(
+        `Failed to switch back to ${config.base_branch}: ${checkoutResult.stdout}`,
+      );
     }
   }
 
@@ -1517,7 +1614,7 @@ export async function runPhaseComplete(
  * @returns The next phase name, or null if the workflow is complete
  */
 export function getNextPhase(
-  item: Item
+  item: Item,
 ): "research" | "plan" | "implement" | "critique" | "pr" | "complete" | null {
   switch (item.state) {
     case "idea":

@@ -2,20 +2,21 @@ import * as readline from "node:readline";
 import {
   unstable_v2_createSession,
   query,
-  type unstable_v2_Session,
 } from "@anthropic-ai/claude-agent-sdk";
+
+type SessionType = Awaited<ReturnType<typeof unstable_v2_createSession>>;
 import { loadPromptTemplate } from "../prompts";
 import type { ParsedIdea } from "./ideas";
 import { createIdeasMcpServer } from "../agent/mcp/ideasMcpServer";
 import { buildSdkEnv } from "../agent/env";
-import { createLogger, logger, type Logger } from "../logging";
+import { createLogger } from "../logging";
 import { hasUncommittedChanges, isGitRepo } from "../git";
 import { assertPayloadLimits } from "./validation";
 import { McpToolNotCalledError } from "../errors";
 
 export interface InterviewOptions {
   verbose?: boolean;
-  logger?: Logger;
+  logger?: unknown;
 }
 
 // ANSI color codes for terminal formatting
@@ -29,7 +30,6 @@ const colors = {
   blue: "\x1b[34m",
   magenta: "\x1b[35m",
   gray: "\x1b[90m",
-  red: "\x1b[31m",
 };
 
 const fmt = {
@@ -41,7 +41,6 @@ const fmt = {
   blue: (s: string) => `${colors.blue}${s}${colors.reset}`,
   magenta: (s: string) => `${colors.magenta}${s}${colors.reset}`,
   gray: (s: string) => `${colors.gray}${s}${colors.reset}`,
-  red: (s: string) => `${colors.red}${s}${colors.reset}`,
 };
 
 /**
@@ -49,36 +48,44 @@ const fmt = {
  * Handles: **bold**, *italic*, headers, lists, and code blocks.
  */
 function renderMarkdown(text: string): string {
-  return text
-    .split("\n")
-    .map((line) => {
-      // Headers
-      if (line.startsWith("### ")) {
-        return fmt.bold(line.slice(4));
-      }
-      if (line.startsWith("## ")) {
-        return fmt.bold(line.slice(3));
-      }
-      if (line.startsWith("# ")) {
-        return fmt.bold(line.slice(2));
-      }
-      // Bullet points - add color
-      if (line.match(/^\s*[-*]\s/)) {
-        return line.replace(/^(\s*)([-*])(\s)/, `$1${colors.cyan}•${colors.reset}$3`);
-      }
-      // Numbered lists
-      if (line.match(/^\s*\d+\.\s/)) {
-        return line.replace(/^(\s*)(\d+\.)(\s)/, `$1${colors.cyan}$2${colors.reset}$3`);
-      }
-      return line;
-    })
-    .join("\n")
-    // Bold **text**
-    .replace(/\*\*([^*]+)\*\*/g, `${colors.bold}$1${colors.reset}`)
-    // Italic *text*
-    .replace(/\*([^*]+)\*/g, `${colors.dim}$1${colors.reset}`)
-    // Inline code `text`
-    .replace(/`([^`]+)`/g, `${colors.cyan}$1${colors.reset}`);
+  return (
+    text
+      .split("\n")
+      .map((line) => {
+        // Headers
+        if (line.startsWith("### ")) {
+          return fmt.bold(line.slice(4));
+        }
+        if (line.startsWith("## ")) {
+          return fmt.bold(line.slice(3));
+        }
+        if (line.startsWith("# ")) {
+          return fmt.bold(line.slice(2));
+        }
+        // Bullet points - add color
+        if (line.match(/^\s*[-*]\s/)) {
+          return line.replace(
+            /^(\s*)([-*])(\s)/,
+            `$1${colors.cyan}•${colors.reset}$3`,
+          );
+        }
+        // Numbered lists
+        if (line.match(/^\s*\d+\.\s/)) {
+          return line.replace(
+            /^(\s*)(\d+\.)(\s)/,
+            `$1${colors.cyan}$2${colors.reset}$3`,
+          );
+        }
+        return line;
+      })
+      .join("\n")
+      // Bold **text**
+      .replace(/\*\*([^*]+)\*\*/g, `${colors.bold}$1${colors.reset}`)
+      // Italic *text*
+      .replace(/\*([^*]+)\*/g, `${colors.dim}$1${colors.reset}`)
+      // Inline code `text`
+      .replace(/`([^`]+)`/g, `${colors.cyan}$1${colors.reset}`)
+  );
 }
 
 /**
@@ -91,10 +98,14 @@ function createSpinner(message: string) {
 
   return {
     start() {
-      process.stdout.write(`${colors.dim}${frames[0]} ${message}${colors.reset}`);
+      process.stdout.write(
+        `${colors.dim}${frames[0]} ${message}${colors.reset}`,
+      );
       interval = setInterval(() => {
         i = (i + 1) % frames.length;
-        process.stdout.write(`\r${colors.dim}${frames[i]} ${message}${colors.reset}`);
+        process.stdout.write(
+          `\r${colors.dim}${frames[i]} ${message}${colors.reset}`,
+        );
       }, 80);
     },
     stop() {
@@ -136,7 +147,9 @@ function isDoneSignal(input: string): boolean {
     "go ahead",
     "do it",
   ];
-  return doneWords.some((word) => normalized === word || normalized.startsWith(word + " "));
+  return doneWords.some(
+    (word) => normalized === word || normalized.startsWith(word + " "),
+  );
 }
 
 /**
@@ -144,7 +157,15 @@ function isDoneSignal(input: string): boolean {
  */
 function isCancelSignal(input: string): boolean {
   const normalized = input.toLowerCase().trim();
-  const cancelWords = ["quit", "exit", "cancel", "abort", "nevermind", "never mind", "q"];
+  const cancelWords = [
+    "quit",
+    "exit",
+    "cancel",
+    "abort",
+    "nevermind",
+    "never mind",
+    "q",
+  ];
   return cancelWords.includes(normalized);
 }
 
@@ -153,20 +174,18 @@ function isCancelSignal(input: string): boolean {
  * Returns the parsed ideas array.
  */
 async function finishInterview(
-  session: unstable_v2_Session,
+  session: SessionType,
   sessionId: string,
   verbose?: boolean,
   sdkEnv?: Record<string, string>,
-  logger?: Logger
 ): Promise<ParsedIdea[]> {
-  const internalLogger = logger ?? createLogger({ verbose: false });
   const spinner = createSpinner("Finishing...");
   spinner.start();
 
   // First, send a wrap-up message to the session to get a summary
   session.send(
     "The user is done. Give a ONE sentence summary of what was captured. " +
-      "Do NOT output JSON or ask any more questions."
+      "Do NOT output JSON or ask any more questions.",
   );
 
   let assistantResponse = "";
@@ -184,9 +203,9 @@ async function finishInterview(
   // Show the summary
   spinner.stop();
   const rendered = renderMarkdown(assistantResponse.trim());
-  logger.info(fmt.magenta("Agent:"));
-  logger.info(rendered);
-  logger.info("");
+  console.log(fmt.magenta("Agent:"));
+  console.log(rendered);
+  console.log("");
 
   // Now use query() with resume to pipe the transcript to MCP for structured extraction
   const extractSpinner = createSpinner("Extracting ideas...");
@@ -232,13 +251,19 @@ async function finishInterview(
     }
   } catch (error) {
     extractSpinner.stop();
-    internalLogger.error("Failed to extract ideas via MCP tool");
-    internalLogger.warn("The agent must call the save_interview_ideas tool to capture ideas.");
-    internalLogger.warn("JSON fallback has been removed for security reasons.");
+    console.error("\x1b[31mFailed to extract ideas via MCP tool\x1b[0m");
+    console.error(
+      fmt.yellow(
+        "The agent must call the save_interview_ideas tool to capture ideas.",
+      ),
+    );
+    console.error(
+      fmt.yellow("JSON fallback has been removed for security reasons."),
+    );
     throw new McpToolNotCalledError(
       "Agent did not call the required MCP tool (save_interview_ideas). " +
         "The agent must use the structured tool call to save ideas from interviews. " +
-        "JSON fallback has been removed for security reasons."
+        "JSON fallback has been removed for security reasons.",
     );
   }
 
@@ -252,12 +277,18 @@ async function finishInterview(
   // tool channel. This is a fail-closed design - if the tool isn't called, the
   // operation fails rather than falling back to an insecure extraction method.
   if (capturedIdeas.length === 0) {
-    internalLogger.error("Failed to extract ideas - MCP tool was not called");
-    internalLogger.warn("The agent must call the save_interview_ideas tool to capture ideas.");
+    console.error(
+      "\x1b[31mFailed to extract ideas - MCP tool was not called\x1b[0m",
+    );
+    console.error(
+      fmt.yellow(
+        "The agent must call the save_interview_ideas tool to capture ideas.",
+      ),
+    );
     throw new McpToolNotCalledError(
       "Agent did not call the required MCP tool (save_interview_ideas). " +
         "The agent must use the structured tool call to save ideas from interviews. " +
-        "JSON fallback has been removed for security reasons."
+        "JSON fallback has been removed for security reasons.",
     );
   }
 
@@ -266,11 +297,13 @@ async function finishInterview(
     assertPayloadLimits(capturedIdeas);
   } catch (error) {
     const err = error as Error;
-    internalLogger.warn(`Warning: ${err.message}`);
-    internalLogger.warn("Some ideas may not have been captured correctly.");
+    console.error(fmt.yellow(`Warning: ${err.message}`));
+    console.error(
+      fmt.yellow("Some ideas may not have been captured correctly."),
+    );
     return [];
   }
-  internalLogger.info(`Captured ${capturedIdeas.length} idea(s)`);
+  console.log(fmt.green(`✓ Captured ${capturedIdeas.length} idea(s)`));
   return capturedIdeas;
 }
 
@@ -280,25 +313,29 @@ async function finishInterview(
  */
 export async function runIdeaInterview(
   root: string,
-  options: InterviewOptions = {}
+  options: InterviewOptions = {},
 ): Promise<ParsedIdea[]> {
   const systemPrompt = await loadPromptTemplate(root, "interview");
 
   // Build SDK environment to pass custom credentials (ANTHROPIC_AUTH_TOKEN, etc.)
-  const internalLogger = options.logger ?? createLogger({ verbose: options.verbose });
-  const sdkEnv = await buildSdkEnv({ cwd: root, logger: internalLogger });
+  const logger = createLogger({ verbose: options.verbose });
+  const sdkEnv = await buildSdkEnv({ cwd: root, logger });
 
   // Warn if user has uncommitted changes before starting interview
   const inGitRepo = await isGitRepo(root);
   if (inGitRepo) {
-    const hasChanges = await hasUncommittedChanges({ cwd: root, logger: internalLogger });
+    const hasChanges = await hasUncommittedChanges({ cwd: root, logger });
     if (hasChanges) {
-      logger.info("");
-      logger.info("⚠️  You have uncommitted changes.");
-      logger.info("  The idea phase is for planning and exploration only.");
-      logger.info("  The agent is configured to read-only and cannot make code changes.");
-      logger.info("  You may want to commit or stash your work first for a clean slate.");
-      logger.info("");
+      console.log("");
+      console.log("⚠️  You have uncommitted changes.");
+      console.log("  The idea phase is for planning and exploration only.");
+      console.log(
+        "  The agent is configured to read-only and cannot make code changes.",
+      );
+      console.log(
+        "  You may want to commit or stash your work first for a clean slate.",
+      );
+      console.log("");
     }
   }
 
@@ -316,7 +353,7 @@ export async function runIdeaInterview(
     });
   };
 
-  let session: unstable_v2_Session | null = null;
+  let session: SessionType | null = null;
   let sessionId: string | null = null;
   let conversationLog: string[] = [];
   let ideas: ParsedIdea[] = [];
@@ -334,22 +371,24 @@ export async function runIdeaInterview(
     } as any); // Cast to any since env may not be in the type definition yet
 
     // Start the conversation - get user's idea FIRST
-    logger.info("");
-    logger.info(fmt.gray("─".repeat(60)));
-    logger.info(fmt.bold(" 🚀  Capture a new idea"));
-    logger.info(fmt.gray("─".repeat(60)));
-    logger.info(fmt.dim("Type 'done' when finished, 'quit' to cancel"));
-    logger.info("");
-    logger.info("What's your idea? " + fmt.dim("(Just describe it in your own words)"));
-    logger.info("");
+    console.log("");
+    console.log(fmt.gray("─".repeat(60)));
+    console.log(fmt.bold(" 🚀  Capture a new idea"));
+    console.log(fmt.gray("─".repeat(60)));
+    console.log(fmt.dim("Type 'done' when finished, 'quit' to cancel"));
+    console.log("");
+    console.log(
+      "What's your idea? " + fmt.dim("(Just describe it in your own words)"),
+    );
+    console.log("");
 
     // Get the user's initial idea before involving the agent
     const initialIdea = await askUser(`${fmt.green("You:   ")}`);
 
     // Check for cancel/empty
     if (isCancelSignal(initialIdea) || !initialIdea.trim()) {
-      logger.info("");
-      logger.info(fmt.yellow("No idea provided. Cancelled."));
+      console.log("");
+      console.log(fmt.yellow("No idea provided. Cancelled."));
       rl.close();
       return [];
     }
@@ -360,7 +399,7 @@ export async function runIdeaInterview(
     session.send(
       `The user has described their idea: "${initialIdea}"\n\n` +
         "Skip the greeting - they've already started. Ask 1-2 clarifying questions to fill in gaps " +
-        "(success criteria, constraints, scope). Be concise."
+        "(success criteria, constraints, scope). Be concise.",
     );
 
     // Main conversation loop
@@ -395,9 +434,9 @@ export async function runIdeaInterview(
 
       // Render markdown and print with agent prefix
       const rendered = renderMarkdown(assistantResponse.trim());
-      logger.info(fmt.magenta("Agent:"));
-      logger.info(rendered);
-      logger.info("");
+      console.log(fmt.magenta("Agent:"));
+      console.log(rendered);
+      console.log("");
       conversationLog.push(`Assistant: ${assistantResponse}`);
 
       // Check if the response contains JSON (interview complete)
@@ -413,23 +452,34 @@ export async function runIdeaInterview(
 
       // Check for cancel commands
       if (isCancelSignal(userInput)) {
-        logger.info("");
-        logger.info(fmt.yellow("Interview cancelled."));
+        console.log("");
+        console.log(fmt.yellow("Interview cancelled."));
         rl.close();
         return [];
       }
 
       // Check for empty input (just pressed enter) - treat as done signal
       if (!userInput.trim()) {
-        logger.info(fmt.dim("(Press Enter again to finish, or type your response)"));
+        console.log(
+          fmt.dim("(Press Enter again to finish, or type your response)"),
+        );
         const secondInput = await askUser(`${fmt.green("You:   ")}`);
         if (!secondInput.trim()) {
           // Double-enter means done - finish immediately
           conversationLog.push(`User: [done signal]`);
           if (!sessionId) {
-            internalLogger.warn("No session ID captured, falling back to JSON extraction");
+            console.error(
+              fmt.yellow(
+                "Warning: No session ID captured, falling back to JSON extraction",
+              ),
+            );
           }
-          ideas = await finishInterview(session, sessionId || "", options.verbose, sdkEnv, internalLogger);
+          ideas = await finishInterview(
+            session,
+            sessionId || "",
+            options.verbose,
+            sdkEnv,
+          );
           isComplete = true;
           break;
         }
@@ -442,9 +492,18 @@ export async function runIdeaInterview(
       if (isDoneSignal(userInput)) {
         conversationLog.push(`User: [done signal]`);
         if (!sessionId) {
-          internalLogger.warn("No session ID captured, falling back to JSON extraction");
+          console.error(
+            fmt.yellow(
+              "Warning: No session ID captured, falling back to JSON extraction",
+            ),
+          );
         }
-        ideas = await finishInterview(session, sessionId || "", options.verbose, sdkEnv, internalLogger);
+        ideas = await finishInterview(
+          session,
+          sessionId || "",
+          options.verbose,
+          sdkEnv,
+        );
         isComplete = true;
         break;
       }
@@ -459,8 +518,8 @@ export async function runIdeaInterview(
   } catch (error) {
     // Handle Ctrl+C or other interruptions
     if ((error as any)?.code === "ERR_USE_AFTER_CLOSE") {
-      logger.info("");
-      logger.info(fmt.yellow("Interview interrupted."));
+      console.log("");
+      console.log(fmt.yellow("Interview interrupted."));
       return [];
     }
     throw error;
@@ -528,30 +587,36 @@ export async function runSimpleInterview(): Promise<ParsedIdea[]> {
     });
   };
 
-  logger.info("");
-  logger.info(fmt.bold("Capture Your Idea"));
-  logger.info(fmt.gray("─".repeat(60)));
-  logger.info("");
+  console.log("");
+  console.log(fmt.bold("Capture Your Idea"));
+  console.log(fmt.gray("─".repeat(60)));
+  console.log("");
 
   try {
     const title = await ask(`${fmt.bold("Title:")} `);
     if (!title.trim()) {
-      logger.info(fmt.yellow("No title provided. Cancelled."));
+      console.log(fmt.yellow("No title provided. Cancelled."));
       return [];
     }
 
-    const description = await ask(`\n${fmt.bold("Description")} ${fmt.dim("(what you want to accomplish)")}\n> `);
+    const description = await ask(
+      `\n${fmt.bold("Description")} ${fmt.dim("(what you want to accomplish)")}\n> `,
+    );
 
-    const problem = await ask(`\n${fmt.bold("Problem")} ${fmt.dim("(what issue this solves - Enter to skip)")}\n> `);
+    const problem = await ask(
+      `\n${fmt.bold("Problem")} ${fmt.dim("(what issue this solves - Enter to skip)")}\n> `,
+    );
 
-    const motivation = await ask(`\n${fmt.bold("Why")} ${fmt.dim("(why this is important - Enter to skip)")}\n> `);
+    const motivation = await ask(
+      `\n${fmt.bold("Why")} ${fmt.dim("(why this is important - Enter to skip)")}\n> `,
+    );
 
     const success = await ask(
-      `\n${fmt.bold("Success criteria")} ${fmt.dim("(how you'll know it works - Enter to skip)")}\n> `
+      `\n${fmt.bold("Success criteria")} ${fmt.dim("(how you'll know it works - Enter to skip)")}\n> `,
     );
 
     const constraints = await ask(
-      `\n${fmt.bold("Constraints")} ${fmt.dim("(technical limits - Enter to skip)")}\n> `
+      `\n${fmt.bold("Constraints")} ${fmt.dim("(technical limits - Enter to skip)")}\n> `,
     );
 
     const idea: ParsedIdea = {
@@ -578,19 +643,25 @@ export async function runSimpleInterview(): Promise<ParsedIdea[]> {
         .filter(Boolean);
     }
 
-    logger.info("");
-    logger.info("");
-    logger.info(fmt.gray("─".repeat(60)));
-    logger.info(fmt.bold("Captured:"));
-    logger.info("");
-    logger.info(`  ${fmt.bold("Title:")} ${idea.title}`);
-    logger.info(`  ${fmt.bold("Description:")} ${idea.description}`);
-    if (idea.problemStatement) logger.info(`  ${fmt.bold("Problem:")} ${idea.problemStatement}`);
-    if (idea.motivation) logger.info(`  ${fmt.bold("Motivation:")} ${idea.motivation}`);
-    if (idea.successCriteria?.length) logger.info(`  ${fmt.bold("Success:")} ${idea.successCriteria.join(", ")}`);
+    console.log("");
+    console.log(fmt.gray("─".repeat(60)));
+    console.log(fmt.bold("Captured:"));
+    console.log("");
+    console.log(`  ${fmt.bold("Title:")} ${idea.title}`);
+    console.log(`  ${fmt.bold("Description:")} ${idea.description}`);
+    if (idea.problemStatement)
+      console.log(`  ${fmt.bold("Problem:")} ${idea.problemStatement}`);
+    if (idea.motivation)
+      console.log(`  ${fmt.bold("Motivation:")} ${idea.motivation}`);
+    if (idea.successCriteria?.length)
+      console.log(
+        `  ${fmt.bold("Success:")} ${idea.successCriteria.join(", ")}`,
+      );
     if (idea.technicalConstraints?.length)
-      logger.info(`  ${fmt.bold("Constraints:")} ${idea.technicalConstraints.join(", ")}`);
-    logger.info("");
+      console.log(
+        `  ${fmt.bold("Constraints:")} ${idea.technicalConstraints.join(", ")}`,
+      );
+    console.log("");
 
     return [idea];
   } finally {

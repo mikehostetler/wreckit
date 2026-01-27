@@ -9,7 +9,7 @@ import type { Item } from "../../schemas";
 async function createItem(
   root: string,
   slug: string,
-  state: string = "idea"
+  state: string = "idea",
 ): Promise<Item> {
   const itemDir = path.join(root, ".wreckit", "items", slug);
   await fs.mkdir(itemDir, { recursive: true });
@@ -28,7 +28,10 @@ async function createItem(
     updated_at: new Date().toISOString(),
   };
 
-  await fs.writeFile(path.join(itemDir, "item.json"), JSON.stringify(item, null, 2));
+  await fs.writeFile(
+    path.join(itemDir, "item.json"),
+    JSON.stringify(item, null, 2),
+  );
   return item;
 }
 
@@ -37,7 +40,9 @@ describe("resolveId", () => {
 
   beforeEach(async () => {
     tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "wreckit-resolve-test-"));
-    await fs.mkdir(path.join(tempDir, ".wreckit", "items"), { recursive: true });
+    await fs.mkdir(path.join(tempDir, ".wreckit", "items"), {
+      recursive: true,
+    });
     await fs.mkdir(path.join(tempDir, ".git"), { recursive: true });
   });
 
@@ -114,8 +119,12 @@ describe("resolveId", () => {
     it("throws ItemNotFoundError for non-existent slug", async () => {
       await createItem(tempDir, "001-auth");
 
-      await expect(resolveId(tempDir, "nonexistent")).rejects.toThrow(ItemNotFoundError);
-      await expect(resolveId(tempDir, "nonexistent")).rejects.toThrow("Item not found");
+      await expect(resolveId(tempDir, "nonexistent")).rejects.toThrow(
+        ItemNotFoundError,
+      );
+      await expect(resolveId(tempDir, "nonexistent")).rejects.toThrow(
+        "Item not found",
+      );
     });
   });
 
@@ -172,7 +181,7 @@ describe("resolveId", () => {
 
     it("prefers numeric prefix over slug suffix when both could match", async () => {
       await createItem(tempDir, "001-auth");
-      await createItem(tempDir, "002-1");  // slug is "1"
+      await createItem(tempDir, "002-1"); // slug is "1"
 
       // "1" should match numeric prefix (001-auth), not slug suffix (002-1)
       const result = await resolveId(tempDir, "1");
@@ -186,7 +195,9 @@ describe("buildIdMap", () => {
 
   beforeEach(async () => {
     tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "wreckit-idmap-test-"));
-    await fs.mkdir(path.join(tempDir, ".wreckit", "items"), { recursive: true });
+    await fs.mkdir(path.join(tempDir, ".wreckit", "items"), {
+      recursive: true,
+    });
   });
 
   afterEach(async () => {

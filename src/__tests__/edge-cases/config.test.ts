@@ -8,6 +8,7 @@ import {
   applyOverrides,
   DEFAULT_CONFIG,
   type ConfigOverrides,
+  type ConfigResolved,
 } from "../../config";
 import { InvalidJsonError, SchemaValidationError } from "../../errors";
 
@@ -20,7 +21,7 @@ describe("Edge Cases: Config Handling (Tests 42-46)", () => {
 
   beforeEach(async () => {
     tempDir = await fs.mkdtemp(
-      path.join(os.tmpdir(), "wreckit-config-edge-test-")
+      path.join(os.tmpdir(), "wreckit-config-edge-test-"),
     );
     await fs.mkdir(path.join(tempDir, ".wreckit"), { recursive: true });
   });
@@ -41,12 +42,10 @@ describe("Edge Cases: Config Handling (Tests 42-46)", () => {
       expect(result.schema_version).toBe(1);
       expect(result.base_branch).toBe("main");
       expect(result.branch_prefix).toBe("wreckit/");
-      expect(result.agent.command).toBe("claude");
-      expect(result.agent.args).toEqual([
-        "--dangerously-skip-permissions",
-        "--print",
-      ]);
-      expect(result.agent.completion_signal).toBe("<promise>COMPLETE</promise>");
+      expect(result.agent.kind).toBe("claude_sdk");
+      if (result.agent.kind === "claude_sdk") {
+        expect(result.agent.model).toBe("claude-sonnet-4-20250514");
+      }
       expect(result.max_iterations).toBe(100);
       expect(result.timeout_seconds).toBe(3600);
     });
@@ -61,7 +60,7 @@ describe("Edge Cases: Config Handling (Tests 42-46)", () => {
     it("throws InvalidJsonError for malformed JSON with missing quotes", async () => {
       await fs.writeFile(
         path.join(tempDir, ".wreckit", "config.json"),
-        '{ base_branch: "main" }'
+        '{ base_branch: "main" }',
       );
 
       await expect(loadConfig(tempDir)).rejects.toThrow(InvalidJsonError);
@@ -70,7 +69,7 @@ describe("Edge Cases: Config Handling (Tests 42-46)", () => {
     it("throws InvalidJsonError for truncated JSON", async () => {
       await fs.writeFile(
         path.join(tempDir, ".wreckit", "config.json"),
-        '{ "base_branch": "main"'
+        '{ "base_branch": "main"',
       );
 
       await expect(loadConfig(tempDir)).rejects.toThrow(InvalidJsonError);
@@ -79,7 +78,7 @@ describe("Edge Cases: Config Handling (Tests 42-46)", () => {
     it("throws InvalidJsonError for completely invalid content", async () => {
       await fs.writeFile(
         path.join(tempDir, ".wreckit", "config.json"),
-        "this is not json at all"
+        "this is not json at all",
       );
 
       await expect(loadConfig(tempDir)).rejects.toThrow(InvalidJsonError);
@@ -91,7 +90,7 @@ describe("Edge Cases: Config Handling (Tests 42-46)", () => {
 
       try {
         await loadConfig(tempDir);
-        expect.fail("Should have thrown InvalidJsonError");
+        throw new Error("Should have thrown InvalidJsonError");
       } catch (err) {
         expect(err).toBeInstanceOf(InvalidJsonError);
         expect((err as InvalidJsonError).message).toContain(configPath);
@@ -99,10 +98,7 @@ describe("Edge Cases: Config Handling (Tests 42-46)", () => {
     });
 
     it("throws InvalidJsonError for empty file", async () => {
-      await fs.writeFile(
-        path.join(tempDir, ".wreckit", "config.json"),
-        ""
-      );
+      await fs.writeFile(path.join(tempDir, ".wreckit", "config.json"), "");
 
       await expect(loadConfig(tempDir)).rejects.toThrow(InvalidJsonError);
     });
@@ -110,7 +106,7 @@ describe("Edge Cases: Config Handling (Tests 42-46)", () => {
     it("throws InvalidJsonError for JSON with trailing commas", async () => {
       await fs.writeFile(
         path.join(tempDir, ".wreckit", "config.json"),
-        '{ "base_branch": "main", }'
+        '{ "base_branch": "main", }',
       );
 
       await expect(loadConfig(tempDir)).rejects.toThrow(InvalidJsonError);
@@ -121,7 +117,7 @@ describe("Edge Cases: Config Handling (Tests 42-46)", () => {
     it("throws SchemaValidationError when base_branch is a number", async () => {
       await fs.writeFile(
         path.join(tempDir, ".wreckit", "config.json"),
-        JSON.stringify({ base_branch: 123 })
+        JSON.stringify({ base_branch: 123 }),
       );
 
       await expect(loadConfig(tempDir)).rejects.toThrow(SchemaValidationError);
@@ -130,7 +126,7 @@ describe("Edge Cases: Config Handling (Tests 42-46)", () => {
     it("throws SchemaValidationError when schema_version is a string", async () => {
       await fs.writeFile(
         path.join(tempDir, ".wreckit", "config.json"),
-        JSON.stringify({ schema_version: "one" })
+        JSON.stringify({ schema_version: "one" }),
       );
 
       await expect(loadConfig(tempDir)).rejects.toThrow(SchemaValidationError);
@@ -139,7 +135,7 @@ describe("Edge Cases: Config Handling (Tests 42-46)", () => {
     it("throws SchemaValidationError when agent is a string instead of object", async () => {
       await fs.writeFile(
         path.join(tempDir, ".wreckit", "config.json"),
-        JSON.stringify({ agent: "invalid-agent" })
+        JSON.stringify({ agent: "invalid-agent" }),
       );
 
       await expect(loadConfig(tempDir)).rejects.toThrow(SchemaValidationError);
@@ -148,7 +144,7 @@ describe("Edge Cases: Config Handling (Tests 42-46)", () => {
     it("throws SchemaValidationError when max_iterations is negative", async () => {
       await fs.writeFile(
         path.join(tempDir, ".wreckit", "config.json"),
-        JSON.stringify({ max_iterations: -5 })
+        JSON.stringify({ max_iterations: -5 }),
       );
 
       await expect(loadConfig(tempDir)).rejects.toThrow(SchemaValidationError);
@@ -157,7 +153,7 @@ describe("Edge Cases: Config Handling (Tests 42-46)", () => {
     it("throws SchemaValidationError when timeout_seconds is a boolean", async () => {
       await fs.writeFile(
         path.join(tempDir, ".wreckit", "config.json"),
-        JSON.stringify({ timeout_seconds: true })
+        JSON.stringify({ timeout_seconds: true }),
       );
 
       await expect(loadConfig(tempDir)).rejects.toThrow(SchemaValidationError);
@@ -168,11 +164,12 @@ describe("Edge Cases: Config Handling (Tests 42-46)", () => {
         path.join(tempDir, ".wreckit", "config.json"),
         JSON.stringify({
           agent: {
+            kind: "process",
             command: "claude",
             args: "--flag",
             completion_signal: "DONE",
           },
-        })
+        }),
       );
 
       await expect(loadConfig(tempDir)).rejects.toThrow(SchemaValidationError);
@@ -184,7 +181,7 @@ describe("Edge Cases: Config Handling (Tests 42-46)", () => {
 
       try {
         await loadConfig(tempDir);
-        expect.fail("Should have thrown SchemaValidationError");
+        throw new Error("Should have thrown SchemaValidationError");
       } catch (err) {
         expect(err).toBeInstanceOf(SchemaValidationError);
         expect((err as SchemaValidationError).message).toContain(configPath);
@@ -199,11 +196,10 @@ describe("Edge Cases: Config Handling (Tests 42-46)", () => {
         JSON.stringify({
           branch_prefix: "feature/",
           agent: {
-            command: "claude",
-            args: ["--print"],
-            completion_signal: "DONE",
+            kind: "claude_sdk",
+            model: "claude-sonnet-4-20250514",
           },
-        })
+        }),
       );
 
       const result = await loadConfig(tempDir);
@@ -216,17 +212,21 @@ describe("Edge Cases: Config Handling (Tests 42-46)", () => {
         path.join(tempDir, ".wreckit", "config.json"),
         JSON.stringify({
           agent: {
+            kind: "process",
             command: "custom-agent",
             args: ["--custom"],
             completion_signal: "CUSTOM_DONE",
           },
-        })
+        }),
       );
 
       const result = await loadConfig(tempDir);
-      expect(result.agent.command).toBe("custom-agent");
-      expect(result.agent.args).toEqual(["--custom"]);
-      expect(result.agent.completion_signal).toBe("CUSTOM_DONE");
+      expect(result.agent.kind).toBe("process");
+      if (result.agent.kind === "process") {
+        expect(result.agent.command).toBe("custom-agent");
+        expect(result.agent.args).toEqual(["--custom"]);
+        expect(result.agent.completion_signal).toBe("CUSTOM_DONE");
+      }
     });
 
     it("mergeWithDefaults returns full defaults for empty object", () => {
@@ -250,15 +250,19 @@ describe("Edge Cases: Config Handling (Tests 42-46)", () => {
     it("mergeWithDefaults handles partial agent with all fields", () => {
       const result = mergeWithDefaults({
         agent: {
+          kind: "process",
           command: "my-agent",
           args: ["--verbose"],
           completion_signal: "FINISHED",
         },
       });
 
-      expect(result.agent.command).toBe("my-agent");
-      expect(result.agent.args).toEqual(["--verbose"]);
-      expect(result.agent.completion_signal).toBe("FINISHED");
+      expect(result.agent.kind).toBe("process");
+      if (result.agent.kind === "process") {
+        expect(result.agent.command).toBe("my-agent");
+        expect(result.agent.args).toEqual(["--verbose"]);
+        expect(result.agent.completion_signal).toBe("FINISHED");
+      }
     });
 
     it("config with schema_version and agent fills other defaults", async () => {
@@ -267,18 +271,22 @@ describe("Edge Cases: Config Handling (Tests 42-46)", () => {
         JSON.stringify({
           schema_version: 2,
           agent: {
+            kind: "process",
             command: "my-agent",
             args: ["--flag"],
             completion_signal: "DONE",
           },
-        })
+        }),
       );
 
       const result = await loadConfig(tempDir);
       expect(result.schema_version).toBe(2);
       expect(result.base_branch).toBe(DEFAULT_CONFIG.base_branch);
       expect(result.branch_prefix).toBe(DEFAULT_CONFIG.branch_prefix);
-      expect(result.agent.command).toBe("my-agent");
+      expect(result.agent.kind).toBe("process");
+      if (result.agent.kind === "process") {
+        expect(result.agent.command).toBe("my-agent");
+      }
       expect(result.max_iterations).toBe(DEFAULT_CONFIG.max_iterations);
       expect(result.timeout_seconds).toBe(DEFAULT_CONFIG.timeout_seconds);
     });
@@ -291,11 +299,10 @@ describe("Edge Cases: Config Handling (Tests 42-46)", () => {
         JSON.stringify({
           base_branch: "main",
           agent: {
-            command: "claude",
-            args: ["--print"],
-            completion_signal: "DONE",
+            kind: "claude_sdk",
+            model: "claude-sonnet-4-20250514",
           },
-        })
+        }),
       );
 
       const result = await loadConfig(tempDir, { baseBranch: "master" });
@@ -310,11 +317,10 @@ describe("Edge Cases: Config Handling (Tests 42-46)", () => {
           branch_prefix: "wreckit/",
           max_iterations: 100,
           agent: {
-            command: "claude",
-            args: ["--print"],
-            completion_signal: "DONE",
+            kind: "claude_sdk",
+            model: "claude-sonnet-4-20250514",
           },
-        })
+        }),
       );
 
       const overrides: ConfigOverrides = {
@@ -335,33 +341,67 @@ describe("Edge Cases: Config Handling (Tests 42-46)", () => {
       expect(result).toEqual(config);
     });
 
-    it("applyOverrides applies agentCommand override", () => {
-      const result = applyOverrides(DEFAULT_CONFIG, {
+    it("applyOverrides applies agentCommand override for process mode", () => {
+      const processConfig: ConfigResolved = {
+        ...DEFAULT_CONFIG,
+        agent: {
+          kind: "process",
+          command: "claude",
+          args: ["--print"],
+          completion_signal: "DONE",
+        },
+      };
+      const result = applyOverrides(processConfig, {
         agentCommand: "custom-agent",
       });
 
-      expect(result.agent.command).toBe("custom-agent");
-      expect(result.agent.args).toEqual(DEFAULT_CONFIG.agent.args);
-      expect(result.agent.completion_signal).toBe(
-        DEFAULT_CONFIG.agent.completion_signal
-      );
+      expect(result.agent.kind).toBe("process");
+      if (result.agent.kind === "process") {
+        expect(result.agent.command).toBe("custom-agent");
+        expect(result.agent.args).toEqual(["--print"]);
+        expect(result.agent.completion_signal).toBe("DONE");
+      }
     });
 
-    it("applyOverrides applies agentArgs override", () => {
-      const result = applyOverrides(DEFAULT_CONFIG, {
+    it("applyOverrides applies agentArgs override for process mode", () => {
+      const processConfig: ConfigResolved = {
+        ...DEFAULT_CONFIG,
+        agent: {
+          kind: "process",
+          command: "claude",
+          args: ["--print"],
+          completion_signal: "DONE",
+        },
+      };
+      const result = applyOverrides(processConfig, {
         agentArgs: ["--debug", "--verbose"],
       });
 
-      expect(result.agent.args).toEqual(["--debug", "--verbose"]);
-      expect(result.agent.command).toBe(DEFAULT_CONFIG.agent.command);
+      expect(result.agent.kind).toBe("process");
+      if (result.agent.kind === "process") {
+        expect(result.agent.args).toEqual(["--debug", "--verbose"]);
+        expect(result.agent.command).toBe("claude");
+      }
     });
 
-    it("applyOverrides applies completionSignal override", () => {
-      const result = applyOverrides(DEFAULT_CONFIG, {
+    it("applyOverrides applies completionSignal override for process mode", () => {
+      const processConfig: ConfigResolved = {
+        ...DEFAULT_CONFIG,
+        agent: {
+          kind: "process",
+          command: "claude",
+          args: ["--print"],
+          completion_signal: "DONE",
+        },
+      };
+      const result = applyOverrides(processConfig, {
         completionSignal: "TASK_DONE",
       });
 
-      expect(result.agent.completion_signal).toBe("TASK_DONE");
+      expect(result.agent.kind).toBe("process");
+      if (result.agent.kind === "process") {
+        expect(result.agent.completion_signal).toBe("TASK_DONE");
+      }
     });
 
     it("applyOverrides applies timeoutSeconds override", () => {
@@ -380,7 +420,16 @@ describe("Edge Cases: Config Handling (Tests 42-46)", () => {
       expect(result.branch_prefix).toBe(DEFAULT_CONFIG.branch_prefix);
     });
 
-    it("all overrides can be applied together", () => {
+    it("all overrides can be applied together for process mode", () => {
+      const processConfig: ConfigResolved = {
+        ...DEFAULT_CONFIG,
+        agent: {
+          kind: "process",
+          command: "claude",
+          args: ["--print"],
+          completion_signal: "DONE",
+        },
+      };
       const overrides: ConfigOverrides = {
         baseBranch: "release",
         branchPrefix: "release/",
@@ -391,13 +440,16 @@ describe("Edge Cases: Config Handling (Tests 42-46)", () => {
         timeoutSeconds: 300,
       };
 
-      const result = applyOverrides(DEFAULT_CONFIG, overrides);
+      const result = applyOverrides(processConfig, overrides);
 
       expect(result.base_branch).toBe("release");
       expect(result.branch_prefix).toBe("release/");
-      expect(result.agent.command).toBe("release-agent");
-      expect(result.agent.args).toEqual(["--release"]);
-      expect(result.agent.completion_signal).toBe("RELEASED");
+      expect(result.agent.kind).toBe("process");
+      if (result.agent.kind === "process") {
+        expect(result.agent.command).toBe("release-agent");
+        expect(result.agent.args).toEqual(["--release"]);
+        expect(result.agent.completion_signal).toBe("RELEASED");
+      }
       expect(result.max_iterations).toBe(5);
       expect(result.timeout_seconds).toBe(300);
       expect(result.schema_version).toBe(DEFAULT_CONFIG.schema_version);

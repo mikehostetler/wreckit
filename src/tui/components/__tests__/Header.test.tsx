@@ -32,7 +32,9 @@ describe("Header", () => {
 
   describe("currentItem text", () => {
     it("shows 'Running: {itemId}' when currentItem exists", () => {
-      const state = createMockTuiState({ currentItem: "foundation/001-core-types" });
+      const state = createMockTuiState({
+        currentItem: "foundation/001-core-types",
+      });
 
       const currentItemText = state.currentItem
         ? `Running: ${state.currentItem}`

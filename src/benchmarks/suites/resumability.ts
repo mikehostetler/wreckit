@@ -35,7 +35,7 @@ function createTestItem(id: string, state: Item["state"]): Item {
 function createTestPrd(
   id: string,
   pendingCount: number,
-  doneCount: number
+  doneCount: number,
 ): Prd {
   const stories: Story[] = [];
 
@@ -80,7 +80,7 @@ function createTestPrd(
  * - State recovery (combined item + PRD read)
  */
 export async function runResumabilitySuite(
-  options: ResumabilityOptions = {}
+  options: ResumabilityOptions = {},
 ): Promise<SuiteResult> {
   const { iterations = 10 } = options;
   const metrics: Metric[] = [];
@@ -89,7 +89,13 @@ export async function runResumabilitySuite(
   // Benchmark 1: Item read time
   {
     const tempDir = makeTempDir();
-    const itemDir = path.join(tempDir, ".wreckit", "items", "bench", "001-test");
+    const itemDir = path.join(
+      tempDir,
+      ".wreckit",
+      "items",
+      "bench",
+      "001-test",
+    );
     await fs.mkdir(itemDir, { recursive: true });
 
     const item = createTestItem("bench/001-test", "planned");
@@ -99,7 +105,7 @@ export async function runResumabilitySuite(
       async () => {
         await readItem(itemDir);
       },
-      { iterations }
+      { iterations },
     );
 
     const stats = calculateStats(samples);
@@ -115,7 +121,13 @@ export async function runResumabilitySuite(
   // Benchmark 2: PRD read with 10 stories
   {
     const tempDir = makeTempDir();
-    const itemDir = path.join(tempDir, ".wreckit", "items", "bench", "002-test");
+    const itemDir = path.join(
+      tempDir,
+      ".wreckit",
+      "items",
+      "bench",
+      "002-test",
+    );
     await fs.mkdir(itemDir, { recursive: true });
 
     const prd = createTestPrd("bench/002-test", 5, 5); // 5 pending, 5 done = 10 total
@@ -125,7 +137,7 @@ export async function runResumabilitySuite(
       async () => {
         await readPrd(itemDir);
       },
-      { iterations }
+      { iterations },
     );
 
     const stats = calculateStats(samples);
@@ -141,7 +153,13 @@ export async function runResumabilitySuite(
   // Benchmark 3: Story skip detection (finding first pending among 50 done)
   {
     const tempDir = makeTempDir();
-    const itemDir = path.join(tempDir, ".wreckit", "items", "bench", "003-test");
+    const itemDir = path.join(
+      tempDir,
+      ".wreckit",
+      "items",
+      "bench",
+      "003-test",
+    );
     await fs.mkdir(itemDir, { recursive: true });
 
     // 50 done, 1 pending at the end
@@ -155,9 +173,10 @@ export async function runResumabilitySuite(
           .filter((s) => s.status === "pending")
           .sort((a, b) => a.priority - b.priority);
         // Simulate the check that happens in itemWorkflow.ts
-        if (pending.length === 0) throw new Error("Unexpected: no pending stories");
+        if (pending.length === 0)
+          throw new Error("Unexpected: no pending stories");
       },
-      { iterations }
+      { iterations },
     );
 
     const stats = calculateStats(samples);
@@ -173,7 +192,13 @@ export async function runResumabilitySuite(
   // Benchmark 4: State recovery (read item + PRD together)
   {
     const tempDir = makeTempDir();
-    const itemDir = path.join(tempDir, ".wreckit", "items", "bench", "004-test");
+    const itemDir = path.join(
+      tempDir,
+      ".wreckit",
+      "items",
+      "bench",
+      "004-test",
+    );
     await fs.mkdir(itemDir, { recursive: true });
 
     const item = createTestItem("bench/004-test", "implementing");
@@ -191,12 +216,12 @@ export async function runResumabilitySuite(
         if (loadedItem.state !== "implementing")
           throw new Error("Unexpected state");
         const pending = loadedPrd.user_stories.filter(
-          (s) => s.status === "pending"
+          (s) => s.status === "pending",
         );
         if (pending.length === 0)
           throw new Error("Unexpected: no pending stories");
       },
-      { iterations }
+      { iterations },
     );
 
     const stats = calculateStats(samples);

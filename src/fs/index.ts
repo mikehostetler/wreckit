@@ -43,12 +43,6 @@ export {
   type PathAccessResult,
 } from "./util";
 
-export {
-  safeWriteJson,
-  cleanupOrphanedTmpFiles,
-} from "./atomic";
+export { safeWriteJson, cleanupOrphanedTmpFiles } from "./atomic";
 
-export {
-  FileLock,
-  withRetry,
-} from "./lock";
+export { FileLock, withRetry } from "./lock";

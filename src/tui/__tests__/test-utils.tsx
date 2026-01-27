@@ -1,12 +1,18 @@
 import { vi } from "bun:test";
-import type { TuiState, ToolExecution, AgentActivityForItem } from "../dashboard";
+import type {
+  TuiState,
+  ToolExecution,
+  AgentActivityForItem,
+} from "../dashboard";
 import { createTuiState } from "../dashboard";
 import type { IndexItem } from "../../schemas";
 
 /**
  * Creates a mock TuiState with optional overrides
  */
-export function createMockTuiState(overrides: Partial<TuiState> = {}): TuiState {
+export function createMockTuiState(
+  overrides: Partial<TuiState> = {},
+): TuiState {
   const items: IndexItem[] = [
     {
       id: "foundation/001-core-types",
@@ -72,7 +78,7 @@ export function createMockStdout(columns: number = 80, rows: number = 24) {
  * Creates a mock ToolExecution object
  */
 export function createMockToolExecution(
-  overrides: Partial<ToolExecution> = {}
+  overrides: Partial<ToolExecution> = {},
 ): ToolExecution {
   return {
     toolUseId: "tool-123",
@@ -88,7 +94,7 @@ export function createMockToolExecution(
  * Creates a mock AgentActivityForItem object
  */
 export function createMockAgentActivity(
-  overrides: Partial<AgentActivityForItem> = {}
+  overrides: Partial<AgentActivityForItem> = {},
 ): AgentActivityForItem {
   return {
     thoughts: ["Thinking about the problem"],
@@ -129,7 +135,7 @@ export function mockUseStdout(stdout: { columns: number; rows: number }) {
  * Creates a mock IndexItem for testing
  */
 export function createMockIndexItem(
-  overrides: Partial<IndexItem> = {}
+  overrides: Partial<IndexItem> = {},
 ): IndexItem {
   return {
     id: "foundation/001-test",

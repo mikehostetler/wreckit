@@ -204,7 +204,9 @@ describe("color utility functions", () => {
     });
 
     it("formats url inputs with truncation", () => {
-      const input = { url: "https://example.com/very/long/path/that/needs/truncation" };
+      const input = {
+        url: "https://example.com/very/long/path/that/needs/truncation",
+      };
       const result = formatToolInput(input);
       expect(result).toMatch(/^🌐/);
       expect(result.length).toBeLessThanOrEqual(44); // icon + space + 40 chars max
@@ -281,7 +283,11 @@ describe("color utility functions", () => {
     });
 
     it("formats Glob result with file paths", () => {
-      const result = ["/path/to/file1.ts", "/path/to/file2.ts", "/path/to/file3.ts"];
+      const result = [
+        "/path/to/file1.ts",
+        "/path/to/file2.ts",
+        "/path/to/file3.ts",
+      ];
       const formatted = formatToolResult("Glob", result);
       expect(formatted).toContain("file1.ts");
       expect(formatted).toContain("file2.ts");
@@ -289,7 +295,12 @@ describe("color utility functions", () => {
     });
 
     it("shows count for Glob results with more than 3 files", () => {
-      const result = ["/path/file1.ts", "/path/file2.ts", "/path/file3.ts", "/path/file4.ts"];
+      const result = [
+        "/path/file1.ts",
+        "/path/file2.ts",
+        "/path/file3.ts",
+        "/path/file4.ts",
+      ];
       const formatted = formatToolResult("Glob", result);
       expect(formatted).toContain("(+1 more)");
     });

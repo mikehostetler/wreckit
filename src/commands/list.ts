@@ -25,10 +25,10 @@ function extractTitle(rawTitle: string): string {
 
 export async function listCommand(
   options: ListOptions,
-  logger: Logger
+  _logger: Logger,
 ): Promise<void> {
   const root = findRootFromOptions(options);
-  const allItems = await buildIdMap(root, { logger });
+  const allItems = await buildIdMap(root);
 
   const items = options.state
     ? allItems.filter((i) => i.state === options.state)
@@ -41,33 +41,34 @@ export async function listCommand(
       state: i.state,
       title: i.title,
     }));
-    logger.json(jsonItems);
+    console.log(JSON.stringify(jsonItems, null, 2));
     return;
   }
 
   if (items.length === 0) {
-    logger.info("No items found");
+    console.log("No items found");
     return;
   }
 
   const stateWidth = Math.max(5, ...items.map((i) => i.state.length));
-  
+
   const cleanItems = items.map((i) => ({
     ...i,
     cleanTitle: extractTitle(i.title),
   }));
-  
+
   const header = `${"#".padStart(3)}  ${"STATE".padEnd(stateWidth)}  TITLE`;
-  logger.info(header);
+  console.log(header);
 
   for (const item of cleanItems) {
-    const displayTitle = item.cleanTitle.length > 60 
-      ? item.cleanTitle.substring(0, 57) + "..."
-      : item.cleanTitle;
+    const displayTitle =
+      item.cleanTitle.length > 60
+        ? item.cleanTitle.substring(0, 57) + "..."
+        : item.cleanTitle;
     const line = `${String(item.shortId).padStart(3)}  ${item.state.padEnd(stateWidth)}  ${displayTitle}`;
-    logger.info(line);
+    console.log(line);
   }
 
-  logger.info("");
-  logger.info(`Total: ${items.length} item(s)`);
+  console.log("");
+  console.log(`Total: ${items.length} item(s)`);
 }

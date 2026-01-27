@@ -51,8 +51,8 @@ export async function scanItems(root: string): Promise<IndexItem[]> {
       if (err instanceof InvalidJsonError) continue;
       if (err instanceof SchemaValidationError) continue;
       // Unexpected errors (permissions): log warning
-      logger.warn(
-        `Warning: Cannot read item at ${itemPath}: ${err instanceof Error ? err.message : String(err)}`
+      console.warn(
+        `Warning: Cannot read item at ${itemPath}: ${err instanceof Error ? err.message : String(err)}`,
       );
     }
   }
@@ -63,7 +63,7 @@ export async function scanItems(root: string): Promise<IndexItem[]> {
 
 export async function statusCommand(
   options: StatusOptions,
-  logger: Logger
+  logger: Logger,
 ): Promise<void> {
   const root = findRootFromOptions(options);
   const items = await buildIdMap(root);
@@ -75,20 +75,24 @@ export async function statusCommand(
       state: i.state,
       title: i.title,
     }));
-    logger.json({ schema_version: 1, items: jsonItems, generated_at: new Date().toISOString() });
+    logger.json({
+      schema_version: 1,
+      items: jsonItems,
+      generated_at: new Date().toISOString(),
+    });
     return;
   }
 
   if (items.length === 0) {
-    logger.info("No items found");
+    console.log("No items found");
     return;
   }
 
   const header = `${"#".padStart(3)}  STATE`;
-  logger.info(header);
+  console.log(header);
 
   for (const item of items) {
     const line = `${String(item.shortId).padStart(3)}  ${item.state}`;
-    logger.info(line);
+    console.log(line);
   }
 }

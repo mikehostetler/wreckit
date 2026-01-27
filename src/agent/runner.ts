@@ -125,7 +125,10 @@ export function getAgentConfig(config: ConfigResolved): AgentConfig {
   };
 }
 
-async function simulateMockAgent(options: RunAgentOptions, config: AgentConfig): Promise<AgentResult> {
+async function simulateMockAgent(
+  options: RunAgentOptions,
+  config: AgentConfig,
+): Promise<AgentResult> {
   const mockLines = [
     "🤖 [mock-agent] Starting simulated agent run...",
     "📋 [mock-agent] Analyzing prompt...",
@@ -158,10 +161,20 @@ async function simulateMockAgent(options: RunAgentOptions, config: AgentConfig):
 }
 
 export async function runAgent(options: RunAgentOptions): Promise<AgentResult> {
-  const { config, cwd, prompt, logger, dryRun = false, mockAgent = false } = options;
+  const {
+    config,
+    cwd,
+    prompt,
+    logger,
+    dryRun = false,
+    mockAgent = false,
+  } = options;
 
   if (dryRun) {
-    const modeLabel = config.mode === "sdk" ? "SDK agent" : `process: ${config.command} ${config.args.join(" ")}`;
+    const modeLabel =
+      config.mode === "sdk"
+        ? "SDK agent"
+        : `process: ${config.command} ${config.args.join(" ")}`;
     logger.info(`[dry-run] Would run ${modeLabel}`);
     logger.info(`[dry-run] Working directory: ${cwd}`);
     logger.info(`[dry-run] Prompt length: ${prompt.length} characters`);
@@ -204,8 +217,12 @@ export async function runAgent(options: RunAgentOptions): Promise<AgentResult> {
   return runProcessAgent(options, config);
 }
 
-async function runProcessAgent(options: RunAgentOptions): Promise<AgentResult> {
-  const { config, cwd, prompt, logger } = options;
+async function runProcessAgent(
+  options: RunAgentOptions,
+  configOverride?: AgentConfig,
+): Promise<AgentResult> {
+  const config = configOverride ?? options.config;
+  const { cwd, prompt, logger } = options;
 
   return new Promise((resolve) => {
     let output = "";
@@ -299,7 +316,9 @@ async function runProcessAgent(options: RunAgentOptions): Promise<AgentResult> {
       activeProcessAgents.delete(child);
       if (timeoutId) clearTimeout(timeoutId);
       const success = code === 0 && completionDetected;
-      logger.debug(`Agent exited with code ${code}, completion detected: ${completionDetected}`);
+      logger.debug(
+        `Agent exited with code ${code}, completion detected: ${completionDetected}`,
+      );
       resolve({
         success,
         output,
@@ -345,7 +364,9 @@ function exhaustiveCheck(x: never): never {
  * Run an agent using the new discriminated union config.
  * This is the new dispatch system that supports multiple agent backends.
  */
-export async function runAgentUnion(options: UnionRunAgentOptions): Promise<AgentResult> {
+export async function runAgentUnion(
+  options: UnionRunAgentOptions,
+): Promise<AgentResult> {
   const { config, logger, dryRun = false, mockAgent = false } = options;
 
   if (dryRun) {

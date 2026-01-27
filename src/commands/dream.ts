@@ -24,7 +24,11 @@ export interface DreamOptions {
  * Returns 0-1 score where 1.0 is identical.
  */
 export function calculateSimilarity(s1: string, s2: string): number {
-  const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
+  const normalize = (s: string) =>
+    s
+      .replace(/^\[DREAMER\]\s*/i, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, "");
   const n1 = normalize(s1);
   const n2 = normalize(s2);
 
@@ -62,7 +66,11 @@ export function calculateSimilarity(s1: string, s2: string): number {
     k++;
   }
 
-  const jaro = (matches / n1.length + matches / n2.length + (matches - transpositions / 2) / matches) / 3;
+  const jaro =
+    (matches / n1.length +
+      matches / n2.length +
+      (matches - transpositions / 2) / matches) /
+    3;
 
   // Jaro-Winkler adjustment for common prefix
   let prefix = 0;
@@ -82,7 +90,7 @@ function isTooSimilarToExisting(
   idea: ParsedIdea,
   existingItems: any[],
   dreamerSlugs: Set<string>,
-  logger: Logger
+  logger: Logger,
 ): boolean {
   const ideaSlug = generateSlug(idea.title);
 
@@ -93,14 +101,23 @@ function isTooSimilarToExisting(
   }
 
   // Similarity check (excluding [DREAMER] prefix for comparison)
-  const ideaTitleWithoutPrefix = idea.title.replace(/^\\\[DREAMER\\\\]\\s*/, "").toLowerCase();
+  const ideaTitleWithoutPrefix = idea.title
+    .replace(/^\\\[DREAMER\\\\]\\s*/, "")
+    .toLowerCase();
 
   for (const item of existingItems) {
-    const itemTitleWithoutPrefix = item.title.replace(/^\\\[DREAMER\\\\]\\s*/, "").toLowerCase();
-    const similarity = calculateSimilarity(ideaTitleWithoutPrefix, itemTitleWithoutPrefix);
+    const itemTitleWithoutPrefix = item.title
+      .replace(/^\\\[DREAMER\\\\]\\s*/, "")
+      .toLowerCase();
+    const similarity = calculateSimilarity(
+      ideaTitleWithoutPrefix,
+      itemTitleWithoutPrefix,
+    );
 
     if (similarity >= 0.85) {
-      logger.info(`Skipping similar item: "${idea.title}" is ${Math.round(similarity * 100)}% similar to existing "${item.title}"`);
+      logger.info(
+        `Skipping similar item: "${idea.title}" is ${Math.round(similarity * 100)}% similar to existing "${item.title}"`,
+      );
       return true;
     }
   }
@@ -116,8 +133,9 @@ function hasSufficientEvidence(idea: ParsedIdea, logger: Logger): boolean {
   const text = JSON.stringify(idea);
 
   // Check for file path patterns (e.g., src/file.ts or src\file.ts)
-  const hasFilePath = /src\/[\/\\]?[\w.]+\.[:\w]+/.test(text) ||
-                      /\w+\.(ts|js|tsx|jsx|md|json):?\d*/.test(text);
+  const hasFilePath =
+    /src\/[\/\\]?[\w.]+\.[:\w]+/.test(text) ||
+    /\w+\.(ts|js|tsx|jsx|md|json):?\d*/.test(text);
 
   if (!hasFilePath) {
     logger.warn(`Idea lacks evidence (file:line reference): "${idea.title}"`);
@@ -135,7 +153,11 @@ function hasSufficientEvidence(idea: ParsedIdea, logger: Logger): boolean {
  * 2. Created timestamp is very recent (last hour)
  * 3. Item ID number is >= current run's starting point
  */
-async function filterDreamerItems(root: string, allItems: any[], logger: Logger): Promise<Set<string>> {
+async function filterDreamerItems(
+  root: string,
+  allItems: any[],
+  logger: Logger,
+): Promise<Set<string>> {
   const now = new Date();
   const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
   const dreamerSlugs = new Set<string>();
@@ -179,7 +201,9 @@ async function filterDreamerItems(root: string, allItems: any[], logger: Logger)
   }
 
   if (dreamerSlugs.size > 0) {
-    logger.info(`Filtered out ${dreamerSlugs.size} dreamer-generated items to prevent loops`);
+    logger.info(
+      `Filtered out ${dreamerSlugs.size} dreamer-generated items to prevent loops`,
+    );
   }
 
   return dreamerSlugs;
@@ -193,7 +217,7 @@ async function filterDreamerItems(root: string, allItems: any[], logger: Logger)
  */
 export async function dreamCommand(
   options: DreamOptions,
-  logger: Logger
+  logger: Logger,
 ): Promise<void> {
   const root = findRootFromOptions(options);
   const config = await loadConfig(root);
@@ -206,8 +230,8 @@ export async function dreamCommand(
 
   // Build summary of existing items for context
   const existingItemsSummary = allItems
-    .filter(item => !dreamerSlugs.has(generateSlug(item.title)))
-    .map(item => `- ${item.id}: ${item.title}`)
+    .filter((item) => !dreamerSlugs.has(generateSlug(item.title)))
+    .map((item) => `- ${item.id}: ${item.title}`)
     .join("\n");
 
   if (options.dryRun) {
@@ -215,7 +239,9 @@ export async function dreamCommand(
     logger.info(`  Root: ${root}`);
     logger.info(`  Max items: ${maxItems}`);
     logger.info(`  Source filter: ${options.source || "all"}`);
-    logger.info(`  Existing items: ${allItems.length - dreamerSlugs.size} (filtered ${dreamerSlugs.size} dreamer items)`);
+    logger.info(
+      `  Existing items: ${allItems.length - dreamerSlugs.size} (filtered ${dreamerSlugs.size} dreamer items)`,
+    );
     return;
   }
 
@@ -229,7 +255,8 @@ export async function dreamCommand(
     id: "dream",
     title: "Autonomous Ideation",
     section: "items",
-    overview: "Scan codebase for TODOs, FIXMEs, and gaps to generate new roadmap items",
+    overview:
+      "Scan codebase for TODOs, FIXMEs, and gaps to generate new roadmap items",
     item_path: root,
     branch_name: "",
     base_branch: config.base_branch,
@@ -283,8 +310,8 @@ export async function dreamCommand(
   if (capturedIdeas.length === 0) {
     throw new McpToolNotCalledError(
       "Dreamer agent did not call the required MCP tool (save_dream_ideas). " +
-      "The agent must use the structured tool call to save ideas. " +
-      "This prevents unstructured output that bypasses validation."
+        "The agent must use the structured tool call to save ideas. " +
+        "This prevents unstructured output that bypasses validation.",
     );
   }
 

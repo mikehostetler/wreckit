@@ -1,12 +1,19 @@
 import { describe, it, expect, mock } from "bun:test";
 import React from "react";
 import { AgentActivityPane } from "../AgentActivityPane";
-import { createMockTuiState, createMockAgentActivity } from "../../__tests__/test-utils";
+import {
+  createMockTuiState,
+  createMockAgentActivity,
+} from "../../__tests__/test-utils";
 
 // Mock Ink components
 mock.module("ink", () => ({
   Box: ({ children, width, height, flexDirection, marginTop }: any) =>
-    React.createElement("div", { width, height, flexDirection, marginTop }, children),
+    React.createElement(
+      "div",
+      { width, height, flexDirection, marginTop },
+      children,
+    ),
   Text: ({ children, dimColor, wrap }: any) =>
     React.createElement("span", { dimColor, wrap }, children),
 }));
@@ -14,7 +21,11 @@ mock.module("ink", () => ({
 // Mock ToolCallItem
 mock.module("./ToolCallItem", () => ({
   ToolCallItem: ({ tool, width, showResult }: any) =>
-    React.createElement("div", { "data-tool": tool.toolUseId, width, showResult }),
+    React.createElement("div", {
+      "data-tool": tool.toolUseId,
+      width,
+      showResult,
+    }),
 }));
 
 describe("AgentActivityPane", () => {
@@ -222,7 +233,8 @@ describe("AgentActivityPane", () => {
       const idx = 0; // First tool
       const tool = recentTools[idx];
 
-      const showResult = idx === recentTools.length - 1 && tool.status === "completed";
+      const showResult =
+        idx === recentTools.length - 1 && tool.status === "completed";
 
       expect(showResult).toBe(false);
     });
@@ -237,7 +249,8 @@ describe("AgentActivityPane", () => {
       const idx = 1; // Last tool
       const tool = recentTools[idx];
 
-      const showResult = idx === recentTools.length - 1 && tool.status === "completed";
+      const showResult =
+        idx === recentTools.length - 1 && tool.status === "completed";
 
       expect(showResult).toBe(false);
     });

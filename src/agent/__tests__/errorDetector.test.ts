@@ -2,7 +2,7 @@
  * Unit tests for Error Detection Engine
  */
 
-import { describe, it, expect } from "@jest/globals";
+import { describe, it, expect } from "bun:test";
 import { detectRecoverableError, type ErrorDiagnosis } from "../errorDetector";
 import type { AgentResult } from "../runner";
 
@@ -40,7 +40,8 @@ describe("Error Detection Engine", () => {
     it("should detect git lock errors with 'another git process'", () => {
       const result: AgentResult = {
         success: false,
-        output: "fatal: Unable to create '.git/index.lock': Another git process is running",
+        output:
+          "fatal: Unable to create '.git/index.lock': Another git process is running",
         timedOut: false,
         exitCode: 128,
         completionDetected: false,
@@ -56,7 +57,8 @@ describe("Error Detection Engine", () => {
     it("should detect npm failure errors with npm ERR!", () => {
       const result: AgentResult = {
         success: false,
-        output: "npm ERR! code ENOENT\nnpm ERR! syscall open\nnpm ERR! path /app/node_modules/missing-module",
+        output:
+          "npm ERR! code ENOENT\nnpm ERR! syscall open\nnpm ERR! path /app/node_modules/missing-module",
         timedOut: false,
         exitCode: 1,
         completionDetected: false,
@@ -87,7 +89,8 @@ describe("Error Detection Engine", () => {
     it("should detect JSON corruption errors with unexpected token", () => {
       const result: AgentResult = {
         success: false,
-        output: "SyntaxError: Unexpected token } in JSON at position 42 while parsing config.json",
+        output:
+          "SyntaxError: Unexpected token } in JSON at position 42 while parsing config.json",
         timedOut: false,
         exitCode: 1,
         completionDetected: false,
@@ -158,7 +161,8 @@ describe("Error Detection Engine", () => {
     it("should handle mixed error types (prioritize git lock)", () => {
       const result: AgentResult = {
         success: false,
-        output: "npm ERR! code ELOCK\nUnable to create '.git/index.lock': File exists",
+        output:
+          "npm ERR! code ELOCK\nUnable to create '.git/index.lock': File exists",
         timedOut: false,
         exitCode: 1,
         completionDetected: false,

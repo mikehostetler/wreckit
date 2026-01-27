@@ -1,4 +1,13 @@
-import { describe, it, expect, beforeEach, afterEach, mock, spyOn, vi } from "bun:test";
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  mock,
+  spyOn,
+  vi,
+} from "bun:test";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import * as os from "node:os";
@@ -25,7 +34,7 @@ async function createWreckitDir(root: string): Promise<void> {
 async function createItem(
   root: string,
   id: string,
-  overrides: Partial<Item> = {}
+  overrides: Partial<Item> = {},
 ): Promise<void> {
   const itemDir = path.join(root, ".wreckit", "items", id);
   await fs.mkdir(itemDir, { recursive: true });
@@ -47,14 +56,14 @@ async function createItem(
 
   await fs.writeFile(
     path.join(itemDir, "item.json"),
-    JSON.stringify(item, null, 2)
+    JSON.stringify(item, null, 2),
   );
 }
 
 async function createPrd(
   root: string,
   id: string,
-  overrides: Partial<Prd> = {}
+  overrides: Partial<Prd> = {},
 ): Promise<void> {
   const itemDir = path.join(root, ".wreckit", "items", id);
 
@@ -77,7 +86,7 @@ async function createPrd(
 
   await fs.writeFile(
     path.join(itemDir, "prd.json"),
-    JSON.stringify(prd, null, 2)
+    JSON.stringify(prd, null, 2),
   );
 }
 
@@ -108,7 +117,7 @@ describe("diagnose", () => {
         },
         max_iterations: 100,
         timeout_seconds: 3600,
-      })
+      }),
     );
     await fs.mkdir(path.join(tempDir, ".wreckit", "prompts"));
 
@@ -128,7 +137,7 @@ describe("diagnose", () => {
   it("returns INVALID_CONFIG when config.json is invalid", async () => {
     await fs.writeFile(
       path.join(tempDir, ".wreckit", "config.json"),
-      JSON.stringify({ schema_version: "not a number" })
+      JSON.stringify({ schema_version: "not a number" }),
     );
 
     const diagnostics = await diagnose(tempDir);
@@ -141,7 +150,7 @@ describe("diagnose", () => {
   it("returns INVALID_CONFIG for malformed JSON", async () => {
     await fs.writeFile(
       path.join(tempDir, ".wreckit", "config.json"),
-      "{ invalid json }"
+      "{ invalid json }",
     );
 
     const diagnostics = await diagnose(tempDir);
@@ -194,12 +203,14 @@ describe("diagnose", () => {
     // Create symlink from expected research.md path to the inaccessible one
     await fs.symlink(
       path.join(restrictedDir, "research.md"),
-      path.join(itemDir, "research.md")
+      path.join(itemDir, "research.md"),
     );
 
     try {
       const diagnostics = await diagnose(tempDir);
-      const unreadable = diagnostics.find((d) => d.code === "ARTIFACT_UNREADABLE");
+      const unreadable = diagnostics.find(
+        (d) => d.code === "ARTIFACT_UNREADABLE",
+      );
 
       expect(unreadable).toBeDefined();
       expect(unreadable?.severity).toBe("error");
@@ -227,7 +238,9 @@ describe("diagnose", () => {
 
     try {
       const diagnostics = await diagnose(tempDir);
-      const unreadable = diagnostics.find((d) => d.code === "ITEMS_DIR_UNREADABLE");
+      const unreadable = diagnostics.find(
+        (d) => d.code === "ITEMS_DIR_UNREADABLE",
+      );
 
       expect(unreadable).toBeDefined();
       expect(unreadable?.severity).toBe("warning");
@@ -254,7 +267,7 @@ describe("diagnose", () => {
     await fs.writeFile(path.join(itemDir, "plan.md"), "# Plan");
     await fs.writeFile(
       path.join(itemDir, "prd.json"),
-      JSON.stringify({ invalid: true })
+      JSON.stringify({ invalid: true }),
     );
 
     const diagnostics = await diagnose(tempDir);
@@ -276,7 +289,7 @@ describe("diagnose", () => {
     };
     await fs.writeFile(
       path.join(tempDir, ".wreckit", "index.json"),
-      JSON.stringify(staleIndex)
+      JSON.stringify(staleIndex),
     );
 
     const diagnostics = await diagnose(tempDir);
@@ -318,11 +331,15 @@ describe("diagnose", () => {
       completed: [],
       failed: [],
       skipped: [],
+      healing_attempts: 0,
+      last_healing_at: null,
     };
     await fs.writeFile(progressPath, JSON.stringify(progress, null, 2));
 
     const diagnostics = await diagnose(tempDir);
-    const staleDiag = diagnostics.find((d) => d.code === "STALE_BATCH_PROGRESS");
+    const staleDiag = diagnostics.find(
+      (d) => d.code === "STALE_BATCH_PROGRESS",
+    );
 
     expect(staleDiag).toBeDefined();
     expect(staleDiag?.severity).toBe("warning");
@@ -332,7 +349,9 @@ describe("diagnose", () => {
 
   it("returns STALE_BATCH_PROGRESS when updated_at is older than 24 hours", async () => {
     const progressPath = path.join(tempDir, ".wreckit", "batch-progress.json");
-    const expiredTime = new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString();
+    const expiredTime = new Date(
+      Date.now() - 25 * 60 * 60 * 1000,
+    ).toISOString();
     const progress = {
       schema_version: 1,
       session_id: "expired-test",
@@ -345,11 +364,15 @@ describe("diagnose", () => {
       completed: [],
       failed: [],
       skipped: [],
+      healing_attempts: 0,
+      last_healing_at: null,
     };
     await fs.writeFile(progressPath, JSON.stringify(progress, null, 2));
 
     const diagnostics = await diagnose(tempDir);
-    const staleDiag = diagnostics.find((d) => d.code === "STALE_BATCH_PROGRESS");
+    const staleDiag = diagnostics.find(
+      (d) => d.code === "STALE_BATCH_PROGRESS",
+    );
 
     expect(staleDiag).toBeDefined();
     expect(staleDiag?.message).toContain("older than 24 hours");
@@ -360,7 +383,9 @@ describe("diagnose", () => {
     await fs.writeFile(progressPath, "{ invalid json }");
 
     const diagnostics = await diagnose(tempDir);
-    const corruptDiag = diagnostics.find((d) => d.code === "BATCH_PROGRESS_CORRUPT");
+    const corruptDiag = diagnostics.find(
+      (d) => d.code === "BATCH_PROGRESS_CORRUPT",
+    );
 
     expect(corruptDiag).toBeDefined();
     expect(corruptDiag?.severity).toBe("warning");
@@ -373,7 +398,9 @@ describe("diagnose", () => {
     await fs.writeFile(progressPath, JSON.stringify({ invalid: "schema" }));
 
     const diagnostics = await diagnose(tempDir);
-    const corruptDiag = diagnostics.find((d) => d.code === "BATCH_PROGRESS_CORRUPT");
+    const corruptDiag = diagnostics.find(
+      (d) => d.code === "BATCH_PROGRESS_CORRUPT",
+    );
 
     expect(corruptDiag).toBeDefined();
     expect(corruptDiag?.message).toContain("invalid");
@@ -382,7 +409,9 @@ describe("diagnose", () => {
   it("returns no batch progress diagnostics when file does not exist", async () => {
     const diagnostics = await diagnose(tempDir);
     const batchDiag = diagnostics.find(
-      (d) => d.code === "STALE_BATCH_PROGRESS" || d.code === "BATCH_PROGRESS_CORRUPT"
+      (d) =>
+        d.code === "STALE_BATCH_PROGRESS" ||
+        d.code === "BATCH_PROGRESS_CORRUPT",
     );
 
     expect(batchDiag).toBeUndefined();
@@ -402,12 +431,16 @@ describe("diagnose", () => {
       completed: [],
       failed: [],
       skipped: [],
+      healing_attempts: 0,
+      last_healing_at: null,
     };
     await fs.writeFile(progressPath, JSON.stringify(progress, null, 2));
 
     const diagnostics = await diagnose(tempDir);
     const batchDiag = diagnostics.find(
-      (d) => d.code === "STALE_BATCH_PROGRESS" || d.code === "BATCH_PROGRESS_CORRUPT"
+      (d) =>
+        d.code === "STALE_BATCH_PROGRESS" ||
+        d.code === "BATCH_PROGRESS_CORRUPT",
     );
 
     expect(batchDiag).toBeUndefined();
@@ -488,7 +521,11 @@ describe("applyFixes", () => {
       },
     ];
 
-    const { results, backupSessionId } = await applyFixes(tempDir, diagnostics, mockLogger);
+    const { results, backupSessionId } = await applyFixes(
+      tempDir,
+      diagnostics,
+      mockLogger,
+    );
 
     expect(results).toHaveLength(1);
     expect(results[0].fixed).toBe(true);
@@ -501,7 +538,7 @@ describe("applyFixes", () => {
       ".wreckit",
       "items",
       "001-item",
-      "item.json"
+      "item.json",
     );
     const content = await fs.readFile(itemPath, "utf-8");
     const item = JSON.parse(content);
@@ -519,7 +556,11 @@ describe("applyFixes", () => {
       },
     ];
 
-    const { results, backupSessionId } = await applyFixes(tempDir, diagnostics, mockLogger);
+    const { results, backupSessionId } = await applyFixes(
+      tempDir,
+      diagnostics,
+      mockLogger,
+    );
     expect(results).toHaveLength(0);
     expect(backupSessionId).toBeNull();
   });
@@ -544,7 +585,11 @@ describe("applyFixes", () => {
       },
     ];
 
-    const { results, backupSessionId } = await applyFixes(tempDir, diagnostics, mockLogger);
+    const { results, backupSessionId } = await applyFixes(
+      tempDir,
+      diagnostics,
+      mockLogger,
+    );
 
     expect(results).toHaveLength(2);
     expect(results.every((r) => r.fixed)).toBe(true);
@@ -579,7 +624,11 @@ describe("applyFixes", () => {
       },
     ];
 
-    const { results, backupSessionId } = await applyFixes(tempDir, diagnostics, mockLogger);
+    const { results, backupSessionId } = await applyFixes(
+      tempDir,
+      diagnostics,
+      mockLogger,
+    );
 
     expect(results).toHaveLength(1);
     expect(results[0].fixed).toBe(true);
@@ -587,7 +636,10 @@ describe("applyFixes", () => {
     expect(results[0].backup).toBeDefined();
     expect(backupSessionId).toBeDefined();
 
-    const exists = await fs.access(progressPath).then(() => true).catch(() => false);
+    const exists = await fs
+      .access(progressPath)
+      .then(() => true)
+      .catch(() => false);
     expect(exists).toBe(false);
   });
 
@@ -605,7 +657,11 @@ describe("applyFixes", () => {
       },
     ];
 
-    const { results, backupSessionId } = await applyFixes(tempDir, diagnostics, mockLogger);
+    const { results, backupSessionId } = await applyFixes(
+      tempDir,
+      diagnostics,
+      mockLogger,
+    );
 
     expect(results).toHaveLength(1);
     expect(results[0].fixed).toBe(true);
@@ -613,7 +669,10 @@ describe("applyFixes", () => {
     expect(results[0].backup).toBeDefined();
     expect(backupSessionId).toBeDefined();
 
-    const exists = await fs.access(progressPath).then(() => true).catch(() => false);
+    const exists = await fs
+      .access(progressPath)
+      .then(() => true)
+      .catch(() => false);
     expect(exists).toBe(false);
   });
 });
@@ -649,7 +708,7 @@ describe("doctorCommand", () => {
     await createItem(tempDir, "001-item", { state: "researched" });
     await fs.writeFile(
       path.join(tempDir, ".wreckit", "config.json"),
-      "{ invalid json }"
+      "{ invalid json }",
     );
 
     const consoleSpy = spyOn(console, "log");
@@ -674,7 +733,7 @@ describe("doctorCommand", () => {
       ".wreckit",
       "items",
       "001-item",
-      "item.json"
+      "item.json",
     );
     const content = await fs.readFile(itemPath, "utf-8");
     const item = JSON.parse(content);
@@ -691,7 +750,7 @@ describe("doctorCommand", () => {
       ".wreckit",
       "items",
       "001-item",
-      "item.json"
+      "item.json",
     );
     const content = await fs.readFile(itemPath, "utf-8");
     const item = JSON.parse(content);
@@ -701,7 +760,7 @@ describe("doctorCommand", () => {
   it("exits with code 1 if errors remain after fixes", async () => {
     await fs.writeFile(
       path.join(tempDir, ".wreckit", "config.json"),
-      "{ invalid json }"
+      "{ invalid json }",
     );
 
     try {
@@ -720,10 +779,15 @@ describe("doctorCommand", () => {
         schema_version: 1,
         base_branch: "main",
         branch_prefix: "wreckit/",
-        agent: { mode: "process", command: "amp", args: [], completion_signal: "DONE" },
+        agent: {
+          mode: "process",
+          command: "amp",
+          args: [],
+          completion_signal: "DONE",
+        },
         max_iterations: 100,
         timeout_seconds: 3600,
-      })
+      }),
     );
     await fs.mkdir(path.join(tempDir, ".wreckit", "prompts"));
 
@@ -741,7 +805,9 @@ describe("applyFixes backup integration", () => {
   let mockLogger: ReturnType<typeof createMockLogger>;
 
   beforeEach(async () => {
-    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "wreckit-doctor-backup-"));
+    tempDir = await fs.mkdtemp(
+      path.join(os.tmpdir(), "wreckit-doctor-backup-"),
+    );
     await createWreckitDir(tempDir);
     mockLogger = createMockLogger();
   });
@@ -763,7 +829,11 @@ describe("applyFixes backup integration", () => {
       },
     ];
 
-    const { results, backupSessionId } = await applyFixes(tempDir, diagnostics, mockLogger);
+    const { results, backupSessionId } = await applyFixes(
+      tempDir,
+      diagnostics,
+      mockLogger,
+    );
 
     expect(results).toHaveLength(1);
     expect(results[0].fixed).toBe(true);
@@ -778,7 +848,7 @@ describe("applyFixes backup integration", () => {
       backupSessionId!,
       "items",
       "001-item",
-      "item.json"
+      "item.json",
     );
     const backupContent = await fs.readFile(backupPath, "utf-8");
     const backupItem = JSON.parse(backupContent);
@@ -790,7 +860,7 @@ describe("applyFixes backup integration", () => {
       ".wreckit",
       "backups",
       backupSessionId!,
-      "manifest.json"
+      "manifest.json",
     );
     const manifestContent = await fs.readFile(manifestPath, "utf-8");
     const manifest = JSON.parse(manifestContent);
@@ -825,7 +895,11 @@ describe("applyFixes backup integration", () => {
       },
     ];
 
-    const { results, backupSessionId } = await applyFixes(tempDir, diagnostics, mockLogger);
+    const { results, backupSessionId } = await applyFixes(
+      tempDir,
+      diagnostics,
+      mockLogger,
+    );
 
     expect(results).toHaveLength(1);
     expect(results[0].fixed).toBe(true);
@@ -839,7 +913,7 @@ describe("applyFixes backup integration", () => {
       ".wreckit",
       "backups",
       backupSessionId!,
-      "batch-progress.json"
+      "batch-progress.json",
     );
     const backupContent = await fs.readFile(backupPath, "utf-8");
     const backupProgress = JSON.parse(backupContent);
@@ -868,7 +942,11 @@ describe("applyFixes backup integration", () => {
       },
     ];
 
-    const { results, backupSessionId } = await applyFixes(tempDir, diagnostics, mockLogger);
+    const { results, backupSessionId } = await applyFixes(
+      tempDir,
+      diagnostics,
+      mockLogger,
+    );
 
     expect(results).toHaveLength(1);
     expect(results[0].fixed).toBe(true);
@@ -881,7 +959,7 @@ describe("applyFixes backup integration", () => {
       ".wreckit",
       "backups",
       backupSessionId!,
-      "index.json"
+      "index.json",
     );
     const backupContent = await fs.readFile(backupPath, "utf-8");
     const backupIndex = JSON.parse(backupContent);
@@ -899,7 +977,11 @@ describe("applyFixes backup integration", () => {
       },
     ];
 
-    const { results, backupSessionId } = await applyFixes(tempDir, diagnostics, mockLogger);
+    const { results, backupSessionId } = await applyFixes(
+      tempDir,
+      diagnostics,
+      mockLogger,
+    );
 
     expect(results).toHaveLength(1);
     expect(results[0].fixed).toBe(true);
@@ -929,7 +1011,11 @@ describe("applyFixes backup integration", () => {
       },
     ];
 
-    const { results, backupSessionId } = await applyFixes(tempDir, diagnostics, mockLogger);
+    const { results, backupSessionId } = await applyFixes(
+      tempDir,
+      diagnostics,
+      mockLogger,
+    );
 
     expect(results).toHaveLength(2);
     expect(backupSessionId).toBeDefined();
@@ -939,7 +1025,7 @@ describe("applyFixes backup integration", () => {
       ".wreckit",
       "backups",
       backupSessionId!,
-      "manifest.json"
+      "manifest.json",
     );
     const manifestContent = await fs.readFile(manifestPath, "utf-8");
     const manifest = JSON.parse(manifestContent);
@@ -962,7 +1048,7 @@ describe("applyFixes backup integration", () => {
       await fs.mkdir(sessionDir);
       await fs.writeFile(
         path.join(sessionDir, "manifest.json"),
-        JSON.stringify({ schema_version: 1, session_id: sessionId, files: [] })
+        JSON.stringify({ schema_version: 1, session_id: sessionId, files: [] }),
       );
     }
 
@@ -978,7 +1064,11 @@ describe("applyFixes backup integration", () => {
       },
     ];
 
-    const { backupSessionId } = await applyFixes(tempDir, diagnostics, mockLogger);
+    const { backupSessionId } = await applyFixes(
+      tempDir,
+      diagnostics,
+      mockLogger,
+    );
 
     expect(backupSessionId).toBeDefined();
 

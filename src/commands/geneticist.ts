@@ -26,13 +26,16 @@ export interface GeneticistOptions {
 }
 
 function analyzeHealingLogs(entries: HealingLogEntry[], minErrorCount: number) {
-  const patterns: Record<string, {
-    errorType: string;
-    occurrences: number;
-    firstSeen: string;
-    lastSeen: string;
-    samples: string[];
-  }> = {};
+  const patterns: Record<
+    string,
+    {
+      errorType: string;
+      occurrences: number;
+      firstSeen: string;
+      lastSeen: string;
+      samples: string[];
+    }
+  > = {};
 
   for (const entry of entries) {
     const type = entry.initialError.errorType;
@@ -56,12 +59,12 @@ function analyzeHealingLogs(entries: HealingLogEntry[], minErrorCount: number) {
     }
   }
 
-  return Object.values(patterns).filter(p => p.occurrences >= minErrorCount);
+  return Object.values(patterns).filter((p) => p.occurrences >= minErrorCount);
 }
 
 export async function geneticistCommand(
   options: GeneticistOptions,
-  logger: Logger
+  logger: Logger,
 ): Promise<void> {
   const cwd = options.cwd || process.cwd();
   const config = await loadConfig(cwd);
@@ -92,10 +95,15 @@ export async function geneticistCommand(
       if (new Date(entry.timestamp).getTime() > cutoff) {
         entries.push(entry);
       }
-    } catch { continue; }
+    } catch {
+      continue;
+    }
   }
 
-  const recurrentPatterns = analyzeHealingLogs(entries, options.minErrorCount || 3);
+  const recurrentPatterns = analyzeHealingLogs(
+    entries,
+    options.minErrorCount || 3,
+  );
 
   if (recurrentPatterns.length === 0) {
     logger.info("No recurrent failure patterns identified.");
@@ -106,10 +114,12 @@ export async function geneticistCommand(
   logger.info(`Recurrent patterns detected: ${recurrentPatterns.length}\n`);
 
   for (const pattern of recurrentPatterns) {
-    logger.info(`  • Error Type: ${pattern.errorType} (${pattern.occurrences}x)`);
-    
+    logger.info(
+      `  • Error Type: ${pattern.errorType} (${pattern.occurrences}x)`,
+    );
+
     if (options.dryRun) {
-        continue;
+      continue;
     }
 
     // Optimization Logic
@@ -117,7 +127,7 @@ export async function geneticistCommand(
     if (pattern.errorType.includes("PLAN")) promptToOptimize = "plan";
 
     const template = await loadPromptTemplate(cwd, promptToOptimize as any);
-    
+
     const mutationPrompt = `
       You are the Wreckit Geneticist. Optimize the "${promptToOptimize}" prompt.
       Error: ${pattern.errorType}
@@ -135,8 +145,8 @@ export async function geneticistCommand(
     });
 
     if (result.success) {
-        logger.info(`✅ Optimized ${promptToOptimize}.md`);
-        // In a real run, we would create the PR here.
+      logger.info(`✅ Optimized ${promptToOptimize}.md`);
+      // In a real run, we would create the PR here.
     }
   }
 }

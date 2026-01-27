@@ -25,7 +25,7 @@ import { FileLock, withRetry } from "./lock";
 export async function readJsonWithSchema<T>(
   filePath: string,
   schema: z.ZodType<T>,
-  options?: { useLock?: boolean }
+  options?: { useLock?: boolean },
 ): Promise<T> {
   const readImpl = async (): Promise<T> => {
     let content: string;
@@ -48,7 +48,7 @@ export async function readJsonWithSchema<T>(
     const result = schema.safeParse(data);
     if (!result.success) {
       throw new SchemaValidationError(
-        `Schema validation failed for ${filePath}: ${result.error.message}`
+        `Schema validation failed for ${filePath}: ${result.error.message}`,
       );
     }
 
@@ -66,7 +66,7 @@ export async function readJsonWithSchema<T>(
 export async function writeJsonPretty(
   filePath: string,
   data: unknown,
-  options?: { useLock?: boolean }
+  options?: { useLock?: boolean },
 ): Promise<void> {
   const writeImpl = async (): Promise<void> => {
     await safeWriteJson(filePath, data);
@@ -120,7 +120,7 @@ export async function writeIndex(root: string, index: Index): Promise<void> {
 }
 
 export async function readBatchProgress(
-  root: string
+  root: string,
 ): Promise<BatchProgress | null> {
   const progressPath = getBatchProgressPath(root);
   try {
@@ -133,7 +133,10 @@ export async function readBatchProgress(
     }
     // Schema validation errors are expected (corrupt progress file)
     // These are detected and fixed by doctor, so return null to allow continue
-    if (err instanceof SchemaValidationError || err instanceof InvalidJsonError) {
+    if (
+      err instanceof SchemaValidationError ||
+      err instanceof InvalidJsonError
+    ) {
       return null;
     }
     // Permission errors and I/O errors should propagate (Spec 002 Gap 3)
@@ -143,7 +146,7 @@ export async function readBatchProgress(
 
 export async function writeBatchProgress(
   root: string,
-  progress: BatchProgress
+  progress: BatchProgress,
 ): Promise<void> {
   const progressPath = getBatchProgressPath(root);
   await writeJsonPretty(progressPath, progress, { useLock: true });

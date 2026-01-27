@@ -4,7 +4,10 @@ import type { Logger } from "../logging";
 import { findRootFromOptions } from "../fs/paths";
 import { persistItems, generateSlug } from "../domain/ideas";
 import { parseIdeasWithAgent } from "../domain/ideas-agent";
-import { runIdeaInterview, runSimpleInterview } from "../domain/ideas-interview";
+import {
+  runIdeaInterview,
+  runSimpleInterview,
+} from "../domain/ideas-interview";
 import { FileNotFoundError } from "../errors";
 import { hasUncommittedChanges, isGitRepo } from "../git";
 
@@ -62,7 +65,7 @@ function hasStdinInput(): boolean {
 async function warnIfUncommittedChanges(
   root: string,
   logger: Logger,
-  dryRun?: boolean
+  dryRun?: boolean,
 ): Promise<void> {
   // Skip check in dryRun mode or if not in a git repo
   if (dryRun) {
@@ -80,7 +83,7 @@ async function warnIfUncommittedChanges(
       "⚠️  You have uncommitted changes. " +
         "The idea phase is for planning and exploration only. " +
         "The agent is configured to read-only and cannot make code changes, " +
-        "but you may want to commit your work first."
+        "but you may want to commit your work first.",
     );
   }
 }
@@ -88,7 +91,7 @@ async function warnIfUncommittedChanges(
 export async function ideasCommand(
   options: IdeasOptions,
   logger: Logger,
-  inputOverride?: string
+  inputOverride?: string,
 ): Promise<void> {
   const root = findRootFromOptions(options);
 
@@ -96,14 +99,13 @@ export async function ideasCommand(
   await warnIfUncommittedChanges(root, logger, options.dryRun);
 
   let ideas: Awaited<ReturnType<typeof parseIdeasWithAgent>> = [];
-  
+
   // Determine input mode
   if (inputOverride !== undefined) {
     // Direct input override (for testing)
     logger.info("Parsing ideas with agent...");
     ideas = await parseIdeasWithAgent(inputOverride, root, {
       verbose: options.verbose,
-      logger
     });
   } else if (options.file) {
     // File input
@@ -111,27 +113,22 @@ export async function ideasCommand(
     logger.info("Parsing ideas with agent...");
     ideas = await parseIdeasWithAgent(input, root, {
       verbose: options.verbose,
-      logger
     });
   } else if (hasStdinInput()) {
     // Piped stdin input
     const input = await readStdin();
     if (!input.trim()) {
-      logger.info("No input provided");
+      console.log("No input provided");
       return;
     }
     logger.info("Parsing ideas with agent...");
     ideas = await parseIdeasWithAgent(input, root, {
       verbose: options.verbose,
-      logger
     });
   } else {
     // No input and TTY - start interview mode
     try {
-      ideas = await runIdeaInterview(root, {
-        verbose: options.verbose,
-        logger
-      });
+      ideas = await runIdeaInterview(root, { verbose: options.verbose });
     } catch (error) {
       // Fall back to simple interview if SDK fails
       if (options.verbose) {
@@ -145,15 +142,15 @@ export async function ideasCommand(
   // Handle dry run
   if (options.dryRun) {
     if (ideas.length === 0) {
-      logger.info("No items would be created");
+      console.log("No items would be created");
       return;
     }
 
-    logger.info(`Would create ${ideas.length} items:`);
+    console.log(`Would create ${ideas.length} items:`);
     for (const idea of ideas) {
       const slug = generateSlug(idea.title);
       if (slug) {
-        logger.info(`  XXX-${slug}`);
+        console.log(`  XXX-${slug}`);
       }
     }
     return;
@@ -161,28 +158,28 @@ export async function ideasCommand(
 
   // Persist the ideas
   if (ideas.length === 0) {
-    logger.info("No items created");
+    console.log("No items created");
     return;
   }
 
   const result = await persistItems(root, ideas);
 
   if (result.created.length === 0 && result.skipped.length === 0) {
-    logger.info("No items created");
+    console.log("No items created");
     return;
   }
 
   if (result.created.length > 0) {
-    logger.info(`Created ${result.created.length} items:`);
+    console.log(`Created ${result.created.length} items:`);
     for (const item of result.created) {
-      logger.info(`  ${item.id}`);
+      console.log(`  ${item.id}`);
     }
   }
 
   if (result.skipped.length > 0) {
-    logger.info(`Skipped ${result.skipped.length} existing items:`);
+    console.log(`Skipped ${result.skipped.length} existing items:`);
     for (const id of result.skipped) {
-      logger.info(`  ${id}`);
+      console.log(`  ${id}`);
     }
   }
 }

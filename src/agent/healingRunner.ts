@@ -9,9 +9,14 @@ import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import type { Logger } from "../logging";
 import { getWreckitDir } from "../fs/paths";
-import { runAgentUnion, type AgentResult, type UnionRunAgentOptions } from "./runner";
+import {
+  runAgentUnion,
+  type AgentResult,
+  type UnionRunAgentOptions,
+} from "./runner";
 import { detectRecoverableError, type ErrorDiagnosis } from "./errorDetector";
 import { applyHealing, type HealingConfig, type HealingResult } from "./healer";
+export type { HealingConfig };
 
 /**
  * Individual healing attempt record
@@ -53,7 +58,7 @@ export interface HealingAgentResult extends AgentResult {
 export async function runAgentWithHealing(
   options: UnionRunAgentOptions,
   healingConfig: HealingConfig,
-  itemId: string | null = null
+  itemId: string | null = null,
 ): Promise<HealingAgentResult> {
   const { logger } = options;
   const maxRetries = healingConfig.maxRetries;
@@ -82,13 +87,15 @@ export async function runAgentWithHealing(
         const logEntry: HealingLogEntry = {
           itemId,
           timestamp: new Date().toISOString(),
-          initialError: initialDiagnosis ? {
-            errorType: initialDiagnosis.errorType,
-            detectedPattern: initialDiagnosis.detectedPattern,
-          } : {
-            errorType: "unknown",
-            detectedPattern: "none",
-          },
+          initialError: initialDiagnosis
+            ? {
+                errorType: initialDiagnosis.errorType,
+                detectedPattern: initialDiagnosis.detectedPattern,
+              }
+            : {
+                errorType: "unknown",
+                detectedPattern: "none",
+              },
           attempts: healingAttempts,
           finalOutcome: "healed",
           totalDurationMs: Date.now() - startTime,
@@ -154,7 +161,9 @@ export async function runAgentWithHealing(
 
       await writeHealingLog(options.cwd, logEntry);
 
-      logger.warn(`✗ Max retries (${maxRetries}) exceeded for error: ${diagnosis.errorType}`);
+      logger.warn(
+        `✗ Max retries (${maxRetries}) exceeded for error: ${diagnosis.errorType}`,
+      );
 
       // Check for repeated failures (alert if same error type failed 3+ times in 24h)
       await checkRepeatedFailures(options.cwd, diagnosis.errorType, logger);
@@ -170,7 +179,12 @@ export async function runAgentWithHealing(
     logger.info(`  Pattern: ${diagnosis.detectedPattern}`);
     logger.info(`  Applying repair: ${diagnosis.suggestedRepair.join(", ")}`);
 
-    const healingResult = await applyHealing(diagnosis, options.cwd, healingConfig, logger);
+    const healingResult = await applyHealing(
+      diagnosis,
+      options.cwd,
+      healingConfig,
+      logger,
+    );
 
     // Record healing attempt
     healingAttempts.push({
@@ -201,7 +215,10 @@ export async function runAgentWithHealing(
 /**
  * Write healing log entry to .wreckit/healing-log.jsonl
  */
-async function writeHealingLog(cwd: string, entry: HealingLogEntry): Promise<void> {
+async function writeHealingLog(
+  cwd: string,
+  entry: HealingLogEntry,
+): Promise<void> {
   const wreckitDir = getWreckitDir(cwd);
   const logPath = path.join(wreckitDir, "healing-log.jsonl");
 
@@ -212,9 +229,8 @@ async function writeHealingLog(cwd: string, entry: HealingLogEntry): Promise<voi
     // Append entry as JSON line
     const line = JSON.stringify(entry) + "\n";
     await fs.appendFile(logPath, line, "utf-8");
-  } catch (err) {
-    // Don't fail if logging fails - just warn
-    logger.error(`Failed to write healing log: ${err}`);
+  } catch {
+    // Don't fail if logging fails - silently ignore
   }
 }
 
@@ -222,7 +238,11 @@ async function writeHealingLog(cwd: string, entry: HealingLogEntry): Promise<voi
  * Check for repeated failures of the same error type
  * Alert if 3+ failures of same type in last 24 hours
  */
-async function checkRepeatedFailures(cwd: string, errorType: string, logger: Logger): Promise<void> {
+async function checkRepeatedFailures(
+  cwd: string,
+  errorType: string,
+  logger: Logger,
+): Promise<void> {
   const wreckitDir = getWreckitDir(cwd);
   const logPath = path.join(wreckitDir, "healing-log.jsonl");
 
@@ -258,12 +278,17 @@ async function checkRepeatedFailures(cwd: string, errorType: string, logger: Log
 
     // Count failures of this error type
     const failureCount = recentEntries.filter(
-      (e) => e.initialError.errorType === errorType && e.finalOutcome !== "healed"
+      (e) =>
+        e.initialError.errorType === errorType && e.finalOutcome !== "healed",
     ).length;
 
     if (failureCount >= 3) {
-      logger.error(`⚠ Repeated healing failures detected: ${errorType} (${failureCount} times in 24h)`);
-      logger.error(`  This may indicate a deeper issue requiring manual intervention`);
+      logger.error(
+        `⚠ Repeated healing failures detected: ${errorType} (${failureCount} times in 24h)`,
+      );
+      logger.error(
+        `  This may indicate a deeper issue requiring manual intervention`,
+      );
     }
   } catch (err) {
     // Don't fail if check fails - it's just an alert

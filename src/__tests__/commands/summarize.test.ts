@@ -11,6 +11,7 @@ const createMockLogger = (): Logger => ({
   warn: mock(() => {}),
   error: mock(() => {}),
   debug: mock(() => {}),
+  json: mock(() => {}),
 });
 
 async function setupTestRepo(tempDir: string): Promise<void> {
@@ -38,7 +39,7 @@ async function setupTestRepo(tempDir: string): Promise<void> {
   };
   await fs.writeFile(
     path.join(wreckitDir, "config.json"),
-    JSON.stringify(config, null, 2)
+    JSON.stringify(config, null, 2),
   );
 
   // Create skills.json with media phase
@@ -66,7 +67,7 @@ async function setupTestRepo(tempDir: string): Promise<void> {
   };
   await fs.writeFile(
     path.join(wreckitDir, "skills.json"),
-    JSON.stringify(skills, null, 2)
+    JSON.stringify(skills, null, 2),
   );
 }
 
@@ -74,7 +75,7 @@ async function createTestItem(
   itemsDir: string,
   id: string,
   state: string,
-  title: string = "Test Item"
+  title: string = "Test Item",
 ): Promise<void> {
   const itemDir = path.join(itemsDir, id);
   await fs.mkdir(itemDir, { recursive: true });
@@ -89,14 +90,14 @@ async function createTestItem(
     branch: `wreckit/${id}`,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
-    pr_url: "",  // Required field
-    pr_number: 0,  // Required field
-    last_error: "",  // Required field
+    pr_url: "", // Required field
+    pr_number: 0, // Required field
+    last_error: "", // Required field
   };
 
   await fs.writeFile(
     path.join(itemDir, "item.json"),
-    JSON.stringify(item, null, 2)
+    JSON.stringify(item, null, 2),
   );
 }
 
@@ -105,7 +106,9 @@ describe("summarizeCommand - Item Selection", () => {
   let logger: Logger;
 
   beforeEach(async () => {
-    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "wreckit-summarize-test-"));
+    tempDir = await fs.mkdtemp(
+      path.join(os.tmpdir(), "wreckit-summarize-test-"),
+    );
     await setupTestRepo(tempDir);
     logger = createMockLogger();
   });
@@ -125,13 +128,13 @@ describe("summarizeCommand - Item Selection", () => {
           dryRun: true,
           cwd: tempDir,
         },
-        logger
+        logger,
       );
 
       // Should have logged processing the specific item
       const infoCalls = (logger.info as any).mock.calls;
       const hasItemMessage = infoCalls.some((call: string[]) =>
-        call[0].includes("001-test")
+        call[0].includes("001-test"),
       );
       expect(hasItemMessage).toBe(true);
     });
@@ -150,13 +153,14 @@ describe("summarizeCommand - Item Selection", () => {
           dryRun: true,
           cwd: tempDir,
         },
-        logger
+        logger,
       );
 
       // Should have processed 2 done items
       const infoCalls = (logger.info as any).mock.calls;
-      const doneItemsCount = infoCalls.filter((call: string[]) =>
-        call[0].includes("001-test") || call[0].includes("002-test")
+      const doneItemsCount = infoCalls.filter(
+        (call: string[]) =>
+          call[0].includes("001-test") || call[0].includes("002-test"),
       ).length;
       expect(doneItemsCount).toBeGreaterThan(0);
     });
@@ -175,13 +179,13 @@ describe("summarizeCommand - Item Selection", () => {
           dryRun: true,
           cwd: tempDir,
         },
-        logger
+        logger,
       );
 
       // Should have logged all done items
       const infoCalls = (logger.info as any).mock.calls;
       const hasAllMessage = infoCalls.some((call: string[]) =>
-        call[0].includes("completed items")
+        call[0].includes("completed items"),
       );
       expect(hasAllMessage).toBe(true);
     });
@@ -201,13 +205,13 @@ describe("summarizeCommand - Item Selection", () => {
           dryRun: true,
           cwd: tempDir,
         },
-        logger
+        logger,
       );
 
       // Should have logged "recent 5 completed items"
       const infoCalls = (logger.info as any).mock.calls;
       const hasDefaultMessage = infoCalls.some((call: string[]) =>
-        call[0].includes("recent completed items")
+        call[0].includes("recent completed items"),
       );
       expect(hasDefaultMessage).toBe(true);
     });
@@ -223,14 +227,14 @@ describe("summarizeCommand - Item Selection", () => {
           dryRun: true,
           cwd: tempDir,
         },
-        logger
+        logger,
       );
 
       // Should have warned about no source items
       expect(logger.warn).toHaveBeenCalled();
       const warnCalls = (logger.warn as any).mock.calls;
       const hasWarning = warnCalls.some((call: string[]) =>
-        call[0].includes("No source items found")
+        call[0].includes("No source items found"),
       );
       expect(hasWarning).toBe(true);
     });
@@ -243,14 +247,14 @@ describe("summarizeCommand - Item Selection", () => {
           dryRun: true,
           cwd: tempDir,
         },
-        logger
+        logger,
       );
 
       // Should have warned about no source items
       expect(logger.warn).toHaveBeenCalled();
       const warnCalls = (logger.warn as any).mock.calls;
       const hasWarning = warnCalls.some((call: string[]) =>
-        call[0].includes("No source items found")
+        call[0].includes("No source items found"),
       );
       expect(hasWarning).toBe(true);
     });
@@ -262,7 +266,9 @@ describe("summarizeCommand - Dry Run Mode", () => {
   let logger: Logger;
 
   beforeEach(async () => {
-    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "wreckit-summarize-test-"));
+    tempDir = await fs.mkdtemp(
+      path.join(os.tmpdir(), "wreckit-summarize-test-"),
+    );
     await setupTestRepo(tempDir);
     logger = createMockLogger();
   });
@@ -280,19 +286,19 @@ describe("summarizeCommand - Dry Run Mode", () => {
         dryRun: true,
         cwd: tempDir,
       },
-      logger
+      logger,
     );
 
     // Should have logged dry-run message
     const infoCalls = (logger.info as any).mock.calls;
     const hasDryRunMessage = infoCalls.some((call: string[]) =>
-      call[0].includes("[dry-run]")
+      call[0].includes("[dry-run]"),
     );
     expect(hasDryRunMessage).toBe(true);
 
     // Should have logged expected output path
     const hasOutputPath = infoCalls.some((call: string[]) =>
-      call[0].includes("Expected output:")
+      call[0].includes("Expected output:"),
     );
     expect(hasOutputPath).toBe(true);
   });
@@ -306,12 +312,15 @@ describe("summarizeCommand - Dry Run Mode", () => {
         dryRun: true,
         cwd: tempDir,
       },
-      logger
+      logger,
     );
 
     // Media directory should be created
     const mediaPath = path.join(tempDir, ".wreckit", "media");
-    const exists = await fs.access(mediaPath).then(() => true).catch(() => false);
+    const exists = await fs
+      .access(mediaPath)
+      .then(() => true)
+      .catch(() => false);
     expect(exists).toBe(true);
   });
 });

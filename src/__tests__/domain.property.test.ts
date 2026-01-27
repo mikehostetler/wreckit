@@ -34,7 +34,9 @@ function makePrd(stories: Story[]): Prd {
   };
 }
 
-function makeContext(overrides: Partial<ValidationContext> = {}): ValidationContext {
+function makeContext(
+  overrides: Partial<ValidationContext> = {},
+): ValidationContext {
   return {
     hasResearchMd: false,
     hasPlanMd: false,
@@ -87,7 +89,7 @@ describe("property-based state machine tests", () => {
             expect(getStateIndex(target)).toBe(getStateIndex(current) + 1);
           }
         }),
-        { numRuns: 100 }
+        { numRuns: 100 },
       );
     });
   });
@@ -100,7 +102,7 @@ describe("property-based state machine tests", () => {
           const result = validateTransition("done", target, ctx);
           expect(result.valid).toBe(false);
         }),
-        { numRuns: 50 }
+        { numRuns: 50 },
       );
     });
 
@@ -111,7 +113,7 @@ describe("property-based state machine tests", () => {
           const nextState = getNextState(state);
           expect(isTerminal).toBe(nextState === null);
         }),
-        { numRuns: 50 }
+        { numRuns: 50 },
       );
     });
   });
@@ -127,23 +129,23 @@ describe("property-based state machine tests", () => {
         status: fc.constantFrom("pending" as const, "done" as const),
         notes: fc.string(),
       });
-      
+
       const storiesArb = fc.array(storyArb, { minLength: 1, maxLength: 5 });
 
       fc.assert(
         fc.property(storiesArb, (stories) => {
           const prd = makePrd(stories as Story[]);
-          
+
           const allDone = allStoriesDone(prd);
           const hasPending = hasPendingStories(prd);
-          
+
           // When stories exist: allDone XOR hasPending must be true
           // (exactly one of them must be true, not both, not neither)
           // Actually: allDone means NO pending, hasPending means AT LEAST ONE pending
           // So: allDone ⇔ !hasPending
           expect(allDone).toBe(!hasPending);
         }),
-        { numRuns: 100 }
+        { numRuns: 100 },
       );
     });
   });
@@ -152,17 +154,17 @@ describe("property-based state machine tests", () => {
     it("applyStateTransition never mutates input", () => {
       // Generate items in non-terminal states
       const nonTerminalStateArb = fc.constantFrom(
-        ...WORKFLOW_STATES.filter((s) => s !== "done")
+        ...WORKFLOW_STATES.filter((s) => s !== "done"),
       );
 
       fc.assert(
         fc.property(nonTerminalStateArb, (state) => {
           const item = makeItem({ state });
-          
+
           // Deep freeze the item to detect mutations
           const frozenItem = Object.freeze({ ...item });
           const originalJson = JSON.stringify(frozenItem);
-          
+
           // Create appropriate context for the transition
           let ctx: ValidationContext;
           switch (state) {
@@ -192,13 +194,13 @@ describe("property-based state machine tests", () => {
             default:
               ctx = makeContext();
           }
-          
+
           applyStateTransition(frozenItem, ctx);
-          
+
           // Verify original wasn't mutated
           expect(JSON.stringify(frozenItem)).toBe(originalJson);
         }),
-        { numRuns: 50 }
+        { numRuns: 50 },
       );
     });
 
@@ -207,14 +209,14 @@ describe("property-based state machine tests", () => {
         fc.property(fc.constant("idea"), () => {
           const item = makeItem({ state: "idea" });
           const ctx = makeContext({ hasResearchMd: true });
-          
+
           const result = applyStateTransition(item, ctx);
-          
+
           if ("nextItem" in result) {
             expect(result.nextItem).not.toBe(item);
           }
         }),
-        { numRuns: 10 }
+        { numRuns: 10 },
       );
     });
   });
@@ -228,13 +230,13 @@ describe("property-based state machine tests", () => {
 
     it("getNextState chain covers all states exactly once", () => {
       const visited: string[] = [];
-      let current: typeof WORKFLOW_STATES[number] | null = "idea";
-      
+      let current: (typeof WORKFLOW_STATES)[number] | null = "idea";
+
       while (current !== null) {
         visited.push(current);
         current = getNextState(current);
       }
-      
+
       expect(visited).toEqual(WORKFLOW_STATES);
     });
   });

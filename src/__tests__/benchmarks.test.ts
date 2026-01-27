@@ -164,10 +164,10 @@ describe("benchmark reporters", () => {
     it("includes table headers", () => {
       const output = formatMarkdown(mockResult);
       expect(output).toContain(
-        "| Metric | Mean | Unit | P50 | P95 | P99 | Samples |"
+        "| Metric | Mean | Unit | P50 | P95 | P99 | Samples |",
       );
       expect(output).toContain(
-        "|--------|------|------|-----|-----|-----|---------|"
+        "|--------|------|------|-----|-----|-----|---------|",
       );
     });
 
@@ -189,7 +189,7 @@ describe("benchmark reporters", () => {
       const output = formatCsv(mockResult);
       const lines = output.split("\n");
       expect(lines[0]).toBe(
-        "suite,metric,value,unit,min,max,p50,p95,p99,samples,timestamp"
+        "suite,metric,value,unit,min,max,p50,p95,p99,samples,timestamp",
       );
     });
 

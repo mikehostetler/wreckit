@@ -39,7 +39,9 @@ function makePrd(stories: Story[]): Prd {
   };
 }
 
-function makeContext(overrides: Partial<ValidationContext> = {}): ValidationContext {
+function makeContext(
+  overrides: Partial<ValidationContext> = {},
+): ValidationContext {
   return {
     hasResearchMd: false,
     hasPlanMd: false,
@@ -76,7 +78,7 @@ describe("state machine", () => {
       ["in_pr", ["done"]],
       ["done", []],
     ] as const)("returns allowed states for %s", (current, expected) => {
-      expect(getAllowedNextStates(current)).toEqual(expected);
+      expect(getAllowedNextStates(current)).toEqual([...expected]);
     });
   });
 
@@ -85,12 +87,15 @@ describe("state machine", () => {
       expect(isTerminalState("done")).toBe(true);
     });
 
-    it.each(["idea", "researched", "planned", "implementing", "in_pr"] as const)(
-      "returns false for %s",
-      (state) => {
-        expect(isTerminalState(state)).toBe(false);
-      }
-    );
+    it.each([
+      "idea",
+      "researched",
+      "planned",
+      "implementing",
+      "in_pr",
+    ] as const)("returns false for %s", (state) => {
+      expect(isTerminalState(state)).toBe(false);
+    });
   });
 
   describe("getStateIndex", () => {
@@ -105,7 +110,9 @@ describe("state machine", () => {
 describe("validation", () => {
   describe("canEnterResearched", () => {
     it("returns valid when hasResearchMd is true", () => {
-      expect(canEnterResearched({ hasResearchMd: true })).toEqual({ valid: true });
+      expect(canEnterResearched({ hasResearchMd: true })).toEqual({
+        valid: true,
+      });
     });
 
     it("returns invalid when hasResearchMd is false", () => {
@@ -118,7 +125,9 @@ describe("validation", () => {
   describe("canEnterPlanned", () => {
     it("returns valid when hasPlanMd and prd exist", () => {
       const prd = makePrd([makeStory()]);
-      expect(canEnterPlanned({ hasPlanMd: true, prd })).toEqual({ valid: true });
+      expect(canEnterPlanned({ hasPlanMd: true, prd })).toEqual({
+        valid: true,
+      });
     });
 
     it("returns invalid when hasPlanMd is false", () => {
@@ -190,7 +199,9 @@ describe("validation", () => {
 describe("validateTransition", () => {
   it("valid: raw -> researched with hasResearchMd", () => {
     const ctx = makeContext({ hasResearchMd: true });
-    expect(validateTransition("idea", "researched", ctx)).toEqual({ valid: true });
+    expect(validateTransition("idea", "researched", ctx)).toEqual({
+      valid: true,
+    });
   });
 
   it("invalid: raw -> researched without hasResearchMd", () => {
@@ -219,35 +230,39 @@ describe("validateTransition", () => {
     const prdAllDone = makePrd([makeStory({ status: "done" })]);
 
     expect(
-      validateTransition("idea", "researched", makeContext({ hasResearchMd: true }))
+      validateTransition(
+        "idea",
+        "researched",
+        makeContext({ hasResearchMd: true }),
+      ),
     ).toEqual({ valid: true });
 
     expect(
       validateTransition(
         "researched",
         "planned",
-        makeContext({ hasPlanMd: true, prd: prdWithPending })
-      )
+        makeContext({ hasPlanMd: true, prd: prdWithPending }),
+      ),
     ).toEqual({ valid: true });
 
     expect(
       validateTransition(
         "planned",
         "implementing",
-        makeContext({ prd: prdWithPending })
-      )
+        makeContext({ prd: prdWithPending }),
+      ),
     ).toEqual({ valid: true });
 
     expect(
       validateTransition(
         "implementing",
         "in_pr",
-        makeContext({ prd: prdAllDone, hasPr: true })
-      )
+        makeContext({ prd: prdAllDone, hasPr: true }),
+      ),
     ).toEqual({ valid: true });
 
     expect(
-      validateTransition("in_pr", "done", makeContext({ prMerged: true }))
+      validateTransition("in_pr", "done", makeContext({ prMerged: true })),
     ).toEqual({ valid: true });
   });
 });
@@ -356,7 +371,7 @@ describe("applyStateTransition", () => {
     const result = applyStateTransition(item, ctx);
 
     expect("nextItem" in result).toBe(true);
-    if ("nextItem" in result) {
+    if ("nextItem" in result && result.nextItem) {
       expect(result.nextItem.state).toBe("researched");
       expect(result.nextItem.updated_at).not.toBe(item.updated_at);
       // Original item unchanged

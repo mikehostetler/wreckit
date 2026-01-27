@@ -15,7 +15,7 @@ describe("batch progress I/O", () => {
 
   beforeEach(async () => {
     tempDir = await fs.mkdtemp(
-      path.join(os.tmpdir(), "wreckit-batch-progress-")
+      path.join(os.tmpdir(), "wreckit-batch-progress-"),
     );
     await fs.mkdir(path.join(tempDir, ".wreckit"), { recursive: true });
     await fs.mkdir(path.join(tempDir, ".git"), { recursive: true });
@@ -43,6 +43,8 @@ describe("batch progress I/O", () => {
       completed: [],
       failed: [],
       skipped: [],
+      healing_attempts: 0,
+      last_healing_at: null,
     };
 
     await writeBatchProgress(tempDir, progress);
@@ -66,6 +68,8 @@ describe("batch progress I/O", () => {
       completed: [],
       failed: [],
       skipped: [],
+      healing_attempts: 0,
+      last_healing_at: null,
     };
 
     await writeBatchProgress(tempDir, progress);
@@ -94,7 +98,7 @@ describe("batch progress I/O", () => {
     const progressPath = getBatchProgressPath(tempDir);
     await fs.writeFile(
       progressPath,
-      JSON.stringify({ schema_version: 999, invalid: true })
+      JSON.stringify({ schema_version: 999, invalid: true }),
     );
 
     const result = await readBatchProgress(tempDir);
@@ -114,6 +118,8 @@ describe("batch progress I/O", () => {
       completed: ["000-done"],
       failed: ["999-fail"],
       skipped: ["888-skip"],
+      healing_attempts: 0,
+      last_healing_at: null,
     };
 
     await writeBatchProgress(tempDir, progress);

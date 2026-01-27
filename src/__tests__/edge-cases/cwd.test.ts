@@ -1,4 +1,13 @@
-import { describe, it, expect, beforeEach, afterEach, mock, spyOn, vi } from "bun:test";
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  mock,
+  spyOn,
+  vi,
+} from "bun:test";
 import * as fs from "node:fs/promises";
 import * as fsSync from "node:fs";
 import * as path from "node:path";
@@ -69,7 +78,9 @@ describe("--cwd Flag Edge Cases", () => {
   let tempDir: string;
 
   beforeEach(async () => {
-    const rawTempDir = await fs.mkdtemp(path.join(os.tmpdir(), "wreckit-cwd-test-"));
+    const rawTempDir = await fs.mkdtemp(
+      path.join(os.tmpdir(), "wreckit-cwd-test-"),
+    );
     tempDir = fsSync.realpathSync(rawTempDir);
   });
 
@@ -185,7 +196,7 @@ describe("--cwd Flag Edge Cases", () => {
     it("findRepoRoot throws RepoNotFoundError when no .git exists", async () => {
       expect(() => findRepoRoot(tempDir)).toThrow(RepoNotFoundError);
       expect(() => findRepoRoot(tempDir)).toThrow(
-        /Could not find repository root/
+        /Could not find repository root/,
       );
     });
 
@@ -215,7 +226,7 @@ describe("--cwd Flag Edge Cases", () => {
       });
 
       expect(
-        mockLogger.messages.some((m) => m.includes("Not a git repository"))
+        mockLogger.messages.some((m) => m.includes("Not a git repository")),
       ).toBe(true);
     });
   });
@@ -226,7 +237,7 @@ describe("--cwd Flag Edge Cases", () => {
 
       expect(() => findRepoRoot(tempDir)).toThrow(RepoNotFoundError);
       expect(() => findRepoRoot(tempDir)).toThrow(
-        /Found .wreckit.*but no .git/
+        /Found .wreckit.*but no .git/,
       );
     });
 
@@ -235,7 +246,7 @@ describe("--cwd Flag Edge Cases", () => {
 
       try {
         findRepoRoot(tempDir);
-        expect.fail("Should have thrown");
+        throw new Error("Should have thrown");
       } catch (err) {
         expect(err).toBeInstanceOf(RepoNotFoundError);
         expect((err as RepoNotFoundError).message).toContain(tempDir);
@@ -260,7 +271,7 @@ describe("--cwd Flag Edge Cases", () => {
 
       expect(() => findRepoRoot(tempDir)).toThrow(RepoNotFoundError);
       expect(() => findRepoRoot(tempDir)).toThrow(
-        /Could not find repository root/
+        /Could not find repository root/,
       );
     });
 

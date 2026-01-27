@@ -45,6 +45,7 @@ wreckit run features/001-add-a-hello-world-function --dry-run
 ### 3. Compare Outputs
 
 Both modes should:
+
 - Produce equivalent output structure
 - Handle errors similarly
 - Respect timeout settings

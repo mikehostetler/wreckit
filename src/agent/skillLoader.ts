@@ -58,7 +58,7 @@ export interface SkillLoadResult {
  */
 export function loadSkillsForPhase(
   phase: string,
-  skillConfig: SkillConfig | undefined
+  skillConfig: SkillConfig | undefined,
 ): SkillLoadResult {
   // Default result if no skills configured
   if (!skillConfig) {

@@ -1,11 +1,16 @@
 import * as fs from "node:fs/promises";
-import { ConfigSchema, PrChecksSchema, BranchCleanupSchema, type Config, type AgentConfigUnion, type SkillConfig } from "./schemas";
+import {
+  ConfigSchema,
+  PrChecksSchema,
+  BranchCleanupSchema,
+  type Config,
+  type AgentConfigUnion,
+  type SkillConfig,
+  type DoctorConfig,
+} from "./schemas";
 import { getConfigPath, getWreckitDir } from "./fs/paths";
 import { safeWriteJson } from "./fs/atomic";
-import {
-  InvalidJsonError,
-  SchemaValidationError,
-} from "./errors";
+import { InvalidJsonError, SchemaValidationError } from "./errors";
 
 export interface PrChecksResolved {
   commands: string[];
@@ -32,6 +37,8 @@ export interface ConfigResolved {
   branch_cleanup: BranchCleanupResolved;
   // Add optional skills (Item 033)
   skills?: SkillConfig;
+  // Add optional doctor configuration (Item 038)
+  doctor?: DoctorConfig;
 }
 
 export interface ConfigOverrides {
@@ -98,7 +105,8 @@ function migrateAgentConfig(agent: any): AgentConfigUnion {
         kind: "process",
         command: agent.command ?? "claude",
         args: agent.args ?? [],
-        completion_signal: agent.completion_signal ?? "<promise>COMPLETE</promise>",
+        completion_signal:
+          agent.completion_signal ?? "<promise>COMPLETE</promise>",
       };
     }
   }
@@ -112,18 +120,30 @@ export function mergeWithDefaults(partial: Partial<Config>): ConfigResolved {
 
   const prChecks = partial.pr_checks
     ? {
-        commands: partial.pr_checks.commands ?? DEFAULT_CONFIG.pr_checks.commands,
-        secret_scan: partial.pr_checks.secret_scan ?? DEFAULT_CONFIG.pr_checks.secret_scan,
-        require_all_stories_done: partial.pr_checks.require_all_stories_done ?? DEFAULT_CONFIG.pr_checks.require_all_stories_done,
-        allow_unsafe_direct_merge: partial.pr_checks.allow_unsafe_direct_merge ?? DEFAULT_CONFIG.pr_checks.allow_unsafe_direct_merge,
-        allowed_remote_patterns: partial.pr_checks.allowed_remote_patterns ?? DEFAULT_CONFIG.pr_checks.allowed_remote_patterns,
+        commands:
+          partial.pr_checks.commands ?? DEFAULT_CONFIG.pr_checks.commands,
+        secret_scan:
+          partial.pr_checks.secret_scan ?? DEFAULT_CONFIG.pr_checks.secret_scan,
+        require_all_stories_done:
+          partial.pr_checks.require_all_stories_done ??
+          DEFAULT_CONFIG.pr_checks.require_all_stories_done,
+        allow_unsafe_direct_merge:
+          partial.pr_checks.allow_unsafe_direct_merge ??
+          DEFAULT_CONFIG.pr_checks.allow_unsafe_direct_merge,
+        allowed_remote_patterns:
+          partial.pr_checks.allowed_remote_patterns ??
+          DEFAULT_CONFIG.pr_checks.allowed_remote_patterns,
       }
     : { ...DEFAULT_CONFIG.pr_checks };
 
   const branchCleanup = partial.branch_cleanup
     ? {
-        enabled: partial.branch_cleanup.enabled ?? DEFAULT_CONFIG.branch_cleanup.enabled,
-        delete_remote: partial.branch_cleanup.delete_remote ?? DEFAULT_CONFIG.branch_cleanup.delete_remote,
+        enabled:
+          partial.branch_cleanup.enabled ??
+          DEFAULT_CONFIG.branch_cleanup.enabled,
+        delete_remote:
+          partial.branch_cleanup.delete_remote ??
+          DEFAULT_CONFIG.branch_cleanup.delete_remote,
       }
     : { ...DEFAULT_CONFIG.branch_cleanup };
 
@@ -143,13 +163,14 @@ export function mergeWithDefaults(partial: Partial<Config>): ConfigResolved {
 
 export function applyOverrides(
   config: ConfigResolved,
-  overrides: ConfigOverrides
+  overrides: ConfigOverrides,
 ): ConfigResolved {
   let agent = config.agent;
 
   // Apply overrides only for process mode (where command/args/completion_signal are relevant)
   if (agent.kind === "process") {
-    const hasProcessOverrides = overrides.agentCommand !== undefined ||
+    const hasProcessOverrides =
+      overrides.agentCommand !== undefined ||
       overrides.agentArgs !== undefined ||
       overrides.completionSignal !== undefined;
 
@@ -158,7 +179,8 @@ export function applyOverrides(
         ...agent,
         command: overrides.agentCommand ?? agent.command,
         args: overrides.agentArgs ?? agent.args,
-        completion_signal: overrides.completionSignal ?? agent.completion_signal,
+        completion_signal:
+          overrides.completionSignal ?? agent.completion_signal,
       };
     }
   }
@@ -178,7 +200,7 @@ export function applyOverrides(
 
 export async function loadConfig(
   root: string,
-  overrides?: ConfigOverrides
+  overrides?: ConfigOverrides,
 ): Promise<ConfigResolved> {
   const configPath = getConfigPath(root);
   let partial: Partial<Config> = {};
@@ -195,7 +217,7 @@ export async function loadConfig(
     const result = ConfigSchema.safeParse(data);
     if (!result.success) {
       throw new SchemaValidationError(
-        `Schema validation failed for ${configPath}: ${result.error.message}`
+        `Schema validation failed for ${configPath}: ${result.error.message}`,
       );
     }
     partial = result.data;

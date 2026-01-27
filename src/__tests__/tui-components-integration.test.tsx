@@ -1,4 +1,12 @@
-import { describe, it, expect, beforeEach, afterEach, mock, vi } from "bun:test";
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  mock,
+  vi,
+} from "bun:test";
 import React from "react";
 import { InkApp } from "../tui/InkApp";
 import { createMockTuiState } from "../tui/__tests__/test-utils";
@@ -15,12 +23,21 @@ describe("InkApp integration tests with mocked hooks", () => {
 
     // Mock Ink components and hooks
     mock.module("ink", () => ({
-      Box: mockBox || (({ children }: any) => React.createElement("div", { className: "box" }, children)),
-      Text: mockText || (({ children }: any) => React.createElement("span", { className: "text" }, children)),
-      useInput: mockUseInput || ((handler: (input: string, key: any) => void) => {
-        inputCallback = handler;
-      }),
-      useStdout: mockUseStdout || (() => ({ stdout: { columns: 80, rows: 24 } })),
+      Box:
+        mockBox ||
+        (({ children }: any) =>
+          React.createElement("div", { className: "box" }, children)),
+      Text:
+        mockText ||
+        (({ children }: any) =>
+          React.createElement("span", { className: "text" }, children)),
+      useInput:
+        mockUseInput ||
+        ((handler: (input: string, key: any) => void) => {
+          inputCallback = handler;
+        }),
+      useStdout:
+        mockUseStdout || (() => ({ stdout: { columns: 80, rows: 24 } })),
     }));
   });
 
@@ -450,7 +467,9 @@ describe("InkApp integration tests with mocked hooks", () => {
 
       // Input callback should be registered by useInput
       // It's either a function or null (before component mounts)
-      expect(inputCallback === null || typeof inputCallback === "function").toBe(true);
+      expect(
+        inputCallback === null || typeof inputCallback === "function",
+      ).toBe(true);
     });
   });
 

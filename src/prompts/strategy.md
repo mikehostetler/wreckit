@@ -5,6 +5,7 @@ You are tasked with conducting a strategic analysis of this project. This is a h
 ## Objective
 
 Analyze the project to identify:
+
 1. **Mission vs Reality** - What does the project aim to do vs what it currently does?
 2. **Gaps** - Where does the code fall short of specifications?
 3. **Discoveries** - What do benchmarks and metrics reveal?
@@ -83,42 +84,50 @@ Use this EXACT structure (the format is machine-parseable):
 ## Active Milestones
 
 ### [M1] Milestone Title
+
 **Status:** in-progress
 **Target:** [Timeline estimate, e.g., Q1 2026]
 **Strategic Goal:** [Why this matters - the value proposition]
 
 #### Objectives
+
 - [ ] Concrete objective that can become a wreckit item
 - [ ] Another specific, actionable objective
 - [x] Already completed objective (if any)
 
 ### [M2] Second Milestone
+
 **Status:** planned
 **Target:** [Timeline]
 **Strategic Goal:** [Value proposition]
 
 #### Objectives
+
 - [ ] Objective 1
 - [ ] Objective 2
 
 ## Backlog
 
 ### [B1] Future Milestone
+
 **Status:** planned
 **Target:** [When this might be addressed]
 **Strategic Goal:** [Why this would matter]
 
 #### Objectives
+
 - [ ] Future objective
 
 ## Completed
 
 ### [DONE-1] Completed Milestone
+
 **Status:** done
 **Target:** [Original timeline]
 **Strategic Goal:** [Original value proposition]
 
 #### Objectives
+
 - [x] Completed objective
 ```
 
@@ -151,6 +160,7 @@ Use this EXACT structure (the format is machine-parseable):
    - Note blocking relationships in strategic goals
 
 ## Working Directory
+
 {{item_path}}
 
 ## Completion

@@ -8,15 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Improved `isGitRepo()` with `GIT_CEILING_DIRECTORIES` to prevent upward git repository searching.
-  - Fixes CI test failures where temporary directories were incorrectly detected as part of the workspace git repo.
-  - Added robust verification tests for nested repository behavior.
+
 - Documentation for experimental SDK modes (`amp_sdk`, `codex_sdk`, `opencode_sdk`)
   - All experimental SDKs share authentication and environment variable resolution with `claude_sdk`
   - See README.md "Experimental SDK Modes" section for configuration examples
   - See MIGRATION.md "Experimental SDK Modes" section for detailed reference
 
 ### Removed
+
 - Removed duplicate `idea` CLI command. Use `wreckit ideas` instead.
   - The `idea` command was identical to `ideas` and caused confusion
   - All functionality is preserved in the `ideas` command
@@ -27,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Major Changes
 
 ### SDK Agent Mode (Default)
+
 - Wreckit now uses the Claude Agent SDK by default for agent execution
 - Significantly improved performance with in-process agent execution
 - Better error handling with structured error types
@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Automatic fallback to process mode if SDK authentication fails
 
 ### Configuration
+
 - New `agent.mode` option: "sdk" (default) or "process"
 - New `agent.sdk_model` option for model selection
 - New `agent.sdk_max_tokens` option for token limits
@@ -41,16 +42,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Backward compatible: existing `agent.command` configs still work
 
 ### Migration
+
 - See [MIGRATION.md](./MIGRATION.md) for migration guide
 - Process mode remains available via `agent.mode: "process"`
 - All existing configurations continue to work
 
 ### Fixes
+
 - Fixed timeout handling in SDK mode
 - Improved error messages for authentication failures
 - Better streaming output handling
 
 ### Documentation
+
 - Added MIGRATION.md with detailed migration guide
 - Updated README.md with SDK mode documentation
 - Added integration testing documentation
@@ -60,6 +64,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 If you have a custom `agent.command` configuration, wreckit will continue using process mode. To migrate to SDK mode:
 
 1. Update `.wreckit/config.json`:
+
    ```json
    {
      "agent": {
