@@ -8,7 +8,7 @@
 
 > **calculateSimilarity**(`s1`, `s2`): `number`
 
-Defined in: [commands/dream.ts:26](https://github.com/mikehostetler/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/commands/dream.ts#L26)
+Defined in: [commands/dream.ts:26](https://github.com/jmanhype/wreckit/blob/d2cfffe493bd4fb4f86dbd7fbd82c596c0a86c1d/src/commands/dream.ts#L26)
 
 Calculate string similarity using Jaro-Winkler distance.
 Returns 0-1 score where 1.0 is identical.

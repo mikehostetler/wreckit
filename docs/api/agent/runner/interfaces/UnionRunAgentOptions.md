@@ -6,7 +6,7 @@
 
 # Interface: UnionRunAgentOptions
 
-Defined in: [agent/runner.ts:323](https://github.com/mikehostetler/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/agent/runner.ts#L323)
+Defined in: [agent/runner.ts:68](https://github.com/jmanhype/wreckit/blob/d2cfffe493bd4fb4f86dbd7fbd82c596c0a86c1d/src/agent/runner.ts#L68)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [agent/runner.ts:323](https://github.com/mikehostetler/wreckit/blob/
 
 > `optional` **allowedTools**: `string`[]
 
-Defined in: [agent/runner.ts:337](https://github.com/mikehostetler/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/agent/runner.ts#L337)
+Defined in: [agent/runner.ts:82](https://github.com/jmanhype/wreckit/blob/d2cfffe493bd4fb4f86dbd7fbd82c596c0a86c1d/src/agent/runner.ts#L82)
 
 Restrict agent to only specific tools (e.g., MCP tools). Prevents use of Read, Write, Bash, etc.
 
@@ -22,9 +22,9 @@ Restrict agent to only specific tools (e.g., MCP tools). Prevents use of Read, W
 
 ### config
 
-> **config**: \{ `args`: `string`[]; `command`: `string`; `completion_signal`: `string`; `kind`: `"process"`; \} \| \{ `kind`: `"claude_sdk"`; `max_tokens`: `number`; `model`: `string`; `tools?`: `string`[]; \} \| \{ `kind`: `"amp_sdk"`; `model?`: `string`; \} \| \{ `kind`: `"codex_sdk"`; `model`: `string`; \} \| \{ `kind`: `"opencode_sdk"`; \}
+> **config**: \{ `args`: `string`[]; `command`: `string`; `completion_signal`: `string`; `kind`: `"process"`; \} \| \{ `kind`: `"claude_sdk"`; `max_tokens`: `number`; `model`: `string`; `tools?`: `string`[]; \} \| \{ `kind`: `"amp_sdk"`; `model?`: `string`; \} \| \{ `kind`: `"codex_sdk"`; `model`: `string`; \} \| \{ `kind`: `"opencode_sdk"`; \} \| \{ `aiProvider`: `"anthropic"` \| `"openai"` \| `"google"` \| `"zai"`; `kind`: `"rlm"`; `maxIterations`: `number`; `model`: `string`; \}
 
-Defined in: [agent/runner.ts:324](https://github.com/mikehostetler/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/agent/runner.ts#L324)
+Defined in: [agent/runner.ts:69](https://github.com/jmanhype/wreckit/blob/d2cfffe493bd4fb4f86dbd7fbd82c596c0a86c1d/src/agent/runner.ts#L69)
 
 ***
 
@@ -32,7 +32,7 @@ Defined in: [agent/runner.ts:324](https://github.com/mikehostetler/wreckit/blob/
 
 > **cwd**: `string`
 
-Defined in: [agent/runner.ts:325](https://github.com/mikehostetler/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/agent/runner.ts#L325)
+Defined in: [agent/runner.ts:70](https://github.com/jmanhype/wreckit/blob/d2cfffe493bd4fb4f86dbd7fbd82c596c0a86c1d/src/agent/runner.ts#L70)
 
 ***
 
@@ -40,7 +40,7 @@ Defined in: [agent/runner.ts:325](https://github.com/mikehostetler/wreckit/blob/
 
 > `optional` **dryRun**: `boolean`
 
-Defined in: [agent/runner.ts:328](https://github.com/mikehostetler/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/agent/runner.ts#L328)
+Defined in: [agent/runner.ts:73](https://github.com/jmanhype/wreckit/blob/d2cfffe493bd4fb4f86dbd7fbd82c596c0a86c1d/src/agent/runner.ts#L73)
 
 ***
 
@@ -48,7 +48,7 @@ Defined in: [agent/runner.ts:328](https://github.com/mikehostetler/wreckit/blob/
 
 > **logger**: `Logger`
 
-Defined in: [agent/runner.ts:327](https://github.com/mikehostetler/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/agent/runner.ts#L327)
+Defined in: [agent/runner.ts:72](https://github.com/jmanhype/wreckit/blob/d2cfffe493bd4fb4f86dbd7fbd82c596c0a86c1d/src/agent/runner.ts#L72)
 
 ***
 
@@ -56,7 +56,7 @@ Defined in: [agent/runner.ts:327](https://github.com/mikehostetler/wreckit/blob/
 
 > `optional` **mcpServers**: `Record`\<`string`, `unknown`\>
 
-Defined in: [agent/runner.ts:335](https://github.com/mikehostetler/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/agent/runner.ts#L335)
+Defined in: [agent/runner.ts:80](https://github.com/jmanhype/wreckit/blob/d2cfffe493bd4fb4f86dbd7fbd82c596c0a86c1d/src/agent/runner.ts#L80)
 
 MCP servers to make available to the agent (e.g., wreckit server for PRD capture)
 
@@ -66,7 +66,7 @@ MCP servers to make available to the agent (e.g., wreckit server for PRD capture
 
 > `optional` **mockAgent**: `boolean`
 
-Defined in: [agent/runner.ts:329](https://github.com/mikehostetler/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/agent/runner.ts#L329)
+Defined in: [agent/runner.ts:74](https://github.com/jmanhype/wreckit/blob/d2cfffe493bd4fb4f86dbd7fbd82c596c0a86c1d/src/agent/runner.ts#L74)
 
 ***
 
@@ -74,7 +74,7 @@ Defined in: [agent/runner.ts:329](https://github.com/mikehostetler/wreckit/blob/
 
 > `optional` **onAgentEvent**: (`event`) => `void`
 
-Defined in: [agent/runner.ts:333](https://github.com/mikehostetler/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/agent/runner.ts#L333)
+Defined in: [agent/runner.ts:78](https://github.com/jmanhype/wreckit/blob/d2cfffe493bd4fb4f86dbd7fbd82c596c0a86c1d/src/agent/runner.ts#L78)
 
 #### Parameters
 
@@ -92,7 +92,7 @@ Defined in: [agent/runner.ts:333](https://github.com/mikehostetler/wreckit/blob/
 
 > `optional` **onStderrChunk**: (`chunk`) => `void`
 
-Defined in: [agent/runner.ts:332](https://github.com/mikehostetler/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/agent/runner.ts#L332)
+Defined in: [agent/runner.ts:77](https://github.com/jmanhype/wreckit/blob/d2cfffe493bd4fb4f86dbd7fbd82c596c0a86c1d/src/agent/runner.ts#L77)
 
 #### Parameters
 
@@ -110,7 +110,7 @@ Defined in: [agent/runner.ts:332](https://github.com/mikehostetler/wreckit/blob/
 
 > `optional` **onStdoutChunk**: (`chunk`) => `void`
 
-Defined in: [agent/runner.ts:331](https://github.com/mikehostetler/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/agent/runner.ts#L331)
+Defined in: [agent/runner.ts:76](https://github.com/jmanhype/wreckit/blob/d2cfffe493bd4fb4f86dbd7fbd82c596c0a86c1d/src/agent/runner.ts#L76)
 
 #### Parameters
 
@@ -128,7 +128,7 @@ Defined in: [agent/runner.ts:331](https://github.com/mikehostetler/wreckit/blob/
 
 > **prompt**: `string`
 
-Defined in: [agent/runner.ts:326](https://github.com/mikehostetler/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/agent/runner.ts#L326)
+Defined in: [agent/runner.ts:71](https://github.com/jmanhype/wreckit/blob/d2cfffe493bd4fb4f86dbd7fbd82c596c0a86c1d/src/agent/runner.ts#L71)
 
 ***
 
@@ -136,4 +136,4 @@ Defined in: [agent/runner.ts:326](https://github.com/mikehostetler/wreckit/blob/
 
 > `optional` **timeoutSeconds**: `number`
 
-Defined in: [agent/runner.ts:330](https://github.com/mikehostetler/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/agent/runner.ts#L330)
+Defined in: [agent/runner.ts:75](https://github.com/jmanhype/wreckit/blob/d2cfffe493bd4fb4f86dbd7fbd82c596c0a86c1d/src/agent/runner.ts#L75)

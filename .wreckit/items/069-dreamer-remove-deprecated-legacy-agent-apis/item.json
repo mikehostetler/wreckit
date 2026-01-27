@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "id": "069-dreamer-remove-deprecated-legacy-agent-apis",
+  "title": "[DREAMER] Remove deprecated legacy agent APIs",
+  "section": "analysis",
+  "state": "critique",
+  "overview": "The codebase has 11 @deprecated markers in src/agent/runner.ts for legacy agent configuration APIs. These deprecated functions (AgentConfig, RunAgentOptions, runAgent, getAgentConfig) represent old mode-based configuration that was migrated to kind-based AgentConfigUnion. While kept for backwards compatibility, they add maintenance burden and can confuse new users.",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-27T20:00:00.000Z",
+  "updated_at": "2026-01-27T21:50:42.935Z",
+  "problem_statement": "Deprecated agent APIs accumulate in the codebase, increasing cognitive load and potential for bugs. Users may unknowingly use legacy APIs, and developers must maintain compatibility layers.",
+  "motivation": "Removing deprecated APIs simplifies the codebase, reduces maintenance burden, and ensures all users are on the modern kind-based agent configuration system. This aligns with the completed Item 066 (dogfood-rlm-comprehensive-refactor) which noted these deprecations.",
+  "success_criteria": [
+    "Audit all usages of deprecated functions in codebase and tests",
+    "Replace all runAgent() calls with runAgentUnion()",
+    "Replace all getAgentConfig() calls with getAgentConfigUnion()",
+    "Remove deprecated type definitions (AgentConfig, RunAgentOptions)",
+    "Update any documentation that references legacy APIs"
+  ],
+  "technical_constraints": [
+    "Must ensure all test files are updated",
+    "Cannot break external consumers if any exist",
+    "Should verify no runtime usages remain before removal"
+  ],
+  "scope_in_scope": [
+    "src/agent/runner.ts deprecated exports",
+    "src/agent/index.ts re-exports of deprecated APIs",
+    "Update internal usages in commands/ and workflow/"
+  ],
+  "scope_out_of_scope": [
+    "Breaking changes to public APIs used by external tools",
+    "Changes to AgentConfigUnion or modern APIs"
+  ],
+  "priority_hint": "medium",
+  "urgency_hint": "Technical debt cleanup - aligns with refactor milestone"
+}

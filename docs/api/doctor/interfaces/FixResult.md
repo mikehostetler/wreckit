@@ -6,7 +6,7 @@
 
 # Interface: FixResult
 
-Defined in: [doctor.ts:185](https://github.com/mikehostetler/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/doctor.ts#L185)
+Defined in: [doctor.ts:185](https://github.com/jmanhype/wreckit/blob/d2cfffe493bd4fb4f86dbd7fbd82c596c0a86c1d/src/doctor.ts#L185)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [doctor.ts:185](https://github.com/mikehostetler/wreckit/blob/f8592a
 
 > `optional` **backup**: `object`
 
-Defined in: [doctor.ts:189](https://github.com/mikehostetler/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/doctor.ts#L189)
+Defined in: [doctor.ts:189](https://github.com/jmanhype/wreckit/blob/d2cfffe493bd4fb4f86dbd7fbd82c596c0a86c1d/src/doctor.ts#L189)
 
 #### filePath
 
@@ -30,7 +30,7 @@ Defined in: [doctor.ts:189](https://github.com/mikehostetler/wreckit/blob/f8592a
 
 > **diagnostic**: [`Diagnostic`](Diagnostic.md)
 
-Defined in: [doctor.ts:186](https://github.com/mikehostetler/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/doctor.ts#L186)
+Defined in: [doctor.ts:186](https://github.com/jmanhype/wreckit/blob/d2cfffe493bd4fb4f86dbd7fbd82c596c0a86c1d/src/doctor.ts#L186)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [doctor.ts:186](https://github.com/mikehostetler/wreckit/blob/f8592a
 
 > **fixed**: `boolean`
 
-Defined in: [doctor.ts:187](https://github.com/mikehostetler/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/doctor.ts#L187)
+Defined in: [doctor.ts:187](https://github.com/jmanhype/wreckit/blob/d2cfffe493bd4fb4f86dbd7fbd82c596c0a86c1d/src/doctor.ts#L187)
 
 ***
 
@@ -46,4 +46,4 @@ Defined in: [doctor.ts:187](https://github.com/mikehostetler/wreckit/blob/f8592a
 
 > **message**: `string`
 
-Defined in: [doctor.ts:188](https://github.com/mikehostetler/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/doctor.ts#L188)
+Defined in: [doctor.ts:188](https://github.com/jmanhype/wreckit/blob/d2cfffe493bd4fb4f86dbd7fbd82c596c0a86c1d/src/doctor.ts#L188)

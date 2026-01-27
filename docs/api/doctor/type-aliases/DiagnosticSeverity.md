@@ -8,4 +8,4 @@
 
 > **DiagnosticSeverity** = `"error"` \| `"warning"` \| `"info"`
 
-Defined in: [doctor.ts:175](https://github.com/mikehostetler/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/doctor.ts#L175)
+Defined in: [doctor.ts:175](https://github.com/jmanhype/wreckit/blob/d2cfffe493bd4fb4f86dbd7fbd82c596c0a86c1d/src/doctor.ts#L175)

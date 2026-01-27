@@ -8,17 +8,16 @@
 
 ## Interfaces
 
-- [AgentConfig](interfaces/AgentConfig.md)
 - [AgentResult](interfaces/AgentResult.md)
-- [RunAgentOptions](interfaces/RunAgentOptions.md)
 - [UnionRunAgentOptions](interfaces/UnionRunAgentOptions.md)
 
 ## Functions
 
-- [~~getAgentConfig~~](functions/getAgentConfig.md)
 - [getAgentConfigUnion](functions/getAgentConfigUnion.md)
+- [registerProcessAgent](functions/registerProcessAgent.md)
 - [registerSdkController](functions/registerSdkController.md)
-- [runAgent](functions/runAgent.md)
 - [runAgentUnion](functions/runAgentUnion.md)
+- [runProcessAgent](functions/runProcessAgent.md)
 - [terminateAllAgents](functions/terminateAllAgents.md)
+- [unregisterProcessAgent](functions/unregisterProcessAgent.md)
 - [unregisterSdkController](functions/unregisterSdkController.md)

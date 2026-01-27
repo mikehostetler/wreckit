@@ -14,7 +14,7 @@ import type { Logger } from "../../logging";
 import { RepoNotFoundError } from "../../errors";
 
 import * as childProcess from "node:child_process";
-import { runAgent, type AgentConfig, type RunAgentOptions } from "../../agent";
+import { runAgentUnion, type AgentConfigUnion, type UnionRunAgentOptions } from "../../agent";
 import { pushBranch, getPrByBranch, type GitOptions } from "../../git";
 import { findRepoRoot } from "../../fs";
 
@@ -115,23 +115,21 @@ describe("Edge Case Tests 59-65: Error Conditions", () => {
     it("returns success: false and exitCode: null when agent binary not found", async () => {
       mockSpawnError(new Error("ENOENT: spawn /nonexistent/binary failed"));
 
-      const config: AgentConfig = {
-        mode: "process",
+      const config: AgentConfigUnion = {
+        kind: "process",
         command: "/nonexistent/binary",
         args: [],
         completion_signal: "<promise>COMPLETE</promise>",
-        timeout_seconds: 10,
-        max_iterations: 1,
       };
 
-      const options: RunAgentOptions = {
+      const options: UnionRunAgentOptions = {
         config,
         cwd: tempDir,
         prompt: "test prompt",
         logger: mockLogger,
       };
 
-      const result = await runAgent(options);
+      const result = await runAgentUnion(options);
 
       expect(result.success).toBe(false);
       expect(result.exitCode).toBe(null);
@@ -142,23 +140,21 @@ describe("Edge Case Tests 59-65: Error Conditions", () => {
     it("logs spawn failure with clear error message", async () => {
       mockSpawnError(new Error("ENOENT: spawn failed"));
 
-      const config: AgentConfig = {
-        mode: "process",
+      const config: AgentConfigUnion = {
+        kind: "process",
         command: "/path/to/missing/agent",
         args: ["--flag"],
         completion_signal: "<promise>COMPLETE</promise>",
-        timeout_seconds: 10,
-        max_iterations: 1,
       };
 
-      const options: RunAgentOptions = {
+      const options: UnionRunAgentOptions = {
         config,
         cwd: tempDir,
         prompt: "test prompt",
         logger: mockLogger,
       };
 
-      const result = await runAgent(options);
+      const result = await runAgentUnion(options);
 
       expect(result.success).toBe(false);
       expect(result.output).toContain("error");
@@ -187,23 +183,22 @@ describe("Edge Case Tests 59-65: Error Conditions", () => {
 
       spawn.mockReturnValueOnce(mockProc as any);
 
-      const config: AgentConfig = {
-        mode: "process",
+      const config: AgentConfigUnion = {
+        kind: "process",
         command: "sleep",
         args: ["10"],
         completion_signal: "<promise>COMPLETE</promise>",
-        timeout_seconds: 1,
-        max_iterations: 1,
       };
 
-      const options: RunAgentOptions = {
+      const options: UnionRunAgentOptions = {
         config,
         cwd: tempDir,
         prompt: "test prompt",
         logger: mockLogger,
+        timeoutSeconds: 1,
       };
 
-      const resultPromise = runAgent(options);
+      const resultPromise = runAgentUnion(options);
 
       await new Promise((resolve) => setTimeout(resolve, 1100));
 
@@ -242,23 +237,22 @@ describe("Edge Case Tests 59-65: Error Conditions", () => {
 
       spawn.mockReturnValueOnce(mockProc as any);
 
-      const config: AgentConfig = {
-        mode: "process",
+      const config: AgentConfigUnion = {
+        kind: "process",
         command: "long-running-agent",
         args: [],
         completion_signal: "<promise>COMPLETE</promise>",
-        timeout_seconds: 1,
-        max_iterations: 1,
       };
 
-      const options: RunAgentOptions = {
+      const options: UnionRunAgentOptions = {
         config,
         cwd: tempDir,
         prompt: "test prompt",
         logger: mockLogger,
+        timeoutSeconds: 1,
       };
 
-      const resultPromise = runAgent(options);
+      const resultPromise = runAgentUnion(options);
 
       await new Promise((resolve) => setTimeout(resolve, 1100));
 
@@ -276,23 +270,21 @@ describe("Edge Case Tests 59-65: Error Conditions", () => {
     it("returns success: false and completionDetected: false", async () => {
       mockSpawnOnce("Some output without completion signal\n", 0);
 
-      const config: AgentConfig = {
-        mode: "process",
+      const config: AgentConfigUnion = {
+        kind: "process",
         command: "sh",
         args: ["-c", "echo 'output'"],
         completion_signal: "<promise>COMPLETE</promise>",
-        timeout_seconds: 10,
-        max_iterations: 1,
       };
 
-      const options: RunAgentOptions = {
+      const options: UnionRunAgentOptions = {
         config,
         cwd: tempDir,
         prompt: "test prompt",
         logger: mockLogger,
       };
 
-      const result = await runAgent(options);
+      const result = await runAgentUnion(options);
 
       expect(result.success).toBe(false);
       expect(result.completionDetected).toBe(false);
@@ -303,23 +295,21 @@ describe("Edge Case Tests 59-65: Error Conditions", () => {
     it("treats partial completion signal as not detected", async () => {
       mockSpawnOnce("<promise>COMPLE", 0);
 
-      const config: AgentConfig = {
-        mode: "process",
+      const config: AgentConfigUnion = {
+        kind: "process",
         command: "sh",
         args: ["-c", "echo partial"],
         completion_signal: "<promise>COMPLETE</promise>",
-        timeout_seconds: 10,
-        max_iterations: 1,
       };
 
-      const options: RunAgentOptions = {
+      const options: UnionRunAgentOptions = {
         config,
         cwd: tempDir,
         prompt: "test prompt",
         logger: mockLogger,
       };
 
-      const result = await runAgent(options);
+      const result = await runAgentUnion(options);
 
       expect(result.success).toBe(false);
       expect(result.completionDetected).toBe(false);

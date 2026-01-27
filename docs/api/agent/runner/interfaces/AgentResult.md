@@ -6,7 +6,10 @@
 
 # Interface: AgentResult
 
-Defined in: [agent/runner.ts:65](https://github.com/mikehostetler/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/agent/runner.ts#L65)
+Defined in: [agent/runner.ts:32](https://github.com/jmanhype/wreckit/blob/d2cfffe493bd4fb4f86dbd7fbd82c596c0a86c1d/src/agent/runner.ts#L32)
+
+Result returned by all agent runners.
+Contains success status, output, timeout info, and exit code.
 
 ## Properties
 
@@ -14,7 +17,7 @@ Defined in: [agent/runner.ts:65](https://github.com/mikehostetler/wreckit/blob/f
 
 > **completionDetected**: `boolean`
 
-Defined in: [agent/runner.ts:70](https://github.com/mikehostetler/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/agent/runner.ts#L70)
+Defined in: [agent/runner.ts:37](https://github.com/jmanhype/wreckit/blob/d2cfffe493bd4fb4f86dbd7fbd82c596c0a86c1d/src/agent/runner.ts#L37)
 
 ***
 
@@ -22,7 +25,7 @@ Defined in: [agent/runner.ts:70](https://github.com/mikehostetler/wreckit/blob/f
 
 > **exitCode**: `number` \| `null`
 
-Defined in: [agent/runner.ts:69](https://github.com/mikehostetler/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/agent/runner.ts#L69)
+Defined in: [agent/runner.ts:36](https://github.com/jmanhype/wreckit/blob/d2cfffe493bd4fb4f86dbd7fbd82c596c0a86c1d/src/agent/runner.ts#L36)
 
 ***
 
@@ -30,7 +33,7 @@ Defined in: [agent/runner.ts:69](https://github.com/mikehostetler/wreckit/blob/f
 
 > **output**: `string`
 
-Defined in: [agent/runner.ts:67](https://github.com/mikehostetler/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/agent/runner.ts#L67)
+Defined in: [agent/runner.ts:34](https://github.com/jmanhype/wreckit/blob/d2cfffe493bd4fb4f86dbd7fbd82c596c0a86c1d/src/agent/runner.ts#L34)
 
 ***
 
@@ -38,7 +41,7 @@ Defined in: [agent/runner.ts:67](https://github.com/mikehostetler/wreckit/blob/f
 
 > **success**: `boolean`
 
-Defined in: [agent/runner.ts:66](https://github.com/mikehostetler/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/agent/runner.ts#L66)
+Defined in: [agent/runner.ts:33](https://github.com/jmanhype/wreckit/blob/d2cfffe493bd4fb4f86dbd7fbd82c596c0a86c1d/src/agent/runner.ts#L33)
 
 ***
 
@@ -46,4 +49,4 @@ Defined in: [agent/runner.ts:66](https://github.com/mikehostetler/wreckit/blob/f
 
 > **timedOut**: `boolean`
 
-Defined in: [agent/runner.ts:68](https://github.com/mikehostetler/wreckit/blob/f8592a1b38942d214408b93074a73600554f044b/src/agent/runner.ts#L68)
+Defined in: [agent/runner.ts:35](https://github.com/jmanhype/wreckit/blob/d2cfffe493bd4fb4f86dbd7fbd82c596c0a86c1d/src/agent/runner.ts#L35)
