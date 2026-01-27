@@ -1,10 +1,12 @@
 import { existsSync, readFileSync, mkdirSync } from "fs";
 import { join } from "path";
-import type { MobileConfig, SessionMeta, RepoRef } from "../shared/contracts.js";
+import type { MobileConfig, SessionMeta, RepoRef, Ticket } from "../shared/contracts.js";
 import { MobileConfigSchema } from "../shared/contracts.js";
 import { SessionStore } from "./session-store.js";
 import { TelegramAdapter } from "./telegram.js";
-import { Synthesizer } from "./synthesizer.js";
+import { Synthesizer, type SlicerResult } from "./synthesizer.js";
+import { Executor } from "../runner/executor.js";
+import { createGitHubProvider } from "../providers/github.js";
 import { createLogger } from "../../src/logging.js";
 
 const log = createLogger({ verbose: true });
@@ -160,25 +162,183 @@ export class Orchestrator {
       return;
     }
 
-    this.sessionStore.updateSessionMode(sessionId, "execute");
+    const ticketsPath = join(this.repoPath, ".wreckit", "sessions", sessionId, "tickets.json");
+    if (!existsSync(ticketsPath)) {
+      await this.telegram.sendMessage(
+        chatId,
+        "❌ No tickets found. Run `synthesize` first."
+      );
+      return;
+    }
 
+    let ticketsData: SlicerResult;
+    try {
+      ticketsData = JSON.parse(readFileSync(ticketsPath, "utf-8"));
+    } catch {
+      await this.telegram.sendMessage(chatId, "❌ Failed to read tickets.");
+      return;
+    }
+
+    if (ticketsData.tickets.length === 0) {
+      await this.telegram.sendMessage(chatId, "❌ No tickets to execute.");
+      return;
+    }
+
+    this.sessionStore.updateSessionMode(sessionId, "execute");
     await this.telegram.sendMessage(
       chatId,
-      "⚠️ Execute pipeline not yet implemented (Milestone 3).\n\nSession ready for execution."
+      `⚡ Starting execution of ${ticketsData.tickets.length} ticket(s)...\n\nThis will take several minutes. I'll update you on progress.`
     );
+
+    this.runExecutionAsync(sessionId, chatId, session.repo, ticketsData.tickets);
+  }
+
+  private activeExecutor: Executor | null = null;
+
+  private async runExecutionAsync(
+    sessionId: string,
+    chatId: string,
+    repo: RepoRef,
+    tickets: Ticket[]
+  ): Promise<void> {
+    const results: { ticket: Ticket; success: boolean; prUrl?: string; error?: string }[] = [];
+
+    for (const ticket of tickets) {
+      await this.telegram.sendMessage(chatId, `🔧 Executing: *${ticket.id}* - ${ticket.title}`);
+
+      const executor = new Executor({
+        config: this.config,
+        repoPath: repo.localPath,
+        sessionId,
+        onLog: (msg) => log.info(`[${ticket.id}] ${msg}`),
+        onEvent: async (event) => {
+          if (event.kind === "phase_started") {
+            await this.telegram.sendMessage(chatId, `  ▶️ ${event.phase}: starting...`);
+          } else if (event.kind === "phase_completed") {
+            await this.telegram.sendMessage(chatId, `  ✅ ${event.phase}: done`);
+          } else if (event.kind === "pr_opened" && event.data?.prUrl) {
+            await this.telegram.sendMessage(chatId, `🔗 PR opened: ${event.data.prUrl}`);
+          }
+        },
+      });
+
+      this.activeExecutor = executor;
+      const result = await executor.executeTicket(ticket);
+      this.activeExecutor = null;
+
+      results.push({
+        ticket,
+        success: result.success,
+        prUrl: result.prUrl,
+        error: result.error,
+      });
+
+      if (!result.success) {
+        await this.telegram.sendMessage(
+          chatId,
+          `❌ *${ticket.id}* failed: ${result.error}\n\nContinuing with next ticket...`
+        );
+      } else if (result.prUrl) {
+        const github = createGitHubProvider(this.config.github.token);
+        const previewUrl = result.prNumber
+          ? await github.findPreviewUrl(repo.owner, repo.name, result.prNumber)
+          : null;
+
+        if (previewUrl) {
+          await this.telegram.sendMessage(chatId, `🌐 Preview: ${previewUrl}`);
+        }
+      }
+    }
+
+    const successful = results.filter((r) => r.success);
+    const failed = results.filter((r) => !r.success);
+
+    let summary = `\n🏁 *Execution Complete*\n\n`;
+    summary += `✅ ${successful.length} succeeded\n`;
+    if (failed.length > 0) {
+      summary += `❌ ${failed.length} failed\n`;
+    }
+
+    if (successful.length > 0 && successful.some((r) => r.prUrl)) {
+      summary += `\n*PRs:*\n`;
+      for (const r of successful.filter((r) => r.prUrl)) {
+        summary += `• ${r.ticket.id}: ${r.prUrl}\n`;
+      }
+      summary += `\nSay \`merge\` to merge when checks pass.`;
+    }
+
+    await this.telegram.sendMessage(chatId, summary);
+    this.sessionStore.updateSessionMode(sessionId, "capture");
   }
 
   private async handleStop(sessionId: string, chatId: string): Promise<void> {
-    await this.telegram.sendMessage(
-      chatId,
-      "⚠️ Stop not yet implemented (Milestone 6)."
-    );
+    if (this.activeExecutor) {
+      this.activeExecutor.stop();
+      await this.telegram.sendMessage(chatId, "🛑 Stop signal sent. Execution will halt after current phase.");
+    } else {
+      await this.telegram.sendMessage(chatId, "ℹ️ No execution currently running.");
+    }
   }
 
   private async handleMerge(sessionId: string, chatId: string): Promise<void> {
+    const session = this.sessionStore.getSession(sessionId);
+    if (!session || !session.repo) {
+      await this.telegram.sendMessage(chatId, "❌ No repo configured.");
+      return;
+    }
+
+    const ticketsPath = join(this.repoPath, ".wreckit", "sessions", sessionId, "tickets.json");
+    if (!existsSync(ticketsPath)) {
+      await this.telegram.sendMessage(chatId, "❌ No tickets found.");
+      return;
+    }
+
+    const github = createGitHubProvider(this.config.github.token);
+    const openPRs = await github.listPullRequests(session.repo.owner, session.repo.name);
+
+    if (openPRs.length === 0) {
+      await this.telegram.sendMessage(chatId, "ℹ️ No open PRs found for this repo.");
+      return;
+    }
+
+    let merged = 0;
+    let failed = 0;
+
+    for (const pr of openPRs) {
+      const checks = await github.getPRChecks(session.repo.owner, session.repo.name, pr.number);
+
+      if (checks.state === "success") {
+        const success = await github.mergePullRequest(
+          session.repo.owner,
+          session.repo.name,
+          pr.number,
+          "squash"
+        );
+
+        if (success) {
+          await this.telegram.sendMessage(chatId, `✅ Merged: #${pr.number} - ${pr.title}`);
+          merged++;
+        } else {
+          await this.telegram.sendMessage(chatId, `❌ Failed to merge #${pr.number}`);
+          failed++;
+        }
+      } else if (checks.state === "pending") {
+        await this.telegram.sendMessage(
+          chatId,
+          `⏳ #${pr.number}: Checks still running (${checks.pending} pending)`
+        );
+      } else {
+        await this.telegram.sendMessage(
+          chatId,
+          `❌ #${pr.number}: Checks failed (${checks.failed} failed)`
+        );
+        failed++;
+      }
+    }
+
     await this.telegram.sendMessage(
       chatId,
-      "⚠️ Merge not yet implemented (Milestone 5)."
+      `\n🏁 Merge complete: ${merged} merged, ${failed} failed/blocked`
     );
   }
 

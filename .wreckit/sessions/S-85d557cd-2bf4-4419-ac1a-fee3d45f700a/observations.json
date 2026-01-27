@@ -2,24 +2,25 @@
   "observations": [
     {
       "id": "OBS-001",
-      "summary": "Locate Helius API calls in the repository",
-      "details": "Find code snippets or endpoints for the Helius calls made today.",
+      "summary": "Retrieve Helius API call details from the repository",
+      "details": "User requested code snippets or endpoints for the Helius calls currently being made today.",
       "priority": "medium",
       "tags": [
-        "api",
         "helius",
-        "code-search"
+        "api",
+        "endpoints",
+        "code-snippet"
       ]
     },
     {
       "id": "OBS-002",
-      "summary": "Retrieve current token data structure",
-      "details": "Provide sample JSON showing the fields currently retrieved for a token.",
+      "summary": "Provide sample JSON of current token fields",
+      "details": "User requested to see what fields are currently retrieved for a token, specifically asking for a sample JSON response.",
       "priority": "medium",
       "tags": [
-        "data-structure",
+        "token",
         "json",
-        "token"
+        "data-structure"
       ]
     }
   ],

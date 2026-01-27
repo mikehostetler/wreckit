@@ -2,35 +2,41 @@
   "tickets": [
     {
       "id": "T-001",
-      "title": "Audit Helius API Usage and Recent Changes",
-      "description": "Locate all Helius API calls within the repository. Specifically, identify calls made or modified 'today' (last 24 hours) by reviewing git history and runtime logs. Document the specific endpoints, the functions invoking them, and the context of their usage.",
+      "title": "Document Helius API Integration Details",
+      "description": "Extract and document the code snippets and endpoints used for Helius API calls within the repository. This involves locating the relevant source files and creating a clear summary of how the API is consumed.",
       "priority": "medium",
       "acceptanceCriteria": [
-        "A list of all files and functions containing Helius API calls.",
-        "A git diff or log summary showing changes to these calls in the last 24 hours.",
-        "Documentation of the specific Helius endpoints being utilized."
+        "Locate all source files making calls to the Helius API.",
+        "Extract code snippets demonstrating the request logic and parameters.",
+        "Ensure all API keys, secrets, and sensitive credentials are fully redacted.",
+        "Document the specific Helius endpoints and HTTP methods being utilized."
       ],
       "observationIds": [
         "OBS-001"
       ],
-      "estimatedComplexity": "medium",
-      "dependencies": []
+      "estimatedComplexity": "small",
+      "dependencies": [
+        "Access to the repository source code"
+      ]
     },
     {
       "id": "T-002",
-      "title": "Document Token Data Schema (Raw and Internal)",
-      "description": "Retrieve and document the current token data structure. This task requires providing JSON samples for both the raw API response received from the data source and the internal application model/interface used within the codebase.",
+      "title": "Generate Sample JSON Response for Token Data",
+      "description": "Create a sample JSON object representing the fields currently retrieved for a token. This requires inspecting the data models or querying a live instance to ensure accuracy.",
       "priority": "medium",
       "acceptanceCriteria": [
-        "Sample JSON representing the raw API response for a token.",
-        "Sample JSON representing the internal application model/interface for a token.",
-        "Documentation explaining the mapping or transformation between the raw and internal structures."
+        "Identify the data structure or interface defining a token.",
+        "Generate a valid JSON sample populated with dummy data.",
+        "Verify if the token schema varies by type; if so, provide samples for each variation.",
+        "Ensure the sample includes all standard fields currently retrieved."
       ],
       "observationIds": [
         "OBS-002"
       ],
       "estimatedComplexity": "small",
-      "dependencies": []
+      "dependencies": [
+        "Access to a live environment or test data"
+      ]
     }
   ],
   "meta": {

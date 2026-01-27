@@ -1,0 +1,41 @@
+{
+  "spec": {
+    "title": "Implementation Specification: Helius Documentation & Token Data Modeling",
+    "summary": "This specification details the extraction and documentation of Helius API integration details and the generation of sample JSON responses for token data within the polymarket-aggregator repository.",
+    "tickets": [
+      {
+        "id": "T-001",
+        "title": "Document Helius API Integration Details",
+        "implementationGuide": "1. Scan the repository codebase for keywords such as 'helius', 'api.helius', or specific RPC endpoint configurations. 2. Identify source files that construct and execute HTTP requests or WebSocket connections to Helius. 3. Extract the relevant code snippets that demonstrate request logic, headers, and parameters. 4. Compile a document listing the specific Helius endpoints (e.g., /v0/tokens, /v0/webhooks) and HTTP methods used. 5. Strictly redact all API keys, secrets, and sensitive credentials, replacing them with placeholders like 'YOUR_API_KEY'.",
+        "filesLikelyChanged": [
+          "docs/api-integration.md",
+          "README.md",
+          "src/services/helius.ts",
+          "src/utils/api.ts"
+        ],
+        "testingNotes": "Review the generated documentation to ensure code snippets are syntactically correct and that no sensitive credentials remain visible. Verify that the listed endpoints match the code logic."
+      },
+      {
+        "id": "T-002",
+        "title": "Generate Sample JSON Response for Token Data",
+        "implementationGuide": "1. Locate the TypeScript interfaces, types, or Zod schemas that define the 'Token' or 'Asset' structure within the codebase. 2. Inspect API response handlers to understand how data is mapped to these models. 3. Construct a valid JSON object populated with realistic dummy data that adheres to the identified schema. 4. Determine if the schema varies based on token type (e.g., conditional markets vs binary markets); if variations exist, generate a sample for each type. 5. Ensure all standard fields retrieved by the application are included in the sample.",
+        "filesLikelyChanged": [
+          "docs/token-schema-example.json",
+          "src/types/token.ts",
+          "README.md"
+        ],
+        "testingNotes": "Validate the generated JSON against the repository's TypeScript interfaces or validation schemas to ensure structural integrity and field completeness."
+      }
+    ]
+  },
+  "prompt": "You are an AI coding agent working on the repository `noahchristian/polymarket-aggregator`. Your task is to execute two specific tickets related to documentation and data modeling.\n\n**Task 1: Document Helius API Integration Details (T-001)**\n- Search the codebase to locate all files interacting with the Helius API.\n- Extract code snippets showing how requests are made (parameters, headers, body).\n- Identify the specific Helius endpoints and HTTP methods being used.\n- Create a clear summary document of these findings.\n- **CRITICAL:** Ensure all API keys, secrets, and sensitive credentials are fully redacted.\n\n**Task 2: Generate Sample JSON Response for Token Data (T-002)**\n- Identify the data structures (interfaces/types) defining a Token in the project.\n- Generate a sample JSON object representing a token, populated with dummy data.\n- Check if the token schema varies by type; if so, provide samples for each variation.\n- Ensure all standard fields currently retrieved are included in the sample.\n\nPlease proceed by exploring the repository structure, fulfilling the acceptance criteria for both tickets, and outputting the necessary documentation and JSON samples.",
+  "checklist": [
+    "[ ] Located all source files making calls to the Helius API",
+    "[ ] Extracted and documented code snippets for Helius requests",
+    "[ ] Redacted all sensitive credentials from documentation",
+    "[ ] Identified the data structure defining a Token",
+    "[ ] Generated valid JSON samples with dummy data",
+    "[ ] Verified schema variations and included all standard fields"
+  ],
+  "mobileNote": "Spec created for documenting Helius API usage and generating Token JSON samples in the polymarket-aggregator repo."
+}
