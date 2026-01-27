@@ -17,6 +17,8 @@ import { initCommand } from "./commands/init";
 import { rollbackCommand } from "./commands/rollback";
 // import { sdkInfoCommand } from "./commands/sdk-info";
 import { runOnboardingIfNeeded } from "./onboarding";
+import { registerGatewayCommand } from "../packages/cli/gateway";
+import { registerOnboardCommand } from "../packages/cli/onboard";
 import { resolveId } from "./domain/resolveId";
 import { findRepoRoot, resolveCwd } from "./fs/paths";
 
@@ -528,6 +530,9 @@ program
 //       }
 //     );
 //   });
+
+registerGatewayCommand(program);
+registerOnboardCommand(program);
 
 async function main(): Promise<void> {
   setupInterruptHandler(logger);

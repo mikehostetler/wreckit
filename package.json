@@ -24,10 +24,13 @@
     "url": "https://github.com/mikehostetler/wreckit/issues"
   },
   "scripts": {
-    "build": "tsup src/index.ts --format esm --clean && cp -r src/prompts dist/",
+    "build": "tsup src/index.ts --format esm --clean && cp -r src/prompts dist/ && cp -r packages/gateway/prompts dist/gateway-prompts",
     "dev": "bun run ./src/index.ts",
+    "gateway": "bun run ./src/index.ts gateway start",
     "prepublishOnly": "bun run build",
     "test": "bun test --preload ./src/__tests__/test-preload.ts ./src/__tests__/commands/phase.isospec.ts && bun test --preload ./src/__tests__/test-preload.ts ./src/__tests__/commands/run.isospec.ts && bun test ./src/__tests__/*.test.ts ./src/__tests__/commands/init.test.ts ./src/__tests__/commands/ideas.test.ts ./src/__tests__/commands/orchestrator.test.ts ./src/__tests__/commands/show.test.ts ./src/__tests__/commands/status.test.ts && bun test ./src/__tests__/edge-cases/cwd.test.ts && bun test ./src/__tests__/edge-cases/branch-ops.isospec.ts && bun test ./src/__tests__/edge-cases/config.test.ts && bun test ./src/__tests__/edge-cases/dry-run.isospec.ts && bun test ./src/__tests__/edge-cases/errors.isospec.ts && bun test ./src/__tests__/edge-cases/item-states.test.ts && bun test ./src/__tests__/edge-cases/mock-agent.isospec.ts && bun test ./src/__tests__/edge-cases/repo-state.isospec.ts && bun test ./src/__tests__/edge-cases/state-conflicts.test.ts",
+    "test:gateway": "bun test ./src/__tests__/gateway/",
+    "typecheck": "tsc --noEmit",
     "watch": "tsup src/index.ts --format esm --watch --onSuccess \"cp -r src/prompts dist/\""
   },
   "keywords": [
@@ -36,7 +39,9 @@
     "automation",
     "agent",
     "ai",
-    "autonomous"
+    "autonomous",
+    "telegram",
+    "mobile"
   ],
   "license": "MIT",
   "devDependencies": {
@@ -51,12 +56,14 @@
   "dependencies": {
     "@anthropic-ai/claude-agent-sdk": "^0.2.7",
     "@clack/prompts": "^0.11.0",
+    "@octokit/rest": "^21.0.0",
     "@types/react": "^19.2.8",
     "commander": "^14.0.2",
     "ink": "^6.6.0",
     "pino": "^10.1.1",
     "pino-pretty": "^13.1.3",
     "react": "^19.2.3",
+    "telegraf": "^4.16.3",
     "zod": "^4.3.5"
   },
   "engines": {

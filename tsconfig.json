@@ -8,11 +8,11 @@
     "skipLibCheck": true,
     "declaration": true,
     "outDir": "./dist",
-    "rootDir": "./src",
+    "rootDir": ".",
     "types": ["bun-types", "node"],
     "jsx": "react-jsx",
     "jsxImportSource": "react"
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "packages/**/*"],
   "exclude": ["node_modules", "dist"]
 }

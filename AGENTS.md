@@ -1,199 +1,187 @@
-# Wreckit Agent Guidelines
+# WreckitGo Agent Guidelines
 
-## Specifications
+## Project Overview
 
-**IMPORTANT:** Before implementing any feature, consult the specifications in `specs/README.md`.
+WreckitGo is a **Telegram-first mobile gateway** for Wreckit that lets users drive AI coding workflows from mobile. The architecture follows: **CAPTURE → SYNTHESIZE → EXECUTE**.
 
-- **Assume NOT implemented.** Many specs describe planned features that may not yet exist in the codebase.
-- **Check the codebase first.** Before concluding something is or isn't implemented, search the actual code. Specs describe intent; code describes reality.
-- **Use specs as guidance.** When implementing a feature, follow the design patterns, types, and architecture defined in the relevant spec.
-- **Spec index:** `specs/README.md` lists all specifications organized by phase.
-
-## Commands
-
-### Building & Testing
+## Quick Commands
 
 | Command | Does |
 |---------|------|
-| `bun build` | Build the CLI |
+| `bun install` | Install dependencies |
+| `bun run build` | Build the CLI |
+| `bun run dev` | Run in dev mode |
 | `bun test` | Run all tests |
-| `bun test src/__tests__/foo.test.ts` | Run single test file |
 | `bun run typecheck` | Type check the codebase |
-| `bun run lint` | Lint the codebase |
-
-### CLI Commands
-
-| Command | Does |
-|---------|------|
-| `wreckit` | Run all incomplete items (research → plan → implement → PR) |
-| `wreckit next` | Run next incomplete item |
-| `wreckit run <id>` | Run single item through all phases (id: `1`, `2`, or `001-slug`) |
-| `wreckit ideas < FILE` | Ingest ideas (create idea items) |
-| `wreckit status` | List all items + state |
-| `wreckit list` | List items (with optional `--state` filtering) |
-| `wreckit show <id>` | Show item details |
-| `wreckit init` | Initialize `.wreckit/` in repo |
-| `wreckit doctor` | Validate items, fix broken state |
-| `wreckit rollback <id>` | Rollback a direct-merge item to pre-merge state |
-
-### Phase Commands (debugging)
-
-| Command | Transition |
-|---------|------------|
-| `wreckit research <id>` | idea → researched |
-| `wreckit plan <id>` | researched → planned |
-| `wreckit implement <id>` | planned → implementing |
-| `wreckit pr <id>` | implementing → in_pr |
-| `wreckit complete <id>` | in_pr → done |
-
-### Flags
-
-- `--verbose` — More logs
-- `--quiet` — Errors only
-- `--debug` — JSON output (ndjson)
-- `--no-tui` — Disable UI (CI mode)
-- `--dry-run` — Preview, don't execute
-- `--force` — Regenerate artifacts
-- `--cwd <path>` — Override working directory
-- `--fix` — Auto-repair (doctor only)
-
-## State Flow
-
-```
-idea → researched → planned → implementing → in_pr → done
-```
+| `wreckit gateway start` | Start Telegram bot + orchestrator |
+| `wreckit onboard` | Run setup wizard |
 
 ## Architecture
 
-TypeScript CLI built with Bun. Key directories:
-
-- `src/index.ts` — CLI entry, commands
-- `src/domain/` — State machine, item indexing
-- `src/commands/` — Phase handlers
-- `src/agent/` — Agent subprocess and SDK integration
-- `src/agent/mcp/` — MCP server for structured output
-- `src/git/` — Git operations
-- `src/fs/paths.ts` — Path helpers (items stored in `.wreckit/items/`)
-- `specs/` — Feature specifications
-
-## Config
-
-`.wreckit/config.json`:
-```json
-{
-  "schema_version": 1,
-  "base_branch": "main",
-  "branch_prefix": "wreckit/",
-  "merge_mode": "pr",
-  "agent": {"command": "amp", "args": ["--dangerously-allow-all"]},
-  "max_iterations": 100,
-  "timeout_seconds": 3600,
-  "branch_cleanup": {"enabled": true, "delete_remote": true}
-}
+```
+packages/
+├── shared/           # Shared types & contracts
+│   └── contracts.ts  # Session, Ticket, Run types
+├── gateway/          # Telegram gateway + orchestrator
+│   ├── telegram.ts   # Telegram bot adapter (polling)
+│   ├── orchestrator.ts   # Session/run orchestration
+│   ├── session-store.ts  # File-backed session store
+│   └── prompts/      # Prompt templates for synthesis
+├── providers/        # External service integrations
+│   ├── llm.ts        # LLM abstraction (z.ai, OpenAI, Anthropic, Google)
+│   └── github.ts     # GitHub PR, checks, merge, preview URL
+├── runner/           # Execution sandbox
+│   └── docker-runner.ts  # Docker-based safe runner
+├── cli/              # CLI commands
+│   ├── gateway.ts    # `wreckit gateway start`
+│   └── onboard.ts    # `wreckit onboard`
+└── licensing/        # License validation
+    └── license.ts    # File-based license check
 ```
 
-### Environment Variable Resolution
+## Session Storage
 
-When using `agent.mode: "sdk"`, environment variables are merged from multiple sources with this precedence (highest first):
+All session data lives in `.wreckit/sessions/<sessionId>/`:
+```
+.wreckit/sessions/<sessionId>/
+├── meta.json         # Session metadata (mode, repo, timestamps)
+├── notes.md          # Raw captured notes
+├── attachments/      # Screenshots, voice, files
+├── observations.json # Normalized observations
+├── tickets.json      # Sliced tickets
+├── spec.md           # Generated spec
+├── prompt.md         # Generated implementation prompt
+└── runs/
+    └── <runId>/
+        ├── run.json  # Run metadata + events
+        ├── logs/     # Phase logs
+        └── checkpoint.json  # If stopped early
+```
 
-1. `.wreckit/config.local.json` `agent.env` (project-specific, gitignored)
-2. `.wreckit/config.json` `agent.env` (project defaults)
-3. `process.env` (shell environment)
-4. `~/.claude/settings.json` `env` (Claude user settings)
+## Config Files
 
-Example `.wreckit/config.local.json` for custom API routing:
+### ~/.wreckit/mobile-config.json
 ```json
 {
-  "agent": {
-    "env": {
-      "ANTHROPIC_BASE_URL": "https://api.z.ai/api/anthropic",
-      "ANTHROPIC_AUTH_TOKEN": "your-token-here"
+  "telegram": {
+    "botToken": "env:TELEGRAM_BOT_TOKEN",
+    "allowedUserIds": [1630993666]
+  },
+  "github": {
+    "token": "env:GITHUB_TOKEN"
+  },
+  "llm": {
+    "zai": {
+      "apiKey": "env:ZAI_API_KEY",
+      "baseUrl": "https://api.z.ai/api/paas/v4/chat/completions",
+      "model": "glm-4.7"
+    },
+    "roles": {
+      "synthesizer": "zai",
+      "implementer": "zai",
+      "reviewer": "zai"
     }
-  }
+  },
+  "repos": [
+    {
+      "owner": "noahchristian",
+      "name": "polymarket-aggregator",
+      "localPath": "/Users/noahchristian/polymarket-aggregator",
+      "defaultBranch": "main"
+    }
+  ]
 }
 ```
 
-When `ANTHROPIC_BASE_URL` and `ANTHROPIC_AUTH_TOKEN` are set, `ANTHROPIC_API_KEY` is automatically blanked to prevent credential fallback.
+### ~/.wreckit/license.json
+```json
+{
+  "licenseKey": "...",
+  "issuedAt": "2025-01-27T00:00:00Z"
+}
+```
 
-### Merge Modes
+## Intent Routing
 
-- `"pr"` (default): Creates a PR for each item, waits for merge
-- `"direct"`: YOLO mode - merges directly to base branch without PRs (good for greenfield projects)
+| Intent | Triggers | Action |
+|--------|----------|--------|
+| `START_SESSION` | "start session", "new session" | Create new session |
+| `CAPTURE_NOTE` | (default) | Append to notes.md |
+| `SYNTHESIZE` | "synthesize", "make tickets", "write spec" | Run synthesis pipeline |
+| `EXECUTE` | "go", "implement", "execute" | Run Wreckit phases |
+| `STATUS` | "status", "where are we" | Show session status |
+| `STOP` | "stop", "pause", "kill" | Hard-kill runner |
+| `MERGE` | "merge", "ship it" | Merge PR if checks pass |
+| `SWITCH_REPO` | exact "owner/repo" match | Switch active repo |
 
-## Exit Codes
+## Milestones
 
-- `0` — Success
-- `1` — Error
-- `130` — Interrupted
+1. **Telegram + Sessions (CAPTURE)** - Bot connects, captures notes, session persistence
+2. **SYNTHESIZE pipeline** - Normalizer → Critic → Slicer → Integrator
+3. **EXECUTE (Wreckit runs + PR)** - Docker runner, phase execution, PR creation
+4. **Vercel Preview URL detection** - Extract from GitHub checks/deployments
+5. **Merge via Telegram** - Check status, squash merge
+6. **STOP hard-kill + checkpoints** - Immediate stop, checkpoint save
 
 ## Code Style
 
-- **Formatting:** Use Prettier defaults (run `bun run lint` to check)
-- **Errors:** Use custom error classes extending `Error`. Propagate with descriptive messages.
-- **Async:** Use async/await. Avoid callbacks.
-- **Imports:** Group by external packages, then internal modules.
-- **Naming:** camelCase for functions/variables, PascalCase for types/classes, SCREAMING_CASE for constants.
-- **No comments** unless code is complex and requires context for future developers.
-- **Testing:** Use Bun's built-in test runner. Tests go in `src/__tests__/`.
-- **Logging:** Use structured logging. Never log secrets directly.
+- **TypeScript/ESM** with strict mode
+- **Bun** for runtime and testing
+- **Zod** for all schema validation
+- **No comments** unless complex logic requires context
+- **camelCase** for functions/variables, **PascalCase** for types
+- **Async/await** everywhere, no callbacks
+- **Structured logging** via pino - NEVER log secrets
+- **JSON-only LLM outputs** - always validate/extract JSON from responses
 
-## Claude Agent SDK Patterns
+## LLM Provider Priority (MVP)
 
-### Session API vs Query API
+1. **z.ai** (glm-4.7) - Primary for all roles initially
+2. After Milestone 3: Add multi-provider support for role-based selection
 
-| API | Use Case | MCP Support |
-|-----|----------|-------------|
-| `unstable_v2_createSession()` | Interactive multi-turn conversations | ❌ No |
-| `query()` | Autonomous agent tasks with tools | ✅ Yes |
+## Security Rules
 
-### Piping Session → Query with MCP
+- NEVER log API keys, tokens, or secrets
+- Secrets loaded from env vars or config only
+- Telegram allowlist enforced - reject unknown user IDs
+- Docker runner sandboxes execution
+- Command allowlist for runner (no rm -rf, etc.)
 
-To use MCP tools after a conversational session:
+## Testing
 
-1. **Capture session ID** during streaming:
-   ```typescript
-   for await (const msg of session.stream()) {
-     if (msg.session_id) sessionId = msg.session_id;
-   }
-   ```
-
-2. **Resume with query()** to access MCP:
-   ```typescript
-   const result = query({
-     prompt: "Extract structured data from our conversation",
-     options: {
-       resume: sessionId,  // Continues with full context
-       mcpServers: { wreckit: wreckitMcpServer }
-     }
-   });
-   ```
-
-### MCP Server Pattern
-
-Custom MCP tools for structured output (see `src/agent/mcp/wreckitMcpServer.ts`):
-
-```typescript
-const server = createWreckitMcpServer({
-  onInterviewIdeas: (ideas) => { capturedIdeas = ideas; },
-  onParsedIdeas: (ideas) => { /* from ideas command */ },
-  onSavePrd: (prd) => { /* from plan phase */ },
-  onUpdateStoryStatus: (storyId, status) => { /* from implement phase */ },
-});
+```bash
+bun test                           # All tests
+bun test src/__tests__/gateway/    # Gateway tests only
+bun test --watch                   # Watch mode
 ```
 
-### Available MCP Tools
+## Environment Variables
 
-| Tool | Phase | Purpose |
-|------|-------|---------|
-| `save_interview_ideas` | Interview | Capture structured ideas from conversational interview |
-| `save_parsed_ideas` | Ideas ingestion | Parse ideas from piped document input |
-| `save_prd` | Plan | Save PRD with user stories (replaces writing prd.json directly) |
-| `update_story_status` | Implement | Mark a story as done (replaces editing prd.json directly) |
+```bash
+TELEGRAM_BOT_TOKEN=...
+GITHUB_TOKEN=...
+ZAI_API_KEY=...
+OPENAI_API_KEY=...      # Optional, for multi-provider
+ANTHROPIC_API_KEY=...   # Optional, for multi-provider
+GOOGLE_API_KEY=...      # Optional, for multi-provider
+```
 
-Prompt the agent to call MCP tools instead of outputting JSON directly or editing JSON files.
+## Prompt Templates
+
+Store in `packages/gateway/prompts/`:
+- `intent_classifier.txt` - Route user messages
+- `session_normalizer.txt` - Notes → Observations
+- `critic_gap_finder.txt` - Find blocking questions
+- `ticket_slicer.txt` - Observations → Tickets
+- `spec_integrator.txt` - Generate spec/prompt
+- `pr_summary_writer.txt` - Mobile-friendly PR summary
+
+All prompts MUST request **strict JSON output** where applicable.
 
 ## Design Principles
 
-- When multiple code paths do similar things with slight variations, create a shared service with a request struct that captures the variations, rather than having each caller implement its own logic.
-- Prefer composition over inheritance.
-- Keep functions small and focused on a single responsibility.
+- **Idempotent operations** - Re-running is safe
+- **File-based state** - No database, git-trackable
+- **Progressive enhancement** - Each milestone is shippable
+- **Mobile-first UX** - Short messages, inline buttons
+- **Fail gracefully** - Always respond to user, even on errors
