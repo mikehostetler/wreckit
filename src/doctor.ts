@@ -383,6 +383,48 @@ async function diagnoseItem(
   if (hasPrd) {
     try {
       const prdData = await readJson(prdPath);
+
+      // Check for missing required fields (fixable issues)
+      // We check these before schema validation to provide specific, fixable diagnostics
+      if (!prdData.id) {
+        diagnostics.push({
+          itemId,
+          severity: "error",
+          code: "PRD_MISSING_ID",
+          message: "prd.json missing required 'id' field",
+          fixable: true,
+        });
+        // Early return since we can't validate story quality without id
+        return diagnostics;
+      }
+
+      if (!prdData.branch_name) {
+        diagnostics.push({
+          itemId,
+          severity: "error",
+          code: "PRD_MISSING_BRANCH_NAME",
+          message: "prd.json missing required 'branch_name' field",
+          fixable: true,
+        });
+        // Continue checking other issues since branch_name isn't needed for story validation
+      }
+
+      // Check for out-of-range priorities (fixable issue)
+      if (prdData.user_stories && Array.isArray(prdData.user_stories)) {
+        const invalidPriorities = prdData.user_stories.filter(
+          (s: { priority?: number }) => s.priority !== undefined && (s.priority < 1 || s.priority > 4)
+        );
+        if (invalidPriorities.length > 0) {
+          diagnostics.push({
+            itemId,
+            severity: "warning",
+            code: "PRD_INVALID_PRIORITY",
+            message: `${invalidPriorities.length} stories have priority outside [1, 4] range`,
+            fixable: true,
+          });
+        }
+      }
+
       const prdResult = PrdSchema.safeParse(prdData);
       if (!prdResult.success) {
         diagnostics.push({
@@ -1112,6 +1154,89 @@ export async function applyFixes(
           message = `Terminated orphaned VM '${vmName}'`;
         } catch (err) {
           message = `Failed to cleanup VM: ${err instanceof Error ? err.message : String(err)}`;
+        }
+        break;
+      }
+
+      case "PRD_MISSING_ID":
+      case "PRD_MISSING_BRANCH_NAME":
+      case "PRD_INVALID_PRIORITY": {
+        if (!diagnostic.itemId) {
+          message = "Cannot fix: missing itemId in diagnostic";
+          break;
+        }
+
+        try {
+          const itemDir = path.join(getItemsDir(root), diagnostic.itemId);
+          const prdPath = path.join(itemDir, "prd.json");
+          const data = await readJson(prdPath);
+
+          // Backup before modification
+          const entry = await backupFile(
+            root,
+            sessionId,
+            prdPath,
+            diagnostic,
+            "modified",
+          );
+          if (entry) {
+            backupEntries.push(entry);
+            hasBackups = true;
+            backupInfo = { sessionId, filePath: entry.backup_path };
+          }
+
+          let repaired = false;
+
+          // Repair missing id (infer from item directory name)
+          if (diagnostic.code === "PRD_MISSING_ID") {
+            data.id = diagnostic.itemId;
+            repaired = true;
+          }
+
+          // Repair missing branch_name (infer from id)
+          if (diagnostic.code === "PRD_MISSING_BRANCH_NAME") {
+            const prdId = data.id || diagnostic.itemId;
+            data.branch_name = `wreckit/${prdId}`;
+            repaired = true;
+          }
+
+          // Repair invalid priorities
+          if (diagnostic.code === "PRD_INVALID_PRIORITY") {
+            let clampedCount = 0;
+            if (data.user_stories && Array.isArray(data.user_stories)) {
+              data.user_stories = data.user_stories.map((story: any) => {
+                if (story.priority < 1) {
+                  clampedCount++;
+                  return { ...story, priority: 1 };
+                }
+                if (story.priority > 4) {
+                  clampedCount++;
+                  return { ...story, priority: 4 };
+                }
+                return story;
+              });
+            }
+            if (clampedCount > 0) {
+              logger.warn(
+                `Clamped ${clampedCount} priorities to [1, 4] range in ${diagnostic.itemId}`,
+              );
+            }
+            repaired = true;
+          }
+
+          if (repaired) {
+            // Write repaired PRD
+            // Note: We don't validate here because we might be doing incremental repairs.
+            // The diagnostics system will catch any remaining issues on the next run.
+            await fs.writeFile(prdPath, JSON.stringify(data, null, 2));
+            fixed = true;
+            message =
+              diagnostic.code === "PRD_INVALID_PRIORITY"
+                ? "Clamped priorities to [1, 4] range"
+                : `Added missing field '${diagnostic.code.replace("PRD_MISSING_", "").toLowerCase()}'`;
+          }
+        } catch (err) {
+          message = `Failed to repair PRD: ${err instanceof Error ? err.message : String(err)}`;
         }
         break;
       }

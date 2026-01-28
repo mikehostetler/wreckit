@@ -682,6 +682,256 @@ describe("applyFixes", () => {
       .catch(() => false);
     expect(exists).toBe(false);
   });
+
+  describe("PRD auto-repair", () => {
+    beforeEach(async () => {
+      await createItem(tempDir, "081-test-item");
+    });
+
+    it("fixes PRD_MISSING_ID by inferring from item directory", async () => {
+      const itemId = "081-test-item";
+      const prdData = {
+        schema_version: 1,
+        branch_name: `wreckit/${itemId}`,
+        user_stories: [
+          {
+            id: "US-001",
+            title: "Test story",
+            acceptance_criteria: ["Test"],
+            priority: 1,
+            status: "pending" as const,
+            notes: "",
+          },
+        ],
+      };
+      const prdPath = path.join(tempDir, ".wreckit", "items", itemId, "prd.json");
+      await fs.writeFile(prdPath, JSON.stringify(prdData, null, 2));
+
+      const diagnostics = [
+        {
+          itemId,
+          severity: "error" as const,
+          code: "PRD_MISSING_ID",
+          message: "prd.json missing required 'id' field",
+          fixable: true,
+        },
+      ];
+
+      const { results, backupSessionId } = await applyFixes(
+        tempDir,
+        diagnostics,
+        mockLogger,
+      );
+
+      expect(results).toHaveLength(1);
+      expect(results[0].fixed).toBe(true);
+      expect(results[0].message).toContain("Added missing field 'id'");
+      expect(results[0].backup).toBeDefined();
+      expect(backupSessionId).toBeDefined();
+
+      // Verify the repair
+      const repairedPrd = JSON.parse(await fs.readFile(prdPath, "utf-8"));
+      expect(repairedPrd.id).toBe(itemId);
+    });
+
+    it("fixes PRD_MISSING_BRANCH_NAME by inferring from prd.id", async () => {
+      const itemId = "081-test-item";
+      const prdData = {
+        schema_version: 1,
+        id: itemId,
+        user_stories: [
+          {
+            id: "US-001",
+            title: "Test story",
+            acceptance_criteria: ["Test"],
+            priority: 1,
+            status: "pending" as const,
+            notes: "",
+          },
+        ],
+      };
+      const prdPath = path.join(tempDir, ".wreckit", "items", itemId, "prd.json");
+      await fs.writeFile(prdPath, JSON.stringify(prdData, null, 2));
+
+      const diagnostics = [
+        {
+          itemId,
+          severity: "error" as const,
+          code: "PRD_MISSING_BRANCH_NAME",
+          message: "prd.json missing required 'branch_name' field",
+          fixable: true,
+        },
+      ];
+
+      const { results, backupSessionId } = await applyFixes(
+        tempDir,
+        diagnostics,
+        mockLogger,
+      );
+
+      expect(results).toHaveLength(1);
+      expect(results[0].fixed).toBe(true);
+      expect(results[0].message).toContain("Added missing field 'branch_name'");
+      expect(results[0].backup).toBeDefined();
+      expect(backupSessionId).toBeDefined();
+
+      // Verify the repair
+      const repairedPrd = JSON.parse(await fs.readFile(prdPath, "utf-8"));
+      expect(repairedPrd.branch_name).toBe(`wreckit/${itemId}`);
+    });
+
+    it("fixes PRD_INVALID_PRIORITY by clamping to [1, 4] range", async () => {
+      const itemId = "081-test-item";
+      const prdData = {
+        schema_version: 1,
+        id: itemId,
+        branch_name: `wreckit/${itemId}`,
+        user_stories: [
+          {
+            id: "US-001",
+            title: "Low priority",
+            acceptance_criteria: ["Test"],
+            priority: -1, // Will be clamped to 1
+            status: "pending" as const,
+            notes: "",
+          },
+          {
+            id: "US-002",
+            title: "Valid priority",
+            acceptance_criteria: ["Test"],
+            priority: 2, // Should remain unchanged
+            status: "pending" as const,
+            notes: "",
+          },
+          {
+            id: "US-003",
+            title: "High priority",
+            acceptance_criteria: ["Test"],
+            priority: 10, // Will be clamped to 4
+            status: "pending" as const,
+            notes: "",
+          },
+        ],
+      };
+      const prdPath = path.join(tempDir, ".wreckit", "items", itemId, "prd.json");
+      await fs.writeFile(prdPath, JSON.stringify(prdData, null, 2));
+
+      const diagnostics = [
+        {
+          itemId,
+          severity: "warning" as const,
+          code: "PRD_INVALID_PRIORITY",
+          message: "2 stories have priority outside [1, 4] range",
+          fixable: true,
+        },
+      ];
+
+      const { results, backupSessionId } = await applyFixes(
+        tempDir,
+        diagnostics,
+        mockLogger,
+      );
+
+      expect(results).toHaveLength(1);
+      expect(results[0].fixed).toBe(true);
+      expect(results[0].message).toContain("Clamped priorities to [1, 4] range");
+      expect(results[0].backup).toBeDefined();
+      expect(backupSessionId).toBeDefined();
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        expect.stringContaining("Clamped 2 priorities to [1, 4] range"),
+      );
+
+      // Verify the repair
+      const repairedPrd = JSON.parse(await fs.readFile(prdPath, "utf-8"));
+      expect(repairedPrd.user_stories[0].priority).toBe(1);
+      expect(repairedPrd.user_stories[1].priority).toBe(2);
+      expect(repairedPrd.user_stories[2].priority).toBe(4);
+    });
+
+    it("handles multiple PRD violations in same file", async () => {
+      const itemId = "081-test-item";
+      const prdData = {
+        schema_version: 1,
+        user_stories: [
+          {
+            id: "US-001",
+            title: "Test",
+            acceptance_criteria: ["Test"],
+            priority: 10, // Invalid priority
+            status: "pending" as const,
+            notes: "",
+          },
+        ],
+      };
+      const prdPath = path.join(tempDir, ".wreckit", "items", itemId, "prd.json");
+      await fs.writeFile(prdPath, JSON.stringify(prdData, null, 2));
+
+      const diagnostics = [
+        {
+          itemId,
+          severity: "error" as const,
+          code: "PRD_MISSING_ID",
+          message: "prd.json missing required 'id' field",
+          fixable: true,
+        },
+        {
+          itemId,
+          severity: "error" as const,
+          code: "PRD_MISSING_BRANCH_NAME",
+          message: "prd.json missing required 'branch_name' field",
+          fixable: true,
+        },
+        {
+          itemId,
+          severity: "warning" as const,
+          code: "PRD_INVALID_PRIORITY",
+          message: "1 stories have priority outside [1, 4] range",
+          fixable: true,
+        },
+      ];
+
+      const { results, backupSessionId } = await applyFixes(
+        tempDir,
+        diagnostics,
+        mockLogger,
+      );
+
+      expect(results).toHaveLength(3);
+      expect(results.every((r) => r.fixed)).toBe(true);
+      expect(backupSessionId).toBeDefined();
+
+      // Verify all repairs
+      const repairedPrd = JSON.parse(await fs.readFile(prdPath, "utf-8"));
+      expect(repairedPrd.id).toBe(itemId);
+      expect(repairedPrd.branch_name).toBe(`wreckit/${itemId}`);
+      expect(repairedPrd.user_stories[0].priority).toBe(4);
+    });
+
+    it("handles repair failure gracefully", async () => {
+      const itemId = "081-test-item";
+      // Don't create prd.json - this will cause the repair to fail
+
+      const diagnostics = [
+        {
+          itemId,
+          severity: "error" as const,
+          code: "PRD_MISSING_ID",
+          message: "prd.json missing required 'id' field",
+          fixable: true,
+        },
+      ];
+
+      const { results } = await applyFixes(
+        tempDir,
+        diagnostics,
+        mockLogger,
+      );
+
+      expect(results).toHaveLength(1);
+      expect(results[0].fixed).toBe(false);
+      expect(results[0].message).toContain("Failed to repair PRD");
+    });
+  });
 });
 
 describe("doctorCommand", () => {

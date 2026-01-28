@@ -696,9 +696,11 @@ export const DEFAULT_STORY_QUALITY_OPTIONS: StoryQualityOptions = {
 };
 
 /**
- * Story ID format pattern: US-### where ### is one or more digits
+ * Story ID format pattern: US-### or US-{item}-{seq}
+ * - Simple format: US-001, US-073, US-999
+ * - Scoped format: US-073-001, US-035-012, US-999-999
  */
-const STORY_ID_PATTERN = /^US-\d+$/;
+const STORY_ID_PATTERN = /^US-(?:\d+|\d{3}-\d+)$/;
 
 /**
  * Check if a story ID matches the expected format.
@@ -730,7 +732,7 @@ function validateSingleStory(
 
   // Check story ID format
   if (options.enforceStoryIdFormat && !isValidStoryId(story.id)) {
-    errors.push(`Story ID "${story.id}" does not match format US-###`);
+    errors.push(`Story ID "${story.id}" does not match format US-### or US-{item}-{seq}`);
   }
 
   // Check for non-empty title
