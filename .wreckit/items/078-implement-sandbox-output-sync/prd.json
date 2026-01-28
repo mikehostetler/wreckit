@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "id": "078-implement-sandbox-output-sync",
+  "branch_name": "wreckit/078-implement-sandbox-output-sync",
+  "user_stories": [
+    {
+      "id": "US-078-001",
+      "title": "Implement Core Download Logic",
+      "acceptance_criteria": [
+        "Implement `downloadFromSpriteVM` in `src/fs/sync.ts`",
+        "Implement `extractProjectArchive` in `src/fs/sync.ts`",
+        "Implement `syncProjectFromVM` in `src/fs/sync.ts`",
+        "Update `SpriteSyncError` to support 'download' stage"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Must use base64 for binary safety."
+    },
+    {
+      "id": "US-078-002",
+      "title": "Implement CLI Pull Command",
+      "acceptance_criteria": [
+        "Add `SpritePullOptions` interface to `src/commands/sprite.ts`",
+        "Implement `spritePullCommand` function",
+        "Register `sprite pull` subcommand in `src/index.ts`",
+        "Support `--json` output"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "User interface for manual sync."
+    },
+    {
+      "id": "US-078-003",
+      "title": "Implement Auto-Sync on Success",
+      "acceptance_criteria": [
+        "Add `syncOnSuccess` to `SpriteAgentSchema` in `src/schemas.ts`",
+        "Update `runSpriteAgent` to call `syncProjectFromVM` if successful and config enabled"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "Automated workflow loop."
+    },
+    {
+      "id": "US-078-004",
+      "title": "Add Unit Tests",
+      "acceptance_criteria": [
+        "Add download tests to `src/__tests__/fs/sync.test.ts`",
+        "Mock `execSprite` and `spawn`",
+        "Verify cleanup of temp files"
+      ],
+      "priority": 4,
+      "status": "done",
+      "notes": "Verification."
+    }
+  ]
+}

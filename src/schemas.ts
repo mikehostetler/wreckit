@@ -97,6 +97,10 @@ export const SpriteAgentSchema = z.object({
     .array(z.string())
     .default([".git", "node_modules", ".wreckit", "dist", "build", ".DS_Store"])
     .describe("Patterns to exclude from synchronization"),
+  syncOnSuccess: z
+    .boolean()
+    .default(false)
+    .describe("Automatically pull files from VM after successful agent completion"),
   maxVMs: z.number().default(5).describe("Maximum concurrent VMs allowed"),
   defaultMemory: z
     .string()

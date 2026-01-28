@@ -176,6 +176,7 @@ export async function runSpriteAgent(
       description: `You are an expert software engineer working inside a sandboxed Linux microVM.
       The project has been synchronized to /home/user/project.
       You can access and modify code there.
+      Any changes you make will be preserved in the VM and can be pulled back to the host.
       `,
       signature: "task:string -> answer:string",
       functions: tools,
@@ -218,6 +219,30 @@ export async function runSpriteAgent(
     }
 
     if (timeoutId) clearTimeout(timeoutId);
+
+    // === SYNC BACK ===
+    // If syncOnSuccess is enabled, pull files back from VM after successful execution
+    if (config.syncOnSuccess) {
+      logger.info('Agent completed successfully, pulling changes from VM...');
+      try {
+        const { syncProjectFromVM } = await import('../fs/sync.js');
+        const projectRoot = findRepoRoot(cwd);
+
+        const pullSuccess = await syncProjectFromVM(vmName, projectRoot, config, logger);
+
+        if (pullSuccess) {
+          logger.info('Changes pulled from VM successfully');
+        } else {
+          logger.warn('Failed to pull changes from VM (non-fatal)');
+        }
+      } catch (err) {
+        if ((err as Error).name !== 'RepoNotFoundError') {
+          logger.warn(`Error pulling changes from VM: ${(err as Error).message}`);
+        }
+      }
+    }
+    // === END SYNC BACK ===
+
     return {
       success: true,
       output: fullOutput,

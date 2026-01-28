@@ -48,6 +48,18 @@ export interface SpriteExecOptions {
   json?: boolean;
 }
 
+export interface SpritePullOptions {
+  name: string;
+  /** Path in VM to pull from (default: /home/user/project) */
+  vmPath?: string;
+  /** Local destination (default: current directory) */
+  destination?: string;
+  /** Patterns to exclude */
+  exclude?: string[];
+  cwd?: string;
+  json?: boolean;
+}
+
 // ============================================================
 // Helper Functions
 // ============================================================
@@ -479,6 +491,128 @@ export async function spriteExecCommand(
     }
 
     if (err instanceof SpriteExecError) {
+      const errorData = {
+        success: false,
+        error: err.message,
+      };
+
+      if (options.json) {
+        outputJson(errorData);
+      } else {
+        console.error(`❌ ${err.message}`);
+      }
+      process.exit(1);
+    }
+
+    throw err;
+  }
+}
+
+/**
+ * Pull files from a Sprite VM back to the host machine.
+ *
+ * Usage: wreckit sprite pull <name> [--vm-path <path>] [--destination <dir>] [--exclude <pattern>] [--json]
+ *
+ * @example
+ * ```bash
+ * wreckit sprite pull my-vm
+ * wreckit sprite pull my-vm --vm-path /home/user/project/dist --destination ./dist
+ * wreckit sprite pull my-vm --exclude node_modules --exclude .git
+ * ```
+ */
+export async function spritePullCommand(
+  options: SpritePullOptions,
+  logger: Logger,
+): Promise<void> {
+  const cwd = options.cwd ?? process.cwd();
+  const config = await getSpriteConfig(cwd);
+  const destination = options.destination ?? cwd;
+
+  logger.debug(`Pulling from Sprite '${options.name}'...`);
+
+  try {
+    const { syncProjectFromVM } = await import("../fs/sync.js");
+
+    // Create a modified config with custom exclude patterns if provided
+    const effectiveConfig = options.exclude
+      ? { ...config, syncExcludePatterns: options.exclude }
+      : config;
+
+    const vmSourcePath = options.vmPath || "/home/user/project";
+
+    // We need to call the lower-level functions to support custom vmPath
+    const { downloadFromSpriteVM, extractProjectArchive } = await import(
+      "../fs/sync.js"
+    );
+
+    logger.info(`Pulling files from Sprite '${options.name}'...`);
+
+    const downloadResult = await downloadFromSpriteVM({
+      vmName: options.name,
+      config: effectiveConfig,
+      logger,
+      vmSourcePath,
+      excludePatterns: effectiveConfig.syncExcludePatterns,
+    });
+
+    if (!downloadResult.success) {
+      const errorData = {
+        success: false,
+        error: downloadResult.error || "Download failed",
+      };
+
+      if (options.json) {
+        outputJson(errorData);
+      } else {
+        console.error(`❌ ${errorData.error}`);
+      }
+      process.exit(1);
+    }
+
+    logger.info(
+      `Downloaded ${downloadResult.archiveSize} bytes from VM`,
+    );
+
+    const extractResult = await extractProjectArchive({
+      archiveBuffer: downloadResult.archiveBuffer!,
+      projectRoot: destination,
+      logger,
+    });
+
+    if (!extractResult.success) {
+      const errorData = {
+        success: false,
+        error: extractResult.error || "Extraction failed",
+      };
+
+      if (options.json) {
+        outputJson(errorData);
+      } else {
+        console.error(`❌ ${errorData.error}`);
+      }
+      process.exit(1);
+    }
+
+    const outputData = {
+      success: true,
+      message: `Pulled files from Sprite '${options.name}'`,
+      data: {
+        name: options.name,
+        localPath: extractResult.extractedPath,
+        archiveSize: downloadResult.archiveSize,
+        vmPath: vmSourcePath,
+      },
+    };
+
+    if (options.json) {
+      outputJson(outputData);
+    } else {
+      console.log(`✅ ${outputData.message}`);
+      console.log(`   📁 Local: ${extractResult.extractedPath}`);
+      console.log(`   📦 Size: ${downloadResult.archiveSize} bytes`);
+    }
+  } catch (err) {
+    if (err instanceof WispNotFoundError) {
       const errorData = {
         success: false,
         error: err.message,

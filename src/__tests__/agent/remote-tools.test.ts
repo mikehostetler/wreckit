@@ -26,6 +26,9 @@ describe("Remote Tools", () => {
     defaultMemory: "512MiB",
     defaultCPUs: "1",
     timeout: 300,
+    syncEnabled: true,
+    syncExcludePatterns: [".git", "node_modules"],
+    syncOnSuccess: false,
   };
   const logger = createMockLogger();
   const vmName = "test-vm";

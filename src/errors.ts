@@ -489,7 +489,7 @@ export class SpriteExecError extends WreckitError {
  */
 export class SpriteSyncError extends WreckitError {
   constructor(
-    public readonly stage: "archive" | "upload" | "extract",
+    public readonly stage: "archive" | "upload" | "extract" | "download",
     public readonly projectRoot: string,
     message: string,
   ) {
