@@ -1,0 +1,157 @@
+{
+  "schema_version": 1,
+  "id": "005-benchmarking-suite-for-resumability-and-concurrenc",
+  "branch_name": "wreckit/005-benchmarking-suite-for-resumability-and-concurrenc",
+  "user_stories": [
+    {
+      "id": "US-001",
+      "title": "Create benchmark schema and utility functions",
+      "acceptance_criteria": [
+        "Zod schemas defined for Metric, SuiteResult, Environment, and BenchmarkResult in src/benchmarks/schema.ts",
+        "Types exported from schema.ts using z.infer<>",
+        "measure() function in utils.ts returns { result, durationMs } using performance.now()",
+        "benchmark() function runs warmup iterations then collects timing samples",
+        "calculateStats() computes mean, min, max, p50, p95, p99 from samples",
+        "makeTempDir() creates unique temp directories with random suffix",
+        "cleanup() removes temp directories safely ignoring errors",
+        "getEnvironment() returns os, arch, bun_version, cpu_count, timestamp",
+        "Type checking passes: bun run --bun tsc --noEmit"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Foundation for all benchmark suites. Follow existing patterns from src/schemas.ts for Zod usage."
+    },
+    {
+      "id": "US-002",
+      "title": "Implement resumability benchmark suite",
+      "acceptance_criteria": [
+        "src/benchmarks/suites/resumability.ts exports runResumabilitySuite(options) returning Promise<SuiteResult>",
+        "Benchmarks item_read_ms: time to read an existing item.json",
+        "Benchmarks prd_read_10_stories_ms: time to read a PRD with 10 stories",
+        "Benchmarks story_skip_detection_50done_ms: time to find first pending story among 50 done",
+        "Benchmarks state_recovery_ms: time to read item + prd and detect resume point",
+        "Each benchmark uses unique temp directories with cleanup",
+        "Each benchmark returns metrics with calculated statistics (p50, p95, p99, samples)",
+        "Suite returns duration_ms for total suite execution time"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Uses readItem, readPrd from src/fs/json.ts. Creates test fixtures matching Item and Prd schemas."
+    },
+    {
+      "id": "US-003",
+      "title": "Implement concurrency scaling benchmark suite",
+      "acceptance_criteria": [
+        "src/benchmarks/suites/concurrency.ts exports runConcurrencySuite(options) returning Promise<SuiteResult>",
+        "Tests parallel scaling at 1, 2, 4, and 8 worker levels",
+        "Measures parallel_{n}_duration_ms for each parallelism level",
+        "Calculates parallel_{n}_throughput in items/sec",
+        "Calculates parallel_{n}_efficiency as percentage of ideal scaling",
+        "Uses worker pool pattern matching src/commands/orchestrator.ts:268-279",
+        "Work units simulate realistic file I/O (safeWriteJson + read + parse)",
+        "Uses fixed work item count (20) for consistent comparison"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Efficiency = (baseline/duration) / parallelism * 100. Expect sublinear scaling due to I/O contention."
+    },
+    {
+      "id": "US-004",
+      "title": "Implement file operations benchmark suite",
+      "acceptance_criteria": [
+        "src/benchmarks/suites/fileops.ts exports runFileOpsSuite(options) returning Promise<SuiteResult>",
+        "Benchmarks atomic_write_small_ms: safeWriteJson with ~100 byte payload",
+        "Benchmarks atomic_write_medium_ms: safeWriteJson with typical item.json (~1KB)",
+        "Benchmarks atomic_write_large_ms: safeWriteJson with 50-story PRD (~10KB)",
+        "Benchmarks lock_acquire_exclusive_ms: uncontested exclusive lock acquisition",
+        "Benchmarks lock_with_exclusive_ms: withExclusiveLock pattern with minimal work",
+        "Benchmarks lock_contention_2_concurrent_ms: two concurrent lock acquisitions",
+        "All benchmarks use isolated temp directories with cleanup"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Uses FileLock from src/fs/lock.ts and safeWriteJson from src/fs/atomic.ts directly."
+    },
+    {
+      "id": "US-005",
+      "title": "Implement JSON output formatter",
+      "acceptance_criteria": [
+        "src/benchmarks/reporters/json.ts exports formatJson(result: BenchmarkResult): string",
+        "Output is valid JSON (JSON.parse succeeds)",
+        "Output is formatted with 2-space indentation",
+        "All BenchmarkResult fields are preserved in output"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "Simple implementation using JSON.stringify with null replacer and 2-space indent."
+    },
+    {
+      "id": "US-006",
+      "title": "Implement Markdown output formatter",
+      "acceptance_criteria": [
+        "src/benchmarks/reporters/markdown.ts exports formatMarkdown(result: BenchmarkResult): string",
+        "Output includes H1 title '# Benchmark Results'",
+        "Output includes Environment section with OS, arch, Bun version, CPU count",
+        "Output includes one H2 section per suite with suite name as title",
+        "Each suite section contains a markdown table with columns: Metric, Mean, Unit, P50, P95, P99, Samples",
+        "Values formatted appropriately: ms to 2 decimals, % to 1 decimal, items/sec to 1 decimal",
+        "Missing optional fields display as '-'"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "Paper-ready format. Table alignment using standard markdown pipe syntax."
+    },
+    {
+      "id": "US-007",
+      "title": "Implement CSV output formatter",
+      "acceptance_criteria": [
+        "src/benchmarks/reporters/csv.ts exports formatCsv(result: BenchmarkResult): string",
+        "First line is header: suite,metric,value,unit,min,max,p50,p95,p99,samples,timestamp",
+        "One data row per metric across all suites",
+        "Values with commas, quotes, or newlines are properly escaped",
+        "Numeric values formatted to 6 decimal places",
+        "Empty optional fields are empty strings (not 'undefined' or 'null')"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "Spreadsheet-compatible format. escapeCSV function handles quoting."
+    },
+    {
+      "id": "US-008",
+      "title": "Implement benchmark runner and CLI entry point",
+      "acceptance_criteria": [
+        "src/benchmarks/runner.ts exports runBenchmarks(options) and formatOutput(result, format)",
+        "runBenchmarks accepts suites (array or 'all'), format, iterations, output options",
+        "Progress messages written to stderr (not stdout) so output can be piped",
+        "src/benchmarks/cli.ts is executable with shebang #!/usr/bin/env bun",
+        "--suite / -s flag accepts comma-separated suite names",
+        "--format / -f flag accepts json, md, csv (default: json)",
+        "--iterations / -i flag accepts positive integer (default: 10)",
+        "--output / -o flag accepts file path or '-' for stdout (default: '-')",
+        "--help / -h flag displays usage information",
+        "package.json includes script 'benchmark': 'bun run ./src/benchmarks/cli.ts'",
+        "bun run benchmark executes without errors"
+      ],
+      "priority": 4,
+      "status": "done",
+      "notes": "CLI follows existing patterns in src/index.ts but simpler (no Commander dependency)."
+    },
+    {
+      "id": "US-009",
+      "title": "Add unit tests for benchmark utilities and reporters",
+      "acceptance_criteria": [
+        "src/__tests__/benchmarks.test.ts exists with Bun test framework",
+        "Tests calculateStats with known input produces expected percentiles",
+        "Tests makeTempDir creates unique directories",
+        "Tests getEnvironment returns valid structure",
+        "Tests formatJson produces parseable JSON",
+        "Tests formatMarkdown includes required headers and table structure",
+        "Tests formatCsv has correct header and row count",
+        "All tests pass: bun test src/__tests__/benchmarks.test.ts"
+      ],
+      "priority": 5,
+      "status": "done",
+      "notes": "Follow patterns from src/__tests__/edge-cases/concurrent.test.ts for test structure."
+    }
+  ]
+}
