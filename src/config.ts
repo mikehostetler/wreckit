@@ -7,7 +7,13 @@ import {
   type AgentConfigUnion,
   type SkillConfig,
 } from "./schemas";
-import { getConfigPath, getWreckitDir } from "./fs/paths";
+import {
+  getWreckitDir,
+  getConfigPath,
+  getConfigLocalPath,
+  getIndexPath,
+} from "./fs/paths";
+
 import { safeWriteJson } from "./fs/atomic";
 import { InvalidJsonError, SchemaValidationError } from "./errors";
 
@@ -168,6 +174,17 @@ export function mergeWithDefaults(partial: Partial<Config>): ConfigResolved {
  * and enable bi-directional sync.
  */
 function applySandboxMode(config: ConfigResolved): ConfigResolved {
+  // If using RLM, just enable sandbox mode on it
+  if (config.agent.kind === "rlm") {
+    return {
+      ...config,
+      agent: {
+        ...config.agent,
+        sandbox: true,
+      },
+    };
+  }
+
   // If already using sprite, just enable syncOnSuccess and syncEnabled
   if (config.agent.kind === "sprite") {
     return {
@@ -281,35 +298,48 @@ export async function loadConfig(
   overrides?: ConfigOverrides,
 ): Promise<ConfigResolved> {
   const configPath = getConfigPath(root);
+  const localPath = getConfigLocalPath(root);
   let partial: Partial<Config> = {};
 
+  // 1. Load base config
   try {
     const content = await fs.readFile(configPath, "utf-8");
-    let data: unknown;
-    try {
-      data = JSON.parse(content);
-    } catch {
-      throw new InvalidJsonError(`Invalid JSON in file: ${configPath}`);
-    }
-
+    const data = JSON.parse(content);
     const result = ConfigSchema.safeParse(data);
-    if (!result.success) {
-      throw new SchemaValidationError(
-        `Schema validation failed for ${configPath}: ${result.error.message}`,
-      );
-    }
-    partial = result.data;
-  } catch (err) {
-    if ((err as NodeJS.ErrnoException).code === "ENOENT") {
-      partial = {};
-    } else if (
-      err instanceof InvalidJsonError ||
-      err instanceof SchemaValidationError
-    ) {
-      throw err;
+    if (result.success) {
+      partial = result.data;
     } else {
-      throw err;
+      // Log validation error but continue with defaults
+      console.warn(`Config validation failed for ${configPath}: ${result.error.message}`);
     }
+  } catch (err) {
+    // Ignore ENOENT for base config
+  }
+
+  // 2. Load local config and merge raw data
+  try {
+    const content = await fs.readFile(localPath, "utf-8");
+    const localData = JSON.parse(content);
+    
+    // Deep merge local agent settings if present
+    if (localData.agent) {
+      partial.agent = {
+        ...(partial.agent as any),
+        ...localData.agent,
+        env: {
+          ...(partial.agent as any)?.env,
+          ...localData.agent.env,
+        },
+      };
+    }
+    
+    // Merge other top-level fields
+    Object.assign(partial, {
+      ...localData,
+      agent: partial.agent, // Keep our merged agent
+    });
+  } catch (err) {
+    // Ignore ENOENT for local config
   }
 
   const resolved = mergeWithDefaults(partial);

@@ -67,12 +67,19 @@ export const RlmSdkAgentSchema = z.object({
   model: z.string().default("claude-sonnet-4-20250514"),
   maxIterations: z.number().default(100),
   aiProvider: z
-    .enum(["anthropic", "openai", "google", "zai"])
+    .enum(["anthropic", "openai", "google", "zai", "glm"])
     .default("anthropic"),
+  sandbox: z.boolean().optional().describe("Run commands in Sprite Sandbox"),
+  wispPath: z.string().optional().describe("Path to Sprite CLI executable"),
 });
 
 export const SpriteAgentSchema = z.object({
   kind: z.literal("sprite"),
+  model: z
+    .string()
+    .optional()
+    .describe("AI model to use (default: claude-sonnet-4-20250514)"),
+  max_tokens: z.number().optional().describe("Max output tokens"),
   wispPath: z
     .string()
     .default("sprite")

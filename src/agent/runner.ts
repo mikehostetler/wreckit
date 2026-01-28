@@ -7,9 +7,9 @@ import type {
   ClaudeSdkAgentConfig,
 } from "../schemas";
 
-// ============================================================
+// ============================================================ 
 // Lifecycle Management (Re-exported from lifecycle module)
-// ============================================================
+// ============================================================ 
 
 export {
   registerSdkController,
@@ -19,15 +19,15 @@ export {
   terminateAllAgents,
 } from "./lifecycle.js";
 
-// ============================================================
+// ============================================================ 
 // Process Runner (Re-exported from process-runner module)
-// ============================================================
+// ============================================================ 
 
 export { runProcessAgent } from "./process-runner.js";
 
-// ============================================================
+// ============================================================ 
 // Type Definitions
-// ============================================================
+// ============================================================ 
 
 /**
  * Result returned by all agent runners.
@@ -41,20 +41,20 @@ export interface AgentResult {
   completionDetected: boolean;
 }
 
-// ============================================================
+// ============================================================ 
 // New API (Preferred)
-// ============================================================
+// ============================================================ 
 
 /**
  * Get agent configuration in union format from resolved config.
- *
+ * 
  * This is the **new** helper that returns the discriminated union format
  * directly from the resolved config. Use this with `runAgentUnion` for
  * the modern agent dispatch system.
- *
+ * 
  * @param config - The resolved wreckit configuration
  * @returns The agent configuration in union format (AgentConfigUnion)
- *
+ * 
  * @example
  * ```typescript
  * const agentConfig = getAgentConfigUnion(resolvedConfig);
@@ -65,9 +65,9 @@ export function getAgentConfigUnion(config: ConfigResolved): AgentConfigUnion {
   return config.agent;
 }
 
-// ============================================================
+// ============================================================ 
 // Agent API
-// ============================================================
+// ============================================================ 
 
 export interface UnionRunAgentOptions {
   config: AgentConfigUnion;
@@ -94,11 +94,11 @@ function exhaustiveCheck(x: never): never {
 
 /**
  * Run an agent using the discriminated union config.
- *
+ * 
  * This is the **new** dispatch system that supports multiple agent backends
  * via a kind-based discriminated union. It's the preferred way to run agents
  * in wreckit.
- *
+ * 
  * **Supported agent kinds:**
  * - `process`: External process-based agent (fallback mode)
  * - `claude_sdk`: Claude Agent SDK integration
@@ -106,7 +106,7 @@ function exhaustiveCheck(x: never): never {
  * - `codex_sdk`: OpenAI Codex SDK integration
  * - `opencode_sdk`: OpenCode SDK integration
  * - `rlm`: Recursive Language Model mode (experimental)
- *
+ * 
  * **Features:**
  * - Type-safe dispatch based on agent kind
  * - Direct passing of union configs (no conversion overhead)
@@ -114,10 +114,10 @@ function exhaustiveCheck(x: never): never {
  * - MCP server integration
  * - Tool allowlist support
  * - Streaming output via callbacks
- *
+ * 
  * @param options - Union run options with AgentConfigUnion
  * @returns Promise<AgentResult> with execution results
- *
+ * 
  * @example
  * ```typescript
  * const result = await runAgentUnion({
@@ -289,6 +289,7 @@ export async function runAgentUnion(
         mcpServers: options.mcpServers,
         allowedTools: options.allowedTools,
         timeoutSeconds: options.timeoutSeconds,
+        itemId: options.itemId,
       });
     }
 

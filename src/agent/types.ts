@@ -32,4 +32,6 @@ export interface CommonRunAgentOptions {
   mcpServers?: Record<string, unknown>;
   /** Restrict agent to only specific tools (e.g., MCP tools only) */
   allowedTools?: string[];
+  /** Item ID for context (e.g. VM naming, PRD location) */
+  itemId?: string;
 }

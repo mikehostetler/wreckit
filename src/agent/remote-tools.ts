@@ -33,6 +33,7 @@ function createRemoteReadTool(
   config: SpriteAgentConfig,
   logger: Logger,
 ): AxFunction {
+  const remoteCwd = "/home/user/project";
   return {
     name: "Read",
     description: "Read a file from the filesystem inside the Sprite VM.",
@@ -51,7 +52,7 @@ function createRemoteReadTool(
         // Use cat | base64 to safely read binary content
         const result = await execSprite(
           vmName,
-          ["sh", "-c", `cat \"${file_path}\" | base64`],
+          ["sh", "-c", `cd ${remoteCwd} && cat \"${file_path}\" | base64`],
           config,
           logger,
         );
@@ -79,6 +80,7 @@ function createRemoteWriteTool(
   config: SpriteAgentConfig,
   logger: Logger,
 ): AxFunction {
+  const remoteCwd = "/home/user/project";
   return {
     name: "Write",
     description: "Write content to a file inside the Sprite VM.",
@@ -115,7 +117,7 @@ function createRemoteWriteTool(
           [
             "sh",
             "-c",
-            `echo \"${base64Content}\" | base64 -d > \"${file_path}\" `,
+            `cd ${remoteCwd} && echo \"${base64Content}\" | base64 -d > \"${file_path}\" `,
           ],
           config,
           logger,
@@ -138,6 +140,7 @@ function createRemoteBashTool(
   config: SpriteAgentConfig,
   logger: Logger,
 ): AxFunction {
+  const remoteCwd = "/home/user/project";
   return {
     name: "Bash",
     description: "Execute a bash command inside the Sprite VM.",
@@ -155,7 +158,7 @@ function createRemoteBashTool(
       try {
         const result = await execSprite(
           vmName,
-          ["bash", "-c", command],
+          ["sh", "-c", `cd ${remoteCwd} && ${command}`],
           config,
           logger,
         );
@@ -177,6 +180,7 @@ function createRemoteGlobTool(
   config: SpriteAgentConfig,
   logger: Logger,
 ): AxFunction {
+  const remoteCwd = "/home/user/project";
   return {
     name: "Glob",
     description: "Find files matching a glob pattern inside the Sprite VM.",
@@ -194,14 +198,14 @@ function createRemoteGlobTool(
       },
       required: ["pattern"],
     } as AxFunctionJSONSchema,
-    func: async ({ pattern, path }: { pattern: string; path?: string }) => {
+    func: async ({ pattern, path: searchPath }: { pattern: string; path?: string }) => {
       try {
         // Map glob pattern to find command
         // Simple mapping: **/*.ts -> -name "*.ts"
         // This is a simplification. Ideally we'd use a real glob tool inside.
         // For now, let's assume 'find' is available.
         // If pattern contains **, use -name.
-        const searchPath = path || ".";
+        const dir = searchPath || ".";
         const namePattern = pattern.replace("**/", ""); // Very naive
 
         // Better: just use `find . -name "pattern"`
@@ -210,7 +214,7 @@ function createRemoteGlobTool(
 
         const result = await execSprite(
           vmName,
-          ["find", searchPath, "-name", namePattern],
+          ["sh", "-c", `cd ${remoteCwd} && find ${dir} -name "${namePattern}"`],
           config,
           logger,
         );
@@ -231,6 +235,7 @@ function createRemoteGrepTool(
   config: SpriteAgentConfig,
   logger: Logger,
 ): AxFunction {
+  const remoteCwd = "/home/user/project";
   return {
     name: "Grep",
     description: "Search for a pattern in files inside the Sprite VM.",
@@ -254,7 +259,7 @@ function createRemoteGrepTool(
     } as AxFunctionJSONSchema,
     func: async ({
       pattern,
-      path,
+      path: searchPath,
       include,
     }: {
       pattern: string;
@@ -262,16 +267,16 @@ function createRemoteGrepTool(
       include?: string;
     }) => {
       try {
-        const searchPath = path || ".";
+        const dir = searchPath || ".";
         const includeArg = include ? `--include="${include}"` : "";
 
         // Arguments need to be filtered to remove empty strings if any
         const args = ["grep", "-r"];
         if (includeArg) args.push(includeArg);
         args.push(pattern);
-        args.push(searchPath);
+        args.push(dir);
 
-        const result = await execSprite(vmName, args, config, logger);
+        const result = await execSprite(vmName, ["sh", "-c", `cd ${remoteCwd} && ${args.join(" ")}`], config, logger);
 
         if (result.exitCode !== 0 && result.exitCode !== 1) {
           // 1 means no matches, which is fine

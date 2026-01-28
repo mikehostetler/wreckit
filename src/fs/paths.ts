@@ -49,6 +49,10 @@ export function getConfigPath(root: string): string {
   return path.join(getWreckitDir(root), "config.json");
 }
 
+export function getConfigLocalPath(root: string): string {
+  return path.join(getWreckitDir(root), "config.local.json");
+}
+
 export function getIndexPath(root: string): string {
   return path.join(getWreckitDir(root), "index.json");
 }

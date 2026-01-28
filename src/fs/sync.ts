@@ -92,7 +92,9 @@ export interface ExtractArchiveOptions {
 const DEFAULT_EXCLUDE_PATTERNS = [
   ".git",
   "node_modules",
-  ".wreckit",
+  ".wreckit/project-sync.tar.gz",
+  ".wreckit/backups",
+  ".wreckit/tmp",
   "dist",
   "build",
   ".DS_Store",
@@ -195,42 +197,91 @@ export async function uploadToSpriteVM(
 
   const targetDir = "/home/user/project";
 
-  try {
-    const archiveBuffer = await fs.readFile(archivePath);
-    const base64Archive = archiveBuffer.toString("base64");
+    try {
 
-    // We stream the base64 data to a file inside the VM, then decode it.
-    // echo "base64" | base64 -d | tar xzf - -C targetDir
-    // Note: command line length limits might be an issue for huge files.
-    // If > 1MB, we might need to chunk it.
-    // For now, simple implementation.
+      // We don't read the file into memory anymore for streaming.
 
-    const result = await execSprite(
-      vmName,
-      [
-        "sh",
-        "-c",
-        `mkdir -p ${targetDir} && echo "${base64Archive}" | base64 -d | tar xzf - -C ${targetDir}`,
-      ],
-      config,
-      logger,
-    );
+      // Instead, we let the Sprite CLI handle the upload via the -file flag.
 
-    if (!result.success && result.exitCode !== 0) {
+      const remoteArchive = "/tmp/project-sync.tar.gz";
+
+  
+
+      // Ensure target directory exists
+
+      await execSprite(
+
+        vmName,
+
+        ["mkdir", "-p", targetDir],
+
+        config,
+
+        logger,
+
+      );
+
+  
+
+      // Upload archive using -file flag and extract it
+
+      // The execSprite wrapper maps 'files' to '-file source:dest' arguments
+
+      const result = await execSprite(
+
+        vmName,
+
+        ["tar", "xzf", remoteArchive, "-C", targetDir],
+
+        config,
+
+        logger,
+
+        { 
+
+          files: [`${archivePath}:${remoteArchive}`]
+
+        },
+
+      );
+
+  
+
+      if (!result.success && result.exitCode !== 0) {
+
+        return {
+
+          success: false,
+
+          error: `Upload/Extract failed: ${result.stderr}`,
+
+        };
+
+      }
+
+  
+
+      // Cleanup remote archive (best effort)
+
+      await execSprite(vmName, ["rm", "-f", remoteArchive], config, logger);
+
+  
+
+      logger.debug(`Archive extracted to ${targetDir}`);
+
+  
+
       return {
-        success: false,
-        error: `Upload failed: ${result.stderr}`,
+
+        success: true,
+
+        vmPath: targetDir,
+
       };
-    }
 
-    logger.debug(`Archive extracted to ${targetDir}`);
+    } catch (err) {
 
-    return {
-      success: true,
-      vmPath: targetDir,
-    };
-  } catch (err) {
-    return {
+      return {
       success: false,
       error: `Upload error: ${(err as Error).message}`,
     };
@@ -285,6 +336,50 @@ export async function syncProjectToVM(
     }
 
     logger.info(`Project synchronized to ${uploadResult.vmPath}`);
+
+    // Initialize git in the VM with host identity
+    try {
+      const remoteCwd = uploadResult.vmPath;
+      logger.debug(`Initializing git in VM at ${remoteCwd}...`);
+      
+      await execSprite(vmName, ["sh", "-c", `cd ${remoteCwd} && git init`], config, logger);
+
+      // Try to get host git config
+      let userName = "WreckIt Bot";
+      let userEmail = "bot@wreckit.local";
+
+      try {
+        const { exec } = await import("node:child_process");
+        const { promisify } = await import("node:util");
+        const execAsync = promisify(exec);
+        
+        const nameRes = await execAsync("git config get user.name").catch(() => ({ stdout: "" }));
+        const emailRes = await execAsync("git config get user.email").catch(() => ({ stdout: "" }));
+        
+        if (nameRes.stdout.trim()) userName = nameRes.stdout.trim();
+        if (emailRes.stdout.trim()) userEmail = emailRes.stdout.trim();
+      } catch (e) {
+        logger.debug("Could not read host git config, using defaults");
+      }
+
+      await execSprite(
+        vmName,
+        ["sh", "-c", `cd ${remoteCwd} && git config user.email "${userEmail}"`],
+        config,
+        logger,
+      );
+      await execSprite(
+        vmName,
+        ["sh", "-c", `cd ${remoteCwd} && git config user.name "${userName}"`],
+        config,
+        logger,
+      );
+      logger.debug(`Git initialized in VM as ${userName} <${userEmail}>`);
+    } catch (err) {
+      logger.warn(`Failed to initialize git in VM: ${(err as Error).message}`);
+      // Don't fail the whole sync if git init fails
+    }
+
     return true;
   } finally {
     // Clean up local archive

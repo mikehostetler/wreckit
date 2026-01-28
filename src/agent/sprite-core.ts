@@ -24,27 +24,16 @@ export interface WispResult {
   error?: string;
 }
 
-/**
- * Configuration for running Sprite/Wisp commands.
- */
 export interface WispCommandOptions {
-  /** Path to sprite/wisp CLI binary (default: 'sprite') */
   wispPath: string;
-  /** Logger instance for debug/error output */
   logger: Logger;
-  /** Timeout in seconds (default: 300 = 5 minutes) */
   timeout?: number;
-  /** Optional callback for stdout chunks */
   onStdoutChunk?: (chunk: string) => void;
-  /** Optional callback for stderr chunks */
   onStderrChunk?: (chunk: string) => void;
-  /** Optional authentication token for Sprites.dev */
   token?: string;
+  input?: Buffer | string;
 }
 
-/**
- * Parsed JSON output from Wisp commands.
- */
 export interface WispSpriteInfo {
   id: string;
   name: string;
@@ -66,6 +55,7 @@ export async function runWispCommand(
     onStdoutChunk,
     onStderrChunk,
     token,
+    input,
   } = options;
 
   // Build environment with token if provided
@@ -94,6 +84,15 @@ export async function runWispCommand(
       });
       if (!child) {
         throw new Error("spawn returned undefined");
+      }
+
+      if (input) {
+        if (typeof input === "string") {
+          child.stdin?.write(input);
+        } else {
+          child.stdin?.write(input);
+        }
+        child.stdin?.end();
       }
     } catch (err) {
       if ((err as NodeJS.ErrnoException).code === "ENOENT") {
@@ -198,12 +197,14 @@ export function parseWispJson(output: string, logger: Logger): unknown | null {
     return null;
   }
   try {
-    return JSON.parse(output);
+    const data = JSON.parse(output);
+    return normalizeSprites(data);
   } catch {
-    const jsonMatch = output.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
+    const jsonMatch = output.match(/\\{[\\s\\S]*\\}|\\\\[[\\s\\S]*\\]/);
     if (jsonMatch) {
       try {
-        return JSON.parse(jsonMatch[0]);
+        const data = JSON.parse(jsonMatch[0]);
+        return normalizeSprites(data);
       } catch (err) {
         logger.debug(`Failed to parse extracted JSON: ${err}`);
       }
@@ -213,18 +214,40 @@ export function parseWispJson(output: string, logger: Logger): unknown | null {
   }
 }
 
+function normalizeSprites(data: any): any {
+  if (!data) return data;
+
+  // Handle API response: {"sprites": [...]}
+  let sprites = Array.isArray(data) ? data : data.sprites || [data];
+
+  if (!Array.isArray(sprites)) return data;
+
+  return sprites.map((s: any) => ({
+    ...s,
+    // Map status (API) to state (CLI/Wreckit)
+    state:
+      s.state ||
+      (s.status === "warm" || s.status === "hot" || s.status === "running"
+        ? "running"
+        : "stopped"),
+  }));
+}
+
 export async function startSprite(
   name: string,
   config: SpriteAgentConfig,
   logger: Logger,
 ): Promise<WispResult> {
-  const args = ["create", name];
-  if (config.defaultMemory) {
-    args.push("--memory", config.defaultMemory);
-  }
-  if (config.defaultCPUs) {
-    args.push("--cpus", config.defaultCPUs);
-  }
+  const args = [
+    "api",
+    "/sprites",
+    "-X",
+    "POST",
+    "-H",
+    "Content-Type: application/json",
+    "-d",
+    JSON.stringify({ name }),
+  ];
 
   logger.debug(`Starting Sprite: ${config.wispPath} ${args.join(" ")}`);
 
@@ -248,6 +271,7 @@ export async function startSprite(
 
   return result;
 }
+
 
 export async function attachSprite(
   name: string,
@@ -278,7 +302,7 @@ export async function listSprites(
   config: SpriteAgentConfig,
   logger: Logger,
 ): Promise<WispResult> {
-  const args = ["list", "--json"];
+  const args = ["api", "/sprites"];
   logger.debug(`Listing Sprites: ${config.wispPath} ${args.join(" ")}`);
   const result = await runWispCommand(args, {
     wispPath: config.wispPath,
@@ -297,7 +321,7 @@ export async function killSprite(
   config: SpriteAgentConfig,
   logger: Logger,
 ): Promise<WispResult> {
-  const args = ["delete", name];
+  const args = ["api", `/v1/sprites/${name}`, "-X", "DELETE"];
   logger.debug(`Killing Sprite: ${config.wispPath} ${args.join(" ")}`);
   const result = await runWispCommand(args, {
     wispPath: config.wispPath,
@@ -316,7 +340,6 @@ export async function killSprite(
   }
   return result;
 }
-
 export async function execSprite(
   name: string,
   command: string[],
@@ -325,9 +348,12 @@ export async function execSprite(
   options?: {
     onStdoutChunk?: (chunk: string) => void;
     onStderrChunk?: (chunk: string) => void;
+    input?: Buffer | string;
+    files?: string[];
   },
 ): Promise<WispResult> {
-  const args = ["exec", name, ...command];
+  const fileArgs = options?.files?.flatMap((f) => ["-file", f]) || [];
+  const args = ["exec", "-s", name, ...fileArgs, ...command];
   logger.debug(`Executing in Sprite: ${config.wispPath} ${args.join(" ")}`);
   const result = await runWispCommand(args, {
     wispPath: config.wispPath,
@@ -336,6 +362,7 @@ export async function execSprite(
     token: config.token,
     onStdoutChunk: options?.onStdoutChunk,
     onStderrChunk: options?.onStderrChunk,
+    input: options?.input,
   });
   if (result.error?.includes("not found")) {
     throw new WispNotFoundError(config.wispPath);

@@ -35,9 +35,10 @@
       "id": "US-005",
       "title": "Verify output visibility and level control",
       "status": "done",
-      "priority": 5,
+      "priority": 4,
       "description": "Ensure that primary CLI output remains visible by default and respects --quiet/--verbose flags."
     }
   ],
-  "id": "048-dreamer-replace-direct-console-calls-with-structur"
+  "id": "048-dreamer-replace-direct-console-calls-with-structur",
+  "branch_name": "wreckit/048-dreamer-replace-direct-console-calls-with-structur"
 }

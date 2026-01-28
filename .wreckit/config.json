@@ -4,6 +4,8 @@
   "branch_prefix": "wreckit/",
   "merge_mode": "pr",
   "agent": {
+    "kind": "rlm",
+    "model": "glm-4.7",
     "mode": "sdk",
     "command": "claude",
     "args": [],

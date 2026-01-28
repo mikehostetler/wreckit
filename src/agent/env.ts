@@ -12,6 +12,7 @@ import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import * as os from "node:os";
 import type { Logger } from "../logging";
+import { findRepoRoot, getConfigPath, getConfigLocalPath } from "../fs/paths";
 
 const ALLOWED_PREFIXES = [
   "ANTHROPIC_",
@@ -95,16 +96,17 @@ export async function buildSdkEnv(
 ): Promise<Record<string, string>> {
   const { cwd, logger } = options;
 
+  let root = cwd;
+  try {
+    root = findRepoRoot(cwd);
+  } catch (e) {
+    // If not in a wreckit repo, use cwd
+  }
+
   // Load from all sources
   const claudeSettingsEnv = await readClaudeUserEnv(logger);
-  const wreckitConfigEnv = await readWreckitEnv(
-    path.join(cwd, ".wreckit", "config.json"),
-    logger,
-  );
-  const wreckitLocalEnv = await readWreckitEnv(
-    path.join(cwd, ".wreckit", "config.local.json"),
-    logger,
-  );
+  const wreckitConfigEnv = await readWreckitEnv(getConfigPath(root), logger);
+  const wreckitLocalEnv = await readWreckitEnv(getConfigLocalPath(root), logger);
 
   // Process env (filter undefined)
   const processEnv = Object.fromEntries(
