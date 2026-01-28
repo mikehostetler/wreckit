@@ -145,7 +145,7 @@
         "buildJitContext() successfully resolves context requirements",
         "Skills validate against SkillConfigSchema with no errors"
       ],
-      "priority": 5,
+      "priority": 4,
       "status": "done",
       "notes": "Critical validation that media skills work correctly with Item 033's infrastructure. Use loadSkillsForPhase and buildJitContext to verify."
     },
@@ -161,7 +161,7 @@
         "Remotion root template (.wreckit/examples/remotion-root.tsx) is valid TypeScript/TSX syntax",
         "Remotion templates render successfully if Remotion is installed (optional)"
       ],
-      "priority": 5,
+      "priority": 4,
       "status": "done",
       "notes": "Templates must be valid even if tools aren't installed. Optional to actually render if dependencies are available."
     },
@@ -176,7 +176,7 @@
         "Tests pass with 'bun test' command",
         "Tests are isolated and don't require Manim/Remotion installation"
       ],
-      "priority": 6,
+      "priority": 4,
       "status": "done",
       "notes": "Optional but recommended. Provides automated validation that media skills integrate correctly. Tests should be fast and not require external dependencies."
     },
@@ -194,7 +194,7 @@
         "Checklist includes end-to-end validation items (optional, requires tool installation)",
         "Checklist is formatted as markdown checkboxes for easy tracking"
       ],
-      "priority": 6,
+      "priority": 4,
       "status": "done",
       "notes": "Validation checklist provides a clear path for manual verification. Useful for final acceptance testing."
     },
@@ -209,7 +209,7 @@
         "No circular dependencies in M4 chain (033 → 034 → 035 → 036)",
         "Media layer is ready for Item 036 to use for video generation"
       ],
-      "priority": 7,
+      "priority": 4,
       "status": "done",
       "notes": "This item is part of the M4 campaign dependency chain. Must ensure it enables downstream items (034, 036) to work correctly."
     }

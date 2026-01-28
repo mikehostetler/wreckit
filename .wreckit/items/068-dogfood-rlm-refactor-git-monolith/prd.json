@@ -101,7 +101,7 @@
         "Linting passes: bun run lint (0 warnings)",
         "Build succeeds: bun run build"
       ],
-      "priority": 5,
+      "priority": 4,
       "status": "done",
       "notes": "Final cleanup phase. Index.ts becomes the 'hub' that exports infrastructure and re-exports all modules. This is the completion point for the refactoring. Verify line counts: index.ts ~250, branch.ts ~400, pr.ts ~350, status.ts ~300, validation.ts ~325, quality.ts ~313 (unchanged)."
     },
@@ -126,7 +126,7 @@
         "Consistent error handling across all modules",
         "Consistent logging patterns across all modules"
       ],
-      "priority": 6,
+      "priority": 4,
       "status": "done",
       "notes": "Final verification phase. Ensures the refactoring maintains complete backward compatibility and no regressions. This is the gate before considering the refactoring complete. The barrel export pattern should make all of this work seamlessly."
     }

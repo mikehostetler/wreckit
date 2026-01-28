@@ -213,7 +213,7 @@
         "Test showLogs conditional rendering (logs view vs items view)",
         "Tests pass: bun test src/__tests__/tui-components-integration.test.tsx"
       ],
-      "priority": 5,
+      "priority": 4,
       "status": "done",
       "notes": "Integration tests require mocking the entire Ink module. Use mock.module('ink', () => ({ ... })) pattern from run.isospec.ts:17-24. The mock implementations don't need to render actual UI, just return React elements. Focus on testing component lifecycle and prop passing. IMPLEMENTED: 27 tests passing covering component lifecycle, state updates, and layout calculations."
     },
@@ -231,7 +231,7 @@
         "Test shortenPathsInText() path replacement in text",
         "Tests pass: bun test src/tui/__tests__/colors.test.ts"
       ],
-      "priority": 6,
+      "priority": 4,
       "status": "done",
       "notes": "These utility functions are in src/tui/colors.ts. Test the TOOL_COLORS mapping (lines 48-50+), path shortening logic (lines 7-19), truncation helper (lines 25-28), and command summarization (lines 30-43). These are pure functions and should be easy to test. IMPLEMENTED: 51 tests passing covering all color utility functions."
     },
@@ -249,7 +249,7 @@
         "Ensure all component rendering paths are covered",
         "Document coverage percentage in PR comments"
       ],
-      "priority": 7,
+      "priority": 4,
       "status": "done",
       "notes": "This is the final verification step. Run coverage report and review it. Add additional tests for any uncovered code paths. Focus on >80% coverage for all TUI-related files. Some uncovered lines may be unreachable error handlers or edge cases - document these. VERIFIED: 295 tests passing, 100% coverage of all testable business logic. Traditional coverage shows 2-6% for component files due to JSX rendering (Ink's responsibility), but all business logic (helper functions, calculations, color mappings, keyboard handling, state management) has 100% coverage."
     }
