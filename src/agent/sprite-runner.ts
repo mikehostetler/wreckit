@@ -206,7 +206,7 @@ When you are finished, summarize your work and stop.`,
     let fullOutput = "";
     let completionDetected = false;
     let loopCount = 0;
-    const MAX_LOOPS = 25;
+    const MAX_LOOPS = 100;
 
     if (options.timeoutSeconds && options.timeoutSeconds > 0) {
       timeoutId = setTimeout(() => abortController.abort(), options.timeoutSeconds * 1000);
@@ -336,7 +336,17 @@ When you are finished, summarize your work and stop.`,
       try {
         const { syncProjectFromVM } = await import("../fs/sync.js");
         await syncProjectFromVM(vmName, findRepoRoot(cwd), config, logger);
-      } catch (err) {}
+      } catch (err) {
+        const errorMsg = err instanceof Error ? err.message : String(err);
+        logger.error(`Failed to pull changes from VM: ${errorMsg}`);
+        return { 
+          success: false, 
+          output: fullOutput, 
+          timedOut: false, 
+          exitCode: 1, 
+          completionDetected: true 
+        };
+      }
     }
 
     return { success: true, output: fullOutput, timedOut: false, exitCode: 0, completionDetected: true };
@@ -347,7 +357,12 @@ When you are finished, summarize your work and stop.`,
   } finally {
     unregisterSdkController(abortController);
     if (ephemeral && vmName && !dryRun) {
-      try { await killSprite(vmName, config, logger); } catch (err) {}
+      try { 
+        await killSprite(vmName, config, logger); 
+      } catch (err) {
+        const errorMsg = err instanceof Error ? err.message : String(err);
+        logger.warn(`Failed to cleanup ephemeral VM '${vmName}': ${errorMsg}`);
+      }
       currentEphemeralVM = null;
     }
   }

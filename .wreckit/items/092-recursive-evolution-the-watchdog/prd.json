@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "id": "092-recursive-evolution-the-watchdog",
+  "branch_name": "wreckit/092-recursive-evolution-the-watchdog",
+  "user_stories": [
+    {
+      "id": "US-001",
+      "title": "Implement Source Checksum Calculation",
+      "acceptance_criteria": [
+        "Function calculateSourceHash() returns SHA-256 hash of all src/**/*.ts files",
+        "Function calculatePromptsHash() returns SHA-256 hash of src/prompts/**/*.md",
+        "Hashes are consistent across runs (sorted file list)"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Core foundation for change detection."
+    },
+    {
+      "id": "US-002",
+      "title": "Implement Build Metadata Storage",
+      "acceptance_criteria": [
+        "Metadata saved to .wreckit/build-metadata.json after successful build",
+        "Metadata includes source_hash, prompts_hash, timestamp",
+        "Read function retrieves metadata safely"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "State persistence."
+    },
+    {
+      "id": "US-003",
+      "title": "Implement Integrity Check Command",
+      "acceptance_criteria": [
+        "Command 'wreckit check-integrity' compares current hashes vs stored metadata",
+        "Returns exit code 0 if synced, 1 if stale",
+        "Outputs human-readable status"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "MVP feature."
+    },
+    {
+      "id": "US-004",
+      "title": "Implement Safe Rebuild Runner",
+      "acceptance_criteria": [
+        "Backs up dist/ directory before building",
+        "Runs tsup build command",
+        "Verifies dist/index.js exists after build",
+        "Restores backup if build fails",
+        "Updates metadata on success"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Safety net for automation."
+    },
+    {
+      "id": "US-005",
+      "title": "Implement Watchdog Daemon",
+      "acceptance_criteria": [
+        "Command 'wreckit watchdog' runs continuously",
+        "Watches src/ changes using chokidar",
+        "Debounces changes (500ms)",
+        "Triggers Safe Rebuild on change"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "The active immune system."
+    }
+  ]
+}

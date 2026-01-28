@@ -12,7 +12,7 @@
         "Map patterns to target prompts (plan, implement, etc)"
       ],
       "priority": 1,
-      "status": "pending",
+      "status": "done",
       "notes": "Enhance analyzeHealingLogs"
     },
     {
@@ -24,7 +24,7 @@
         "Validate preserved variables and structure"
       ],
       "priority": 2,
-      "status": "pending",
+      "status": "done",
       "notes": "Use runAgentUnion"
     },
     {
@@ -36,7 +36,7 @@
         "Push branch and create GitHub PR"
       ],
       "priority": 3,
-      "status": "pending",
+      "status": "done",
       "notes": "Use src/git modules"
     },
     {
@@ -48,7 +48,7 @@
         "Add rollback/logging for safety"
       ],
       "priority": 4,
-      "status": "pending",
+      "status": "done",
       "notes": "Update schemas.ts"
     }
   ]

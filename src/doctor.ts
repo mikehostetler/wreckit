@@ -113,7 +113,7 @@ function findMissingDependencies(
   return missing;
 }
 
-async function diagnoseDependencies(root: string): Promise<Diagnostic[]> {
+async function diagnoseDependencies(root: string, logger: Logger): Promise<Diagnostic[]> {
   const diagnostics: Diagnostic[] = [];
   const itemsDir = getItemsDir(root);
 
@@ -148,7 +148,7 @@ async function diagnoseDependencies(root: string): Promise<Diagnostic[]> {
       if (err instanceof InvalidJsonError) continue;
       if (err instanceof SchemaValidationError) continue;
       // Unexpected errors: warn
-      console.warn(
+      logger.warn(
         `Warning: Cannot read item ${dir}: ${err instanceof Error ? err.message : String(err)}`,
       );
     }
@@ -776,6 +776,7 @@ Configure SPRITES_TOKEN using one of these methods:
 async function diagnoseOrphanedVMs(
   root: string,
   spriteConfig: SpriteAgentConfig | null,
+  logger: Logger,
 ): Promise<Diagnostic[]> {
   const diagnostics: Diagnostic[] = [];
 
@@ -783,15 +784,6 @@ async function diagnoseOrphanedVMs(
   if (!spriteConfig) {
     return diagnostics;
   }
-
-  // Create simple logger (suppress debug logs, show errors)
-  const logger: Logger = {
-    info: () => {},
-    warn: (msg) => console.warn(`[Sprite VM Check] ${msg}`),
-    error: (msg) => console.error(`[Sprite VM Check] ${msg}`),
-    debug: () => {},
-    json: () => {},
-  } as Logger;
 
   try {
     // Query Sprite CLI for all running VMs
@@ -894,7 +886,7 @@ async function diagnoseOrphanedVMs(
   return diagnostics;
 }
 
-export async function diagnose(root: string): Promise<Diagnostic[]> {
+export async function diagnose(root: string, logger: Logger): Promise<Diagnostic[]> {
   const diagnostics: Diagnostic[] = [];
   const wreckitDir = getWreckitDir(root);
 
@@ -921,7 +913,7 @@ export async function diagnose(root: string): Promise<Diagnostic[]> {
   if (spriteConfig) {
     diagnostics.push(...(await diagnoseSpriteCLI(root, spriteConfig)));
     diagnostics.push(...(await diagnoseSpriteAuth(root, spriteConfig)));
-    diagnostics.push(...(await diagnoseOrphanedVMs(root, spriteConfig)));
+    diagnostics.push(...(await diagnoseOrphanedVMs(root, spriteConfig, logger)));
   }
 
   const itemsDir = getItemsDir(root);
@@ -951,7 +943,7 @@ export async function diagnose(root: string): Promise<Diagnostic[]> {
     diagnostics.push(...(await diagnoseItem(root, itemsDir, itemDir)));
   }
 
-  diagnostics.push(...(await diagnoseDependencies(root)));
+  diagnostics.push(...(await diagnoseDependencies(root, logger)));
   diagnostics.push(...(await diagnoseIndex(root)));
   diagnostics.push(...(await diagnoseBatchProgress(root)));
 
@@ -1264,7 +1256,7 @@ export async function runDoctor(
   options: { fix?: boolean },
   logger: Logger,
 ): Promise<DoctorResult> {
-  const diagnostics = await diagnose(root);
+  const diagnostics = await diagnose(root, logger);
 
   if (!options.fix) {
     return { diagnostics };

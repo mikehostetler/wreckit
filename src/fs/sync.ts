@@ -95,9 +95,20 @@ const DEFAULT_EXCLUDE_PATTERNS = [
   ".wreckit/project-sync.tar.gz",
   ".wreckit/backups",
   ".wreckit/tmp",
+  ".wreckit/media",
   "dist",
   "build",
   ".DS_Store",
+  "bin/sprite",
+  "paper.pdf",
+  "*.mp4",
+  "*.mov",
+  "*.avi",
+  "*.png",
+  "*.jpg",
+  "*.jpeg",
+  "*.ico",
+  "*.woff2",
 ];
 
 /**
@@ -119,7 +130,11 @@ export async function createProjectArchive(
   try {
     await fs.mkdir(wreckitDir, { recursive: true });
   } catch (err) {
-    // Ignore if exists
+    // EEXIST is expected (directory already exists), other errors should be logged
+    const errorMsg = err instanceof Error ? err.message : String(err);
+    if (!(err as any)?.code?.includes?.("EEXIST")) {
+      logger.warn(`Failed to create .wreckit directory: ${errorMsg}`);
+    }
   }
 
   const archivePath = path.join(wreckitDir, "project-sync.tar.gz");
@@ -472,7 +487,15 @@ export async function extractProjectArchive(
 
     // Extract using system tar
     return new Promise((resolve) => {
-      const tar = spawn("tar", ["xzf", tempArchivePath, "-C", projectRoot]);
+      const tar = spawn("tar", [
+        "xzf",
+        tempArchivePath,
+        "-C",
+        projectRoot,
+        "-m",
+        "--no-same-owner",
+        "--no-same-permissions",
+      ]);
 
       let stderr = "";
 

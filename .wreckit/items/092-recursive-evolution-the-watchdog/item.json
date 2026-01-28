@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "id": "092-recursive-evolution-the-watchdog",
+  "title": "Recursive Evolution: The Watchdog",
+  "section": "evolution",
+  "state": "in_pr",
+  "overview": "Implement a self-monitoring mechanism that verifies system integrity and recompiles the codebase after changes to prevent regression loops.",
+  "branch": "wreckit/092-recursive-evolution-the-watchdog",
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2025-01-28T10:00:00.000Z",
+  "updated_at": "2025-01-28T14:30:00.000Z"
+}

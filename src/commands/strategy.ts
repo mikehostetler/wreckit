@@ -44,10 +44,14 @@ export async function strategyCommand(
             if (item.state !== "done") {
                 items += `Item ${item.id} (${item.state}): ${item.title}\n`;
             }
-        } catch {} // ignore
+        } catch (err) {
+            const errorMsg = err instanceof Error ? err.message : String(err);
+            logger.debug(`Skipping item ${id}: ${errorMsg}`);
+        }
     }
-  } catch (e) {
-      // ignore
+  } catch (err) {
+    const errorMsg = err instanceof Error ? err.message : String(err);
+    logger.warn(`Failed to read items directory: ${errorMsg}`);
   }
 
   // 3. Construct Prompt

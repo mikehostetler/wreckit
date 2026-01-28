@@ -1,14 +1,1 @@
-{
-  "schema_version": 1,
-  "id": "091-recursive-evolution-the-geneticist",
-  "title": "Recursive Evolution: The Geneticist",
-  "section": "infrastructure",
-  "state": "implementing",
-  "overview": "Implement a meta-agent that identifies recurrent failure patterns in healing logs and autonomously optimizes system prompts via PRs.",
-  "branch": "wreckit/091-recursive-evolution-the-geneticist",
-  "pr_url": null,
-  "pr_number": null,
-  "last_error": "Agent failed with exit code 1",
-  "created_at": "2026-01-28T12:00:00.000Z",
-  "updated_at": "2026-01-28T18:27:30.707Z"
-}
+{"schema_version":1,"id":"091-recursive-evolution-the-geneticist","title":"Recursive Evolution: The Geneticist","section":"infrastructure","state":"done","overview":"Implement a meta-agent that identifies recurrent failure patterns in healing logs and autonomously optimizes system prompts via PRs.","branch":"wreckit/091-recursive-evolution-the-geneticist","pr_url":null,"pr_number":null,"last_error":null,"created_at":"2026-01-28T12:00:00.000Z","updated_at":"2026-01-28T14:00:00.000Z"}

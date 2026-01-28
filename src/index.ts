@@ -29,6 +29,10 @@ import { learnCommand } from "./commands/learn";
 import { dreamCommand } from "./commands/dream";
 import { summarizeCommand } from "./commands/summarize";
 import { geneticistCommand } from "./commands/geneticist";
+import {
+  checkIntegrityCommand,
+  watchdogCommand,
+} from "./commands/watchdog";
 // import { sdkInfoCommand } from "./commands/sdk-info";
 import { runOnboardingIfNeeded } from "./onboarding";
 import { resolveId } from "./domain/resolveId";
@@ -1004,6 +1008,64 @@ program
             verbose: globalOpts.verbose,
             timeWindowHours: options.timeWindow ? parseInt(options.timeWindow, 10) : 48,
             minErrorCount: options.minErrors ? parseInt(options.minErrors, 10) : 3,
+          },
+          logger,
+        );
+      },
+      logger,
+      {
+        verbose: globalOpts.verbose,
+        quiet: globalOpts.quiet,
+        dryRun: globalOpts.dryRun,
+        cwd: resolveCwd(globalOpts.cwd),
+      },
+    );
+  });
+
+// ============================================================================
+// Watchdog Commands (Item 092)
+// ============================================================================
+
+program
+  .command("check-integrity")
+  .description("Check if dist/ is in sync with src/")
+  .option("--json", "Output as JSON")
+  .action(async (options, cmd) => {
+    const globalOpts = cmd.optsWithGlobals();
+    await executeCommand(
+      async () => {
+        await checkIntegrityCommand(
+          {
+            cwd: resolveCwd(globalOpts.cwd),
+            json: options.json,
+          },
+          logger,
+        );
+      },
+      logger,
+      {
+        verbose: globalOpts.verbose,
+        quiet: globalOpts.quiet,
+        dryRun: globalOpts.dryRun,
+        cwd: resolveCwd(globalOpts.cwd),
+      },
+    );
+  });
+
+program
+  .command("watchdog")
+  .description("Watch source files and rebuild on changes")
+  .option("--debounce-ms <ms>", "Debounce delay in milliseconds", "500")
+  .option("--json", "Output as JSON")
+  .action(async (options, cmd) => {
+    const globalOpts = cmd.optsWithGlobals();
+    await executeCommand(
+      async () => {
+        await watchdogCommand(
+          {
+            cwd: resolveCwd(globalOpts.cwd),
+            debounceMs: options.debounceMs ? parseInt(options.debounceMs, 10) : 500,
+            json: options.json,
           },
           logger,
         );

@@ -126,3 +126,15 @@ export function getMediaOutputPath(root: string, itemId: string): string {
   const sanitizedId = itemId.replace(/\//g, "-");
   return path.join(getMediaDir(root), `${sanitizedId}-summary.mp4`);
 }
+
+export function getBuildMetadataPath(root: string): string {
+  return path.join(getWreckitDir(root), "build-metadata.json");
+}
+
+export function getWatchdogLogPath(root: string): string {
+  return path.join(getWreckitDir(root), "watchdog-log.jsonl");
+}
+
+export function getBuildLockPath(root: string): string {
+  return path.join(getWreckitDir(root), ".build-lock");
+}

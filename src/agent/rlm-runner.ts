@@ -7,7 +7,7 @@ import { adaptMcpServersToAxTools } from "./mcp/mcporterAdapter";
 import { registerSdkController, unregisterSdkController } from "./lifecycle";
 import { AgentEvent } from "../tui/agentEvents";
 import { findRepoRoot } from "../fs/paths";
-import { syncProjectToVM } from "../fs/sync";
+import { syncProjectToVM, syncProjectFromVM } from "../fs/sync";
 import type { Logger } from "../logging";
 import type { RlmSdkAgentConfig } from "../schemas";
 import type { AgentResult } from "./runner";
@@ -103,7 +103,13 @@ function parseToolCalls(content: string, logger: Logger): Array<{ name: string; 
         const toolName = match[1];
         let argsStr = match[2];
         if (argsStr.startsWith('"') && argsStr.endsWith('"')) {
-             try { argsStr = JSON.parse(argsStr); } catch {}
+             try { 
+               argsStr = JSON.parse(argsStr); 
+             } catch (err) {
+               // Quoted string wasn't valid JSON, use original string
+               const errorMsg = err instanceof Error ? err.message : String(err);
+               logger.debug(`Failed to parse quoted tool args, using raw string: ${errorMsg}`);
+             }
         }
         let args = {};
         let error: string | undefined;
@@ -315,20 +321,26 @@ export async function runRlmAgent(
 
     logger.info(`Starting RLM agent (model: ${config.model || "default"})`);
 
+    // Map host CWD to guest CWD for the agent's context
+    const projectRoot = findRepoRoot(cwd);
+    const relativeCwd = cwd.startsWith(projectRoot) ? cwd.slice(projectRoot.length) : "";
+    const agentCwd = config.sandbox ? `/home/user/project${relativeCwd}` : cwd;
+
     const prdInfo = options.itemId 
       ? `\nYour task is defined in the PRD at .wreckit/items/${options.itemId}/prd.json. You should update this file to mark stories as 'done' when completed.`
       : "";
 
     const systemPrompt = `You are an expert software engineer working in a sandboxed environment.
-The project is located at /home/user/project and you are already in this directory.
+The project is located at /home/user/project and you are currently working in ${agentCwd}.
 You have access to tools to execute commands (Bash), read/write files, and manage the project.${prdInfo}
 
 Your goal is to complete the user's request provided below.
 
 IMPORTANT INSTRUCTIONS:
-1. When you are finished, YOU MUST CALL the 'TaskComplete' tool.
-2. Do not just say "I am done". You must call the tool.
-3. If you want to run commands, use the 'Bash' tool (or 'execute_command').
+1. ALWAYS use relative paths (e.g., "./src/index.ts") or absolute paths inside /home/user/project.
+2. DO NOT use paths starting with /Users/ or C:/ - these do not exist in your environment.
+3. When you are finished, YOU MUST CALL the 'TaskComplete' tool.
+4. If you want to run commands, use the 'Bash' tool (or 'execute_command').
 `;
 
     const messages: any[] = [
@@ -337,7 +349,7 @@ IMPORTANT INSTRUCTIONS:
 
     let fullOutput = "";
     let loopCount = 0;
-    const MAX_LOOPS = 25;
+    const MAX_LOOPS = config.maxIterations || 100;
 
     if (options.timeoutSeconds && options.timeoutSeconds > 0) {
       timeoutId = setTimeout(() => {
@@ -368,7 +380,7 @@ IMPORTANT INSTRUCTIONS:
            logger
        );
 
-      console.log("DEBUG RESPONSE:", JSON.stringify(response, null, 2));
+      logger.debug(`DEBUG RESPONSE: ${JSON.stringify(response, null, 2)}`);
 
       if (response.error) {
           throw new Error(`Anthropic API Error: ${response.error.message}`);
@@ -398,7 +410,10 @@ IMPORTANT INSTRUCTIONS:
                         const tool = tools.find(t => t.name.toLowerCase() === call.name.toLowerCase());
                         if (tool) result = await tool.func(call.args);
                         else result = `Error: Tool ${call.name} not found`;
-                    } catch (e: any) { result = `Error: ${e.message}`; }
+                            } catch (e: any) { 
+                        logger.debug(`Tool execution error: ${e.message}`);
+                        result = `Error: ${e.message}`; 
+                    }
                 }
                 
                 result = truncate(result);
@@ -418,7 +433,10 @@ IMPORTANT INSTRUCTIONS:
                 const tool = tools.find(t => t.name === block.name);
                 if (tool) result = await tool.func(block.input);
                 else result = `Error: Tool ${block.name} not found`;
-            } catch (e: any) { result = `Error: ${e.message}`; }
+                    } catch (e: any) { 
+                        logger.debug(`Tool execution error: ${e.message}`);
+                        result = `Error: ${e.message}`; 
+                    }
 
             result = truncate(result);
 
@@ -442,7 +460,8 @@ IMPORTANT INSTRUCTIONS:
     if (timeoutId) clearTimeout(timeoutId);
 
     // === SYNC BACK ===
-    if (vmName && config.sandbox && config.syncOnSuccess) {
+    // Default to true if undefined
+    if (vmName && config.sandbox && config.syncOnSuccess !== false) {
       logger.info("Agent completed successfully, pulling changes from VM...");
       try {
         const projectRoot = findRepoRoot(cwd);
@@ -470,7 +489,7 @@ IMPORTANT INSTRUCTIONS:
     };
 
   } catch (error: any) {
-    console.error("CRITICAL AGENT ERROR:", error);
+    logger.error(`CRITICAL AGENT ERROR: ${error}`);
     if (timeoutId) clearTimeout(timeoutId);
     return {
       success: false,

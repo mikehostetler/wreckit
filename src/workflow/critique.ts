@@ -1,4 +1,5 @@
 import * as fs from "node:fs/promises";
+import type { Logger } from "../logging";
 import type { Item, WorkflowState } from "../schemas";
 import type { PhaseResult, WorkflowOptions } from "./itemWorkflow";
 import { getAgentConfigUnion, runAgentUnion } from "../agent/runner";
@@ -19,7 +20,7 @@ interface CritiqueResult {
   critique: string;
 }
 
-function parseCritiqueJson(output: string): CritiqueResult | null {
+function parseCritiqueJson(output: string, logger: Logger): CritiqueResult | null {
   try {
     // Strategy 1: Look for JSON markdown block
     const codeBlockMatch = output.match(/```json\s*([\s\S]*?)\s*```/);
@@ -29,7 +30,10 @@ function parseCritiqueJson(output: string): CritiqueResult | null {
         if (parsed.status === "approved" || parsed.status === "rejected") {
           return parsed as CritiqueResult;
         }
-      } catch {}
+      } catch (err) {
+        const errorMsg = err instanceof Error ? err.message : String(err);
+        logger.debug(`Failed to parse JSON code block in critique: ${errorMsg}`);
+      }
     }
 
     // Strategy 2: Find the last valid JSON object in the output (in case of multiple or trailing text)
@@ -41,13 +45,17 @@ function parseCritiqueJson(output: string): CritiqueResult | null {
           if (parsed.status === "approved" || parsed.status === "rejected") {
             return parsed as CritiqueResult;
           }
-        } catch {
+        } catch (err) {
+          const errorMsg = err instanceof Error ? err.message : String(err);
+          logger.debug(`Failed to parse JSON object ${i}/${matches.length} in critique: ${errorMsg}`);
           continue;
         }
       }
     }
     return null;
-  } catch {
+  } catch (err) {
+    const errorMsg = err instanceof Error ? err.message : String(err);
+    logger.debug(`Critique JSON parsing entirely failed: ${errorMsg}`);
     return null;
   }
 }
@@ -160,7 +168,7 @@ export async function runPhaseCritique(
     return { success: true, item };
   }
 
-  const critique = parseCritiqueJson(result.output);
+  const critique = parseCritiqueJson(result.output, logger);
 
   if (!critique) {
     const error = "Critic failed to output valid JSON decision";

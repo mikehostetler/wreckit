@@ -36,6 +36,7 @@
 | `wreckit init` | Initialize `.wreckit/` in repo |
 | `wreckit doctor` | Validate items, fix broken state |
 | `wreckit rollback <id>` | Rollback a direct-merge item to pre-merge state |
+| `wreckit geneticist` | Recursive prompt self-optimization (evolution) |
 
 ### Phase Commands (debugging)
 
@@ -57,6 +58,17 @@
 - `--force` — Regenerate artifacts
 - `--cwd <path>` — Override working directory
 - `--fix` — Auto-repair (doctor only)
+
+## Meta-Agents
+
+Wreckit includes specialized "meta-agents" that operate on the system itself rather than just executing tasks.
+
+| Agent | Command | Purpose |
+|-------|---------|---------|
+| **Dreamer** | `wreckit dream` | **Ideation**: Scans the codebase for TODOs, gaps, and technical debt to autonomously generate new roadmap items. Acts as a product manager. |
+| **Strategy** | `wreckit strategy` | **Navigator**: Analyzes the project state and roadmap to recommend the next best action. Acts as a technical lead. |
+| **Learn** | `wreckit learn` | **Skills**: Extracts reusable patterns from completed items and compiles them into skills.json. Acts as a knowledge engineer. |
+| **Geneticist** | `wreckit geneticist` | **Evolution**: Analyzes healing logs to identify recurrent failures and autonomously optimizes system prompts via PRs. Acts as an immune system. |
 
 ## State Flow
 

@@ -17,6 +17,14 @@ export {
   getPromptPath,
   getRoadmapPath,
   getSkillsPath,
+  getBuildMetadataPath,
+  getWatchdogLogPath,
+  getBuildLockPath,
+  getBackupsDir,
+  getBackupSessionDir,
+  getBackupManifestPath,
+  getMediaDir,
+  getMediaOutputPath,
 } from "./paths";
 
 export {
