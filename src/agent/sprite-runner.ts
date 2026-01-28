@@ -7,6 +7,7 @@ import {
   SpriteStartError,
   SpriteAttachError,
   SpriteKillError,
+  SpriteExecError,
 } from "../errors";
 
 // ============================================================
@@ -21,6 +22,7 @@ import {
 // - console: Attach to a running Sprite
 // - list: List all active Sprites
 // - delete: Terminate a Sprite
+// - exec: Execute a command inside a running Sprite
 
 /**
  * Result from running a Wisp command.
@@ -84,12 +86,24 @@ export interface WispSpriteInfo {
  */
 export async function runWispCommand(
   args: string[],
-  options: WispCommandOptions
+  options: WispCommandOptions,
 ): Promise<WispResult> {
-  const { wispPath, logger, timeout = 300, onStdoutChunk, onStderrChunk, token } = options;
+  const {
+    wispPath,
+    logger,
+    timeout = 300,
+    onStdoutChunk,
+    onStderrChunk,
+    token,
+  } = options;
 
   // Build environment with token if provided
-  const env: Record<string, string> = { ...process.env };
+  const env: Record<string, string> = {};
+  for (const [key, value] of Object.entries(process.env)) {
+    if (value !== undefined) {
+      env[key] = value;
+    }
+  }
   if (token) {
     env.SPRITES_TOKEN = token;
     logger.debug(`SPRITES_TOKEN: present (redacted)`);
@@ -200,7 +214,9 @@ export async function runWispCommand(
         stdout,
         stderr,
         exitCode: code,
-        error: timedOut ? `Command timed out after ${timeout} seconds` : undefined,
+        error: timedOut
+          ? `Command timed out after ${timeout} seconds`
+          : undefined,
       });
     });
   });
@@ -253,7 +269,7 @@ export function parseWispJson(output: string, logger: Logger): unknown | null {
 export async function startSprite(
   name: string,
   config: SpriteAgentConfig,
-  logger: Logger
+  logger: Logger,
 ): Promise<WispResult> {
   const args = ["create", name];
 
@@ -281,7 +297,10 @@ export async function startSprite(
 
   // Handle other start failures
   if (!result.success) {
-    throw new SpriteStartError(name, result.stderr || result.error || "Unknown error");
+    throw new SpriteStartError(
+      name,
+      result.stderr || result.error || "Unknown error",
+    );
   }
 
   return result;
@@ -298,7 +317,7 @@ export async function startSprite(
 export async function attachSprite(
   name: string,
   config: SpriteAgentConfig,
-  logger: Logger
+  logger: Logger,
 ): Promise<WispResult> {
   const args = ["console", name];
 
@@ -318,7 +337,10 @@ export async function attachSprite(
 
   // Handle other attach failures
   if (!result.success) {
-    throw new SpriteAttachError(name, result.stderr || result.error || "Unknown error");
+    throw new SpriteAttachError(
+      name,
+      result.stderr || result.error || "Unknown error",
+    );
   }
 
   return result;
@@ -333,7 +355,7 @@ export async function attachSprite(
  */
 export async function listSprites(
   config: SpriteAgentConfig,
-  logger: Logger
+  logger: Logger,
 ): Promise<WispResult> {
   const args = ["list", "--json"];
 
@@ -367,7 +389,7 @@ export async function listSprites(
 export async function killSprite(
   name: string,
   config: SpriteAgentConfig,
-  logger: Logger
+  logger: Logger,
 ): Promise<WispResult> {
   const args = ["delete", name];
 
@@ -387,7 +409,77 @@ export async function killSprite(
 
   // Handle other kill failures
   if (!result.success) {
-    throw new SpriteKillError(name, result.stderr || result.error || "Unknown error");
+    throw new SpriteKillError(
+      name,
+      result.stderr || result.error || "Unknown error",
+    );
+  }
+
+  return result;
+}
+
+/**
+ * Execute a command inside a running Sprite VM using `sprite exec` command.
+ *
+ * @param name - Name/ID of the Sprite to execute command in
+ * @param command - Command and arguments to execute (e.g., ['npm', 'install'])
+ * @param config - Sprite agent configuration
+ * @param logger - Logger instance
+ * @param options - Optional streaming callbacks for stdout/stderr
+ * @returns Promise<WispResult> with execution result (includes exit code)
+ *
+ * @example
+ * ```typescript
+ * const result = await execSprite(
+ *   'my-vm',
+ *   ['ls', '-la'],
+ *   config,
+ *   logger
+ * );
+ * if (result.success) {
+ *   console.log(`Output: ${result.stdout}`);
+ * } else {
+ *   console.error(`Command failed with exit code ${result.exitCode}`);
+ * }
+ * ```
+ */
+export async function execSprite(
+  name: string,
+  command: string[],
+  config: SpriteAgentConfig,
+  logger: Logger,
+  options?: {
+    onStdoutChunk?: (chunk: string) => void;
+    onStderrChunk?: (chunk: string) => void;
+  },
+): Promise<WispResult> {
+  const args = ["exec", name, ...command];
+
+  logger.debug(`Executing in Sprite: ${config.wispPath} ${args.join(" ")}`);
+
+  const result = await runWispCommand(args, {
+    wispPath: config.wispPath,
+    logger,
+    timeout: config.timeout,
+    token: config.token,
+    onStdoutChunk: options?.onStdoutChunk,
+    onStderrChunk: options?.onStderrChunk,
+  });
+
+  // Handle Sprite binary not found error
+  if (result.error?.includes("not found")) {
+    throw new WispNotFoundError(config.wispPath);
+  }
+
+  // Handle subprocess errors (spawn failure, timeout) - throw for these
+  // Note: We do NOT throw for command failures (non-zero exit code)
+  // Command failures return success=false with the exit code in the result
+  if (result.error && !result.exitCode) {
+    // Only throw if there's an error but no exit code (subprocess failure)
+    throw new SpriteExecError(
+      name,
+      result.stderr || result.error || "Command execution failed",
+    );
   }
 
   return result;
@@ -423,7 +515,7 @@ export interface SpriteRunAgentOptions {
  */
 export async function runSpriteAgent(
   config: SpriteAgentConfig,
-  options: SpriteRunAgentOptions
+  options: SpriteRunAgentOptions,
 ): Promise<AgentResult> {
   const { logger, dryRun = false, mockAgent = false, cwd, prompt } = options;
 
@@ -478,10 +570,13 @@ export async function runSpriteAgent(
     const result = await listSprites(config, logger);
 
     if (!result.success) {
-      logger.error(`Wisp connectivity check failed: ${result.stderr || result.error}`);
+      logger.error(
+        `Wisp connectivity check failed: ${result.stderr || result.error}`,
+      );
       return {
         success: false,
-        output: result.stderr || result.error || "Wisp connectivity check failed",
+        output:
+          result.stderr || result.error || "Wisp connectivity check failed",
         timedOut: false,
         exitCode: result.exitCode,
         completionDetected: false,

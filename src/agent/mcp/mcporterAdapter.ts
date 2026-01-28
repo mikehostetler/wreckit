@@ -4,7 +4,7 @@ import type { Logger } from "../../logging";
 
 /**
  * Adapt in-process MCP servers (from Claude SDK) to AxFunctions.
- * 
+ *
  * Note: This implementation deviates from the original PRD requirement of returning
  * McporterServerConfig[] because Wreckit's internal MCP server relies on in-process
  * callbacks (e.g., onSavePrd) which cannot be serialized across process boundaries
@@ -12,7 +12,7 @@ import type { Logger } from "../../logging";
  */
 export function adaptMcpServersToAxTools(
   mcpServers: Record<string, any>,
-  allowedTools?: string[]
+  allowedTools?: string[],
 ): AxFunction[] {
   const tools: AxFunction[] = [];
 
@@ -21,19 +21,22 @@ export function adaptMcpServersToAxTools(
 
     for (const tool of server.tools) {
       const axToolName = `mcp__${serverName}__${tool.name}`;
-      
+
       // Check if tool is allowed
       // specific check: mcp__wreckit__save_prd
       // original check: save_prd
-      const isAllowed = !allowedTools || 
-        allowedTools.includes(axToolName) || 
+      const isAllowed =
+        !allowedTools ||
+        allowedTools.includes(axToolName) ||
         allowedTools.includes(tool.name);
 
       if (!isAllowed) {
         continue;
       }
 
-      const jsonSchema = zodToJsonSchema(tool.inputSchema) as AxFunctionJSONSchema;
+      const jsonSchema = zodToJsonSchema(
+        tool.inputSchema,
+      ) as AxFunctionJSONSchema;
 
       tools.push({
         name: axToolName,
@@ -43,7 +46,7 @@ export function adaptMcpServersToAxTools(
           // MCP tools in Claude SDK return { content: [{ type: 'text', text: '...' }] }
           try {
             const result = await tool.handler(args);
-            
+
             // Format result for Ax (string)
             if (result && result.content) {
               if (Array.isArray(result.content)) {
@@ -57,7 +60,7 @@ export function adaptMcpServersToAxTools(
           } catch (error: any) {
             return `Error executing tool ${axToolName}: ${error.message}`;
           }
-        }
+        },
       });
     }
   }

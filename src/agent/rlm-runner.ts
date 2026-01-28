@@ -12,7 +12,7 @@ import {
   AxAIOpenAI,
   AxAIGoogleGemini,
   type AxAIService,
-  type AxFunction
+  type AxFunction,
 } from "@ax-llm/ax";
 
 export interface RlmRunAgentOptions {
@@ -32,15 +32,21 @@ export interface RlmRunAgentOptions {
 
 function handleAxAIError(error: any, logger: Logger): string {
   const msg = error instanceof Error ? error.message : String(error);
-  
-  if (msg.includes("401") || msg.toLowerCase().includes("auth") || msg.includes("API key")) {
+
+  if (
+    msg.includes("401") ||
+    msg.toLowerCase().includes("auth") ||
+    msg.includes("API key")
+  ) {
     logger.error(`Authentication Error: ${msg}`);
-    return `Authentication Error: Please check your API key.\n` +
-           `For Anthropic: Set ANTHROPIC_API_KEY or ANTHROPIC_AUTH_TOKEN\n` +
-           `For OpenAI: Set OPENAI_API_KEY\n` +
-           `For Google: Set GOOGLE_API_KEY`;
+    return (
+      `Authentication Error: Please check your API key.\n` +
+      `For Anthropic: Set ANTHROPIC_API_KEY or ANTHROPIC_AUTH_TOKEN\n` +
+      `For OpenAI: Set OPENAI_API_KEY\n` +
+      `For Google: Set GOOGLE_API_KEY`
+    );
   }
-  
+
   if (msg.includes("429") || msg.toLowerCase().includes("rate limit")) {
     logger.warn(`Rate Limit Error: ${msg}`);
     return `Rate Limit Error: The AI provider is rejecting requests. Please try again later.`;
@@ -56,9 +62,10 @@ function handleAxAIError(error: any, logger: Logger): string {
 }
 
 export async function runRlmAgent(
-  options: RlmRunAgentOptions
+  options: RlmRunAgentOptions,
 ): Promise<AgentResult> {
-  const { cwd, prompt, logger, dryRun, config, onStdoutChunk, onAgentEvent } = options;
+  const { cwd, prompt, logger, dryRun, config, onStdoutChunk, onAgentEvent } =
+    options;
 
   if (dryRun) {
     logger.info("[dry-run] Would run RLM agent");
@@ -81,20 +88,22 @@ export async function runRlmAgent(
     const env = await buildAxAIEnv({
       cwd,
       logger,
-      provider: config.aiProvider
+      provider: config.aiProvider,
     });
 
     // 2. Initialize AI Service
     let ai: AxAIService;
-    
+
     if (config.aiProvider === "anthropic" || config.aiProvider === "zai") {
       if (!env.ANTHROPIC_API_KEY) {
-        throw new Error("ANTHROPIC_API_KEY is missing (or ZAI_API_KEY for zai provider)");
+        throw new Error(
+          "ANTHROPIC_API_KEY is missing (or ZAI_API_KEY for zai provider)",
+        );
       }
       ai = new AxAIAnthropic({
         apiKey: env.ANTHROPIC_API_KEY,
         apiURL: env.ANTHROPIC_BASE_URL,
-        config: { maxRetries: 3 }
+        config: { maxRetries: 3 },
       });
     } else if (config.aiProvider === "openai") {
       if (!env.OPENAI_API_KEY) {
@@ -102,7 +111,7 @@ export async function runRlmAgent(
       }
       ai = new AxAIOpenAI({
         apiKey: env.OPENAI_API_KEY,
-        config: { maxRetries: 3 }
+        config: { maxRetries: 3 },
       });
     } else if (config.aiProvider === "google") {
       if (!env.GOOGLE_API_KEY) {
@@ -110,7 +119,7 @@ export async function runRlmAgent(
       }
       ai = new AxAIGoogleGemini({
         apiKey: env.GOOGLE_API_KEY,
-        config: { maxRetries: 3 }
+        config: { maxRetries: 3 },
       });
     } else {
       throw new Error(`Unsupported provider: ${config.aiProvider}`);
@@ -126,16 +135,21 @@ export async function runRlmAgent(
     // 4. Initialize Tools
     // Pass the runtime so the RunJS tool is available and bound to our context
     const builtInTools = buildToolRegistry(options.allowedTools, jsRuntime);
-    
+
     let mcpTools: AxFunction[] = [];
     if (options.mcpServers) {
-      mcpTools = adaptMcpServersToAxTools(options.mcpServers, options.allowedTools);
+      mcpTools = adaptMcpServersToAxTools(
+        options.mcpServers,
+        options.allowedTools,
+      );
     }
-    
+
     const tools = [...builtInTools, ...mcpTools];
 
     if (logger.debug) {
-      logger.debug(`Loaded ${tools.length} tools for agent (${mcpTools.length} from MCP)`);
+      logger.debug(
+        `Loaded ${tools.length} tools for agent (${mcpTools.length} from MCP)`,
+      );
     }
 
     // 5. Initialize Agent
@@ -149,8 +163,9 @@ export async function runRlmAgent(
         You have access to file system tools and shell.
         Follow the instructions carefully and validate your work.
       `,
-      signature: 'task:string "The trigger message" -> answer:string "The final response", justification:string "Detailed reasoning"',
-      functions: tools
+      signature:
+        'task:string "The trigger message" -> answer:string "The final response", justification:string "Detailed reasoning"',
+      functions: tools,
     });
 
     // 6. Setup Timeout
@@ -163,13 +178,14 @@ export async function runRlmAgent(
 
     // 7. Run ReAct Loop
     logger.info(`Starting RLM agent (model: ${config.model})`);
-    
+
     let fullOutput = "";
-    
+
     // Instead of passing the full prompt, we pass a trigger message.
     // The agent must "pull" the prompt from the runtime.
-    const rlmTrigger = "The user's request has been loaded into the global variable `CONTEXT_DATA`. Use the `RunJS` tool to inspect it and begin the task.";
-    
+    const rlmTrigger =
+      "The user's request has been loaded into the global variable `CONTEXT_DATA`. Use the `RunJS` tool to inspect it and begin the task.";
+
     // AxAgent.streamingForward returns an async generator
     const stream = agent.streamingForward(ai, { task: rlmTrigger });
 
@@ -180,26 +196,26 @@ export async function runRlmAgent(
 
       // Handle streaming content (Thought/Text)
       // Inspect chunk structure if needed, or assume text/object
-      if (typeof chunk === 'string') {
+      if (typeof chunk === "string") {
         process.stdout.write(chunk);
         fullOutput += chunk;
         if (onStdoutChunk) onStdoutChunk(chunk);
-      } else if (chunk && typeof chunk === 'object') {
+      } else if (chunk && typeof chunk === "object") {
         const c = chunk as any;
         if (c.content) {
-           process.stdout.write(c.content);
-           fullOutput += c.content;
-           if (onStdoutChunk) onStdoutChunk(c.content);
+          process.stdout.write(c.content);
+          fullOutput += c.content;
+          if (onStdoutChunk) onStdoutChunk(c.content);
         }
-        
+
         // Emit events for tool calls if visible in chunk
         // This depends on AxGenDeltaOut structure
         if (c.functionCall && onAgentEvent) {
-           onAgentEvent({
-             type: "tool_use",
-             tool: c.functionCall.name,
-             input: c.functionCall.arguments
-           });
+          onAgentEvent({
+            type: "tool_use",
+            tool: c.functionCall.name,
+            input: c.functionCall.arguments,
+          });
         }
       }
     }
@@ -214,11 +230,10 @@ export async function runRlmAgent(
       exitCode: 0,
       completionDetected: true,
     };
-
   } catch (error: any) {
     if (timeoutId) clearTimeout(timeoutId);
     const errorOutput = handleAxAIError(error, logger);
-    
+
     return {
       success: false,
       output: errorOutput,

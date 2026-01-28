@@ -67,7 +67,7 @@ export interface ProcessRunnerOptions {
  */
 export async function runProcessAgent(
   config: ProcessAgentConfig,
-  options: ProcessRunnerOptions
+  options: ProcessRunnerOptions,
 ): Promise<AgentResult> {
   const { cwd, prompt, logger } = options;
   const timeoutSeconds = options.timeoutSeconds ?? 3600;
@@ -164,7 +164,9 @@ export async function runProcessAgent(
       unregisterProcessAgent(child);
       if (timeoutId) clearTimeout(timeoutId);
       const success = code === 0 && completionDetected;
-      logger.debug(`Agent exited with code ${code}, completion detected: ${completionDetected}`);
+      logger.debug(
+        `Agent exited with code ${code}, completion detected: ${completionDetected}`,
+      );
       resolve({
         success,
         output,

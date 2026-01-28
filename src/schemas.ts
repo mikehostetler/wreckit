@@ -66,17 +66,36 @@ export const RlmSdkAgentSchema = z.object({
   kind: z.literal("rlm"),
   model: z.string().default("claude-sonnet-4-20250514"),
   maxIterations: z.number().default(100),
-  aiProvider: z.enum(["anthropic", "openai", "google", "zai"]).default("anthropic"),
+  aiProvider: z
+    .enum(["anthropic", "openai", "google", "zai"])
+    .default("anthropic"),
 });
 
 export const SpriteAgentSchema = z.object({
   kind: z.literal("sprite"),
-  wispPath: z.string().default("sprite").describe("Path to sprite CLI binary (default: 'sprite' from PATH)"),
-  token: z.string().optional().describe("Sprites.dev authentication token (optional, can use SPRITES_TOKEN env var)"),
+  wispPath: z
+    .string()
+    .default("sprite")
+    .describe("Path to sprite CLI binary (default: 'sprite' from PATH)"),
+  token: z
+    .string()
+    .optional()
+    .describe(
+      "Sprites.dev authentication token (optional, can use SPRITES_TOKEN env var)",
+    ),
   maxVMs: z.number().default(5).describe("Maximum concurrent VMs allowed"),
-  defaultMemory: z.string().default("512MiB").describe("Default memory allocation per VM"),
-  defaultCPUs: z.string().default("1").describe("Default CPU allocation per VM"),
-  timeout: z.number().default(300).describe("Default timeout in seconds for VM operations"),
+  defaultMemory: z
+    .string()
+    .default("512MiB")
+    .describe("Default memory allocation per VM"),
+  defaultCPUs: z
+    .string()
+    .default("1")
+    .describe("Default CPU allocation per VM"),
+  timeout: z
+    .number()
+    .default(300)
+    .describe("Default timeout in seconds for VM operations"),
 });
 
 export const AgentConfigUnionSchema = z.discriminatedUnion("kind", [

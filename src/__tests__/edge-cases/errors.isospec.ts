@@ -14,7 +14,11 @@ import type { Logger } from "../../logging";
 import { RepoNotFoundError } from "../../errors";
 
 import * as childProcess from "node:child_process";
-import { runAgentUnion, type AgentConfigUnion, type UnionRunAgentOptions } from "../../agent";
+import {
+  runAgentUnion,
+  type AgentConfigUnion,
+  type UnionRunAgentOptions,
+} from "../../agent";
 import { pushBranch, getPrByBranch, type GitOptions } from "../../git";
 import { findRepoRoot } from "../../fs";
 

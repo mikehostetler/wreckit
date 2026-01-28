@@ -55,6 +55,7 @@ export const ErrorCodes = {
   SPRITE_START_FAILED: "SPRITE_START_FAILED",
   SPRITE_ATTACH_FAILED: "SPRITE_ATTACH_FAILED",
   SPRITE_KILL_FAILED: "SPRITE_KILL_FAILED",
+  SPRITE_EXEC_FAILED: "SPRITE_EXEC_FAILED",
 
   // Artifact read errors (for permission/I/O issues)
   ARTIFACT_READ_ERROR: "ARTIFACT_READ_ERROR",
@@ -412,9 +413,7 @@ export function isWreckitError(error: unknown): error is WreckitError {
  * Thrown when the wisp CLI binary is not found.
  */
 export class WispNotFoundError extends WreckitError {
-  constructor(
-    public readonly wispPath: string,
-  ) {
+  constructor(public readonly wispPath: string) {
     super(
       `Wisp CLI not found at '${wispPath}'. Install Wisp to enable Sprite support:\n  https://github.com/example/wisp (replace with actual URL)`,
       ErrorCodes.WISP_NOT_FOUND,
@@ -431,7 +430,10 @@ export class SpriteStartError extends WreckitError {
     public readonly spriteName: string,
     message: string,
   ) {
-    super(`Failed to start Sprite '${spriteName}': ${message}`, ErrorCodes.SPRITE_START_FAILED);
+    super(
+      `Failed to start Sprite '${spriteName}': ${message}`,
+      ErrorCodes.SPRITE_START_FAILED,
+    );
     this.name = "SpriteStartError";
   }
 }
@@ -444,7 +446,10 @@ export class SpriteAttachError extends WreckitError {
     public readonly spriteName: string,
     message: string,
   ) {
-    super(`Failed to attach to Sprite '${spriteName}': ${message}`, ErrorCodes.SPRITE_ATTACH_FAILED);
+    super(
+      `Failed to attach to Sprite '${spriteName}': ${message}`,
+      ErrorCodes.SPRITE_ATTACH_FAILED,
+    );
     this.name = "SpriteAttachError";
   }
 }
@@ -457,7 +462,26 @@ export class SpriteKillError extends WreckitError {
     public readonly spriteName: string,
     message: string,
   ) {
-    super(`Failed to kill Sprite '${spriteName}': ${message}`, ErrorCodes.SPRITE_KILL_FAILED);
+    super(
+      `Failed to kill Sprite '${spriteName}': ${message}`,
+      ErrorCodes.SPRITE_KILL_FAILED,
+    );
     this.name = "SpriteKillError";
+  }
+}
+
+/**
+ * Thrown when command execution inside a Sprite VM fails.
+ */
+export class SpriteExecError extends WreckitError {
+  constructor(
+    public readonly spriteName: string,
+    message: string,
+  ) {
+    super(
+      `Failed to execute command in Sprite '${spriteName}': ${message}`,
+      ErrorCodes.SPRITE_EXEC_FAILED,
+    );
+    this.name = "SpriteExecError";
   }
 }

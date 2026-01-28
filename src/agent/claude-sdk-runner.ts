@@ -21,8 +21,18 @@ export interface ClaudeRunAgentOptions {
   timeoutSeconds?: number;
 }
 
-export async function runClaudeSdkAgent(options: ClaudeRunAgentOptions): Promise<AgentResult> {
-  const { config, cwd, prompt, logger, onStdoutChunk, onStderrChunk, onAgentEvent } = options;
+export async function runClaudeSdkAgent(
+  options: ClaudeRunAgentOptions,
+): Promise<AgentResult> {
+  const {
+    config,
+    cwd,
+    prompt,
+    logger,
+    onStdoutChunk,
+    onStderrChunk,
+    onAgentEvent,
+  } = options;
   const timeoutSeconds = options.timeoutSeconds ?? 3600;
   let output = "";
   let timedOut = false;
@@ -80,7 +90,9 @@ export async function runClaudeSdkAgent(options: ClaudeRunAgentOptions): Promise
       }
 
       // Route to appropriate callback based on message type
-      const isError = message.type === "error" || message.constructor?.name === "ErrorMessage";
+      const isError =
+        message.type === "error" ||
+        message.constructor?.name === "ErrorMessage";
 
       if (messageText) {
         if (isError) {
@@ -136,7 +148,11 @@ export async function runClaudeSdkAgent(options: ClaudeRunAgentOptions): Promise
   }
 }
 
-function handleSdkError(error: any, output: string, logger: Logger): { success: boolean; output: string; exitCode: number | null } {
+function handleSdkError(
+  error: any,
+  output: string,
+  logger: Logger,
+): { success: boolean; output: string; exitCode: number | null } {
   const errorMessage = error instanceof Error ? error.message : String(error);
   const errorStack = error instanceof Error ? error.stack : undefined;
 
@@ -205,7 +221,9 @@ Run 'wreckit sdk-info' to diagnose your current credential configuration.
   ) {
     return {
       success: false,
-      output: output + `\n⚠️ Rate limit exceeded: ${errorMessage}\n\nPlease try again later.\n`,
+      output:
+        output +
+        `\n⚠️ Rate limit exceeded: ${errorMessage}\n\nPlease try again later.\n`,
       exitCode: 1,
     };
   }
@@ -219,7 +237,9 @@ Run 'wreckit sdk-info' to diagnose your current credential configuration.
   ) {
     return {
       success: false,
-      output: output + `\n❌ Context error: ${errorMessage}\n\nTry breaking down the task into smaller pieces or reducing the scope.\n`,
+      output:
+        output +
+        `\n❌ Context error: ${errorMessage}\n\nTry breaking down the task into smaller pieces or reducing the scope.\n`,
       exitCode: 1,
     };
   }
@@ -233,7 +253,9 @@ Run 'wreckit sdk-info' to diagnose your current credential configuration.
   ) {
     return {
       success: false,
-      output: output + `\n❌ Network error: ${errorMessage}\n\nPlease check your internet connection and try again.\n`,
+      output:
+        output +
+        `\n❌ Network error: ${errorMessage}\n\nPlease check your internet connection and try again.\n`,
       exitCode: 1,
     };
   }
@@ -250,15 +272,19 @@ function formatSdkMessage(message: any): string {
   // Handle assistant messages (Claude's reasoning and tool calls)
   if (message.type === "assistant") {
     const content = message.message?.content || message.content || [];
-    return content.map((block: any) => {
-      if (block.type === "text") return block.text;
-      if (block.type === "tool_use") {
-        const toolName = block.name;
-        const toolInput = JSON.stringify(block.input, null, 2);
-        return `\n\`\`\`tool\n${toolName}\n${toolInput}\n\`\`\`\n`;
-      }
-      return "";
-    }).join("\n") || "";
+    return (
+      content
+        .map((block: any) => {
+          if (block.type === "text") return block.text;
+          if (block.type === "tool_use") {
+            const toolName = block.name;
+            const toolInput = JSON.stringify(block.input, null, 2);
+            return `\n\`\`\`tool\n${toolName}\n${toolInput}\n\`\`\`\n`;
+          }
+          return "";
+        })
+        .join("\n") || ""
+    );
   }
 
   // Handle tool result messages
@@ -281,7 +307,10 @@ function formatSdkMessage(message: any): string {
   return "";
 }
 
-function emitAgentEventsFromSdkMessage(message: any, emit: (event: AgentEvent) => void): void {
+function emitAgentEventsFromSdkMessage(
+  message: any,
+  emit: (event: AgentEvent) => void,
+): void {
   // Handle assistant messages (Claude's reasoning and tool calls)
   if (message.type === "assistant") {
     const content = message.message?.content || message.content || [];
@@ -304,7 +333,10 @@ function emitAgentEventsFromSdkMessage(message: any, emit: (event: AgentEvent) =
   }
 
   // Handle tool result messages
-  if (message.type === "tool_result" || message.constructor?.name === "ToolResultMessage") {
+  if (
+    message.type === "tool_result" ||
+    message.constructor?.name === "ToolResultMessage"
+  ) {
     const result = message.result ?? message.content ?? "";
     const toolUseId = message.tool_use_id || "";
     emit({ type: "tool_result", toolUseId, result });
@@ -312,13 +344,19 @@ function emitAgentEventsFromSdkMessage(message: any, emit: (event: AgentEvent) =
   }
 
   // Handle final result messages
-  if (message.type === "result" || message.constructor?.name === "ResultMessage") {
+  if (
+    message.type === "result" ||
+    message.constructor?.name === "ResultMessage"
+  ) {
     emit({ type: "run_result", subtype: message.subtype });
     return;
   }
 
   // Handle error messages
-  if (message.type === "error" || message.constructor?.name === "ErrorMessage") {
+  if (
+    message.type === "error" ||
+    message.constructor?.name === "ErrorMessage"
+  ) {
     emit({ type: "error", message: message.message || String(message) });
     return;
   }

@@ -2,7 +2,11 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "bun:test";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import * as os from "node:os";
-import { runAgentUnion, type AgentConfigUnion, type UnionRunAgentOptions } from "../../agent";
+import {
+  runAgentUnion,
+  type AgentConfigUnion,
+  type UnionRunAgentOptions,
+} from "../../agent";
 import type { Logger } from "../../logging";
 
 function createMockLogger(): Logger {

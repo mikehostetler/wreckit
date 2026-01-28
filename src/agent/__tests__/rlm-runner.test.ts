@@ -71,7 +71,7 @@ describe("runRlmAgent", () => {
     expect(result.success).toBe(true);
     // Verify environment setup in a real unit test would require mocking buildAxAIEnv
     // For now we just ensure it doesn't crash
-    
+
     process.env = originalEnv;
   });
 

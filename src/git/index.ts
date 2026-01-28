@@ -168,7 +168,12 @@ export {
 } from "./branch";
 
 // Re-export PR module
-export type { PrResult, PrDetails, PrMergeabilityResult, MergeConflictCheckResult } from "./pr";
+export type {
+  PrResult,
+  PrDetails,
+  PrMergeabilityResult,
+  MergeConflictCheckResult,
+} from "./pr";
 export {
   getPrByBranch,
   createOrUpdatePr,

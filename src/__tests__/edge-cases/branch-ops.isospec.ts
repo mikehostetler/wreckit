@@ -13,8 +13,9 @@ mock.module("node:child_process", () => ({
   spawn: mockedSpawn,
 }));
 
-const { getCurrentBranch, branchExists, ensureBranch } =
-  await import("../../git");
+const { getCurrentBranch, branchExists, ensureBranch } = await import(
+  "../../git"
+);
 
 function createMockLogger(): Logger {
   return {

@@ -20,7 +20,7 @@ const ALLOWED_PREFIXES = [
   "OPENAI_",
   "GOOGLE_",
   "ZAI_",
-  "SPRITES_"
+  "SPRITES_",
 ];
 
 /**
@@ -140,7 +140,9 @@ export interface BuildAxAIEnvOptions extends BuildSdkEnvOptions {
 /**
  * Build environment specifically for AxAI providers.
  */
-export async function buildAxAIEnv(options: BuildAxAIEnvOptions): Promise<Record<string, string>> {
+export async function buildAxAIEnv(
+  options: BuildAxAIEnvOptions,
+): Promise<Record<string, string>> {
   const { provider, logger } = options;
   const baseEnv = await buildSdkEnv(options);
   const axaiEnv: Record<string, string> = { ...baseEnv };
@@ -159,7 +161,7 @@ export async function buildAxAIEnv(options: BuildAxAIEnvOptions): Promise<Record
     } else if (axaiEnv.ANTHROPIC_AUTH_TOKEN) {
       axaiEnv.ANTHROPIC_API_KEY = axaiEnv.ANTHROPIC_AUTH_TOKEN;
     }
-    
+
     // 2. Set default base URL for Z.AI if not already set (via ANTHROPIC_BASE_URL)
     if (!axaiEnv.ANTHROPIC_BASE_URL) {
       axaiEnv.ANTHROPIC_BASE_URL = "https://api.z.ai/api/anthropic";
@@ -188,7 +190,9 @@ export interface BuildSpriteEnvOptions extends BuildSdkEnvOptions {
  * Build environment specifically for Sprite CLI operations.
  * Handles Sprites.dev authentication token.
  */
-export async function buildSpriteEnv(options: BuildSpriteEnvOptions): Promise<Record<string, string>> {
+export async function buildSpriteEnv(
+  options: BuildSpriteEnvOptions,
+): Promise<Record<string, string>> {
   const { token, logger } = options;
   const baseEnv = await buildSdkEnv(options);
   const spriteEnv: Record<string, string> = { ...baseEnv };

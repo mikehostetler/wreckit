@@ -46,7 +46,7 @@ describe("RLM Agent Integration", () => {
     });
 
     expect(result.success).toBe(true);
-    
+
     // Verify side effects
     const content = await fs.readFile(testFile, "utf-8");
     expect(content).toBe("Hello RLM");
@@ -75,7 +75,7 @@ describe("RLM Agent Integration", () => {
     // Since we can't easily spy on internal tools here, we rely on the agent's output
     // indicating it couldn't perform the action or tried another way.
     // Ideally, the tool registry filters it out so the model doesn't even see it.
-    
+
     expect(result.success).toBe(true); // Agent should handle the restriction gracefully
     expect(result.output).not.toContain("Stdout:"); // Should not have executed bash
   }, 30000);

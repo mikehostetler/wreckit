@@ -7,9 +7,10 @@ import {
   attachSprite,
   listSprites,
   killSprite,
+  execSprite,
   parseWispJson,
 } from "../agent/sprite-runner";
-import { WispNotFoundError } from "../errors";
+import { WispNotFoundError, SpriteExecError } from "../errors";
 
 // ============================================================
 // Sprite Command Options
@@ -40,6 +41,13 @@ export interface SpriteAttachOptions {
   json?: boolean;
 }
 
+export interface SpriteExecOptions {
+  name: string;
+  command: string[];
+  cwd?: string;
+  json?: boolean;
+}
+
 // ============================================================
 // Helper Functions
 // ============================================================
@@ -55,7 +63,7 @@ async function getSpriteConfig(cwd: string): Promise<SpriteAgentConfig> {
   if (config.agent.kind !== "sprite") {
     throw new Error(
       `Agent kind must be 'sprite' to use Sprite commands. Current kind: '${config.agent.kind}'. ` +
-      `Set 'agent.kind: "sprite"' in .wreckit/config.json`
+        `Set 'agent.kind: "sprite"' in .wreckit/config.json`,
     );
   }
 
@@ -80,7 +88,7 @@ function outputJson(data: unknown): void {
  */
 export async function spriteStartCommand(
   options: SpriteStartOptions,
-  logger: Logger
+  logger: Logger,
 ): Promise<void> {
   const cwd = options.cwd ?? process.cwd();
   const config = await getSpriteConfig(cwd);
@@ -157,7 +165,7 @@ export async function spriteStartCommand(
  */
 export async function spriteListCommand(
   options: SpriteListOptions,
-  logger: Logger
+  logger: Logger,
 ): Promise<void> {
   const cwd = options.cwd ?? process.cwd();
   const config = await getSpriteConfig(cwd);
@@ -182,7 +190,11 @@ export async function spriteListCommand(
     }
 
     const sprites = parseWispJson(result.stdout, logger);
-    const spriteList = sprites as Array<{ id: string; name: string; state: string } | null> | null;
+    const spriteList = sprites as Array<{
+      id: string;
+      name: string;
+      state: string;
+    } | null> | null;
 
     if (!Array.isArray(spriteList) || spriteList.length === 0) {
       const outputData = {
@@ -214,7 +226,9 @@ export async function spriteListCommand(
         console.log("");
         spriteList.forEach((sprite, index) => {
           if (sprite) {
-            console.log(`  ${index + 1}. ${sprite.name || sprite.id} (${sprite.state})`);
+            console.log(
+              `  ${index + 1}. ${sprite.name || sprite.id} (${sprite.state})`,
+            );
           }
         });
       }
@@ -245,7 +259,7 @@ export async function spriteListCommand(
  */
 export async function spriteKillCommand(
   options: SpriteKillOptions,
-  logger: Logger
+  logger: Logger,
 ): Promise<void> {
   const cwd = options.cwd ?? process.cwd();
   const config = await getSpriteConfig(cwd);
@@ -313,7 +327,7 @@ export async function spriteKillCommand(
  */
 export async function spriteAttachCommand(
   options: SpriteAttachOptions,
-  logger: Logger
+  logger: Logger,
 ): Promise<void> {
   const cwd = options.cwd ?? process.cwd();
   const config = await getSpriteConfig(cwd);
@@ -357,6 +371,114 @@ export async function spriteAttachCommand(
     }
   } catch (err) {
     if (err instanceof WispNotFoundError) {
+      const errorData = {
+        success: false,
+        error: err.message,
+      };
+
+      if (options.json) {
+        outputJson(errorData);
+      } else {
+        console.error(`❌ ${err.message}`);
+      }
+      process.exit(1);
+    }
+
+    throw err;
+  }
+}
+
+/**
+ * Execute a command inside a running Sprite VM.
+ *
+ * Usage: wreckit sprite exec <name> <command...> [--json]
+ *
+ * @example
+ * ```bash
+ * wreckit sprite exec my-vm ls -la
+ * wreckit sprite exec my-vm npm install
+ * wreckit sprite exec my-vm --json -- npm test
+ * ```
+ */
+export async function spriteExecCommand(
+  options: SpriteExecOptions,
+  logger: Logger,
+): Promise<void> {
+  const cwd = options.cwd ?? process.cwd();
+  const config = await getSpriteConfig(cwd);
+
+  const commandStr = options.command.join(" ");
+  logger.debug(`Executing command in Sprite '${options.name}': ${commandStr}`);
+
+  try {
+    const result = await execSprite(
+      options.name,
+      options.command,
+      config,
+      logger,
+    );
+
+    if (result.success) {
+      const outputData = {
+        success: true,
+        message: `Executed command in Sprite '${options.name}'`,
+        data: {
+          name: options.name,
+          command: options.command,
+          exitCode: result.exitCode,
+          stdout: result.stdout.trim(),
+          stderr: result.stderr.trim(),
+        },
+      };
+
+      if (options.json) {
+        outputJson(outputData);
+      } else {
+        console.log(`✅ ${outputData.message}`);
+        if (result.stdout.trim()) {
+          console.log(`\nOutput:\n${result.stdout.trim()}`);
+        }
+      }
+    } else {
+      // Command failed (non-zero exit code)
+      const errorData = {
+        success: false,
+        error: result.stderr || result.error || "Command execution failed",
+        data: {
+          name: options.name,
+          command: options.command,
+          exitCode: result.exitCode,
+          stdout: result.stdout.trim(),
+          stderr: result.stderr.trim(),
+        },
+      };
+
+      if (options.json) {
+        outputJson(errorData);
+      } else {
+        console.error(`❌ Command failed with exit code ${result.exitCode}`);
+        if (result.stderr.trim()) {
+          console.error(`\nError output:\n${result.stderr.trim()}`);
+        }
+      }
+      process.exit(1);
+    }
+  } catch (err) {
+    if (err instanceof WispNotFoundError) {
+      const errorData = {
+        success: false,
+        error: err.message,
+      };
+
+      if (options.json) {
+        outputJson(errorData);
+      } else {
+        console.error(`❌ ${err.message}`);
+      }
+      process.exit(1);
+    }
+
+    if (err instanceof SpriteExecError) {
       const errorData = {
         success: false,
         error: err.message,
