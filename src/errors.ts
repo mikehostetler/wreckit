@@ -479,7 +479,10 @@ export class SpriteExecError extends WreckitError {
     public readonly spriteName: string,
     message: string,
   ) {
-    super(`Failed to execute command in Sprite '${spriteName}': ${message}`, ErrorCodes.SPRITE_EXEC_FAILED);
+    super(
+      `Failed to execute command in Sprite '${spriteName}': ${message}`,
+      ErrorCodes.SPRITE_EXEC_FAILED,
+    );
     this.name = "SpriteExecError";
   }
 }

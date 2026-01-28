@@ -3,14 +3,8 @@
   "id": "078-implement-sandbox-output-sync",
   "title": "Implement Sandbox Output Synchronization",
   "section": "infrastructure",
-  "state": "critique",
+  "state": "done",
   "overview": "Implement the ability to retrieve files and artifacts from the Sprite VM back to the host machine. This closes the loop on sandboxed development, allowing changes made by the agent (fixes, refactors, build artifacts) to be persisted locally.",
-  "branch": null,
-  "pr_url": null,
-  "pr_number": null,
-  "last_error": null,
-  "created_at": "2026-01-28T03:40:00.000Z",
-  "updated_at": "2026-01-28T03:26:43.358Z",
   "problem_statement": "Currently, work done by an agent inside a Sprite VM is trapped there. There is no automated way to retrieve modified files or build artifacts back to the host. The 'Black Hole' problem prevents the sandbox from being used for productive coding tasks.",
   "motivation": "To enable a complete development cycle where an agent can be tasked with 'Fix this bug', perform the work safely in a sandbox, and then have the fix applied to the user's local repository upon success.",
   "success_criteria": [
@@ -35,5 +29,11 @@
     "Automatic diff merging (git will handle the merge locally)"
   ],
   "priority_hint": "high",
-  "urgency_hint": "Required to make sandbox work persistent"
+  "urgency_hint": "Required to make sandbox work persistent",
+  "branch": "wreckit/078-implement-sandbox-output-sync",
+  "pr_url": "https://github.com/jmanhype/wreckit/pull/34",
+  "pr_number": 34,
+  "last_error": null,
+  "created_at": "2026-01-28T03:40:00.000Z",
+  "updated_at": "2026-01-28T04:30:00.000Z"
 }

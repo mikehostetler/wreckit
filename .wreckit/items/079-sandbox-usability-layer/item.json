@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "id": "079-sandbox-usability-layer",
+  "title": "Sandbox Usability Layer (CLI Flag & Ephemeral Mode)",
+  "section": "infrastructure",
+  "state": "critique",
+  "overview": "Implement a seamless user experience for sandboxed execution via a `--sandbox` CLI flag. This abstracts away the complexity of configuring the Sprite agent, managing VM lifecycles, and handling synchronization, making safe remote execution accessible with a single command.",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-28T04:45:00.000Z",
+  "updated_at": "2026-01-28T04:25:44.661Z",
+  "problem_statement": "Currently, using the sandbox requires manual configuration of `agent.kind`, `vmName`, and sync settings in `config.json`. Users must also manually manage VM lifecycles (start/kill), which is error-prone and can lead to orphaned VMs (cost/resource leaks).",
+  "motivation": "To turn the Sprite integration from a 'power user feature' into a standard, safe default for running risky tasks.",
+  "success_criteria": [
+    "Users can run `wreckit run <task> --sandbox` without config edits",
+    "`--sandbox` implies: Sprite agent, auto-generated VM name, bi-directional sync, and ephemeral mode",
+    "Ephemeral VMs are guaranteed to be destroyed at the end of the session (finally block)",
+    "Graceful handling of interrupts (Ctrl+C) ensures VM cleanup"
+  ],
+  "technical_constraints": [
+    "Must integrate with existing `runSpriteAgent`",
+    "Must override file-based config with CLI flags",
+    "Must ensure cleanup happens even on crashes where possible"
+  ],
+  "scope_in_scope": [
+    "src/commands/run.ts",
+    "src/agent/sprite-runner.ts",
+    "src/schemas.ts"
+  ],
+  "scope_out_of_scope": [
+    "Persistent sandbox management (this item focuses on ephemeral usage)"
+  ],
+  "priority_hint": "high",
+  "urgency_hint": "Required for usability"
+}

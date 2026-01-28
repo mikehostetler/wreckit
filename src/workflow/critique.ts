@@ -114,6 +114,7 @@ export async function runPhaseCritique(
   const agentConfig = getAgentConfigUnion(config);
 
   const result = await runAgentUnion({
+    itemId: itemId,
     config: agentConfig,
     cwd: root, // Critic runs at root to see everything
     prompt,

@@ -102,7 +102,14 @@ export async function runWispCommand(
           stdout: "",
           stderr: "",
           exitCode: null,
-          error: `Sprite CLI not found at '${wispPath}'. Install Sprite to enable Sprite support.`,
+          error: `Sprite CLI not found at '${wispPath}'.
+
+To enable Sprite support:
+1. Install the Sprite CLI from https://sprites.dev
+2. Or run: npm install -g @sprites-dev/cli
+3. If installed elsewhere, set wispPath in config.json
+
+Sandbox mode (--sandbox) requires Sprite CLI to be installed.`,
         });
         return;
       }

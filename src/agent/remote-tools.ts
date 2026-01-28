@@ -1,7 +1,4 @@
-import {
-  type AxFunction,
-  type AxFunctionJSONSchema,
-} from "@ax-llm/ax";
+import { type AxFunction, type AxFunctionJSONSchema } from "@ax-llm/ax";
 import type { Logger } from "../logging";
 import type { SpriteAgentConfig } from "../schemas";
 import { execSprite } from "./sprite-runner";
@@ -14,7 +11,7 @@ export function buildRemoteToolRegistry(
   vmName: string,
   config: SpriteAgentConfig,
   logger: Logger,
-  allowedTools?: string[]
+  allowedTools?: string[],
 ): AxFunction[] {
   const remoteTools = [
     createRemoteReadTool(vmName, config, logger),
@@ -34,7 +31,7 @@ export function buildRemoteToolRegistry(
 function createRemoteReadTool(
   vmName: string,
   config: SpriteAgentConfig,
-  logger: Logger
+  logger: Logger,
 ): AxFunction {
   return {
     name: "Read",
@@ -56,7 +53,7 @@ function createRemoteReadTool(
           vmName,
           ["sh", "-c", `cat \"${file_path}\" | base64`],
           config,
-          logger
+          logger,
         );
 
         if (!result.success && result.exitCode !== 0) {
@@ -64,7 +61,7 @@ function createRemoteReadTool(
         }
 
         const content = Buffer.from(result.stdout.trim(), "base64").toString(
-          "utf-8"
+          "utf-8",
         );
         return content;
       } catch (error: any) {
@@ -80,7 +77,7 @@ function createRemoteReadTool(
 function createRemoteWriteTool(
   vmName: string,
   config: SpriteAgentConfig,
-  logger: Logger
+  logger: Logger,
 ): AxFunction {
   return {
     name: "Write",
@@ -102,7 +99,10 @@ function createRemoteWriteTool(
     func: async ({
       file_path,
       content,
-    }: { file_path: string; content: string }) => {
+    }: {
+      file_path: string;
+      content: string;
+    }) => {
       try {
         // Use base64 | decode > file to safely write content
         const base64Content = Buffer.from(content).toString("base64");
@@ -118,7 +118,7 @@ function createRemoteWriteTool(
             `echo \"${base64Content}\" | base64 -d > \"${file_path}\" `,
           ],
           config,
-          logger
+          logger,
         );
 
         if (!result.success && result.exitCode !== 0) {
@@ -136,7 +136,7 @@ function createRemoteWriteTool(
 function createRemoteBashTool(
   vmName: string,
   config: SpriteAgentConfig,
-  logger: Logger
+  logger: Logger,
 ): AxFunction {
   return {
     name: "Bash",
@@ -157,7 +157,7 @@ function createRemoteBashTool(
           vmName,
           ["bash", "-c", command],
           config,
-          logger
+          logger,
         );
 
         if (result.exitCode !== 0) {
@@ -175,7 +175,7 @@ function createRemoteBashTool(
 function createRemoteGlobTool(
   vmName: string,
   config: SpriteAgentConfig,
-  logger: Logger
+  logger: Logger,
 ): AxFunction {
   return {
     name: "Glob",
@@ -203,20 +203,20 @@ function createRemoteGlobTool(
         // If pattern contains **, use -name.
         const searchPath = path || ".";
         const namePattern = pattern.replace("**/", ""); // Very naive
-        
+
         // Better: just use `find . -name "pattern"`
         // Or if the VM has `glob` or python, use that.
         // Most robust: `find <path> -name "<pattern>"
-        
+
         const result = await execSprite(
-            vmName,
-            ["find", searchPath, "-name", namePattern],
-            config,
-            logger
+          vmName,
+          ["find", searchPath, "-name", namePattern],
+          config,
+          logger,
         );
 
         if (result.exitCode !== 0) {
-            return `Error finding files: ${result.stderr}`;
+          return `Error finding files: ${result.stderr}`;
         }
         return result.stdout;
       } catch (error: any) {
@@ -229,7 +229,7 @@ function createRemoteGlobTool(
 function createRemoteGrepTool(
   vmName: string,
   config: SpriteAgentConfig,
-  logger: Logger
+  logger: Logger,
 ): AxFunction {
   return {
     name: "Grep",

@@ -314,9 +314,7 @@ export async function downloadFromSpriteVM(
     excludePatterns = DEFAULT_EXCLUDE_PATTERNS,
   } = options;
 
-  logger.debug(
-    `Creating archive in VM '${vmName}' at ${vmSourcePath}`,
-  );
+  logger.debug(`Creating archive in VM '${vmName}' at ${vmSourcePath}`);
 
   const excludeArgs = excludePatterns.flatMap((p) => ["--exclude", p]);
   const tarArgs = ["tar", "czf", "-", ...excludeArgs, "-C", vmSourcePath, "."];
@@ -324,11 +322,7 @@ export async function downloadFromSpriteVM(
   // Execute tar inside VM, output to stdout as base64
   const result = await execSprite(
     vmName,
-    [
-      "sh",
-      "-c",
-      `${tarArgs.join(" ")} | base64`,
-    ],
+    ["sh", "-c", `${tarArgs.join(" ")} | base64`],
     config,
     logger,
   );
@@ -370,7 +364,9 @@ export async function extractProjectArchive(
   logger.debug(`Extracting archive to ${projectRoot}`);
 
   // Write buffer to temp file
-  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "wreckit-sync-pull-"));
+  const tempDir = await fs.mkdtemp(
+    path.join(os.tmpdir(), "wreckit-sync-pull-"),
+  );
   const tempArchivePath = path.join(tempDir, "pull-archive.tar.gz");
 
   try {
@@ -480,4 +476,3 @@ export async function syncProjectFromVM(
   logger.info(`Files pulled to ${extractResult.extractedPath}`);
   return true;
 }
-

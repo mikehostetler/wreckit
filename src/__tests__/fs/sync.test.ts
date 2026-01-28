@@ -14,7 +14,9 @@ import type { SpriteAgentConfig } from "../../schemas";
 const mockStat = mock().mockResolvedValue({ size: 1024 });
 const mockUnlink = mock().mockResolvedValue(undefined);
 const mockMkdir = mock().mockResolvedValue(undefined);
-const mockReadFile = mock().mockResolvedValue(Buffer.from("fake-archive-content"));
+const mockReadFile = mock().mockResolvedValue(
+  Buffer.from("fake-archive-content"),
+);
 const mockWriteFile = mock().mockResolvedValue(undefined);
 const mockRm = mock().mockResolvedValue(undefined);
 
@@ -100,16 +102,23 @@ describe("Project Synchronization", () => {
         expect.arrayContaining([
           "czf",
           expect.stringContaining("project-sync.tar.gz"),
-          "--exclude", ".git",
-          "--exclude", "node_modules",
-          "--exclude", ".wreckit",
-        ])
+          "--exclude",
+          ".git",
+          "--exclude",
+          "node_modules",
+          "--exclude",
+          ".wreckit",
+        ]),
       );
     });
   });
 
   describe("uploadToSpriteVM", () => {
-    const archivePath = path.join(tempProject, ".wreckit", "project-sync.tar.gz");
+    const archivePath = path.join(
+      tempProject,
+      ".wreckit",
+      "project-sync.tar.gz",
+    );
     const mockConfig = createMockConfig();
 
     it("uploads and extracts archive successfully", async () => {

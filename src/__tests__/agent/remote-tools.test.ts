@@ -53,7 +53,7 @@ describe("Remote Tools", () => {
 
     const result = await readTool!.func({ file_path: "test.txt" });
     expect(result).toBe("Hello World");
-    
+
     // Verify arguments
     const calls = mockExecSprite.mock.calls;
     expect(calls.length).toBe(1);
@@ -81,9 +81,11 @@ describe("Remote Tools", () => {
     });
 
     expect(result).toContain("Successfully wrote");
-    
+
     const args = mockExecSprite.mock.calls[0][1];
-    expect(args[2]).toContain('echo "SGVsbG8gV29ybGQ=" | base64 -d > "test.txt"');
+    expect(args[2]).toContain(
+      'echo "SGVsbG8gV29ybGQ=" | base64 -d > "test.txt"',
+    );
   });
 
   it("Remote Bash Tool: executes command directly", async () => {
@@ -104,11 +106,11 @@ describe("Remote Tools", () => {
     const args = mockExecSprite.mock.calls[0][1];
     expect(args).toEqual(["bash", "-c", "ls -la"]);
   });
-  
+
   it("Handles execution errors gracefully", async () => {
     const tools = buildRemoteToolRegistry(vmName, config, logger);
     const bashTool = tools.find((t) => t.name === "Bash");
-    
+
     mockExecSprite.mockResolvedValue({
       success: false,
       stdout: "",

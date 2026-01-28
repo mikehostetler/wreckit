@@ -38,6 +38,8 @@ export interface RunOptions {
   cwd?: string;
   /** Disable automatic self-healing for this run (Item 038) */
   noHealing?: boolean;
+  /** Run in sandbox mode with ephemeral Sprite VM */
+  sandbox?: boolean;
 }
 
 async function phaseArtifactsExist(
@@ -79,10 +81,15 @@ export async function runCommand(
     onPhaseChanged,
     cwd,
     noHealing = false,
+    sandbox,
   } = options;
 
   const root = findRootFromOptions(options);
-  const config = await loadConfig(root);
+  const config = await loadConfig(
+    root,
+    sandbox ? { sandbox } : undefined,
+    logger,
+  );
 
   const itemDir = getItemDir(root, itemId);
   let item: Item;

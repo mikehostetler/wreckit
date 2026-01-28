@@ -36,6 +36,8 @@ export interface ConfigResolved {
   branch_cleanup: BranchCleanupResolved;
   // Add optional skills (Item 033)
   skills?: SkillConfig;
+  // Add optional doctor configuration (Item 038)
+  doctor?: import("./schemas").DoctorConfig;
 }
 
 export interface ConfigOverrides {
@@ -47,6 +49,7 @@ export interface ConfigOverrides {
   maxIterations?: number;
   timeoutSeconds?: number;
   agentKind?: string;
+  sandbox?: boolean;
 }
 
 export const DEFAULT_CONFIG: ConfigResolved = {
@@ -159,11 +162,63 @@ export function mergeWithDefaults(partial: Partial<Config>): ConfigResolved {
   };
 }
 
+/**
+ * Apply sandbox mode transformations to config.
+ * When sandbox mode is enabled, force the use of Sprite agent with ephemeral VM
+ * and enable bi-directional sync.
+ */
+function applySandboxMode(config: ConfigResolved): ConfigResolved {
+  // If already using sprite, just enable syncOnSuccess and syncEnabled
+  if (config.agent.kind === "sprite") {
+    return {
+      ...config,
+      agent: {
+        ...config.agent,
+        syncEnabled: true,
+        syncOnSuccess: true,
+        // Remove explicit vmName to force ephemeral mode
+        vmName: undefined,
+      },
+    };
+  }
+
+  // Otherwise, create a new sprite agent config with defaults
+  return {
+    ...config,
+    agent: {
+      kind: "sprite",
+      wispPath: "sprite",
+      syncEnabled: true,
+      syncExcludePatterns: [
+        ".git",
+        "node_modules",
+        ".wreckit",
+        "dist",
+        "build",
+        ".DS_Store",
+      ],
+      syncOnSuccess: true,
+      maxVMs: 5,
+      defaultMemory: "512MiB",
+      defaultCPUs: "1",
+      timeout: 300,
+    },
+  };
+}
+
 export function applyOverrides(
   config: ConfigResolved,
   overrides: ConfigOverrides,
+  logger?: { info: (msg: string) => void },
 ): ConfigResolved {
   let agent = config.agent;
+
+  // Apply sandbox mode first (highest priority)
+  if (overrides.sandbox) {
+    config = applySandboxMode(config);
+    agent = config.agent;
+    logger?.info("Sandbox mode: Using Sprite agent with ephemeral VM");
+  }
 
   // Apply agent kind override if specified
   if (overrides.agentKind && overrides.agentKind !== agent.kind) {
@@ -217,6 +272,7 @@ export function applyOverrides(
     timeout_seconds: overrides.timeoutSeconds ?? config.timeout_seconds,
     pr_checks: config.pr_checks,
     branch_cleanup: config.branch_cleanup,
+    skills: config.skills,
   };
 }
 

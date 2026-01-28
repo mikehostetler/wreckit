@@ -108,6 +108,8 @@ export interface OrchestratorOptions {
   noHealing?: boolean;
   /** Override agent kind (e.g., 'rlm', 'claude_sdk') */
   agentKind?: string;
+  /** If true, run in sandbox mode with ephemeral Sprite VM */
+  sandbox?: boolean;
 }
 
 export interface OrchestratorResult {
@@ -138,10 +140,18 @@ export async function orchestrateAll(
     parallel = 1,
     noHealing = false,
     agentKind,
+    sandbox,
   } = options;
 
   const root = findRootFromOptions(options);
-  const config = await loadConfig(root, agentKind ? { agentKind } : undefined);
+  const config = await loadConfig(
+    root,
+    {
+      ...(agentKind ? { agentKind } : undefined),
+      ...(sandbox ? { sandbox } : undefined),
+    },
+    logger,
+  );
 
   const items = await scanItems(root);
 
@@ -611,10 +621,18 @@ export async function orchestrateNext(
     cwd,
     mockAgent = false,
     agentKind,
+    sandbox,
   } = options;
 
   const root = findRootFromOptions(options);
-  const config = await loadConfig(root, agentKind ? { agentKind } : undefined);
+  const config = await loadConfig(
+    root,
+    {
+      ...(agentKind ? { agentKind } : undefined),
+      ...(sandbox ? { sandbox } : undefined),
+    },
+    logger,
+  );
 
   const nextItemId = await getNextIncompleteItem(root);
 

@@ -1,10 +1,7 @@
 import type { Logger } from "../logging";
 import type { SpriteAgentConfig } from "../schemas";
 import type { AgentResult } from "./runner";
-import {
-  WispNotFoundError,
-  SpriteSyncError,
-} from "../errors";
+import { WispNotFoundError, SpriteSyncError } from "../errors";
 import {
   AxAgent,
   AxAIAnthropic,
@@ -28,6 +25,7 @@ import {
   startSprite,
   listSprites,
   parseWispJson,
+  killSprite,
   type WispSpriteInfo,
 } from "./sprite-core";
 
@@ -48,6 +46,28 @@ export interface SpriteRunAgentOptions {
   onAgentEvent?: (event: AgentEvent) => void;
   mcpServers?: Record<string, unknown>;
   allowedTools?: string[];
+  /** If true, VM will be automatically cleaned up after execution */
+  ephemeral?: boolean;
+  /** Item ID for VM naming (used when ephemeral is true) */
+  itemId?: string;
+}
+
+// ============================================================
+// Ephemeral VM Tracking
+// ============================================================
+
+interface EphemeralVMInfo {
+  vmName: string;
+  startTime: number;
+}
+
+let currentEphemeralVM: EphemeralVMInfo | null = null;
+
+/**
+ * Get information about the current ephemeral VM (if any).
+ */
+export function getCurrentEphemeralVM(): EphemeralVMInfo | null {
+  return currentEphemeralVM;
 }
 
 /**
@@ -56,12 +76,14 @@ export interface SpriteRunAgentOptions {
 async function ensureSpriteRunning(
   name: string,
   config: SpriteAgentConfig,
-  logger: Logger
+  logger: Logger,
 ): Promise<boolean> {
   const listResult = await listSprites(config, logger);
   const sprites = parseWispJson(listResult.stdout, logger) as WispSpriteInfo[];
-  
-  const exists = Array.isArray(sprites) && sprites.some(s => s.name === name && s.state === "running");
+
+  const exists =
+    Array.isArray(sprites) &&
+    sprites.some((s) => s.name === name && s.state === "running");
 
   if (exists) {
     logger.debug(`Sprite VM '${name}' is already running`);
@@ -88,10 +110,22 @@ export async function runSpriteAgent(
   config: SpriteAgentConfig,
   options: SpriteRunAgentOptions,
 ): Promise<AgentResult> {
-  const { logger, dryRun = false, mockAgent = false, cwd, prompt, onStdoutChunk, onAgentEvent } = options;
+  const {
+    logger,
+    dryRun = false,
+    mockAgent = false,
+    cwd,
+    prompt,
+    onStdoutChunk,
+    onAgentEvent,
+    ephemeral = false,
+    itemId,
+  } = options;
 
   if (dryRun) {
-    logger.info(`[dry-run] Would run Sprite agent in VM: ${config.vmName || "auto-generated"}`);
+    logger.info(
+      `[dry-run] Would run Sprite agent in VM: ${config.vmName || "auto-generated"}`,
+    );
     return {
       success: true,
       output: "[dry-run] No output",
@@ -105,13 +139,31 @@ export async function runSpriteAgent(
   registerSdkController(abortController);
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
+  // Generate VM name with item ID if in ephemeral mode
+  const vmName =
+    config.vmName ||
+    (ephemeral && itemId
+      ? `wreckit-sandbox-${itemId}-${Date.now()}`
+      : `wreckit-sandbox-agent-${Date.now()}`);
+
   try {
     // 1. Initialize VM
-    const vmName = config.vmName || `wreckit-agent-${Date.now()}`;
     logger.info(`Initializing Sprite environment (${vmName})...`);
-    
+
+    // Track ephemeral VM
+    if (ephemeral) {
+      currentEphemeralVM = {
+        vmName,
+        startTime: Date.now(),
+      };
+    }
+
     const vmReady = await ensureSpriteRunning(vmName, config, logger);
     if (!vmReady) {
+      // Clear tracking if VM failed to start
+      if (ephemeral) {
+        currentEphemeralVM = null;
+      }
       return {
         success: false,
         output: "Failed to initialize Sprite VM",
@@ -122,23 +174,28 @@ export async function runSpriteAgent(
     }
 
     // === SYNC ===
-    logger.info('Synchronizing project to Sprite VM...');
+    logger.info("Synchronizing project to Sprite VM...");
     try {
       const projectRoot = findRepoRoot(cwd);
-      const syncSuccess = await syncProjectToVM(vmName, projectRoot, config, logger);
+      const syncSuccess = await syncProjectToVM(
+        vmName,
+        projectRoot,
+        config,
+        logger,
+      );
 
       if (!syncSuccess) {
         return {
           success: false,
-          output: 'Project synchronization failed.',
+          output: "Project synchronization failed.",
           timedOut: false,
           exitCode: 1,
           completionDetected: false,
         };
       }
-      logger.info('Project synchronized successfully');
+      logger.info("Project synchronized successfully");
     } catch (err) {
-      if ((err as Error).name === 'RepoNotFoundError') {
+      if ((err as Error).name === "RepoNotFoundError") {
         logger.warn(`Not in a wreckit repository, skipping sync`);
       } else {
         throw err;
@@ -152,20 +209,31 @@ export async function runSpriteAgent(
     // 3. Initialize AI
     let ai: AxAIService;
     if (env.ANTHROPIC_API_KEY) {
-       ai = new AxAIAnthropic({ apiKey: env.ANTHROPIC_API_KEY, apiURL: env.ANTHROPIC_BASE_URL });
+      ai = new AxAIAnthropic({
+        apiKey: env.ANTHROPIC_API_KEY,
+        apiURL: env.ANTHROPIC_BASE_URL,
+      });
     } else if (env.OPENAI_API_KEY) {
       ai = new AxAIOpenAI({ apiKey: env.OPENAI_API_KEY });
     } else if (env.GOOGLE_API_KEY) {
       ai = new AxAIGoogleGemini({ apiKey: env.GOOGLE_API_KEY });
     } else {
-       throw new Error("No AI API key found");
+      throw new Error("No AI API key found");
     }
 
     // 4. Build Tools
-    const remoteTools = buildRemoteToolRegistry(vmName, config, logger, options.allowedTools);
+    const remoteTools = buildRemoteToolRegistry(
+      vmName,
+      config,
+      logger,
+      options.allowedTools,
+    );
     let mcpTools: AxFunction[] = [];
     if (options.mcpServers) {
-      mcpTools = adaptMcpServersToAxTools(options.mcpServers, options.allowedTools);
+      mcpTools = adaptMcpServersToAxTools(
+        options.mcpServers,
+        options.allowedTools,
+      );
     }
     const tools = [...remoteTools, ...mcpTools];
 
@@ -210,8 +278,9 @@ export async function runSpriteAgent(
         }
         if (c.functionCall && onAgentEvent) {
           onAgentEvent({
-            type: "tool_use",
-            tool: c.functionCall.name,
+            type: "tool_started",
+            toolUseId: `tool-${Date.now()}`,
+            toolName: c.functionCall.name,
             input: c.functionCall.arguments,
           });
         }
@@ -223,21 +292,28 @@ export async function runSpriteAgent(
     // === SYNC BACK ===
     // If syncOnSuccess is enabled, pull files back from VM after successful execution
     if (config.syncOnSuccess) {
-      logger.info('Agent completed successfully, pulling changes from VM...');
+      logger.info("Agent completed successfully, pulling changes from VM...");
       try {
-        const { syncProjectFromVM } = await import('../fs/sync.js');
+        const { syncProjectFromVM } = await import("../fs/sync.js");
         const projectRoot = findRepoRoot(cwd);
 
-        const pullSuccess = await syncProjectFromVM(vmName, projectRoot, config, logger);
+        const pullSuccess = await syncProjectFromVM(
+          vmName,
+          projectRoot,
+          config,
+          logger,
+        );
 
         if (pullSuccess) {
-          logger.info('Changes pulled from VM successfully');
+          logger.info("Changes pulled from VM successfully");
         } else {
-          logger.warn('Failed to pull changes from VM (non-fatal)');
+          logger.warn("Failed to pull changes from VM (non-fatal)");
         }
       } catch (err) {
-        if ((err as Error).name !== 'RepoNotFoundError') {
-          logger.warn(`Error pulling changes from VM: ${(err as Error).message}`);
+        if ((err as Error).name !== "RepoNotFoundError") {
+          logger.warn(
+            `Error pulling changes from VM: ${(err as Error).message}`,
+          );
         }
       }
     }
@@ -250,7 +326,6 @@ export async function runSpriteAgent(
       exitCode: 0,
       completionDetected: true,
     };
-
   } catch (err: any) {
     if (timeoutId) clearTimeout(timeoutId);
     return {
@@ -262,5 +337,27 @@ export async function runSpriteAgent(
     };
   } finally {
     unregisterSdkController(abortController);
+
+    // Clean up ephemeral VM
+    if (ephemeral && vmName && !dryRun) {
+      logger.info(`Cleaning up ephemeral VM: ${vmName}`);
+      try {
+        const killResult = await killSprite(vmName, config, logger);
+        if (killResult.success) {
+          logger.info(`Ephemeral VM ${vmName} cleaned up successfully`);
+        } else {
+          logger.warn(`Failed to clean up ephemeral VM ${vmName}`);
+          logger.warn(`Manual cleanup: wreckit sprite kill ${vmName}`);
+        }
+      } catch (err) {
+        logger.error(
+          `Error cleaning up ephemeral VM: ${(err as Error).message}`,
+        );
+        logger.warn(`Manual cleanup: wreckit sprite kill ${vmName}`);
+      } finally {
+        // Always clear tracking even if cleanup fails
+        currentEphemeralVM = null;
+      }
+    }
   }
 }

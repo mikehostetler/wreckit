@@ -131,13 +131,160 @@ raw → researched → planned → implementing → in_pr → done
 
 ### Flags
 
-| Flag        | What                   |
-| ----------- | ---------------------- |
-| `--verbose` | More logs              |
-| `--quiet`   | Errors only            |
-| `--no-tui`  | Disable TUI (CI mode)  |
-| `--dry-run` | Preview, don't execute |
-| `--force`   | Regenerate artifacts   |
+| Flag        | What                                      |
+| ----------- | ----------------------------------------- |
+| `--sandbox` | Run in isolated Firecracker VM            |
+| `--verbose` | More logs                                 |
+| `--quiet`   | Errors only                               |
+| `--no-tui`  | Disable TUI (CI mode)                     |
+| `--dry-run` | Preview, don't execute                    |
+| `--force`   | Regenerate artifacts                      |
+
+---
+
+## Sandbox Mode
+
+**Sandbox mode** runs your agent in an isolated Firecracker microVM, automatically syncing files back and forth. This is the safest way to run untrusted code or risky operations.
+
+### Quick Start
+
+```bash
+# Run a single item in sandbox mode
+wreckit run 079-sandbox-usability-layer --sandbox
+
+# Run all phases in sandbox mode
+wreckit research 079-sandbox-usability-layer --sandbox
+wreckit plan 079-sandbox-usability-layer --sandbox
+wreckit implement 079-sandbox-usability-layer --sandbox
+
+# Run everything in sandbox mode
+wreckit --sandbox
+```
+
+### What Sandbox Mode Does
+
+When you use `--sandbox`, Wreckit:
+
+1. **Spawns a Firecracker VM** — Creates an isolated microVM via Sprite
+2. **Syncs your project** — Pushes your code to the VM before execution
+3. **Runs the agent** — Executes in complete isolation
+4. **Pulls back changes** — Syncs modified files back to your machine on success
+5. **Cleans up** — Automatically destroys the VM when done
+
+### Why Use Sandbox Mode?
+
+- **Safety**: Run risky code (file operations, network requests, system commands) in isolation
+- **Clean environments**: Each sandbox starts fresh, no leftover state
+- **Parallel execution**: Run multiple sandboxes simultaneously without conflicts
+- **Reproducibility**: Same VM config every time
+
+### Requirements
+
+- **Sprite CLI** — Install from [sprites.dev](https://sprites.dev/)
+- **Sprites.dev account** — Free tier available for testing
+- **Sufficient resources** — Each VM uses ~512MiB RAM by default
+
+### How It Works
+
+**VM Lifecycle:**
+```
+1. Auto-generate VM name: wreckit-sandbox-<item-id>-<timestamp>
+2. Start VM with Sprite CLI
+3. Push project files to VM (excludes: .git, node_modules, .wreckit, dist, build)
+4. Run agent in VM
+5. On success: Pull modified files back from VM
+6. Destroy VM (ephemeral cleanup)
+```
+
+**Interrupt Safety:**
+- Press `Ctrl+C` once → Graceful shutdown with VM cleanup
+- Press `Ctrl+C` twice → Force exit (if cleanup hangs)
+
+**Bi-directional Sync:**
+- Files modified in the VM are pulled back automatically on success
+- Excludes: `.git`, `node_modules`, `.wreckit`, `dist`, `build`, `.DS_Store`
+
+### Advanced: Manual VM Management
+
+For power users who want persistent VMs or manual control:
+
+```bash
+# List running VMs
+wreckit sprite list
+
+# Start a VM manually
+wreckit sprite start my-vm
+
+# Execute commands in a VM
+wreckit sprite exec my-vm -- npm test
+
+# Pull files from VM
+wreckit sprite pull my-vm
+
+# Kill a VM
+wreckit sprite kill my-vm
+
+# Attach to a VM (interactive shell)
+wreckit sprite attach my-vm
+```
+
+**When to use manual VM management:**
+- You want a persistent VM for multiple runs
+- You need to debug inside the VM
+- You want to run custom commands before/after agent execution
+- You're running many operations and don't want to restart the VM each time
+
+### Configuration
+
+You can also configure sandbox mode in `.wreckit/config.json`:
+
+```json
+{
+  "agent": {
+    "kind": "sprite",
+    "wispPath": "sprite",
+    "syncEnabled": true,
+    "syncOnSuccess": true,
+    "maxVMs": 5,
+    "defaultMemory": "512MiB",
+    "defaultCPUs": "1"
+  }
+}
+```
+
+**However, using `--sandbox` is recommended** because it:
+- Automatically sets sensible defaults
+- Enables ephemeral mode (auto-cleanup)
+- Enables bi-directional sync
+- Works with any agent configuration
+
+### Troubleshooting
+
+**VM fails to start:**
+```bash
+# Check Sprite CLI is installed
+sprite --version
+
+# Verify authentication
+sprite auth status
+
+# Check available VMs
+wreckit sprite list
+```
+
+**Files not syncing back:**
+- Ensure `syncOnSuccess: true` in config (automatic with `--sandbox`)
+- Check that files aren't in exclude patterns
+- Run with `--verbose` to see sync logs
+
+**Orphaned VMs:**
+```bash
+# List all VMs
+wreckit sprite list
+
+# Kill orphaned VMs
+wreckit sprite kill <vm-name>
+```
 
 ---
 

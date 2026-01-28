@@ -569,9 +569,7 @@ export async function spritePullCommand(
       process.exit(1);
     }
 
-    logger.info(
-      `Downloaded ${downloadResult.archiveSize} bytes from VM`,
-    );
+    logger.info(`Downloaded ${downloadResult.archiveSize} bytes from VM`);
 
     const extractResult = await extractProjectArchive({
       archiveBuffer: downloadResult.archiveBuffer!,
