@@ -51,6 +51,7 @@ export interface WispSpriteInfo {
   state: "running" | "stopped" | "error";
   pid?: number;
   address?: string; // Connection address for attach
+  created_at?: string; // ISO timestamp of VM creation
   [key: string]: unknown; // Allow additional fields
 }
 

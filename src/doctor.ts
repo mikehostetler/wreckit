@@ -37,6 +37,15 @@ import {
   InvalidJsonError,
   SchemaValidationError,
 } from "./errors";
+import { loadConfig } from "./config";
+import {
+  listSprites,
+  killSprite,
+  parseWispJson,
+  type WispSpriteInfo,
+} from "./agent/sprite-core";
+import type { SpriteAgentConfig } from "./schemas";
+import { buildSpriteEnv } from "./agent/env";
 
 /**
  * Detect circular dependencies using DFS.
@@ -607,6 +616,242 @@ async function diagnoseBatchProgress(root: string): Promise<Diagnostic[]> {
   return diagnostics;
 }
 
+// ============================================================
+// Sprite Diagnostics
+// ============================================================
+
+/**
+ * Diagnostic for Sprite CLI availability and executability.
+ * Checks if the wispPath from config exists and is executable.
+ */
+async function diagnoseSpriteCLI(
+  root: string,
+  spriteConfig: SpriteAgentConfig | null,
+): Promise<Diagnostic[]> {
+  const diagnostics: Diagnostic[] = [];
+
+  // If Sprite is not configured, return info diagnostic
+  if (!spriteConfig) {
+    diagnostics.push({
+      itemId: null,
+      severity: "info",
+      code: "SPRITE_NOT_CONFIGURED",
+      message: "Sprite agent is not configured",
+      fixable: false,
+    });
+    return diagnostics;
+  }
+
+  // Check if wispPath exists and is executable
+  const wispPath = spriteConfig.wispPath || "sprite";
+
+  try {
+    await fs.access(wispPath, fs.constants.X_OK);
+    // CLI is accessible and executable
+  } catch (err) {
+    const errno = err as NodeJS.ErrnoException;
+    if (errno.code === "ENOENT") {
+      diagnostics.push({
+        itemId: null,
+        severity: "error",
+        code: "SPRITE_CLI_MISSING",
+        message: `Sprite CLI not found at: ${wispPath}
+
+To enable Sprite support:
+1. Install the Sprite CLI from https://sprites.dev
+2. Or run: npm install -g @sprites-dev/cli
+3. If installed elsewhere, set wispPath in config.json`,
+        fixable: false,
+      });
+    } else {
+      diagnostics.push({
+        itemId: null,
+        severity: "error",
+        code: "SPRITE_CLI_NOT_EXECUTABLE",
+        message: `Sprite CLI exists but is not executable: ${wispPath}
+
+Check file permissions: chmod +x ${wispPath}`,
+        fixable: false,
+      });
+    }
+  }
+
+  return diagnostics;
+}
+
+/**
+ * Diagnostic for Sprite authentication token.
+ * Checks if SPRITES_TOKEN is available from config, env, or settings.
+ */
+async function diagnoseSpriteAuth(
+  root: string,
+  spriteConfig: SpriteAgentConfig | null,
+): Promise<Diagnostic[]> {
+  const diagnostics: Diagnostic[] = [];
+
+  // If Sprite is not configured, skip this diagnostic
+  if (!spriteConfig) {
+    return diagnostics;
+  }
+
+  // Build Sprite environment to check token presence
+  const logger: Logger = {
+    info: () => {},
+    warn: () => {},
+    error: () => {},
+    debug: () => {},
+    json: () => {},
+  } as Logger;
+
+  const spriteEnv = await buildSpriteEnv({
+    cwd: root,
+    logger,
+    token: spriteConfig.token,
+  });
+
+  if (!spriteEnv.SPRITES_TOKEN) {
+    diagnostics.push({
+      itemId: null,
+      severity: "warning",
+      code: "SPRITE_TOKEN_MISSING",
+      message: `Sprite authentication token not configured
+
+Configure SPRITES_TOKEN using one of these methods:
+1. Add 'token' field in config.json under agent configuration
+2. Set SPRITES_TOKEN environment variable
+3. Add token to ~/.claude/settings.json under 'env' key`,
+      fixable: false,
+    });
+  }
+
+  return diagnostics;
+}
+
+/**
+ * Diagnostic for orphaned Sprite VMs.
+ * Detects wreckit-sandbox-* VMs that are no longer tracked.
+ */
+async function diagnoseOrphanedVMs(
+  root: string,
+  spriteConfig: SpriteAgentConfig | null,
+): Promise<Diagnostic[]> {
+  const diagnostics: Diagnostic[] = [];
+
+  // If Sprite is not configured, skip this diagnostic
+  if (!spriteConfig) {
+    return diagnostics;
+  }
+
+  // Create simple logger (suppress debug logs, show errors)
+  const logger: Logger = {
+    info: () => {},
+    warn: (msg) => console.warn(`[Sprite VM Check] ${msg}`),
+    error: (msg) => console.error(`[Sprite VM Check] ${msg}`),
+    debug: () => {},
+    json: () => {},
+  } as Logger;
+
+  try {
+    // Query Sprite CLI for all running VMs
+    const result = await listSprites(spriteConfig, logger);
+
+    if (!result.success) {
+      diagnostics.push({
+        itemId: null,
+        severity: "warning",
+        code: "SPRITE_CLI_ERROR",
+        message: `Failed to query Sprite CLI: ${result.stderr || result.error || "Unknown error"}`,
+        fixable: false,
+      });
+      return diagnostics;
+    }
+
+    // Parse JSON output
+    const sprites = parseWispJson(result.stdout, logger) as WispSpriteInfo[] | null;
+
+    if (!sprites || !Array.isArray(sprites)) {
+      diagnostics.push({
+        itemId: null,
+        severity: "warning",
+        code: "SPRITE_CLI_PARSE_ERROR",
+        message: "Failed to parse Sprite CLI output (unexpected format)",
+        fixable: false,
+      });
+      return diagnostics;
+    }
+
+    // Filter for Wreckit ephemeral VMs: /^wreckit-sandbox-\d{3}-/
+    const wreckitVMs = sprites.filter((vm) =>
+      /^wreckit-sandbox-\d{3}-/.test(vm.name)
+    );
+
+    if (wreckitVMs.length === 0) {
+      // No Wreckit VMs found, nothing to check
+      return diagnostics;
+    }
+
+    // Age threshold: 1 hour (in milliseconds)
+    const AGE_THRESHOLD_MS = 60 * 60 * 1000;
+    const now = Date.now();
+    let orphanedCount = 0;
+
+    for (const vm of wreckitVMs) {
+      // Only check running VMs
+      if (vm.state !== "running") {
+        continue;
+      }
+
+      // Check VM age if created_at is available
+      if (!vm.created_at) {
+        // No timestamp, skip this VM (can't determine age safely)
+        continue;
+      }
+
+      const vmAge = now - new Date(vm.created_at).getTime();
+
+      // Only flag VMs older than threshold (avoid race conditions)
+      if (vmAge < AGE_THRESHOLD_MS) {
+        continue; // Too recent, might be starting up
+      }
+
+      // VM is orphaned
+      const ageMinutes = Math.floor(vmAge / 60000);
+      const ageHours = (ageMinutes / 60).toFixed(1);
+
+      diagnostics.push({
+        itemId: null,
+        severity: "warning",
+        code: "ORPHANED_VM_DETECTED",
+        message: `Orphaned VM '${vm.name}' (${ageHours} hours old)`,
+        fixable: true,
+      });
+      orphanedCount++;
+    }
+
+    // If we have Wreckit VMs but none are orphaned, report healthy state
+    if (orphanedCount === 0 && wreckitVMs.length > 0) {
+      diagnostics.push({
+        itemId: null,
+        severity: "info",
+        code: "SPRITE_VMS_HEALTHY",
+        message: `Sprite VMs are healthy (${wreckitVMs.length} active Wreckit VM${wreckitVMs.length > 1 ? "s" : ""})`,
+        fixable: false,
+      });
+    }
+  } catch (err) {
+    // Handle Sprite CLI errors gracefully
+    diagnostics.push({
+      itemId: null,
+      severity: "warning",
+      code: "SPRITE_VM_CHECK_ERROR",
+      message: `Failed to check Sprite VMs: ${err instanceof Error ? err.message : String(err)}`,
+      fixable: false,
+    });
+  }
+
+  return diagnostics;
+}
+
 export async function diagnose(root: string): Promise<Diagnostic[]> {
   const diagnostics: Diagnostic[] = [];
   const wreckitDir = getWreckitDir(root);
@@ -617,6 +862,25 @@ export async function diagnose(root: string): Promise<Diagnostic[]> {
 
   diagnostics.push(...(await diagnoseConfig(root)));
   diagnostics.push(...(await diagnosePrompts(root)));
+
+  // Load config to check if Sprite agent is configured
+  let spriteConfig: SpriteAgentConfig | null = null;
+  try {
+    const config = await loadConfig(root);
+    if (config.agent.kind === "sprite") {
+      spriteConfig = config.agent;
+    }
+  } catch (err) {
+    // If config loading fails, skip Sprite diagnostics
+    // (config errors will be reported by diagnoseConfig)
+  }
+
+  // Run Sprite diagnostics if configured
+  if (spriteConfig) {
+    diagnostics.push(...(await diagnoseSpriteCLI(root, spriteConfig)));
+    diagnostics.push(...(await diagnoseSpriteAuth(root, spriteConfig)));
+    diagnostics.push(...(await diagnoseOrphanedVMs(root, spriteConfig)));
+  }
 
   const itemsDir = getItemsDir(root);
   let itemDirs: string[];
@@ -820,6 +1084,34 @@ export async function applyFixes(
           message = "Removed stale/corrupt batch-progress.json";
         } catch (err) {
           message = `Failed to remove: ${err instanceof Error ? err.message : String(err)}`;
+        }
+        break;
+      }
+
+      case "ORPHANED_VM_DETECTED": {
+        // No backup needed - VMs are ephemeral by design
+        try {
+          // Parse VM name from diagnostic message
+          const match = diagnostic.message.match(/Orphaned VM '([^']+)'/);
+          if (!match) {
+            message = "Failed to parse VM name from diagnostic message";
+            break;
+          }
+          const vmName = match[1];
+
+          // Load config to get Sprite agent configuration
+          const config = await loadConfig(root);
+          if (config.agent.kind !== "sprite") {
+            message = "Sprite agent not configured (cannot cleanup VM)";
+            break;
+          }
+
+          // Kill the orphaned VM
+          await killSprite(vmName, config.agent, logger);
+          fixed = true;
+          message = `Terminated orphaned VM '${vmName}'`;
+        } catch (err) {
+          message = `Failed to cleanup VM: ${err instanceof Error ? err.message : String(err)}`;
         }
         break;
       }
