@@ -23,6 +23,7 @@ import {
   spriteKillCommand,
   spriteAttachCommand,
   spriteExecCommand,
+  spritePullCommand,
 } from "./commands/sprite";
 import { learnCommand } from "./commands/learn";
 import { dreamCommand } from "./commands/dream";
@@ -576,6 +577,39 @@ spriteCmd
           {
             name,
             command,
+            cwd: resolveCwd(globalOpts.cwd),
+            json: options.json,
+          },
+          logger,
+        );
+      },
+      logger,
+      {
+        verbose: globalOpts.verbose,
+        quiet: globalOpts.quiet,
+        dryRun: globalOpts.dryRun,
+        cwd: resolveCwd(globalOpts.cwd),
+      },
+    );
+  });
+
+spriteCmd
+  .command("pull <name>")
+  .description("Pull files from a Sprite VM back to the host")
+  .option("--vm-path <path>", "Path in VM to pull from (default: /home/user/project)")
+  .option("--destination <dir>", "Local destination directory (default: current directory)")
+  .option("--exclude <pattern>", "Exclude patterns (can be used multiple times)", [])
+  .option("--json", "Output as JSON")
+  .action(async (name, options, cmd) => {
+    const globalOpts = cmd.optsWithGlobals();
+    await executeCommand(
+      async () => {
+        await spritePullCommand(
+          {
+            name,
+            vmPath: options.vmPath,
+            destination: options.destination,
+            exclude: options.exclude,
             cwd: resolveCwd(globalOpts.cwd),
             json: options.json,
           },

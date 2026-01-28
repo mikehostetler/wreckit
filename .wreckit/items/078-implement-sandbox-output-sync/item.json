@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "id": "078-implement-sandbox-output-sync",
+  "title": "Implement Sandbox Output Synchronization",
+  "section": "infrastructure",
+  "state": "implementing",
+  "overview": "Implement the ability to retrieve files and artifacts from the Sprite VM back to the host machine. This closes the loop on sandboxed development, allowing changes made by the agent (fixes, refactors, build artifacts) to be persisted locally.",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-28T03:40:00.000Z",
+  "updated_at": "2026-01-28T03:15:44.168Z",
+  "problem_statement": "Currently, work done by an agent inside a Sprite VM is trapped there. There is no automated way to retrieve modified files or build artifacts back to the host. The 'Black Hole' problem prevents the sandbox from being used for productive coding tasks.",
+  "motivation": "To enable a complete development cycle where an agent can be tasked with 'Fix this bug', perform the work safely in a sandbox, and then have the fix applied to the user's local repository upon success.",
+  "success_criteria": [
+    "New `wreckit sprite pull` CLI command implemented",
+    "`downloadFromSpriteVM` function added to `src/fs/sync.ts`",
+    "Support for pulling specific files or directories",
+    "Base64 streaming used for binary-safe transfer",
+    "Option to automatically sync back changed files on agent success (stretch goal or separate config)"
+  ],
+  "technical_constraints": [
+    "Must use existing `execSprite` primitive",
+    "Must handle binary data correctly",
+    "Should handle large downloads efficiently (streaming)"
+  ],
+  "scope_in_scope": [
+    "src/fs/sync.ts",
+    "src/commands/sprite.ts",
+    "src/agent/sprite-runner.ts"
+  ],
+  "scope_out_of_scope": [
+    "Real-time two-way syncing (rsync style)",
+    "Automatic diff merging (git will handle the merge locally)"
+  ],
+  "priority_hint": "high",
+  "urgency_hint": "Required to make sandbox work persistent"
+}

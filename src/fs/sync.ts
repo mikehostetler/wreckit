@@ -1,6 +1,7 @@
 import * as fs from "node:fs/promises";
 import { spawn } from "node:child_process";
 import * as path from "node:path";
+import * as os from "node:os";
 import type { Logger } from "../logging";
 import type { SpriteAgentConfig } from "../schemas";
 import { execSprite } from "../agent/sprite-core";
@@ -26,6 +27,25 @@ export interface UploadArchiveResult {
 }
 
 /**
+ * Result from downloading archive from VM.
+ */
+export interface DownloadArchiveResult {
+  success: boolean;
+  archiveBuffer?: Buffer;
+  archiveSize?: number;
+  error?: string;
+}
+
+/**
+ * Result from extracting archive on host.
+ */
+export interface ExtractArchiveResult {
+  success: boolean;
+  extractedPath?: string;
+  error?: string;
+}
+
+/**
  * Options for creating project archive.
  */
 export interface CreateArchiveOptions {
@@ -41,6 +61,28 @@ export interface UploadArchiveOptions {
   vmName: string;
   archivePath: string;
   config: SpriteAgentConfig;
+  logger: Logger;
+}
+
+/**
+ * Options for downloading archive from VM.
+ */
+export interface DownloadArchiveOptions {
+  vmName: string;
+  config: SpriteAgentConfig;
+  logger: Logger;
+  /** Path inside VM to archive (default: /home/user/project) */
+  vmSourcePath?: string;
+  /** Patterns to exclude from VM archive */
+  excludePatterns?: string[];
+}
+
+/**
+ * Options for extracting archive on host.
+ */
+export interface ExtractArchiveOptions {
+  archiveBuffer: Buffer;
+  projectRoot: string;
   logger: Logger;
 }
 
@@ -256,3 +298,186 @@ export async function syncProjectToVM(
     }
   }
 }
+
+/**
+ * Download archive from Sprite VM by creating tar.gz inside VM and streaming it via base64.
+ * Uses base64 encoding to safely transfer binary data via stdout.
+ */
+export async function downloadFromSpriteVM(
+  options: DownloadArchiveOptions,
+): Promise<DownloadArchiveResult> {
+  const {
+    vmName,
+    config,
+    logger,
+    vmSourcePath = "/home/user/project",
+    excludePatterns = DEFAULT_EXCLUDE_PATTERNS,
+  } = options;
+
+  logger.debug(
+    `Creating archive in VM '${vmName}' at ${vmSourcePath}`,
+  );
+
+  const excludeArgs = excludePatterns.flatMap((p) => ["--exclude", p]);
+  const tarArgs = ["tar", "czf", "-", ...excludeArgs, "-C", vmSourcePath, "."];
+
+  // Execute tar inside VM, output to stdout as base64
+  const result = await execSprite(
+    vmName,
+    [
+      "sh",
+      "-c",
+      `${tarArgs.join(" ")} | base64`,
+    ],
+    config,
+    logger,
+  );
+
+  if (!result.success || result.exitCode !== 0) {
+    return {
+      success: false,
+      error: `Archive creation in VM failed: ${result.stderr}`,
+    };
+  }
+
+  try {
+    // Decode base64 output to get archive buffer
+    const archiveBuffer = Buffer.from(result.stdout.trim(), "base64");
+    logger.debug(`Downloaded archive: ${archiveBuffer.length} bytes`);
+
+    return {
+      success: true,
+      archiveBuffer,
+      archiveSize: archiveBuffer.length,
+    };
+  } catch (err) {
+    return {
+      success: false,
+      error: `Failed to decode archive: ${(err as Error).message}`,
+    };
+  }
+}
+
+/**
+ * Extract a tar.gz archive buffer to the project directory.
+ * Writes buffer to temp file, then uses system tar to extract.
+ */
+export async function extractProjectArchive(
+  options: ExtractArchiveOptions,
+): Promise<ExtractArchiveResult> {
+  const { archiveBuffer, projectRoot, logger } = options;
+
+  logger.debug(`Extracting archive to ${projectRoot}`);
+
+  // Write buffer to temp file
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "wreckit-sync-pull-"));
+  const tempArchivePath = path.join(tempDir, "pull-archive.tar.gz");
+
+  try {
+    await fs.writeFile(tempArchivePath, archiveBuffer);
+    logger.debug(`Wrote temp archive: ${tempArchivePath}`);
+
+    // Extract using system tar
+    return new Promise((resolve) => {
+      const tar = spawn("tar", ["xzf", tempArchivePath, "-C", projectRoot]);
+
+      let stderr = "";
+
+      tar.stderr?.on("data", (data) => {
+        stderr += data.toString();
+      });
+
+      tar.on("close", async (code) => {
+        // Clean up temp archive
+        try {
+          await fs.unlink(tempArchivePath);
+          await fs.rm(tempDir, { recursive: true });
+        } catch (cleanupErr) {
+          logger.warn(
+            `Failed to clean up temp archive: ${(cleanupErr as Error).message}`,
+          );
+        }
+
+        if (code !== 0) {
+          resolve({
+            success: false,
+            error: `tar extraction failed with exit code ${code}: ${stderr}`,
+          });
+          return;
+        }
+
+        logger.debug(`Archive extracted to ${projectRoot}`);
+        resolve({
+          success: true,
+          extractedPath: projectRoot,
+        });
+      });
+
+      tar.on("error", (err) => {
+        resolve({
+          success: false,
+          error: `tar process error: ${err.message}`,
+        });
+      });
+    });
+  } catch (err) {
+    // Clean up on error
+    try {
+      await fs.rm(tempDir, { recursive: true, force: true });
+    } catch {}
+    return {
+      success: false,
+      error: `Failed to write temp archive: ${(err as Error).message}`,
+    };
+  }
+}
+
+/**
+ * Synchronize files from Sprite VM back to host machine.
+ * Creates archive in VM, downloads it, extracts to project directory.
+ * This is the mirror operation of syncProjectToVM().
+ */
+export async function syncProjectFromVM(
+  vmName: string,
+  projectRoot: string,
+  config: SpriteAgentConfig,
+  logger: Logger,
+): Promise<boolean> {
+  logger.info(`Pulling files from Sprite VM '${vmName}'...`);
+
+  const downloadResult = await downloadFromSpriteVM({
+    vmName,
+    config,
+    logger,
+  });
+
+  if (!downloadResult.success) {
+    logger.error(`Failed to download from VM: ${downloadResult.error}`);
+    throw new SpriteSyncError(
+      "download",
+      projectRoot,
+      downloadResult.error || "Unknown error",
+    );
+  }
+
+  logger.info(`Downloaded archive: ${downloadResult.archiveSize} bytes`);
+
+  const extractResult = await extractProjectArchive({
+    archiveBuffer: downloadResult.archiveBuffer!,
+    projectRoot,
+    logger,
+  });
+
+  if (!extractResult.success) {
+    logger.error(`Failed to extract archive: ${extractResult.error}`);
+    throw new SpriteSyncError(
+      "extract",
+      projectRoot,
+      extractResult.error || "Unknown error",
+    );
+  }
+
+  logger.info(`Files pulled to ${extractResult.extractedPath}`);
+  return true;
+}
+

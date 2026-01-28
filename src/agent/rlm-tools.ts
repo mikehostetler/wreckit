@@ -266,6 +266,9 @@ const DEFAULT_SPRITE_CONFIG = {
   defaultCPUs: "1",
   timeout: 300,
   token: process.env.SPRITES_TOKEN,
+  syncEnabled: true,
+  syncExcludePatterns: [".git", "node_modules"],
+  syncOnSuccess: false,
 };
 
 /**
