@@ -56,6 +56,7 @@ export const ErrorCodes = {
   SPRITE_ATTACH_FAILED: "SPRITE_ATTACH_FAILED",
   SPRITE_KILL_FAILED: "SPRITE_KILL_FAILED",
   SPRITE_EXEC_FAILED: "SPRITE_EXEC_FAILED",
+  SPRITE_SYNC_FAILED: "SPRITE_SYNC_FAILED",
 
   // Artifact read errors (for permission/I/O issues)
   ARTIFACT_READ_ERROR: "ARTIFACT_READ_ERROR",
@@ -478,10 +479,24 @@ export class SpriteExecError extends WreckitError {
     public readonly spriteName: string,
     message: string,
   ) {
-    super(
-      `Failed to execute command in Sprite '${spriteName}': ${message}`,
-      ErrorCodes.SPRITE_EXEC_FAILED,
-    );
+    super(`Failed to execute command in Sprite '${spriteName}': ${message}`, ErrorCodes.SPRITE_EXEC_FAILED);
     this.name = "SpriteExecError";
+  }
+}
+
+/**
+ * Thrown when project synchronization to Sprite VM fails.
+ */
+export class SpriteSyncError extends WreckitError {
+  constructor(
+    public readonly stage: "archive" | "upload" | "extract",
+    public readonly projectRoot: string,
+    message: string,
+  ) {
+    super(
+      `Failed to sync project '${projectRoot}' to Sprite VM at stage '${stage}': ${message}`,
+      ErrorCodes.SPRITE_SYNC_FAILED,
+    );
+    this.name = "SpriteSyncError";
   }
 }

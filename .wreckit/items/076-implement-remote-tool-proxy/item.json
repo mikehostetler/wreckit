@@ -3,14 +3,8 @@
   "id": "076-implement-remote-tool-proxy",
   "title": "Implement Remote Tool Proxy for Sprite Agents",
   "section": "infrastructure",
-  "state": "critique",
+  "state": "done",
   "overview": "Implement a proxy layer that redirects standard agent tools (Bash, Read, Write, Glob, Grep) to execute inside a remote Sprite VM via `sprite exec`. This transforms the `SpriteAgent` into a fully functional, sandboxed runtime environment where agents operate safely in isolation from the host filesystem.",
-  "branch": null,
-  "pr_url": null,
-  "pr_number": null,
-  "last_error": "Not all stories are done",
-  "created_at": "2026-01-28T01:30:00.000Z",
-  "updated_at": "2026-01-28T02:05:48.933Z",
   "problem_statement": "Currently, setting `agent.kind: \"sprite\"` only verifies connectivity. It does not actually run the agent's work inside the VM. To achieve true sandboxing, the agent's tools must be intercepted and executed remotely.",
   "motivation": "To enable safe, ephemeral agent execution where 'rm -rf /' destroys a disposable microVM, not the user's laptop.",
   "success_criteria": [
@@ -34,5 +28,11 @@
     "Interactive TTY proxying"
   ],
   "priority_hint": "high",
-  "urgency_hint": "Required to make sandbox mode useful"
+  "urgency_hint": "Required to make sandbox mode useful",
+  "branch": "wreckit/076-implement-remote-tool-proxy",
+  "pr_url": "https://github.com/jmanhype/wreckit/pull/32",
+  "pr_number": 32,
+  "last_error": null,
+  "created_at": "2026-01-28T01:30:00.000Z",
+  "updated_at": "2026-01-28T02:15:00.000Z"
 }

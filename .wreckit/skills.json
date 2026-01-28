@@ -25,7 +25,9 @@
       "refactoring",
       "schema-validation",
       "logging-standardization",
-      "backup-restore"
+      "backup-restore",
+      "interactive-cli",
+      "state-management"
     ],
     "pr": [
       "git-integration",
