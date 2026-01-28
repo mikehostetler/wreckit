@@ -244,6 +244,39 @@ export const DoctorConfigSchema = z
   })
   .strict();
 
+// ============================================================
+// Story Scope Configuration Schema (Item 084 - Story Scope Enforcement)
+// ============================================================
+
+/**
+ * Story scope enforcement configuration
+ * Controls diff-size heuristics to prevent runaway token costs
+ */
+export const StoryScopeConfigSchema = z
+  .object({
+    enabled: z
+      .boolean()
+      .default(true)
+      .describe("Enable story scope enforcement"),
+    max_diff_lines: z
+      .number()
+      .default(1000)
+      .describe("Maximum lines of diff allowed per story"),
+    max_diff_files: z
+      .number()
+      .default(50)
+      .describe("Maximum files allowed to change per story"),
+    max_diff_bytes: z
+      .number()
+      .default(100000)
+      .describe("Maximum bytes of diff allowed per story (default 100KB)"),
+    exclude_patterns: z
+      .array(z.string())
+      .default(["*.lock", "package-lock.json", "yarn.lock", "*.log"])
+      .describe("Patterns to exclude from scope checks"),
+  })
+  .strict();
+
 export const ConfigSchema = z.object({
   schema_version: z.number().default(1),
   base_branch: z.string().default("main"),
@@ -259,6 +292,8 @@ export const ConfigSchema = z.object({
   skills: SkillConfigSchema.optional(),
   // Add optional doctor configuration (Item 038)
   doctor: DoctorConfigSchema.optional(),
+  // Add optional story scope configuration (Item 084)
+  story_scope: StoryScopeConfigSchema.optional(),
 });
 
 export const PriorityHintSchema = z.enum(["low", "medium", "high", "critical"]);
@@ -392,6 +427,9 @@ export type SkillConfig = z.infer<typeof SkillConfigSchema>;
 // Type exports for doctor configuration (Item 038)
 export type DoctorAutoRepairMode = z.infer<typeof DoctorAutoRepairModeSchema>;
 export type DoctorConfig = z.infer<typeof DoctorConfigSchema>;
+
+// Type exports for story scope configuration (Item 084)
+export type StoryScopeConfig = z.infer<typeof StoryScopeConfigSchema>;
 
 // Backup manifest schemas for doctor --fix
 export const BackupFileEntrySchema = z.object({

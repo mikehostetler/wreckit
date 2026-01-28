@@ -31,6 +31,8 @@ export interface PromptVariables {
   progress?: string;
   // Add skill context for JIT loading (Item 033)
   skill_context?: string;
+  // Add scope limits context (Item 084)
+  scope_limits?: string;
 }
 
 function getPromptTemplatePath(root: string, name: PromptName): string {
@@ -103,6 +105,7 @@ export function renderPrompt(
     prd: variables.prd,
     progress: variables.progress,
     skill_context: variables.skill_context, // Add skill context
+    scope_limits: variables.scope_limits, // Add scope limits
   };
 
   for (const [key, value] of Object.entries(varMap)) {

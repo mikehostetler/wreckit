@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "id": "086-dreamer-type-safety-improvements-in-promptsts-temp",
+  "title": "[DREAMER] Type-safety improvements in prompts.ts template variables",
+  "state": "idea",
+  "overview": "Lines 77 and 86 in src/prompts.ts use `(variables as any)[varName]` to access dynamic variable names. While this is necessary for the current implementation, it bypasses type safety and could hide bugs.\n\n**Motivation:** Proper type safety prevents runtime errors from typos in variable names, improves IDE autocomplete, and makes the template system more maintainable. The current 'as any' casts defeat TypeScript's strict type checking.\n\n**Success criteria:**\n- Remove 'as any' casts from template variable access\n- Add proper type definition for dynamic variable access\n- Ensure all template variables are validated at compile time\n- Add tests for invalid variable names\n\n**Technical constraints:**\n- Must maintain backward compatibility with existing prompt templates\n- The dynamic nature of template variables makes strict typing challenging\n- May need to use TypeScript's keyof operator or Record types\n\n**In scope:**\n- src/prompts.ts:77 type cast\n- src/prompts.ts:86 type cast\n- PromptTemplateVariables type definition\n- Template variable validation logic\n**Out of scope:**\n- Refactoring the entire prompt template system\n- Changes to how prompts are loaded or rendered\n\n**Signals:** priority: low, urgency: Code quality - type safety gap",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-28T15:35:06.947Z",
+  "updated_at": "2026-01-28T15:35:06.947Z",
+  "problem_statement": "Lines 77 and 86 in src/prompts.ts use `(variables as any)[varName]` to access dynamic variable names. While this is necessary for the current implementation, it bypasses type safety and could hide bugs.",
+  "motivation": "Proper type safety prevents runtime errors from typos in variable names, improves IDE autocomplete, and makes the template system more maintainable. The current 'as any' casts defeat TypeScript's strict type checking.",
+  "success_criteria": [
+    "Remove 'as any' casts from template variable access",
+    "Add proper type definition for dynamic variable access",
+    "Ensure all template variables are validated at compile time",
+    "Add tests for invalid variable names"
+  ],
+  "technical_constraints": [
+    "Must maintain backward compatibility with existing prompt templates",
+    "The dynamic nature of template variables makes strict typing challenging",
+    "May need to use TypeScript's keyof operator or Record types"
+  ],
+  "scope_in_scope": [
+    "src/prompts.ts:77 type cast",
+    "src/prompts.ts:86 type cast",
+    "PromptTemplateVariables type definition",
+    "Template variable validation logic"
+  ],
+  "scope_out_of_scope": [
+    "Refactoring the entire prompt template system",
+    "Changes to how prompts are loaded or rendered"
+  ],
+  "priority_hint": "low",
+  "urgency_hint": "Code quality - type safety gap"
+}

@@ -7,13 +7,14 @@ import type { WorkflowState } from "../schemas";
  * - src/commands/phase.ts:89-96 (stateOrder array in isInvalidTransition)
  * - src/workflow/itemWorkflow.ts:607-626 (getNextPhase switch statement)
  *
- * The state machine follows a linear progression: idea → researched → planned → implementing → in_pr → done
+ * The state machine follows a linear progression: idea → researched → planned → implementing → critique → in_pr → done
  */
 export const WORKFLOW_STATES: WorkflowState[] = [
   "idea",
   "researched",
   "planned",
   "implementing",
+  "critique",
   "in_pr",
   "done",
 ];

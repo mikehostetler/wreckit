@@ -274,6 +274,9 @@ export async function runRlmAgent(
       } as any,
       func: async ({ summary }: { summary: string }) => {
         completionDetected = true;
+        const msg = `\n\n=== TASK COMPLETED ===\n${summary}\n`;
+        process.stdout.write(msg);
+        if (onStdoutChunk) onStdoutChunk(msg);
         return `Task Marked Complete. Summary: ${summary}`;
       }
     };

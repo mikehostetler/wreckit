@@ -6,6 +6,7 @@ import {
   type Config,
   type AgentConfigUnion,
   type SkillConfig,
+  type StoryScopeConfig,
 } from "./schemas";
 import {
   getWreckitDir,
@@ -44,6 +45,8 @@ export interface ConfigResolved {
   skills?: SkillConfig;
   // Add optional doctor configuration (Item 038)
   doctor?: import("./schemas").DoctorConfig;
+  // Add optional story scope configuration (Item 084)
+  story_scope?: StoryScopeConfig;
 }
 
 export interface ConfigOverrides {
@@ -165,6 +168,8 @@ export function mergeWithDefaults(partial: Partial<Config>): ConfigResolved {
     pr_checks: prChecks,
     branch_cleanup: branchCleanup,
     skills: partial.skills, // Add optional skills (Item 033)
+    doctor: partial.doctor, // Add optional doctor (Item 038)
+    story_scope: partial.story_scope, // Add optional story scope (Item 084)
   };
 }
 
@@ -290,6 +295,8 @@ export function applyOverrides(
     pr_checks: config.pr_checks,
     branch_cleanup: config.branch_cleanup,
     skills: config.skills,
+    doctor: config.doctor,
+    story_scope: config.story_scope,
   };
 }
 

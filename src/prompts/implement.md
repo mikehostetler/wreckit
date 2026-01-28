@@ -13,6 +13,11 @@ Implement the user stories for this item.
 - **Branch:** {{branch_name}}
 - **Base Branch:** {{base_branch}}
 
+{{#if scope_limits}}
+## Scope Limits
+{{scope_limits}}
+{{/if}}
+
 ## Research
 
 {{research}}

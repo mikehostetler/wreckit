@@ -1,0 +1,113 @@
+{
+  "schema_version": 1,
+  "id": "086-fix-axai-glm-47-prompt-compatibility",
+  "branch_name": "wreckit/086-fix-axai-glm-47-prompt-compatibility",
+  "user_stories": [
+    {
+      "id": "US-001",
+      "title": "Add GLM provider to schema and environment handling",
+      "acceptance_criteria": [
+        "Schema validation accepts 'glm' as a valid aiProvider value",
+        "ALLOWED_PREFIXES in env.ts includes 'GLM_'",
+        "buildAxAIEnv() function accepts 'glm' as a provider",
+        "GLM_API_KEY is mapped to OPENAI_API_KEY internally for GLM provider",
+        "GLM_BASE_URL defaults to 'https://open.bigmodel.cn/api/paas/v4' when not set",
+        "Type checking passes with no errors",
+        "Build succeeds with no errors"
+      ],
+      "priority": 1,
+      "status": "pending",
+      "notes": "This is the foundation for all other GLM work. Must be completed first. Changes are in src/schemas.ts and src/agent/env.ts"
+    },
+    {
+      "id": "US-002",
+      "title": "Implement GLM AI service creation in RLM runner",
+      "acceptance_criteria": [
+        "RLM runner initializes AxAIOpenAI service when provider is 'glm'",
+        "GLM_API_KEY is passed correctly to AxAIOpenAI constructor",
+        "GLM_BASE_URL is passed as apiURL to AxAIOpenAI constructor",
+        "Appropriate error is thrown when GLM_API_KEY is missing",
+        "Type checking passes with no errors",
+        "Build succeeds with no errors"
+      ],
+      "priority": 2,
+      "status": "pending",
+      "notes": "Add GLM case to provider initialization in src/agent/rlm-runner.ts around lines 97-126. Uses AxAIOpenAI with custom baseURL for GLM's OpenAI-compatible API."
+    },
+    {
+      "id": "US-003",
+      "title": "Implement conditional signature format for GLM in RLM runner",
+      "acceptance_criteria": [
+        "RLM agent uses undefined signature when aiProvider is 'glm'",
+        "RLM agent continues using existing signature for other providers",
+        "Conditional logic does not affect Anthropic, OpenAI, Google, or Zai providers",
+        "Agent initialization succeeds for GLM provider",
+        "Type checking passes with no errors",
+        "Build succeeds with no errors"
+      ],
+      "priority": 3,
+      "status": "pending",
+      "notes": "Modify src/agent/rlm-runner.ts lines 155-169 to conditionally set signature based on provider. Use ternary operator to check config.aiProvider === 'glm'."
+    },
+    {
+      "id": "US-004",
+      "title": "Implement conditional signature format for GLM in Sprite runner",
+      "acceptance_criteria": [
+        "Sprite runner accepts aiProvider from config instead of hardcoding 'anthropic'",
+        "Sprite runner initializes AI service based on provider (not just factory)",
+        "Sprite agent uses undefined signature when provider is 'glm'",
+        "Sprite agent continues using existing signature for other providers",
+        "GLM provider initialization works correctly in Sprite runner",
+        "Type checking passes with no errors",
+        "Build succeeds with no errors"
+      ],
+      "priority": 4,
+      "status": "pending",
+      "notes": "More complex than RLM runner because Sprite currently hardcodes provider. Need to: 1) Read provider from config, 2) Replace factory call with provider-specific initialization, 3) Add conditional signature logic. Changes in src/agent/sprite-runner.ts around lines 204-239."
+    },
+    {
+      "id": "US-005",
+      "title": "Create documentation for GLM configuration and usage",
+      "acceptance_criteria": [
+        "GLM_SETUP.md documentation file is created",
+        "Documentation explains how to set GLM_API_KEY environment variable",
+        "Documentation explains how to configure aiProvider in config.json",
+        "Documentation lists supported GLM models (glm-4-plus, glm-4-0520, etc.)",
+        "Documentation includes instructions for obtaining API key from Zhipu AI",
+        "Documentation includes example configuration",
+        "AGENTS.md is updated to include GLM in provider list (if file exists)"
+      ],
+      "priority": 5,
+      "status": "pending",
+      "notes": "Documentation should be clear and actionable. Include getting started guide, environment setup, configuration examples, and list of supported models. No automated tests, manual verification only."
+    },
+    {
+      "id": "US-006",
+      "title": "Add unit tests for GLM provider support",
+      "acceptance_criteria": [
+        "Unit test file exists for GLM provider validation",
+        "Test verifies schema accepts 'glm' as valid aiProvider",
+        "Test verifies GLM environment variables are mapped correctly",
+        "Tests run successfully with 'npm test'",
+        "No existing tests are broken by GLM changes"
+      ],
+      "priority": 6,
+      "status": "pending",
+      "notes": "Create src/__tests__/agent/glm-provider.test.ts with tests for schema validation and environment variable mapping. These tests don't require actual API keys."
+    },
+    {
+      "id": "US-007",
+      "title": "Add integration tests for GLM agent execution",
+      "acceptance_criteria": [
+        "Integration test file exists for GLM agent execution",
+        "Test creates GLM agent successfully (skipped if no API key)",
+        "Test verifies agent initialization without errors",
+        "Tests are marked to skip when GLM_API_KEY is not available",
+        "Tests can be run manually with actual API key for verification"
+      ],
+      "priority": 7,
+      "status": "pending",
+      "notes": "Create src/__tests__/integration/glm-agent.integration.test.ts. These tests require GLM_API_KEY to run, so they should be skipped in CI unless credentials are available. Useful for manual verification."
+    }
+  ]
+}

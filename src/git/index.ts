@@ -195,3 +195,23 @@ export {
   compareGitStatus,
   formatViolations,
 } from "./status";
+
+// Re-export scope module (Item 084)
+export type {
+  DiffStats,
+  FileDiff,
+  StoryScopeOptions,
+  StoryScopeResult,
+  ScopeViolation,
+  ViolationType,
+} from "./scope";
+export {
+  DEFAULT_SCOPE_OPTIONS,
+  getDiffStats,
+  getWorkingTreeDiffStats,
+  validateStoryScope,
+  formatScopeViolations,
+  isApproachingThreshold,
+  logScopeWarnings,
+  configToOptions,
+} from "./scope";

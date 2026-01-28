@@ -73,6 +73,9 @@ import {
   validateRemoteUrl,
   runGitCommand,
   cleanupBranch,
+  getWorkingTreeDiffStats,
+  configToOptions,
+  formatScopeViolations,
   type PrMergeabilityResult,
   type GitPreflightError,
   type GitFileChange,
@@ -229,10 +232,22 @@ async function buildPromptVariables(
           `JIT context: ${Object.keys(context.files).length} file(s), ${Object.keys(context.artifacts).length} artifact(s)`,
         );
       }
-      if (context.errors.length > 0) {
+    if (context.errors.length > 0) {
         console.warn(`Context loading errors: ${context.errors.join("; ")}`);
       }
     }
+  }
+
+  // Build scope limits context (Item 084)
+  let scopeLimits: string | undefined;
+  if (config.story_scope && config.story_scope.enabled) {
+    scopeLimits = `
+Scope Limits (Enforced):
+- Max Files: ${config.story_scope.max_diff_files}
+- Max Lines: ${config.story_scope.max_diff_lines}
+- Max Bytes: ${config.story_scope.max_diff_bytes}
+- Excluded Patterns: ${config.story_scope.exclude_patterns.join(", ")}
+    `.trim();
   }
 
   return {
@@ -249,7 +264,8 @@ async function buildPromptVariables(
     plan,
     prd: prdContent,
     progress,
-    skill_context: skillContext, // Add skill context
+    skill_context: skillContext,
+    scope_limits: scopeLimits,
   };
 }
 
@@ -842,36 +858,66 @@ export async function runPhaseImplement(
       return { success: false, item, error };
     }
 
-    // Enforce story scope: check for scope creep via git status comparison (Gap 2)
-    // Allow all paths during implementation (no strict containment), but log warnings
-    // This is a softer check than research/plan phases - we're detecting scope creep, not enforcing strict containment
-    const compareOptions: StatusCompareOptions = {
-      cwd: root,
-      logger,
-      // For implement phase, we allow all paths but track changes for scope awareness
-      // This is different from research/plan where we enforce strict read-only/design-only
-      allowedPaths: undefined,
-    };
+    // Enforce story scope: check for scope creep via git status comparison (Item 084)
+    // Story scope enforcement validates diff size and prevents runaway token costs
+    const storyScopeConfig = config.story_scope;
+    if (storyScopeConfig && storyScopeConfig.enabled) {
+      // Get diff statistics from working tree
+      const diffStats = await getWorkingTreeDiffStats({ cwd: root, logger });
 
-    const comparison = await compareGitStatus(beforeStatus, compareOptions);
-    if (comparison.allChanges.length > 0) {
-      const changedFiles = comparison.allChanges
-        .map((c) => `${c.statusCode} ${c.path}`)
-        .join(", ");
+      // Validate against scope limits
+      const scopeOptions = configToOptions(storyScopeConfig);
+      const scopeResult = validateGitDiffScope(diffStats, scopeOptions, currentStory.id);
+
+      // Log warnings if approaching thresholds
+      if (scopeResult.warnings.length > 0) {
+        for (const warning of scopeResult.warnings) {
+          logger.warn(`Story ${currentStory.id}: ${warning}`);
+        }
+      }
+
+      // Fail if scope limits exceeded
+      if (!scopeResult.valid) {
+        const error = formatScopeViolations(scopeResult, currentStory.id);
+        logger.error(error);
+        item = { ...item, last_error: error };
+        await saveItem(root, item);
+        return { success: false, item, error };
+      }
+
+      // Log scope validation passed with stats
       logger.info(
-        `Story ${currentStory.id} changed ${comparison.allChanges.length} file(s): ${changedFiles}`,
+        `Story ${currentStory.id} scope validation passed: ` +
+          `${scopeResult.stats.totalFiles} file(s), ${scopeResult.stats.totalLines} line(s) changed`
       );
+    } else {
+      // Legacy scope checking: just log changes for awareness (Item 084 - backward compatibility)
+      const compareOptions: StatusCompareOptions = {
+        cwd: root,
+        logger,
+        allowedPaths: undefined,
+      };
 
-      // If there are any changes to the wreckit metadata or config files outside the item directory, warn about scope creep
-      const wreckitSystemPaths = comparison.allChanges.filter(
-        (c) =>
-          c.path.startsWith(".wreckit/") &&
-          !c.path.startsWith(`.wreckit/items/${item.id}/`),
-      );
-      if (wreckitSystemPaths.length > 0) {
-        logger.warn(
-          `Story ${currentStory.id} modified wreckit system files: ${wreckitSystemPaths.map((c) => c.path).join(", ")}`,
+      const comparison = await compareGitStatus(beforeStatus, compareOptions);
+      if (comparison.allChanges.length > 0) {
+        const changedFiles = comparison.allChanges
+          .map((c) => `${c.statusCode} ${c.path}`)
+          .join(", ");
+        logger.info(
+          `Story ${currentStory.id} changed ${comparison.allChanges.length} file(s): ${changedFiles}`,
         );
+
+        // If there are any changes to the wreckit metadata or config files outside the item directory, warn about scope creep
+        const wreckitSystemPaths = comparison.allChanges.filter(
+          (c) =>
+            c.path.startsWith(".wreckit/") &&
+            !c.path.startsWith(`.wreckit/items/${item.id}/`),
+        );
+        if (wreckitSystemPaths.length > 0) {
+          logger.warn(
+            `Story ${currentStory.id} modified wreckit system files: ${wreckitSystemPaths.map((c) => c.path).join(", ")}`,
+          );
+        }
       }
     }
 

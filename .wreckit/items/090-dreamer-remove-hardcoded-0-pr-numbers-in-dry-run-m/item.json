@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "id": "090-dreamer-remove-hardcoded-0-pr-numbers-in-dry-run-m",
+  "title": "[DREAMER] Remove hardcoded '0' PR numbers in dry-run mode",
+  "state": "idea",
+  "overview": "The createOrUpdatePr function at line 89 and likely other places return `{url: 'https://github.com/example/repo/pull/0', number: 0, created: true}` in dry-run mode. These magic numbers are arbitrary and don't represent real PR data.\n\n**Motivation:** Dry-run mode should produce realistic output for testing and validation. Hardcoded '0' values don't match real PR patterns and could confuse scripts that parse dry-run output. Null or undefined would be more explicit.\n\n**Success criteria:**\n- Replace hardcoded PR number 0 with null or explicit dry-run indicator\n- Audit all dry-run returns for magic values\n- Make dry-run output more realistic or explicitly marked\n- Add tests for dry-run output parsing\n\n**Technical constraints:**\n- Must maintain backward compatibility with dry-run consumers\n- Should not break existing dry-run tests\n- May need to update type definitions to allow null\n\n**In scope:**\n- src/git/pr.ts:89 dry-run return value\n- Audit other files for dry-run magic values\n- Update PrResult type if needed\n**Out of scope:**\n- Refactoring dry-run architecture\n- Changes to dry-run flag handling\n\n**Signals:** priority: low, urgency: Code quality - misleading dry-run output",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-28T15:35:06.949Z",
+  "updated_at": "2026-01-28T15:35:06.949Z",
+  "problem_statement": "The createOrUpdatePr function at line 89 and likely other places return `{url: 'https://github.com/example/repo/pull/0', number: 0, created: true}` in dry-run mode. These magic numbers are arbitrary and don't represent real PR data.",
+  "motivation": "Dry-run mode should produce realistic output for testing and validation. Hardcoded '0' values don't match real PR patterns and could confuse scripts that parse dry-run output. Null or undefined would be more explicit.",
+  "success_criteria": [
+    "Replace hardcoded PR number 0 with null or explicit dry-run indicator",
+    "Audit all dry-run returns for magic values",
+    "Make dry-run output more realistic or explicitly marked",
+    "Add tests for dry-run output parsing"
+  ],
+  "technical_constraints": [
+    "Must maintain backward compatibility with dry-run consumers",
+    "Should not break existing dry-run tests",
+    "May need to update type definitions to allow null"
+  ],
+  "scope_in_scope": [
+    "src/git/pr.ts:89 dry-run return value",
+    "Audit other files for dry-run magic values",
+    "Update PrResult type if needed"
+  ],
+  "scope_out_of_scope": [
+    "Refactoring dry-run architecture",
+    "Changes to dry-run flag handling"
+  ],
+  "priority_hint": "low",
+  "urgency_hint": "Code quality - misleading dry-run output"
+}

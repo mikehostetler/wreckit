@@ -141,7 +141,9 @@ export async function createProjectArchive(
       "-C",
       projectRoot,
       ".",
-    ]);
+    ], {
+      env: { ...process.env, COPYFILE_DISABLE: "1" }
+    });
 
     let stderr = "";
 
