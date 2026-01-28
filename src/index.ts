@@ -28,6 +28,7 @@ import {
 import { learnCommand } from "./commands/learn";
 import { dreamCommand } from "./commands/dream";
 import { summarizeCommand } from "./commands/summarize";
+import { geneticistCommand } from "./commands/geneticist";
 // import { sdkInfoCommand } from "./commands/sdk-info";
 import { runOnboardingIfNeeded } from "./onboarding";
 import { resolveId } from "./domain/resolveId";
@@ -961,6 +962,48 @@ program
             dryRun: globalOpts.dryRun,
             cwd: resolveCwd(globalOpts.cwd),
             verbose: globalOpts.verbose,
+          },
+          logger,
+        );
+      },
+      logger,
+      {
+        verbose: globalOpts.verbose,
+        quiet: globalOpts.quiet,
+        dryRun: globalOpts.dryRun,
+        cwd: resolveCwd(globalOpts.cwd),
+      },
+    );
+  });
+
+program
+  .command("geneticist")
+  .description(
+    "Recursive evolution: identify failure patterns and optimize system prompts",
+  )
+  .option("--auto-merge", "Automatically submit PRs for optimized prompts")
+  .option(
+    "--time-window <hours>",
+    "Analyze healing logs from last N hours",
+    "48",
+  )
+  .option(
+    "--min-errors <count>",
+    "Threshold for recurrent pattern detection",
+    "3",
+  )
+  .action(async (options, cmd) => {
+    const globalOpts = cmd.optsWithGlobals();
+    await executeCommand(
+      async () => {
+        await geneticistCommand(
+          {
+            dryRun: globalOpts.dryRun,
+            autoMerge: options.autoMerge,
+            cwd: resolveCwd(globalOpts.cwd),
+            verbose: globalOpts.verbose,
+            timeWindowHours: options.timeWindow ? parseInt(options.timeWindow, 10) : 48,
+            minErrorCount: options.minErrors ? parseInt(options.minErrors, 10) : 3,
           },
           logger,
         );

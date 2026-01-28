@@ -2,6 +2,7 @@ import { Anthropic } from "@anthropic-ai/sdk";
 import { createAxAI } from "./axai-factory";
 import { buildSdkEnv } from "./env";
 import { buildToolRegistry, JSRuntime, defaultLocalExecutor, type Executor } from "./rlm-tools";
+import { buildRemoteToolRegistry } from "./remote-tools";
 import { adaptMcpServersToAxTools } from "./mcp/mcporterAdapter";
 import { registerSdkController, unregisterSdkController } from "./lifecycle";
 import { AgentEvent } from "../tui/agentEvents";
@@ -69,8 +70,8 @@ function truncate(str: string, length: number = 20000): string {
     return str.slice(0, length) + `\n...[truncated ${str.length - length} chars]...`;
 }
 
-function parseToolCalls(content: string, logger: Logger): Array<{ name: string; args: any }> {
-    const calls: Array<{ name: string; args: any }> = [];
+function parseToolCalls(content: string, logger: Logger): Array<{ name: string; args: any; error?: string }> {
+    const calls: Array<{ name: string; args: any; error?: string }> = [];
 
     const invokeRegex = /<invoke\s+name=\"([^\"]+)\">([\s\S]*?)<\/invoke>/g;
     let match;
@@ -105,12 +106,19 @@ function parseToolCalls(content: string, logger: Logger): Array<{ name: string; 
              try { argsStr = JSON.parse(argsStr); } catch {}
         }
         let args = {};
+        let error: string | undefined;
         try {
             args = JSON.parse(argsStr);
-        } catch {
-            if (toolName === "RunJS") args = { code: argsStr };
+        } catch (e: any) {
+            if (toolName === "RunJS") {
+                args = { code: argsStr };
+            } else {
+                error = `Invalid JSON arguments: ${e.message}`;
+                // Keep the raw string as 'content' or similar for debugging if needed?
+                // For now, fail fast.
+            }
         }
-        calls.push({ name: toolName, args });
+        calls.push({ name: toolName, args, error });
     }
 
     const runJsRegex = /<RunJS>([\s\S]*?)<\/RunJS>/g;
@@ -247,11 +255,29 @@ export async function runRlmAgent(
       };
     }
 
-    const builtInAxTools = buildToolRegistry(
-      options.allowedTools,
-      undefined, // No JS Runtime
-      executor,
-    );
+    let builtInAxTools: AxFunction[];
+
+    if (config.sandbox && vmName) {
+      const spriteConfig = {
+        kind: "sprite" as const,
+        wispPath: config.wispPath || "sprite",
+        token: env.SPRITES_TOKEN,
+        timeout: 300,
+        ...config,
+      };
+      builtInAxTools = buildRemoteToolRegistry(
+        vmName,
+        spriteConfig as any,
+        logger,
+        options.allowedTools,
+      );
+    } else {
+      builtInAxTools = buildToolRegistry(
+        options.allowedTools,
+        undefined, // No JS Runtime
+        executor,
+      );
+    }
 
     let mcpAxTools: AxFunction[] = [];
     if (options.mcpServers) {
@@ -365,11 +391,15 @@ IMPORTANT INSTRUCTIONS:
                 if (onAgentEvent) onAgentEvent({ type: "tool_started", toolUseId: callId, toolName: call.name, input: call.args });
                 
                 let result = "";
-                try {
-                    const tool = tools.find(t => t.name.toLowerCase() === call.name.toLowerCase());
-                    if (tool) result = await tool.func(call.args);
-                    else result = `Error: Tool ${call.name} not found`;
-                } catch (e: any) { result = `Error: ${e.message}`; }
+                if (call.error) {
+                    result = `Error: ${call.error}`;
+                } else {
+                    try {
+                        const tool = tools.find(t => t.name.toLowerCase() === call.name.toLowerCase());
+                        if (tool) result = await tool.func(call.args);
+                        else result = `Error: Tool ${call.name} not found`;
+                    } catch (e: any) { result = `Error: ${e.message}`; }
+                }
                 
                 result = truncate(result);
 

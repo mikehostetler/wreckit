@@ -140,6 +140,22 @@ export const PHASE_TOOL_ALLOWLISTS: Record<string, ToolName[] | undefined> = {
     AVAILABLE_TOOLS.Grep,
     AVAILABLE_TOOLS.Bash,
   ],
+
+  // Critique phase: Read-only tools for verification
+  critique: [
+    AVAILABLE_TOOLS.Read,
+    AVAILABLE_TOOLS.Glob,
+    AVAILABLE_TOOLS.Grep,
+  ],
+
+  // Geneticist phase: Read + Write for prompt optimization
+  genetic: [
+    AVAILABLE_TOOLS.Read,
+    AVAILABLE_TOOLS.Write,
+    AVAILABLE_TOOLS.Edit,
+    AVAILABLE_TOOLS.Glob,
+    AVAILABLE_TOOLS.Grep,
+  ],
 } as const;
 
 /**

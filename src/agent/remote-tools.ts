@@ -16,6 +16,7 @@ export function buildRemoteToolRegistry(
   const remoteTools = [
     createRemoteReadTool(vmName, config, logger),
     createRemoteWriteTool(vmName, config, logger),
+    createRemoteEditTool(vmName, config, logger),
     createRemoteBashTool(vmName, config, logger),
     createRemoteGlobTool(vmName, config, logger),
     createRemoteGrepTool(vmName, config, logger),
@@ -40,25 +41,25 @@ function createRemoteReadTool(
     parameters: {
       type: "object",
       properties: {
-        file_path: {
+        path: {
           type: "string",
           description: "The path to the file to read",
         },
       },
-      required: ["file_path"],
+      required: ["path"],
     } as AxFunctionJSONSchema,
-    func: async ({ file_path }: { file_path: string }) => {
+    func: async ({ path: filePath }: { path: string }) => {
       try {
         // Use cat | base64 to safely read binary content
         const result = await execSprite(
           vmName,
-          ["sh", "-c", `cd ${remoteCwd} && cat \"${file_path}\" | base64`],
+          ["sh", "-c", `cd ${remoteCwd} && cat \"${filePath}\" | base64`],
           config,
           logger,
         );
 
         if (!result.success && result.exitCode !== 0) {
-          return `Error reading file ${file_path}: ${result.stderr}`;
+          return `Error reading file ${filePath}: ${result.stderr}`;
         }
 
         const content = Buffer.from(result.stdout.trim(), "base64").toString(
@@ -87,7 +88,7 @@ function createRemoteWriteTool(
     parameters: {
       type: "object",
       properties: {
-        file_path: {
+        path: {
           type: "string",
           description: "The path to the file to write to",
         },
@@ -96,40 +97,118 @@ function createRemoteWriteTool(
           description: "The content to write to the file",
         },
       },
-      required: ["file_path", "content"],
+      required: ["path", "content"],
     } as AxFunctionJSONSchema,
     func: async ({
-      file_path,
+      path: filePath,
       content,
     }: {
-      file_path: string;
+      path: string;
       content: string;
     }) => {
       try {
         // Use base64 | decode > file to safely write content
         const base64Content = Buffer.from(content).toString("base64");
-        // We write the base64 string to a temp file then decode it, to avoid command line length limits/quoting hell
-        // Actually, piping echo is risky if too long.
-        // Better: write base64 to a temp file using printf or similar if possible, but echo is standard.
-        // For now, simple echo | base64 -d > file.
         const result = await execSprite(
           vmName,
           [
             "sh",
             "-c",
-            `cd ${remoteCwd} && echo \"${base64Content}\" | base64 -d > \"${file_path}\" `,
+            `cd ${remoteCwd} && echo \"${base64Content}\" | base64 -d > \"${filePath}\" `,
           ],
           config,
           logger,
         );
 
         if (!result.success && result.exitCode !== 0) {
-          return `Error writing file ${file_path}: ${result.stderr}`;
+          return `Error writing file ${filePath}: ${result.stderr}`;
         }
 
-        return `Successfully wrote to ${file_path}`;
+        return `Successfully wrote to ${filePath}`;
       } catch (error: any) {
         return `Error writing file: ${error.message}`;
+      }
+    },
+  };
+}
+
+function createRemoteEditTool(
+  vmName: string,
+  config: SpriteAgentConfig,
+  logger: Logger,
+): AxFunction {
+  const remoteCwd = "/home/user/project";
+  return {
+    name: "Edit",
+    description: "Edit a file inside the Sprite VM by replacing a string with a new string.",
+    parameters: {
+      type: "object",
+      properties: {
+        path: {
+          type: "string",
+          description: "The path to the file to edit",
+        },
+        old_string: {
+          type: "string",
+          description: "The exact literal text to replace",
+        },
+        new_string: {
+          type: "string",
+          description: "The new text to insert",
+        },
+      },
+      required: ["path", "old_string", "new_string"],
+    } as AxFunctionJSONSchema,
+    func: async ({
+      path: filePath,
+      old_string,
+      new_string,
+    }: {
+      path: string;
+      old_string: string;
+      new_string: string;
+    }) => {
+      try {
+        // 1. Read file
+        const readResult = await execSprite(
+          vmName,
+          ["sh", "-c", `cd ${remoteCwd} && cat \"${filePath}\" | base64`],
+          config,
+          logger,
+        );
+
+        if (!readResult.success && readResult.exitCode !== 0) {
+          return `Error reading file ${filePath}: ${readResult.stderr}`;
+        }
+
+        const content = Buffer.from(readResult.stdout.trim(), "base64").toString("utf-8");
+
+        // 2. Perform replacement
+        if (!content.includes(old_string)) {
+          return `Error: old_string not found in ${filePath}`;
+        }
+        const newContent = content.replace(old_string, new_string);
+
+        // 3. Write file
+        const base64Content = Buffer.from(newContent).toString("base64");
+        const writeResult = await execSprite(
+          vmName,
+          [
+            "sh",
+            "-c",
+            `cd ${remoteCwd} && echo \"${base64Content}\" | base64 -d > \"${filePath}\" `,
+          ],
+          config,
+          logger,
+        );
+
+        if (!writeResult.success && writeResult.exitCode !== 0) {
+          return `Error writing file ${filePath}: ${writeResult.stderr}`;
+        }
+
+        return `Successfully edited ${filePath}`;
+      } catch (error: any) {
+        return `Error editing file: ${error.message}`;
       }
     },
   };
@@ -200,26 +279,37 @@ function createRemoteGlobTool(
     } as AxFunctionJSONSchema,
     func: async ({ pattern, path: searchPath }: { pattern: string; path?: string }) => {
       try {
-        // Map glob pattern to find command
-        // Simple mapping: **/*.ts -> -name "*.ts"
-        // This is a simplification. Ideally we'd use a real glob tool inside.
-        // For now, let's assume 'find' is available.
-        // If pattern contains **, use -name.
         const dir = searchPath || ".";
-        const namePattern = pattern.replace("**/", ""); // Very naive
+        let cmd = `find ${dir} -name "${pattern}"`;
 
-        // Better: just use `find . -name "pattern"`
-        // Or if the VM has `glob` or python, use that.
-        // Most robust: `find <path> -name "<pattern>"
+        // Heuristic to handle standard recursive globs like "src/**/*.ts" or "**/*.ts"
+        if (pattern.startsWith("**/")) {
+          // Case: "**/*.ts" -> find . -name "*.ts"
+          const ext = pattern.substring(3);
+          cmd = `find ${dir} -name "${ext}"`;
+        } else if (pattern.includes("/**/")) {
+          // Case: "src/**/*.ts" -> find src -name "*.ts"
+          const [base, rest] = pattern.split("/**/");
+          if (base && rest && !rest.includes("/")) {
+             const searchDir = dir === "." ? base : `${dir}/${base}`;
+             cmd = `find ${searchDir} -name "${rest}"`;
+          }
+        }
 
         const result = await execSprite(
           vmName,
-          ["sh", "-c", `cd ${remoteCwd} && find ${dir} -name "${namePattern}"`],
+          ["sh", "-c", `cd ${remoteCwd} && ${cmd}`],
           config,
           logger,
         );
 
         if (result.exitCode !== 0) {
+          // find returns non-zero if dir doesn't exist, which is a valid "no files" case usually, 
+          // or strictly an error. Let's return error to be safe, but maybe empty string is better?
+          // If the dir doesn't exist, glob returns empty.
+          if (result.stderr.includes("No such file or directory")) {
+            return "";
+          }
           return `Error finding files: ${result.stderr}`;
         }
         return result.stdout;
