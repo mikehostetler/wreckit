@@ -67,6 +67,9 @@ export const SessionMetaSchema = z.object({
   lastActivityAt: z.string().optional(),
   userId: z.string(),
   chatId: z.string(),
+  activeAmpThread: z.string().optional(),
+  pendingTickets: z.boolean().optional(),
+  verboseLogs: z.boolean().optional(),
 });
 export type SessionMeta = z.infer<typeof SessionMetaSchema>;
 
@@ -80,6 +83,12 @@ export const ObservationSchema = z.object({
 });
 export type Observation = z.infer<typeof ObservationSchema>;
 
+export const TicketRepoRefSchema = z.object({
+  owner: z.string(),
+  name: z.string(),
+});
+export type TicketRepoRef = z.infer<typeof TicketRepoRefSchema>;
+
 export const TicketSchema = z.object({
   id: z.string(),
   title: z.string(),
@@ -90,6 +99,7 @@ export const TicketSchema = z.object({
   status: z.enum(["pending", "in_progress", "done"]).default("pending"),
   prUrl: z.string().optional(),
   prNumber: z.number().optional(),
+  repo: TicketRepoRefSchema.optional(),
 });
 export type Ticket = z.infer<typeof TicketSchema>;
 
@@ -154,14 +164,29 @@ export const IntentSchema = z.enum([
   "CAPTURE_NOTE",
   "SYNTHESIZE",
   "EXECUTE",
+  "APPROVE",
   "STATUS",
   "STOP",
   "MERGE",
   "SWITCH_REPO",
+  "NOTES",
+  "CLEAR_NOTES",
+  "ASK",
+  "GREP",
+  "DIFF",
+  "REVERT",
+  "LOGS",
+  "IMPORT_ISSUE",
+  "IMPORT_THREAD",
+  "AMP_CHAT",
+  "AMP_END",
   "HELP",
   "UNKNOWN",
 ]);
 export type Intent = z.infer<typeof IntentSchema>;
+
+export const ExecutorModeSchema = z.enum(["wreckit", "amp"]).default("amp");
+export type ExecutorMode = z.infer<typeof ExecutorModeSchema>;
 
 export const MobileConfigSchema = z.object({
   telegram: z.object({
@@ -171,6 +196,7 @@ export const MobileConfigSchema = z.object({
   github: z.object({
     token: z.string(),
   }),
+  executor: ExecutorModeSchema.optional().default("amp"),
   llm: z.object({
     zai: z
       .object({

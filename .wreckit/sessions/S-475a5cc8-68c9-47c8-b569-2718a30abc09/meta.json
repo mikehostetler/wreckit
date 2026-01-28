@@ -1,0 +1,17 @@
+{
+  "id": "S-475a5cc8-68c9-47c8-b569-2718a30abc09",
+  "mode": "capture",
+  "repo": {
+    "owner": "nomnom-markets",
+    "name": "polymarket-aggregator",
+    "localPath": "/Users/noahchristian/polymarket-aggregator",
+    "defaultBranch": "feature/test-seed-tiers"
+  },
+  "createdAt": "2026-01-28T13:17:43.463Z",
+  "updatedAt": "2026-01-28T19:27:39.874Z",
+  "noteCount": 3,
+  "lastActivityAt": "2026-01-28T19:27:00.497Z",
+  "userId": "1630993666",
+  "chatId": "1630993666",
+  "pendingTickets": true
+}

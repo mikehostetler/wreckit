@@ -1,0 +1,808 @@
+[
+  {
+    "id": "E-d26a2822-c661-4f8a-aadb-f36739aa6ea3",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "82",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T13:20:13.439Z"
+    },
+    "kind": "text",
+    "text": "nomnom-markets/polymarket-aggregator",
+    "intent": "SWITCH_REPO"
+  },
+  {
+    "id": "E-902f4e8a-960b-407f-a33f-60ecd572c815",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "84",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T13:20:21.449Z"
+    },
+    "kind": "text",
+    "text": "status",
+    "intent": "STATUS"
+  },
+  {
+    "id": "E-00f07b8c-8894-4397-ba77-5a794f90c6a7",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "86",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T13:20:58.232Z"
+    },
+    "kind": "text",
+    "text": "grep helius",
+    "intent": "GREP"
+  },
+  {
+    "id": "E-692790ad-50da-4294-8499-0cf95e76e285",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "89",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T13:23:14.313Z"
+    },
+    "kind": "text",
+    "text": "ask what endpoints does the helius API call?",
+    "intent": "ASK"
+  },
+  {
+    "id": "E-066c1d4c-4a8b-44db-b4e6-31b3b9818191",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "92",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T13:23:45.218Z"
+    },
+    "kind": "text",
+    "text": "ask how many api endpoints do we have",
+    "intent": "ASK"
+  },
+  {
+    "id": "E-5eb289cd-eaf7-4cac-a521-98841a700f8c",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "95",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T13:25:33.021Z"
+    },
+    "kind": "text",
+    "text": "ask can you check all files directly to create a list of all api endpoints we have?",
+    "intent": "ASK"
+  },
+  {
+    "id": "E-c964ff0e-614e-46c3-bcd6-919b4a775a7e",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "98",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T13:26:58.025Z"
+    },
+    "kind": "text",
+    "text": "ask yes please locate and read those files for the full api endpoint list",
+    "intent": "ASK"
+  },
+  {
+    "id": "E-0bef46b5-4ada-4e2d-8fa3-287f4dbaad94",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "101",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T13:35:49.026Z"
+    },
+    "kind": "text",
+    "text": "this wrong",
+    "intent": "CAPTURE_NOTE"
+  },
+  {
+    "id": "E-4316e41f-3b75-4600-853e-41789b5da43e",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "103",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T13:36:19.545Z"
+    },
+    "kind": "text",
+    "text": "ask you missed a lot of api endpoints. how did you reach that conclusion?",
+    "intent": "ASK"
+  },
+  {
+    "id": "E-70a54017-f9fa-4330-96d3-0383d92d0522",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "106",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T13:37:10.700Z"
+    },
+    "kind": "text",
+    "text": "ask i want you to go through the entire repo and find all api endpoints we have created.",
+    "intent": "EXECUTE"
+  },
+  {
+    "id": "E-032f77e4-2297-41ad-9920-6ef8264a4b11",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "109",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T13:37:36.252Z"
+    },
+    "kind": "text",
+    "text": "ask can you go through the entire repo and find all api endpoints we have created?",
+    "intent": "EXECUTE"
+  },
+  {
+    "id": "E-fc1c98d7-c62f-4e56-8abf-17c8cd58127d",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "112",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T13:39:00.753Z"
+    },
+    "kind": "text",
+    "text": "ask what was the most recent file change in our repo?",
+    "intent": "ASK"
+  },
+  {
+    "id": "E-572e6fa3-5ad9-469d-8489-42e51cdd9ede",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "115",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T13:45:40.457Z"
+    },
+    "kind": "text",
+    "text": "issue #156",
+    "intent": "IMPORT_ISSUE"
+  },
+  {
+    "id": "E-5298e714-e5a0-45a9-9795-3c1e04000cad",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "118",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T13:46:49.218Z"
+    },
+    "kind": "text",
+    "text": "@T-019c0062-6306-77e4-a610-13429bc26eb3",
+    "intent": "IMPORT_THREAD"
+  },
+  {
+    "id": "E-6d81e3e5-2a96-4982-8e28-cada6ef5a947",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "121",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T13:47:06.768Z"
+    },
+    "kind": "text",
+    "text": "status",
+    "intent": "STATUS"
+  },
+  {
+    "id": "E-7c70a6dd-2be5-4aa1-83ed-12b48cb409c7",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "123",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T13:47:45.924Z"
+    },
+    "kind": "text",
+    "text": "amp T-019c0062-6306-77e4-a610-13429bc26eb3",
+    "intent": "AMP_CHAT"
+  },
+  {
+    "id": "E-e9e92119-a03b-42bb-b529-53360348af43",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "137",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T13:55:13.541Z"
+    },
+    "kind": "text",
+    "text": "/end",
+    "intent": "AMP_END"
+  },
+  {
+    "id": "E-95fbf740-b5fd-4478-991c-5d75c80c846e",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "139",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T13:55:21.991Z"
+    },
+    "kind": "text",
+    "text": "T-019c00e9-e133-734b-bf53-dbd5df045db7",
+    "intent": "CAPTURE_NOTE"
+  },
+  {
+    "id": "E-042b912c-3306-41a7-849e-cc78153c117a",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "141",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T13:55:36.548Z"
+    },
+    "kind": "text",
+    "text": "amp T-019c00e9-e133-734b-bf53-dbd5df045db7",
+    "intent": "AMP_CHAT"
+  },
+  {
+    "id": "E-636d73e4-942c-4448-b312-2f5a4ca149bf",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "149",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T13:59:21.650Z"
+    },
+    "kind": "text",
+    "text": "/end",
+    "intent": "AMP_END"
+  },
+  {
+    "id": "E-501a5396-47ac-40fe-a7df-19cb1c65cd2c",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "151",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T13:59:43.981Z"
+    },
+    "kind": "text",
+    "text": "add a small test note for synthesis",
+    "intent": "CAPTURE_NOTE"
+  },
+  {
+    "id": "E-db7d4b1d-cefc-41fa-8eb0-440f1d424b8c",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "153",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T14:00:05.403Z"
+    },
+    "kind": "text",
+    "text": "go",
+    "intent": "EXECUTE"
+  },
+  {
+    "id": "E-a5d9911b-fd98-4402-baa1-5d05db7ff64a",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "156",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T14:00:14.988Z"
+    },
+    "kind": "text",
+    "text": "synthesize",
+    "intent": "SYNTHESIZE"
+  },
+  {
+    "id": "E-ce0d2032-d897-4e6b-8aeb-576c1b35c761",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "160",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T14:31:53.609Z"
+    },
+    "kind": "text",
+    "text": "how many endpoints do we have?",
+    "intent": "ASK"
+  },
+  {
+    "id": "E-0e76756d-5c38-4048-bc97-7cb2eff25f9d",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "163",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T14:32:45.065Z"
+    },
+    "kind": "text",
+    "text": "how many endpoints in total do we have across our entire backend?",
+    "intent": "ASK"
+  },
+  {
+    "id": "E-5ddebb0a-cc46-46cc-bdd3-7dbd38db2789",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "166",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T14:33:53.426Z"
+    },
+    "kind": "text",
+    "text": "notes",
+    "intent": "NOTES"
+  },
+  {
+    "id": "E-913e0a47-c28c-42f2-987d-d54b46ce8dce",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "168",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T14:34:15.451Z"
+    },
+    "kind": "text",
+    "text": "amp threads continue T-019c00e9-e133-734b-bf53-dbd5df045db7",
+    "intent": "AMP_CHAT"
+  },
+  {
+    "id": "E-a4a17904-78cb-4837-b523-1e0bbe15ceb2",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "170",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T14:34:19.749Z"
+    },
+    "kind": "text",
+    "text": "/end",
+    "intent": "AMP_END"
+  },
+  {
+    "id": "E-5acbaede-c801-4c3e-89d6-56d85914b796",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "172",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T15:59:34.156Z"
+    },
+    "kind": "text",
+    "text": "help",
+    "intent": "HELP"
+  },
+  {
+    "id": "E-06c35f45-a5a8-4e50-a01d-a4bdb6091aaa",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "174",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T16:01:38.410Z"
+    },
+    "kind": "text",
+    "text": "mark note",
+    "intent": "CAPTURE_NOTE"
+  },
+  {
+    "id": "E-6d48f34e-8c76-4f87-bbe8-f24a209f7a2a",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "177",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T16:02:08.643Z"
+    },
+    "kind": "text",
+    "text": "synthesize",
+    "intent": "SYNTHESIZE"
+  },
+  {
+    "id": "E-cbf1a6c8-a70e-44ee-a8fa-be27c1c5ec29",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "185",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T16:09:59.017Z"
+    },
+    "kind": "text",
+    "text": "clear notes",
+    "intent": "CLEAR_NOTES"
+  },
+  {
+    "id": "E-a81b3854-3deb-4f33-b88e-8713586041b5",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "194",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T18:36:15.012Z"
+    },
+    "kind": "text",
+    "text": "NomNom “Signal Cards” (Birdeye) — PR Tranche for Amp Code\nGoal\n\nUpgrade only the center-feed cards (Price Action feed) so they feel like Dexscreener-grade signal, without turning NomNom into a full charting app.\n\nEach center-feed card should show:\n\nToken image (top-left, replaces NomNom logo on the card)\n\nToken symbol/name + chain tag (SOL)\n\nPrice + % change by timeframe (5m / 1h / 6h / 24h)\n\nToken 24h volume + token liquidity + txns + holders (minimum set)\n\nMarket-specific volume (NomNom volume) and optional market trades count\n\nExpiry countdown / expiry timestamp\n\nChart:\n\nIf NomNom market exists: show token price chart with strike/threshold overlay (and optionally “NomNom implied prob” later)\n\nIf no NomNom market yet: show token chart + CTA “Create Market” (but NO auto-create)\n\nNon-negotiables\n\nNo auto-create markets\n\nTrending is discovery only; market creation is user-driven\n\nBatch everything (no N+1 Birdeye calls per card)\n\nRedis caching with sane TTLs\n\nDo not break existing feed; feature-flag is fine if needed\n\nData Sources\nBirdeye (primary for “signal”)\n\nUse Birdeye for:\n\ntoken price\n\nprice change (multi timeframe)\n\n24h volume\n\nliquidity\n\ntxns\n\nholders\n\nOHLCV candles (for chart)\n\nHelius (optional fallback only)\n\nKeep Helius only as fallback for token image/name/symbol when Birdeye doesn’t return it (or returns null/empty).\n\nNomNom (market-specific)\n\nUse your existing DB for:\n\nmarket volume (SUM of trades)\n\nmarket 24h volume\n\nmarket trades count (optional)\n\nexpiry\n\nsnapshot + target/strike/threshold\n\nPR 1 — Backend: Birdeye client + caching primitives\nDeliverables\n\nAdd Birdeye API client module with:\n\nrequest wrapper\n\nretry/backoff (light)\n\ntimeout\n\nstructured logging\n\nrate limit protection (concurrency + queue)\n\nRedis cache helpers\n\nFiles\n\nsrc/priceAction/birdeye.ts (new)\n\nsrc/services/cache.ts or wherever Redis helpers live (extend if needed)\n\nenv:\n\nBIRDEYE_API_KEY\n\nBIRDEYE_BASE_URL default https://public-api.birdeye.so\n\nClient requirements\n\nMust support batch requests where Birdeye supports it; otherwise:\n\ngroup calls by endpoint and run in parallel with p-limit concurrency\n\nCache keys:\n\nbirdeye:token:stats:<mint> TTL 15s\n\nbirdeye:token:candles:<mint>:<tf>:<window> TTL 30–60s\n\nbirdeye:token:meta:<mint> TTL 24h (if you use Birdeye for meta)\n\nUse “stale-while-revalidate” pattern:\n\nServe cached immediately if present\n\nRefresh in background if near-expiry (optional but ideal)\n\nAcceptance\n\nYou can call Birdeye for a mint and get:\n\nprice + priceChange\n\nvolume/liquidity/holders/txns\n\nOHLCV candles\n\nRedis caches are being hit (log cache hit rate in debug)\n\nPR 2 — Backend: Token “Stats Bundle” API (batch)\nGoal\n\nFrontend needs one endpoint to fetch everything needed for rendering the enriched cards.\n\nEndpoint\nPOST /v1/tokens/stats-bundle\n\nBody\n\n{\n  \"mints\": [\"So11111111111111111111111111111111111111112\", \"...\"],\n  \"timeframes\": [\"5m\", \"1h\", \"6h\", \"24h\"],\n  \"chart\": { \"timeframe\": \"6h\" }\n}\n\n\nResponse\n\n{\n  \"tokens\": {\n    \"<mint>\": {\n      \"mint\": \"<mint>\",\n      \"symbol\": \"BONK\",\n      \"name\": \"Bonk\",\n      \"image\": \"https://...\",\n      \"price\": 0.0000123,\n      \"marketCap\": 12345678,\n      \"liquidityUsd\": 123456,\n      \"volume24hUsd\": 987654,\n      \"txns24h\": 4321,\n      \"holders\": 123456,\n      \"changes\": {\n        \"5m\": -1.2,\n        \"1h\": 4.8,\n        \"6h\": 22.1,\n        \"24h\": 120.4\n      },\n      \"chart\": {\n        \"timeframe\": \"6h\",\n        \"candles\": [\n          { \"t\": 1730000000, \"o\": 0.01, \"h\": 0.012, \"l\": 0.009, \"c\": 0.011, \"v\": 1234 }\n        ]\n      },\n      \"source\": \"birdeye\"\n    }\n  }\n}\n\nImplementation details\n\nAccept up to 50 mints per request (you only need 25 trending + what’s in feed)\n\nReturn tokens keyed by mint for easy lookup\n\nIf a token fails, include it with error field; do not fail the whole response\n\nPerformance rules\n\nRequest-level concurrency cap (ex: 😍\n\nPer-endpoint concurrency cap (ex: 4)\n\nCache-first always\n\nAcceptance\n\nSingle bundle call supports rendering a full feed page without per-card token fetches\n\nPR 3 — Backend: Trending runners endpoint (top 25) using Birdeye\nGoal",
+    "intent": "CAPTURE_NOTE"
+  },
+  {
+    "id": "E-3c24755c-3fb5-4921-a048-37f3bac7b9a2",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "195",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T18:36:15.362Z"
+    },
+    "kind": "text",
+    "text": "You decided: don’t auto-create, just present trending.\n\nEndpoint\nGET /v1/tokens/trending?limit=25\n\nResponse is normalized into your TokenCardModel shape:\n\n{\n  \"runners\": [\n    {\n      \"mint\": \"...\",\n      \"symbol\": \"...\",\n      \"name\": \"...\",\n      \"image\": \"...\",\n      \"price\": 0.01,\n      \"changes\": { \"5m\": 1.1, \"1h\": 8.2, \"6h\": 30.5, \"24h\": 200.0 },\n      \"volume24hUsd\": 123456,\n      \"liquidityUsd\": 65432,\n      \"txns24h\": 999,\n      \"holders\": 12345\n    }\n  ]\n}\n\nCaching\n\nCache the whole trending response birdeye:trending:25 TTL 15–30s\n\nAcceptance\n\nTrending list loads fast and is stable (no giant swings from caching jitter)\n\nPR 4 — Backend: Market-volume aggregation helpers (fast, scalable)\nProblem\n\nComputing volume on the fly from raw trades will get expensive as volume grows.\n\nDeliverable (choose the simplest “good” approach)\nOption A (recommended): lightweight aggregates table\n\nCreate table market_volume_agg:\n\nmarket_id\n\nvolume_total_usdc\n\nvolume_24h_usdc\n\ntrades_total\n\ntrades_24h\n\nupdated_at\n\nUpdate it via:\n\ncron job every 1–5 minutes\n\nor append-trigger style worker (later)\n\nOption B: materialized view (if you prefer)\n\nMV refreshed periodically\n\nAcceptance\n\nFeed endpoints can query market volume without scanning trades tables\n\nPR 5 — Backend: Upgrade Price Action feed payload to include token mint + market overlays\nGoal\n\nYour FE card needs to know:\n\ntoken mint\n\nmarket state (exists, launched)\n\nexpiry\n\nstrike/threshold\n\nsnapshot value/time\n\nmarket volume (from agg)\n\nEndpoint touched\n\nGET /v1/price-action/feed (path: src/priceAction/routes.ts:200)\n\nAdd fields per item\n{\n  \"marketId\": \"...\",\n  \"mint\": \"...\",\n  \"assetClass\": \"MEME\",\n  \"templateId\": \"DOWN_PCT\",\n  \"expiryTs\": \"...\",\n  \"countdownSec\": 12345,\n  \"snapshot\": { \"value\": 0.01, \"ts\": \"...\" },\n  \"target\": { \"thresholdPct\": 20.0, \"strike\": null },\n  \"marketVolume\": { \"total\": 1234.56, \"h24\": 123.45, \"tradesH24\": 99 },\n  \"hasLaunched\": true\n}\n\nAcceptance\n\nFrontend can render all “NomNom-specific” overlays without extra API calls\n\nPR 6 — Frontend: Enrich GlassPriceActionCard UI (ONLY center cards)\nYou said:\n\n“don’t change anything but the cards in the center feed.”\n\nSo we only touch:\n\nsrc/components/glass/GlassPriceActionCard.tsx\n\nMust not touch:\n\nnav\n\nright rail\n\noverall layout\n\nother card components unless required\n\nNew card layout (keep glass aesthetic)\nHeader row\n\nLeft:\n\nToken image (circle, 28–32px) replaces NomNom logo in-card\n\n$SYMBOL + small subtitle (MEME, STOCK, etc.)\n\nRight:\n\nexpiry countdown pill: ⏱ 19h 40m or Expired\n\noptional: “Open chart” icon button\n\n“Signal strip” row (Dex-like)\n\nA compact row of pills (subtle glass chips), max 6, responsive wrap:\n\nPRICE $0.0123\n\n5M -3.7%\n\n1H +12.5%\n\n6H +55.1%\n\n24H +120.4%\n\nVOL $2.3M (token volume)\n\nLIQ $180K (if room)\n\nTXNS 4,981 (if room)\n\nHOLDERS 569 (if room)\n\nRule: always show Price + 1H + 24H + VOL. The rest collapse based on width.\n\nChart area\n\nIf hasLaunched:\n\nrender token chart candles/line for timeframe default 6h\n\noverlay:\n\na “target line” (strike or threshold marker)\n\nlabel “Target: -20%” or “Target: $12.5M”\nIf not launched:\n\nrender token chart only\n\nshow CTA button: Create market (goes to your existing create flow, prefilled)\n\nFooter\n\nShow:\n\nNomNom Vol (24h): $X (from agg)\n\noptionally Market trades (24h): N\nKeep social actions row as-is (like/rt/comment/share)\n\nData wiring\n\nIn feed-view.tsx, do NOT fetch per-card.\nInstead:\n\ngather mints from the feed response\n\ncall POST /v1/tokens/stats-bundle once\n\npass tokenStats[mint] into each GlassPriceActionCard\n\nAcceptance\n\nCenter feed cards show all requested token metrics\n\nCharts render fast and don’t stutter scroll\n\nNo “mid sparkline”: real candles or sufficiently-sampled line\n\nPR 7 — Frontend: Filter & Sort additions (minimal changes)\n\nYou already have Filter & Sort UI; just add options.\n\nAdd filters (only within existing modal)\n\nTimeframe selector for chart: 1H / 6H / 24H\n\nSort options:\n\nMost token volume (24h)\n\nMost NomNom market volume (24h)\n\nBiggest 24h mover\n\nEnding soon\n\nNew\n\nBackend support:",
+    "intent": "CAPTURE_NOTE"
+  },
+  {
+    "id": "E-0d7686f3-92c9-4a04-b02f-052a70e59dc9",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "196",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T18:36:15.373Z"
+    },
+    "kind": "text",
+    "text": "If sort requires backend ordering, pass sort= into /v1/price-action/feed\n\nKeep defaults unchanged\n\nAcceptance\n\nFilter options update feed ordering without breaking current UX\n\nChart quality guidelines (so it looks premium, not mid)\n\nDefault chart timeframe: 6H\n\nCandle interval (suggested):\n\n1H view → 1–2m candles\n\n6H view → 5m candles\n\n24H view → 15m candles\nIf Birdeye response is too heavy:\n\nreturn only needed candles (cap at ~120 points)\n\ndownsample on backend if necessary (never on frontend per-render)\n\nFeature flag (optional but recommended)\n\nAdd env flag:\n\nFEATURE_SIGNAL_CARDS=true\nSo you can toggle in prod safely.\n\nFinal acceptance checklist\n\n Price action feed loads with one token bundle request (no N+1)\n\n Cards show: token image, timeframe % changes, token vol/liquidity/txns/holders, NomNom market volume, expiry, chart\n\n No auto-create; trending is display only\n\n Redis cache hit rate is high; Birdeye calls are bounded\n\n UI remains glassy and consistent with current design system",
+    "intent": "CAPTURE_NOTE"
+  },
+  {
+    "id": "E-97126dfc-8653-4205-ba72-9077d48921a1",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "204",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T18:52:16.158Z"
+    },
+    "kind": "text",
+    "text": "clear notes",
+    "intent": "CLEAR_NOTES"
+  },
+  {
+    "id": "E-e6422c2a-254e-4dd0-ae31-153fa75a09ab",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "209",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T18:52:46.439Z"
+    },
+    "kind": "text",
+    "text": "NomNom “Signal Cards” (Birdeye) — PR Tranche for Amp Code\nGoal\n\nUpgrade only the center-feed cards (Price Action feed) so they feel like Dexscreener-grade signal, without turning NomNom into a full charting app.\n\nEach center-feed card should show:\n\nToken image (top-left, replaces NomNom logo on the card)\n\nToken symbol/name + chain tag (SOL)\n\nPrice + % change by timeframe (5m / 1h / 6h / 24h)\n\nToken 24h volume + token liquidity + txns + holders (minimum set)\n\nMarket-specific volume (NomNom volume) and optional market trades count\n\nExpiry countdown / expiry timestamp\n\nChart:\n\nIf NomNom market exists: show token price chart with strike/threshold overlay (and optionally “NomNom implied prob” later)\n\nIf no NomNom market yet: show token chart + CTA “Create Market” (but NO auto-create)\n\nNon-negotiables\n\nNo auto-create markets\n\nTrending is discovery only; market creation is user-driven\n\nBatch everything (no N+1 Birdeye calls per card)\n\nRedis caching with sane TTLs\n\nDo not break existing feed; feature-flag is fine if needed\n\nData Sources\nBirdeye (primary for “signal”)\n\nUse Birdeye for:\n\ntoken price\n\nprice change (multi timeframe)\n\n24h volume\n\nliquidity\n\ntxns\n\nholders\n\nOHLCV candles (for chart)\n\nHelius (optional fallback only)\n\nKeep Helius only as fallback for token image/name/symbol when Birdeye doesn’t return it (or returns null/empty).\n\nNomNom (market-specific)\n\nUse your existing DB for:\n\nmarket volume (SUM of trades)\n\nmarket 24h volume\n\nmarket trades count (optional)\n\nexpiry\n\nsnapshot + target/strike/threshold\n\nPR 1 — Backend: Birdeye client + caching primitives\nDeliverables\n\nAdd Birdeye API client module with:\n\nrequest wrapper\n\nretry/backoff (light)\n\ntimeout\n\nstructured logging\n\nrate limit protection (concurrency + queue)\n\nRedis cache helpers\n\nFiles\n\nsrc/priceAction/birdeye.ts (new)\n\nsrc/services/cache.ts or wherever Redis helpers live (extend if needed)\n\nenv:\n\nBIRDEYE_API_KEY\n\nBIRDEYE_BASE_URL default https://public-api.birdeye.so\n\nClient requirements\n\nMust support batch requests where Birdeye supports it; otherwise:\n\ngroup calls by endpoint and run in parallel with p-limit concurrency\n\nCache keys:\n\nbirdeye:token:stats:<mint> TTL 15s\n\nbirdeye:token:candles:<mint>:<tf>:<window> TTL 30–60s\n\nbirdeye:token:meta:<mint> TTL 24h (if you use Birdeye for meta)\n\nUse “stale-while-revalidate” pattern:\n\nServe cached immediately if present\n\nRefresh in background if near-expiry (optional but ideal)\n\nAcceptance\n\nYou can call Birdeye for a mint and get:\n\nprice + priceChange\n\nvolume/liquidity/holders/txns\n\nOHLCV candles\n\nRedis caches are being hit (log cache hit rate in debug)\n\nPR 2 — Backend: Token “Stats Bundle” API (batch)\nGoal\n\nFrontend needs one endpoint to fetch everything needed for rendering the enriched cards.\n\nEndpoint\nPOST /v1/tokens/stats-bundle\n\nBody\n\n{\n  \"mints\": [\"So11111111111111111111111111111111111111112\", \"...\"],\n  \"timeframes\": [\"5m\", \"1h\", \"6h\", \"24h\"],\n  \"chart\": { \"timeframe\": \"6h\" }\n}\n\n\nResponse\n\n{\n  \"tokens\": {\n    \"<mint>\": {\n      \"mint\": \"<mint>\",\n      \"symbol\": \"BONK\",\n      \"name\": \"Bonk\",\n      \"image\": \"https://...\",\n      \"price\": 0.0000123,\n      \"marketCap\": 12345678,\n      \"liquidityUsd\": 123456,\n      \"volume24hUsd\": 987654,\n      \"txns24h\": 4321,\n      \"holders\": 123456,\n      \"changes\": {\n        \"5m\": -1.2,\n        \"1h\": 4.8,\n        \"6h\": 22.1,\n        \"24h\": 120.4\n      },\n      \"chart\": {\n        \"timeframe\": \"6h\",\n        \"candles\": [\n          { \"t\": 1730000000, \"o\": 0.01, \"h\": 0.012, \"l\": 0.009, \"c\": 0.011, \"v\": 1234 }\n        ]\n      },\n      \"source\": \"birdeye\"\n    }\n  }\n}\n\nImplementation details\n\nAccept up to 50 mints per request (you only need 25 trending + what’s in feed)\n\nReturn tokens keyed by mint for easy lookup\n\nIf a token fails, include it with error field; do not fail the whole response\n\nPerformance rules\n\nRequest-level concurrency cap (ex: 😍\n\nPer-endpoint concurrency cap (ex: 4)\n\nCache-first always\n\nAcceptance\n\nSingle bundle call supports rendering a full feed page without per-card token fetches\n\nPR 3 — Backend: Trending runners endpoint (top 25) using Birdeye\nGoal",
+    "intent": "CAPTURE_NOTE"
+  },
+  {
+    "id": "E-a706d3b6-3f0f-497e-8368-1dd5ccbf1a0c",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "210",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T18:52:46.838Z"
+    },
+    "kind": "text",
+    "text": "You decided: don’t auto-create, just present trending.\n\nEndpoint\nGET /v1/tokens/trending?limit=25\n\nResponse is normalized into your TokenCardModel shape:\n\n{\n  \"runners\": [\n    {\n      \"mint\": \"...\",\n      \"symbol\": \"...\",\n      \"name\": \"...\",\n      \"image\": \"...\",\n      \"price\": 0.01,\n      \"changes\": { \"5m\": 1.1, \"1h\": 8.2, \"6h\": 30.5, \"24h\": 200.0 },\n      \"volume24hUsd\": 123456,\n      \"liquidityUsd\": 65432,\n      \"txns24h\": 999,\n      \"holders\": 12345\n    }\n  ]\n}\n\nCaching\n\nCache the whole trending response birdeye:trending:25 TTL 15–30s\n\nAcceptance\n\nTrending list loads fast and is stable (no giant swings from caching jitter)\n\nPR 4 — Backend: Market-volume aggregation helpers (fast, scalable)\nProblem\n\nComputing volume on the fly from raw trades will get expensive as volume grows.\n\nDeliverable (choose the simplest “good” approach)\nOption A (recommended): lightweight aggregates table\n\nCreate table market_volume_agg:\n\nmarket_id\n\nvolume_total_usdc\n\nvolume_24h_usdc\n\ntrades_total\n\ntrades_24h\n\nupdated_at\n\nUpdate it via:\n\ncron job every 1–5 minutes\n\nor append-trigger style worker (later)\n\nOption B: materialized view (if you prefer)\n\nMV refreshed periodically\n\nAcceptance\n\nFeed endpoints can query market volume without scanning trades tables\n\nPR 5 — Backend: Upgrade Price Action feed payload to include token mint + market overlays\nGoal\n\nYour FE card needs to know:\n\ntoken mint\n\nmarket state (exists, launched)\n\nexpiry\n\nstrike/threshold\n\nsnapshot value/time\n\nmarket volume (from agg)\n\nEndpoint touched\n\nGET /v1/price-action/feed (path: src/priceAction/routes.ts:200)\n\nAdd fields per item\n{\n  \"marketId\": \"...\",\n  \"mint\": \"...\",\n  \"assetClass\": \"MEME\",\n  \"templateId\": \"DOWN_PCT\",\n  \"expiryTs\": \"...\",\n  \"countdownSec\": 12345,\n  \"snapshot\": { \"value\": 0.01, \"ts\": \"...\" },\n  \"target\": { \"thresholdPct\": 20.0, \"strike\": null },\n  \"marketVolume\": { \"total\": 1234.56, \"h24\": 123.45, \"tradesH24\": 99 },\n  \"hasLaunched\": true\n}\n\nAcceptance\n\nFrontend can render all “NomNom-specific” overlays without extra API calls\n\nPR 6 — Frontend: Enrich GlassPriceActionCard UI (ONLY center cards)\nYou said:\n\n“don’t change anything but the cards in the center feed.”\n\nSo we only touch:\n\nsrc/components/glass/GlassPriceActionCard.tsx\n\nMust not touch:\n\nnav\n\nright rail\n\noverall layout\n\nother card components unless required\n\nNew card layout (keep glass aesthetic)\nHeader row\n\nLeft:\n\nToken image (circle, 28–32px) replaces NomNom logo in-card\n\n$SYMBOL + small subtitle (MEME, STOCK, etc.)\n\nRight:\n\nexpiry countdown pill: ⏱ 19h 40m or Expired\n\noptional: “Open chart” icon button\n\n“Signal strip” row (Dex-like)\n\nA compact row of pills (subtle glass chips), max 6, responsive wrap:\n\nPRICE $0.0123\n\n5M -3.7%\n\n1H +12.5%\n\n6H +55.1%\n\n24H +120.4%\n\nVOL $2.3M (token volume)\n\nLIQ $180K (if room)\n\nTXNS 4,981 (if room)\n\nHOLDERS 569 (if room)\n\nRule: always show Price + 1H + 24H + VOL. The rest collapse based on width.\n\nChart area\n\nIf hasLaunched:\n\nrender token chart candles/line for timeframe default 6h\n\noverlay:\n\na “target line” (strike or threshold marker)\n\nlabel “Target: -20%” or “Target: $12.5M”\nIf not launched:\n\nrender token chart only\n\nshow CTA button: Create market (goes to your existing create flow, prefilled)\n\nFooter\n\nShow:\n\nNomNom Vol (24h): $X (from agg)\n\noptionally Market trades (24h): N\nKeep social actions row as-is (like/rt/comment/share)\n\nData wiring\n\nIn feed-view.tsx, do NOT fetch per-card.\nInstead:\n\ngather mints from the feed response\n\ncall POST /v1/tokens/stats-bundle once\n\npass tokenStats[mint] into each GlassPriceActionCard\n\nAcceptance\n\nCenter feed cards show all requested token metrics\n\nCharts render fast and don’t stutter scroll\n\nNo “mid sparkline”: real candles or sufficiently-sampled line\n\nPR 7 — Frontend: Filter & Sort additions (minimal changes)\n\nYou already have Filter & Sort UI; just add options.\n\nAdd filters (only within existing modal)\n\nTimeframe selector for chart: 1H / 6H / 24H\n\nSort options:\n\nMost token volume (24h)\n\nMost NomNom market volume (24h)\n\nBiggest 24h mover\n\nEnding soon\n\nNew\n\nBackend support:",
+    "intent": "CAPTURE_NOTE"
+  },
+  {
+    "id": "E-b3fbf907-984d-4b02-8285-bd2497d6345d",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "211",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T18:52:46.863Z"
+    },
+    "kind": "text",
+    "text": "If sort requires backend ordering, pass sort= into /v1/price-action/feed\n\nKeep defaults unchanged\n\nAcceptance\n\nFilter options update feed ordering without breaking current UX\n\nChart quality guidelines (so it looks premium, not mid)\n\nDefault chart timeframe: 6H\n\nCandle interval (suggested):\n\n1H view → 1–2m candles\n\n6H view → 5m candles\n\n24H view → 15m candles\nIf Birdeye response is too heavy:\n\nreturn only needed candles (cap at ~120 points)\n\ndownsample on backend if necessary (never on frontend per-render)\n\nFeature flag (optional but recommended)\n\nAdd env flag:\n\nFEATURE_SIGNAL_CARDS=true\nSo you can toggle in prod safely.\n\nFinal acceptance checklist\n\n Price action feed loads with one token bundle request (no N+1)\n\n Cards show: token image, timeframe % changes, token vol/liquidity/txns/holders, NomNom market volume, expiry, chart\n\n No auto-create; trending is display only\n\n Redis cache hit rate is high; Birdeye calls are bounded\n\n UI remains glassy and consistent with current design system",
+    "intent": "CAPTURE_NOTE"
+  },
+  {
+    "id": "E-7de5ac2c-e157-40b1-a434-16ee12ba8f59",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "223",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T19:00:40.681Z"
+    },
+    "kind": "text",
+    "text": "clear notes",
+    "intent": "CLEAR_NOTES"
+  },
+  {
+    "id": "E-022cd266-3689-4268-b2c2-1457480969e3",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "226",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T19:00:52.316Z"
+    },
+    "kind": "text",
+    "text": "NomNom “Signal Cards” (Birdeye) — PR Tranche for Amp Code\nGoal\n\nUpgrade only the center-feed cards (Price Action feed) so they feel like Dexscreener-grade signal, without turning NomNom into a full charting app.\n\nEach center-feed card should show:\n\nToken image (top-left, replaces NomNom logo on the card)\n\nToken symbol/name + chain tag (SOL)\n\nPrice + % change by timeframe (5m / 1h / 6h / 24h)\n\nToken 24h volume + token liquidity + txns + holders (minimum set)\n\nMarket-specific volume (NomNom volume) and optional market trades count\n\nExpiry countdown / expiry timestamp\n\nChart:\n\nIf NomNom market exists: show token price chart with strike/threshold overlay (and optionally “NomNom implied prob” later)\n\nIf no NomNom market yet: show token chart + CTA “Create Market” (but NO auto-create)\n\nNon-negotiables\n\nNo auto-create markets\n\nTrending is discovery only; market creation is user-driven\n\nBatch everything (no N+1 Birdeye calls per card)\n\nRedis caching with sane TTLs\n\nDo not break existing feed; feature-flag is fine if needed\n\nData Sources\nBirdeye (primary for “signal”)\n\nUse Birdeye for:\n\ntoken price\n\nprice change (multi timeframe)\n\n24h volume\n\nliquidity\n\ntxns\n\nholders\n\nOHLCV candles (for chart)\n\nHelius (optional fallback only)\n\nKeep Helius only as fallback for token image/name/symbol when Birdeye doesn’t return it (or returns null/empty).\n\nNomNom (market-specific)\n\nUse your existing DB for:\n\nmarket volume (SUM of trades)\n\nmarket 24h volume\n\nmarket trades count (optional)\n\nexpiry\n\nsnapshot + target/strike/threshold\n\nPR 1 — Backend: Birdeye client + caching primitives\nDeliverables\n\nAdd Birdeye API client module with:\n\nrequest wrapper\n\nretry/backoff (light)\n\ntimeout\n\nstructured logging\n\nrate limit protection (concurrency + queue)\n\nRedis cache helpers\n\nFiles\n\nsrc/priceAction/birdeye.ts (new)\n\nsrc/services/cache.ts or wherever Redis helpers live (extend if needed)\n\nenv:\n\nBIRDEYE_API_KEY\n\nBIRDEYE_BASE_URL default https://public-api.birdeye.so\n\nClient requirements\n\nMust support batch requests where Birdeye supports it; otherwise:\n\ngroup calls by endpoint and run in parallel with p-limit concurrency\n\nCache keys:\n\nbirdeye:token:stats:<mint> TTL 15s\n\nbirdeye:token:candles:<mint>:<tf>:<window> TTL 30–60s\n\nbirdeye:token:meta:<mint> TTL 24h (if you use Birdeye for meta)\n\nUse “stale-while-revalidate” pattern:\n\nServe cached immediately if present\n\nRefresh in background if near-expiry (optional but ideal)\n\nAcceptance\n\nYou can call Birdeye for a mint and get:\n\nprice + priceChange\n\nvolume/liquidity/holders/txns\n\nOHLCV candles\n\nRedis caches are being hit (log cache hit rate in debug)\n\nPR 2 — Backend: Token “Stats Bundle” API (batch)\nGoal\n\nFrontend needs one endpoint to fetch everything needed for rendering the enriched cards.\n\nEndpoint\nPOST /v1/tokens/stats-bundle\n\nBody\n\n{\n  \"mints\": [\"So11111111111111111111111111111111111111112\", \"...\"],\n  \"timeframes\": [\"5m\", \"1h\", \"6h\", \"24h\"],\n  \"chart\": { \"timeframe\": \"6h\" }\n}\n\n\nResponse\n\n{\n  \"tokens\": {\n    \"<mint>\": {\n      \"mint\": \"<mint>\",\n      \"symbol\": \"BONK\",\n      \"name\": \"Bonk\",\n      \"image\": \"https://...\",\n      \"price\": 0.0000123,\n      \"marketCap\": 12345678,\n      \"liquidityUsd\": 123456,\n      \"volume24hUsd\": 987654,\n      \"txns24h\": 4321,\n      \"holders\": 123456,\n      \"changes\": {\n        \"5m\": -1.2,\n        \"1h\": 4.8,\n        \"6h\": 22.1,\n        \"24h\": 120.4\n      },\n      \"chart\": {\n        \"timeframe\": \"6h\",\n        \"candles\": [\n          { \"t\": 1730000000, \"o\": 0.01, \"h\": 0.012, \"l\": 0.009, \"c\": 0.011, \"v\": 1234 }\n        ]\n      },\n      \"source\": \"birdeye\"\n    }\n  }\n}\n\nImplementation details\n\nAccept up to 50 mints per request (you only need 25 trending + what’s in feed)\n\nReturn tokens keyed by mint for easy lookup\n\nIf a token fails, include it with error field; do not fail the whole response\n\nPerformance rules\n\nRequest-level concurrency cap (ex: 😍\n\nPer-endpoint concurrency cap (ex: 4)\n\nCache-first always\n\nAcceptance\n\nSingle bundle call supports rendering a full feed page without per-card token fetches\n\nPR 3 — Backend: Trending runners endpoint (top 25) using Birdeye\nGoal",
+    "intent": "CAPTURE_NOTE"
+  },
+  {
+    "id": "E-95c27877-2701-4182-84d2-dcd1840836cb",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "227",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T19:00:52.651Z"
+    },
+    "kind": "text",
+    "text": "You decided: don’t auto-create, just present trending.\n\nEndpoint\nGET /v1/tokens/trending?limit=25\n\nResponse is normalized into your TokenCardModel shape:\n\n{\n  \"runners\": [\n    {\n      \"mint\": \"...\",\n      \"symbol\": \"...\",\n      \"name\": \"...\",\n      \"image\": \"...\",\n      \"price\": 0.01,\n      \"changes\": { \"5m\": 1.1, \"1h\": 8.2, \"6h\": 30.5, \"24h\": 200.0 },\n      \"volume24hUsd\": 123456,\n      \"liquidityUsd\": 65432,\n      \"txns24h\": 999,\n      \"holders\": 12345\n    }\n  ]\n}\n\nCaching\n\nCache the whole trending response birdeye:trending:25 TTL 15–30s\n\nAcceptance\n\nTrending list loads fast and is stable (no giant swings from caching jitter)\n\nPR 4 — Backend: Market-volume aggregation helpers (fast, scalable)\nProblem\n\nComputing volume on the fly from raw trades will get expensive as volume grows.\n\nDeliverable (choose the simplest “good” approach)\nOption A (recommended): lightweight aggregates table\n\nCreate table market_volume_agg:\n\nmarket_id\n\nvolume_total_usdc\n\nvolume_24h_usdc\n\ntrades_total\n\ntrades_24h\n\nupdated_at\n\nUpdate it via:\n\ncron job every 1–5 minutes\n\nor append-trigger style worker (later)\n\nOption B: materialized view (if you prefer)\n\nMV refreshed periodically\n\nAcceptance\n\nFeed endpoints can query market volume without scanning trades tables\n\nPR 5 — Backend: Upgrade Price Action feed payload to include token mint + market overlays\nGoal\n\nYour FE card needs to know:\n\ntoken mint\n\nmarket state (exists, launched)\n\nexpiry\n\nstrike/threshold\n\nsnapshot value/time\n\nmarket volume (from agg)\n\nEndpoint touched\n\nGET /v1/price-action/feed (path: src/priceAction/routes.ts:200)\n\nAdd fields per item\n{\n  \"marketId\": \"...\",\n  \"mint\": \"...\",\n  \"assetClass\": \"MEME\",\n  \"templateId\": \"DOWN_PCT\",\n  \"expiryTs\": \"...\",\n  \"countdownSec\": 12345,\n  \"snapshot\": { \"value\": 0.01, \"ts\": \"...\" },\n  \"target\": { \"thresholdPct\": 20.0, \"strike\": null },\n  \"marketVolume\": { \"total\": 1234.56, \"h24\": 123.45, \"tradesH24\": 99 },\n  \"hasLaunched\": true\n}\n\nAcceptance\n\nFrontend can render all “NomNom-specific” overlays without extra API calls\n\nPR 6 — Frontend: Enrich GlassPriceActionCard UI (ONLY center cards)\nYou said:\n\n“don’t change anything but the cards in the center feed.”\n\nSo we only touch:\n\nsrc/components/glass/GlassPriceActionCard.tsx\n\nMust not touch:\n\nnav\n\nright rail\n\noverall layout\n\nother card components unless required\n\nNew card layout (keep glass aesthetic)\nHeader row\n\nLeft:\n\nToken image (circle, 28–32px) replaces NomNom logo in-card\n\n$SYMBOL + small subtitle (MEME, STOCK, etc.)\n\nRight:\n\nexpiry countdown pill: ⏱ 19h 40m or Expired\n\noptional: “Open chart” icon button\n\n“Signal strip” row (Dex-like)\n\nA compact row of pills (subtle glass chips), max 6, responsive wrap:\n\nPRICE $0.0123\n\n5M -3.7%\n\n1H +12.5%\n\n6H +55.1%\n\n24H +120.4%\n\nVOL $2.3M (token volume)\n\nLIQ $180K (if room)\n\nTXNS 4,981 (if room)\n\nHOLDERS 569 (if room)\n\nRule: always show Price + 1H + 24H + VOL. The rest collapse based on width.\n\nChart area\n\nIf hasLaunched:\n\nrender token chart candles/line for timeframe default 6h\n\noverlay:\n\na “target line” (strike or threshold marker)\n\nlabel “Target: -20%” or “Target: $12.5M”\nIf not launched:\n\nrender token chart only\n\nshow CTA button: Create market (goes to your existing create flow, prefilled)\n\nFooter\n\nShow:\n\nNomNom Vol (24h): $X (from agg)\n\noptionally Market trades (24h): N\nKeep social actions row as-is (like/rt/comment/share)\n\nData wiring\n\nIn feed-view.tsx, do NOT fetch per-card.\nInstead:\n\ngather mints from the feed response\n\ncall POST /v1/tokens/stats-bundle once\n\npass tokenStats[mint] into each GlassPriceActionCard\n\nAcceptance\n\nCenter feed cards show all requested token metrics\n\nCharts render fast and don’t stutter scroll\n\nNo “mid sparkline”: real candles or sufficiently-sampled line\n\nPR 7 — Frontend: Filter & Sort additions (minimal changes)\n\nYou already have Filter & Sort UI; just add options.\n\nAdd filters (only within existing modal)\n\nTimeframe selector for chart: 1H / 6H / 24H\n\nSort options:\n\nMost token volume (24h)\n\nMost NomNom market volume (24h)\n\nBiggest 24h mover\n\nEnding soon\n\nNew\n\nBackend support:",
+    "intent": "CAPTURE_NOTE"
+  },
+  {
+    "id": "E-9370dce7-41dd-4b65-ad9e-b26fa8eb4ca9",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "228",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T19:00:52.666Z"
+    },
+    "kind": "text",
+    "text": "If sort requires backend ordering, pass sort= into /v1/price-action/feed\n\nKeep defaults unchanged\n\nAcceptance\n\nFilter options update feed ordering without breaking current UX\n\nChart quality guidelines (so it looks premium, not mid)\n\nDefault chart timeframe: 6H\n\nCandle interval (suggested):\n\n1H view → 1–2m candles\n\n6H view → 5m candles\n\n24H view → 15m candles\nIf Birdeye response is too heavy:\n\nreturn only needed candles (cap at ~120 points)\n\ndownsample on backend if necessary (never on frontend per-render)\n\nFeature flag (optional but recommended)\n\nAdd env flag:\n\nFEATURE_SIGNAL_CARDS=true\nSo you can toggle in prod safely.\n\nFinal acceptance checklist\n\n Price action feed loads with one token bundle request (no N+1)\n\n Cards show: token image, timeframe % changes, token vol/liquidity/txns/holders, NomNom market volume, expiry, chart\n\n No auto-create; trending is display only\n\n Redis cache hit rate is high; Birdeye calls are bounded\n\n UI remains glassy and consistent with current design system",
+    "intent": "CAPTURE_NOTE"
+  },
+  {
+    "id": "E-3f02d36d-7366-44be-abcb-745640fe4ba8",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "237",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T19:14:11.281Z"
+    },
+    "kind": "text",
+    "text": "clear notes",
+    "intent": "CLEAR_NOTES"
+  },
+  {
+    "id": "E-4f98e786-c612-4865-8f04-7f7e742d4f77",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "243",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T19:14:46.119Z"
+    },
+    "kind": "text",
+    "text": "NomNom “Signal Cards” (Birdeye) — PR Tranche for Amp Code\nGoal\n\nUpgrade only the center-feed cards (Price Action feed) so they feel like Dexscreener-grade signal, without turning NomNom into a full charting app.\n\nEach center-feed card should show:\n\nToken image (top-left, replaces NomNom logo on the card)\n\nToken symbol/name + chain tag (SOL)\n\nPrice + % change by timeframe (5m / 1h / 6h / 24h)\n\nToken 24h volume + token liquidity + txns + holders (minimum set)\n\nMarket-specific volume (NomNom volume) and optional market trades count\n\nExpiry countdown / expiry timestamp\n\nChart:\n\nIf NomNom market exists: show token price chart with strike/threshold overlay (and optionally “NomNom implied prob” later)\n\nIf no NomNom market yet: show token chart + CTA “Create Market” (but NO auto-create)\n\nNon-negotiables\n\nNo auto-create markets\n\nTrending is discovery only; market creation is user-driven\n\nBatch everything (no N+1 Birdeye calls per card)\n\nRedis caching with sane TTLs\n\nDo not break existing feed; feature-flag is fine if needed\n\nData Sources\nBirdeye (primary for “signal”)\n\nUse Birdeye for:\n\ntoken price\n\nprice change (multi timeframe)\n\n24h volume\n\nliquidity\n\ntxns\n\nholders\n\nOHLCV candles (for chart)\n\nHelius (optional fallback only)\n\nKeep Helius only as fallback for token image/name/symbol when Birdeye doesn’t return it (or returns null/empty).\n\nNomNom (market-specific)\n\nUse your existing DB for:\n\nmarket volume (SUM of trades)\n\nmarket 24h volume\n\nmarket trades count (optional)\n\nexpiry\n\nsnapshot + target/strike/threshold\n\nPR 1 — Backend: Birdeye client + caching primitives\nDeliverables\n\nAdd Birdeye API client module with:\n\nrequest wrapper\n\nretry/backoff (light)\n\ntimeout\n\nstructured logging\n\nrate limit protection (concurrency + queue)\n\nRedis cache helpers\n\nFiles\n\nsrc/priceAction/birdeye.ts (new)\n\nsrc/services/cache.ts or wherever Redis helpers live (extend if needed)\n\nenv:\n\nBIRDEYE_API_KEY\n\nBIRDEYE_BASE_URL default https://public-api.birdeye.so\n\nClient requirements\n\nMust support batch requests where Birdeye supports it; otherwise:\n\ngroup calls by endpoint and run in parallel with p-limit concurrency\n\nCache keys:\n\nbirdeye:token:stats:<mint> TTL 15s\n\nbirdeye:token:candles:<mint>:<tf>:<window> TTL 30–60s\n\nbirdeye:token:meta:<mint> TTL 24h (if you use Birdeye for meta)\n\nUse “stale-while-revalidate” pattern:\n\nServe cached immediately if present\n\nRefresh in background if near-expiry (optional but ideal)\n\nAcceptance\n\nYou can call Birdeye for a mint and get:\n\nprice + priceChange\n\nvolume/liquidity/holders/txns\n\nOHLCV candles\n\nRedis caches are being hit (log cache hit rate in debug)\n\nPR 2 — Backend: Token “Stats Bundle” API (batch)\nGoal\n\nFrontend needs one endpoint to fetch everything needed for rendering the enriched cards.\n\nEndpoint\nPOST /v1/tokens/stats-bundle\n\nBody\n\n{\n  \"mints\": [\"So11111111111111111111111111111111111111112\", \"...\"],\n  \"timeframes\": [\"5m\", \"1h\", \"6h\", \"24h\"],\n  \"chart\": { \"timeframe\": \"6h\" }\n}\n\n\nResponse\n\n{\n  \"tokens\": {\n    \"<mint>\": {\n      \"mint\": \"<mint>\",\n      \"symbol\": \"BONK\",\n      \"name\": \"Bonk\",\n      \"image\": \"https://...\",\n      \"price\": 0.0000123,\n      \"marketCap\": 12345678,\n      \"liquidityUsd\": 123456,\n      \"volume24hUsd\": 987654,\n      \"txns24h\": 4321,\n      \"holders\": 123456,\n      \"changes\": {\n        \"5m\": -1.2,\n        \"1h\": 4.8,\n        \"6h\": 22.1,\n        \"24h\": 120.4\n      },\n      \"chart\": {\n        \"timeframe\": \"6h\",\n        \"candles\": [\n          { \"t\": 1730000000, \"o\": 0.01, \"h\": 0.012, \"l\": 0.009, \"c\": 0.011, \"v\": 1234 }\n        ]\n      },\n      \"source\": \"birdeye\"\n    }\n  }\n}\n\nImplementation details\n\nAccept up to 50 mints per request (you only need 25 trending + what’s in feed)\n\nReturn tokens keyed by mint for easy lookup\n\nIf a token fails, include it with error field; do not fail the whole response\n\nPerformance rules\n\nRequest-level concurrency cap (ex: 😍\n\nPer-endpoint concurrency cap (ex: 4)\n\nCache-first always\n\nAcceptance\n\nSingle bundle call supports rendering a full feed page without per-card token fetches\n\nPR 3 — Backend: Trending runners endpoint (top 25) using Birdeye\nGoal",
+    "intent": "CAPTURE_NOTE"
+  },
+  {
+    "id": "E-a5116923-07c2-434d-9784-8c05a7b55998",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "244",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T19:14:46.477Z"
+    },
+    "kind": "text",
+    "text": "You decided: don’t auto-create, just present trending.\n\nEndpoint\nGET /v1/tokens/trending?limit=25\n\nResponse is normalized into your TokenCardModel shape:\n\n{\n  \"runners\": [\n    {\n      \"mint\": \"...\",\n      \"symbol\": \"...\",\n      \"name\": \"...\",\n      \"image\": \"...\",\n      \"price\": 0.01,\n      \"changes\": { \"5m\": 1.1, \"1h\": 8.2, \"6h\": 30.5, \"24h\": 200.0 },\n      \"volume24hUsd\": 123456,\n      \"liquidityUsd\": 65432,\n      \"txns24h\": 999,\n      \"holders\": 12345\n    }\n  ]\n}\n\nCaching\n\nCache the whole trending response birdeye:trending:25 TTL 15–30s\n\nAcceptance\n\nTrending list loads fast and is stable (no giant swings from caching jitter)\n\nPR 4 — Backend: Market-volume aggregation helpers (fast, scalable)\nProblem\n\nComputing volume on the fly from raw trades will get expensive as volume grows.\n\nDeliverable (choose the simplest “good” approach)\nOption A (recommended): lightweight aggregates table\n\nCreate table market_volume_agg:\n\nmarket_id\n\nvolume_total_usdc\n\nvolume_24h_usdc\n\ntrades_total\n\ntrades_24h\n\nupdated_at\n\nUpdate it via:\n\ncron job every 1–5 minutes\n\nor append-trigger style worker (later)\n\nOption B: materialized view (if you prefer)\n\nMV refreshed periodically\n\nAcceptance\n\nFeed endpoints can query market volume without scanning trades tables\n\nPR 5 — Backend: Upgrade Price Action feed payload to include token mint + market overlays\nGoal\n\nYour FE card needs to know:\n\ntoken mint\n\nmarket state (exists, launched)\n\nexpiry\n\nstrike/threshold\n\nsnapshot value/time\n\nmarket volume (from agg)\n\nEndpoint touched\n\nGET /v1/price-action/feed (path: src/priceAction/routes.ts:200)\n\nAdd fields per item\n{\n  \"marketId\": \"...\",\n  \"mint\": \"...\",\n  \"assetClass\": \"MEME\",\n  \"templateId\": \"DOWN_PCT\",\n  \"expiryTs\": \"...\",\n  \"countdownSec\": 12345,\n  \"snapshot\": { \"value\": 0.01, \"ts\": \"...\" },\n  \"target\": { \"thresholdPct\": 20.0, \"strike\": null },\n  \"marketVolume\": { \"total\": 1234.56, \"h24\": 123.45, \"tradesH24\": 99 },\n  \"hasLaunched\": true\n}\n\nAcceptance\n\nFrontend can render all “NomNom-specific” overlays without extra API calls\n\nPR 6 — Frontend: Enrich GlassPriceActionCard UI (ONLY center cards)\nYou said:\n\n“don’t change anything but the cards in the center feed.”\n\nSo we only touch:\n\nsrc/components/glass/GlassPriceActionCard.tsx\n\nMust not touch:\n\nnav\n\nright rail\n\noverall layout\n\nother card components unless required\n\nNew card layout (keep glass aesthetic)\nHeader row\n\nLeft:\n\nToken image (circle, 28–32px) replaces NomNom logo in-card\n\n$SYMBOL + small subtitle (MEME, STOCK, etc.)\n\nRight:\n\nexpiry countdown pill: ⏱ 19h 40m or Expired\n\noptional: “Open chart” icon button\n\n“Signal strip” row (Dex-like)\n\nA compact row of pills (subtle glass chips), max 6, responsive wrap:\n\nPRICE $0.0123\n\n5M -3.7%\n\n1H +12.5%\n\n6H +55.1%\n\n24H +120.4%\n\nVOL $2.3M (token volume)\n\nLIQ $180K (if room)\n\nTXNS 4,981 (if room)\n\nHOLDERS 569 (if room)\n\nRule: always show Price + 1H + 24H + VOL. The rest collapse based on width.\n\nChart area\n\nIf hasLaunched:\n\nrender token chart candles/line for timeframe default 6h\n\noverlay:\n\na “target line” (strike or threshold marker)\n\nlabel “Target: -20%” or “Target: $12.5M”\nIf not launched:\n\nrender token chart only\n\nshow CTA button: Create market (goes to your existing create flow, prefilled)\n\nFooter\n\nShow:\n\nNomNom Vol (24h): $X (from agg)\n\noptionally Market trades (24h): N\nKeep social actions row as-is (like/rt/comment/share)\n\nData wiring\n\nIn feed-view.tsx, do NOT fetch per-card.\nInstead:\n\ngather mints from the feed response\n\ncall POST /v1/tokens/stats-bundle once\n\npass tokenStats[mint] into each GlassPriceActionCard\n\nAcceptance\n\nCenter feed cards show all requested token metrics\n\nCharts render fast and don’t stutter scroll\n\nNo “mid sparkline”: real candles or sufficiently-sampled line\n\nPR 7 — Frontend: Filter & Sort additions (minimal changes)\n\nYou already have Filter & Sort UI; just add options.\n\nAdd filters (only within existing modal)\n\nTimeframe selector for chart: 1H / 6H / 24H\n\nSort options:\n\nMost token volume (24h)\n\nMost NomNom market volume (24h)\n\nBiggest 24h mover\n\nEnding soon\n\nNew\n\nBackend support:",
+    "intent": "CAPTURE_NOTE"
+  },
+  {
+    "id": "E-f764f1c4-882f-4286-8056-146c32eacc31",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "245",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T19:14:46.493Z"
+    },
+    "kind": "text",
+    "text": "If sort requires backend ordering, pass sort= into /v1/price-action/feed\n\nKeep defaults unchanged\n\nAcceptance\n\nFilter options update feed ordering without breaking current UX\n\nChart quality guidelines (so it looks premium, not mid)\n\nDefault chart timeframe: 6H\n\nCandle interval (suggested):\n\n1H view → 1–2m candles\n\n6H view → 5m candles\n\n24H view → 15m candles\nIf Birdeye response is too heavy:\n\nreturn only needed candles (cap at ~120 points)\n\ndownsample on backend if necessary (never on frontend per-render)\n\nFeature flag (optional but recommended)\n\nAdd env flag:\n\nFEATURE_SIGNAL_CARDS=true\nSo you can toggle in prod safely.\n\nFinal acceptance checklist\n\n Price action feed loads with one token bundle request (no N+1)\n\n Cards show: token image, timeframe % changes, token vol/liquidity/txns/holders, NomNom market volume, expiry, chart\n\n No auto-create; trending is display only\n\n Redis cache hit rate is high; Birdeye calls are bounded\n\n UI remains glassy and consistent with current design system",
+    "intent": "CAPTURE_NOTE"
+  },
+  {
+    "id": "E-f8d1230c-11b9-4cbd-a586-43263fecc595",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "252",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T19:15:09.359Z"
+    },
+    "kind": "text",
+    "text": "clear notes",
+    "intent": "CLEAR_NOTES"
+  },
+  {
+    "id": "E-fea435b8-9d5e-4dc9-85ff-8afcc42db2bd",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "257",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T19:15:23.097Z"
+    },
+    "kind": "text",
+    "text": "NomNom “Signal Cards” (Birdeye) — PR Tranche for Amp Code\nGoal\n\nUpgrade only the center-feed cards (Price Action feed) so they feel like Dexscreener-grade signal, without turning NomNom into a full charting app.\n\nEach center-feed card should show:\n\nToken image (top-left, replaces NomNom logo on the card)\n\nToken symbol/name + chain tag (SOL)\n\nPrice + % change by timeframe (5m / 1h / 6h / 24h)\n\nToken 24h volume + token liquidity + txns + holders (minimum set)\n\nMarket-specific volume (NomNom volume) and optional market trades count\n\nExpiry countdown / expiry timestamp\n\nChart:\n\nIf NomNom market exists: show token price chart with strike/threshold overlay (and optionally “NomNom implied prob” later)\n\nIf no NomNom market yet: show token chart + CTA “Create Market” (but NO auto-create)\n\nNon-negotiables\n\nNo auto-create markets\n\nTrending is discovery only; market creation is user-driven\n\nBatch everything (no N+1 Birdeye calls per card)\n\nRedis caching with sane TTLs\n\nDo not break existing feed; feature-flag is fine if needed\n\nData Sources\nBirdeye (primary for “signal”)\n\nUse Birdeye for:\n\ntoken price\n\nprice change (multi timeframe)\n\n24h volume\n\nliquidity\n\ntxns\n\nholders\n\nOHLCV candles (for chart)\n\nHelius (optional fallback only)\n\nKeep Helius only as fallback for token image/name/symbol when Birdeye doesn’t return it (or returns null/empty).\n\nNomNom (market-specific)\n\nUse your existing DB for:\n\nmarket volume (SUM of trades)\n\nmarket 24h volume\n\nmarket trades count (optional)\n\nexpiry\n\nsnapshot + target/strike/threshold\n\nPR 1 — Backend: Birdeye client + caching primitives\nDeliverables\n\nAdd Birdeye API client module with:\n\nrequest wrapper\n\nretry/backoff (light)\n\ntimeout\n\nstructured logging\n\nrate limit protection (concurrency + queue)\n\nRedis cache helpers\n\nFiles\n\nsrc/priceAction/birdeye.ts (new)\n\nsrc/services/cache.ts or wherever Redis helpers live (extend if needed)\n\nenv:\n\nBIRDEYE_API_KEY\n\nBIRDEYE_BASE_URL default https://public-api.birdeye.so\n\nClient requirements\n\nMust support batch requests where Birdeye supports it; otherwise:\n\ngroup calls by endpoint and run in parallel with p-limit concurrency\n\nCache keys:\n\nbirdeye:token:stats:<mint> TTL 15s\n\nbirdeye:token:candles:<mint>:<tf>:<window> TTL 30–60s\n\nbirdeye:token:meta:<mint> TTL 24h (if you use Birdeye for meta)\n\nUse “stale-while-revalidate” pattern:\n\nServe cached immediately if present\n\nRefresh in background if near-expiry (optional but ideal)\n\nAcceptance\n\nYou can call Birdeye for a mint and get:\n\nprice + priceChange\n\nvolume/liquidity/holders/txns\n\nOHLCV candles\n\nRedis caches are being hit (log cache hit rate in debug)\n\nPR 2 — Backend: Token “Stats Bundle” API (batch)\nGoal\n\nFrontend needs one endpoint to fetch everything needed for rendering the enriched cards.\n\nEndpoint\nPOST /v1/tokens/stats-bundle\n\nBody\n\n{\n  \"mints\": [\"So11111111111111111111111111111111111111112\", \"...\"],\n  \"timeframes\": [\"5m\", \"1h\", \"6h\", \"24h\"],\n  \"chart\": { \"timeframe\": \"6h\" }\n}\n\n\nResponse\n\n{\n  \"tokens\": {\n    \"<mint>\": {\n      \"mint\": \"<mint>\",\n      \"symbol\": \"BONK\",\n      \"name\": \"Bonk\",\n      \"image\": \"https://...\",\n      \"price\": 0.0000123,\n      \"marketCap\": 12345678,\n      \"liquidityUsd\": 123456,\n      \"volume24hUsd\": 987654,\n      \"txns24h\": 4321,\n      \"holders\": 123456,\n      \"changes\": {\n        \"5m\": -1.2,\n        \"1h\": 4.8,\n        \"6h\": 22.1,\n        \"24h\": 120.4\n      },\n      \"chart\": {\n        \"timeframe\": \"6h\",\n        \"candles\": [\n          { \"t\": 1730000000, \"o\": 0.01, \"h\": 0.012, \"l\": 0.009, \"c\": 0.011, \"v\": 1234 }\n        ]\n      },\n      \"source\": \"birdeye\"\n    }\n  }\n}\n\nImplementation details\n\nAccept up to 50 mints per request (you only need 25 trending + what’s in feed)\n\nReturn tokens keyed by mint for easy lookup\n\nIf a token fails, include it with error field; do not fail the whole response\n\nPerformance rules\n\nRequest-level concurrency cap (ex: 😍\n\nPer-endpoint concurrency cap (ex: 4)\n\nCache-first always\n\nAcceptance\n\nSingle bundle call supports rendering a full feed page without per-card token fetches\n\nPR 3 — Backend: Trending runners endpoint (top 25) using Birdeye\nGoal",
+    "intent": "CAPTURE_NOTE"
+  },
+  {
+    "id": "E-6de3cd7e-34cc-4e15-b4fe-50aa931b41fc",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "258",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T19:15:23.433Z"
+    },
+    "kind": "text",
+    "text": "You decided: don’t auto-create, just present trending.\n\nEndpoint\nGET /v1/tokens/trending?limit=25\n\nResponse is normalized into your TokenCardModel shape:\n\n{\n  \"runners\": [\n    {\n      \"mint\": \"...\",\n      \"symbol\": \"...\",\n      \"name\": \"...\",\n      \"image\": \"...\",\n      \"price\": 0.01,\n      \"changes\": { \"5m\": 1.1, \"1h\": 8.2, \"6h\": 30.5, \"24h\": 200.0 },\n      \"volume24hUsd\": 123456,\n      \"liquidityUsd\": 65432,\n      \"txns24h\": 999,\n      \"holders\": 12345\n    }\n  ]\n}\n\nCaching\n\nCache the whole trending response birdeye:trending:25 TTL 15–30s\n\nAcceptance\n\nTrending list loads fast and is stable (no giant swings from caching jitter)\n\nPR 4 — Backend: Market-volume aggregation helpers (fast, scalable)\nProblem\n\nComputing volume on the fly from raw trades will get expensive as volume grows.\n\nDeliverable (choose the simplest “good” approach)\nOption A (recommended): lightweight aggregates table\n\nCreate table market_volume_agg:\n\nmarket_id\n\nvolume_total_usdc\n\nvolume_24h_usdc\n\ntrades_total\n\ntrades_24h\n\nupdated_at\n\nUpdate it via:\n\ncron job every 1–5 minutes\n\nor append-trigger style worker (later)\n\nOption B: materialized view (if you prefer)\n\nMV refreshed periodically\n\nAcceptance\n\nFeed endpoints can query market volume without scanning trades tables\n\nPR 5 — Backend: Upgrade Price Action feed payload to include token mint + market overlays\nGoal\n\nYour FE card needs to know:\n\ntoken mint\n\nmarket state (exists, launched)\n\nexpiry\n\nstrike/threshold\n\nsnapshot value/time\n\nmarket volume (from agg)\n\nEndpoint touched\n\nGET /v1/price-action/feed (path: src/priceAction/routes.ts:200)\n\nAdd fields per item\n{\n  \"marketId\": \"...\",\n  \"mint\": \"...\",\n  \"assetClass\": \"MEME\",\n  \"templateId\": \"DOWN_PCT\",\n  \"expiryTs\": \"...\",\n  \"countdownSec\": 12345,\n  \"snapshot\": { \"value\": 0.01, \"ts\": \"...\" },\n  \"target\": { \"thresholdPct\": 20.0, \"strike\": null },\n  \"marketVolume\": { \"total\": 1234.56, \"h24\": 123.45, \"tradesH24\": 99 },\n  \"hasLaunched\": true\n}\n\nAcceptance\n\nFrontend can render all “NomNom-specific” overlays without extra API calls\n\nPR 6 — Frontend: Enrich GlassPriceActionCard UI (ONLY center cards)\nYou said:\n\n“don’t change anything but the cards in the center feed.”\n\nSo we only touch:\n\nsrc/components/glass/GlassPriceActionCard.tsx\n\nMust not touch:\n\nnav\n\nright rail\n\noverall layout\n\nother card components unless required\n\nNew card layout (keep glass aesthetic)\nHeader row\n\nLeft:\n\nToken image (circle, 28–32px) replaces NomNom logo in-card\n\n$SYMBOL + small subtitle (MEME, STOCK, etc.)\n\nRight:\n\nexpiry countdown pill: ⏱ 19h 40m or Expired\n\noptional: “Open chart” icon button\n\n“Signal strip” row (Dex-like)\n\nA compact row of pills (subtle glass chips), max 6, responsive wrap:\n\nPRICE $0.0123\n\n5M -3.7%\n\n1H +12.5%\n\n6H +55.1%\n\n24H +120.4%\n\nVOL $2.3M (token volume)\n\nLIQ $180K (if room)\n\nTXNS 4,981 (if room)\n\nHOLDERS 569 (if room)\n\nRule: always show Price + 1H + 24H + VOL. The rest collapse based on width.\n\nChart area\n\nIf hasLaunched:\n\nrender token chart candles/line for timeframe default 6h\n\noverlay:\n\na “target line” (strike or threshold marker)\n\nlabel “Target: -20%” or “Target: $12.5M”\nIf not launched:\n\nrender token chart only\n\nshow CTA button: Create market (goes to your existing create flow, prefilled)\n\nFooter\n\nShow:\n\nNomNom Vol (24h): $X (from agg)\n\noptionally Market trades (24h): N\nKeep social actions row as-is (like/rt/comment/share)\n\nData wiring\n\nIn feed-view.tsx, do NOT fetch per-card.\nInstead:\n\ngather mints from the feed response\n\ncall POST /v1/tokens/stats-bundle once\n\npass tokenStats[mint] into each GlassPriceActionCard\n\nAcceptance\n\nCenter feed cards show all requested token metrics\n\nCharts render fast and don’t stutter scroll\n\nNo “mid sparkline”: real candles or sufficiently-sampled line\n\nPR 7 — Frontend: Filter & Sort additions (minimal changes)\n\nYou already have Filter & Sort UI; just add options.\n\nAdd filters (only within existing modal)\n\nTimeframe selector for chart: 1H / 6H / 24H\n\nSort options:\n\nMost token volume (24h)\n\nMost NomNom market volume (24h)\n\nBiggest 24h mover\n\nEnding soon\n\nNew\n\nBackend support:",
+    "intent": "CAPTURE_NOTE"
+  },
+  {
+    "id": "E-15cb5b34-f351-496b-9ca0-9cda396a6fe8",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "259",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T19:15:23.441Z"
+    },
+    "kind": "text",
+    "text": "If sort requires backend ordering, pass sort= into /v1/price-action/feed\n\nKeep defaults unchanged\n\nAcceptance\n\nFilter options update feed ordering without breaking current UX\n\nChart quality guidelines (so it looks premium, not mid)\n\nDefault chart timeframe: 6H\n\nCandle interval (suggested):\n\n1H view → 1–2m candles\n\n6H view → 5m candles\n\n24H view → 15m candles\nIf Birdeye response is too heavy:\n\nreturn only needed candles (cap at ~120 points)\n\ndownsample on backend if necessary (never on frontend per-render)\n\nFeature flag (optional but recommended)\n\nAdd env flag:\n\nFEATURE_SIGNAL_CARDS=true\nSo you can toggle in prod safely.\n\nFinal acceptance checklist\n\n Price action feed loads with one token bundle request (no N+1)\n\n Cards show: token image, timeframe % changes, token vol/liquidity/txns/holders, NomNom market volume, expiry, chart\n\n No auto-create; trending is display only\n\n Redis cache hit rate is high; Birdeye calls are bounded\n\n UI remains glassy and consistent with current design system",
+    "intent": "CAPTURE_NOTE"
+  },
+  {
+    "id": "E-1956a005-b12b-499f-bd8d-e844ec1929ef",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "266",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T19:21:42.820Z"
+    },
+    "kind": "text",
+    "text": "clear notes",
+    "intent": "CLEAR_NOTES"
+  },
+  {
+    "id": "E-b4119e3c-657b-4df2-b360-591697328b1c",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "271",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T19:23:59.427Z"
+    },
+    "kind": "text",
+    "text": "NomNom “Signal Cards” (Birdeye) — PR Tranche for Amp Code\nGoal\n\nUpgrade only the center-feed cards (Price Action feed) so they feel like Dexscreener-grade signal, without turning NomNom into a full charting app.\n\nEach center-feed card should show:\n\nToken image (top-left, replaces NomNom logo on the card)\n\nToken symbol/name + chain tag (SOL)\n\nPrice + % change by timeframe (5m / 1h / 6h / 24h)\n\nToken 24h volume + token liquidity + txns + holders (minimum set)\n\nMarket-specific volume (NomNom volume) and optional market trades count\n\nExpiry countdown / expiry timestamp\n\nChart:\n\nIf NomNom market exists: show token price chart with strike/threshold overlay (and optionally “NomNom implied prob” later)\n\nIf no NomNom market yet: show token chart + CTA “Create Market” (but NO auto-create)\n\nNon-negotiables\n\nNo auto-create markets\n\nTrending is discovery only; market creation is user-driven\n\nBatch everything (no N+1 Birdeye calls per card)\n\nRedis caching with sane TTLs\n\nDo not break existing feed; feature-flag is fine if needed\n\nData Sources\nBirdeye (primary for “signal”)\n\nUse Birdeye for:\n\ntoken price\n\nprice change (multi timeframe)\n\n24h volume\n\nliquidity\n\ntxns\n\nholders\n\nOHLCV candles (for chart)\n\nHelius (optional fallback only)\n\nKeep Helius only as fallback for token image/name/symbol when Birdeye doesn’t return it (or returns null/empty).\n\nNomNom (market-specific)\n\nUse your existing DB for:\n\nmarket volume (SUM of trades)\n\nmarket 24h volume\n\nmarket trades count (optional)\n\nexpiry\n\nsnapshot + target/strike/threshold\n\nPR 1 — Backend: Birdeye client + caching primitives\nDeliverables\n\nAdd Birdeye API client module with:\n\nrequest wrapper\n\nretry/backoff (light)\n\ntimeout\n\nstructured logging\n\nrate limit protection (concurrency + queue)\n\nRedis cache helpers\n\nFiles\n\nsrc/priceAction/birdeye.ts (new)\n\nsrc/services/cache.ts or wherever Redis helpers live (extend if needed)\n\nenv:\n\nBIRDEYE_API_KEY\n\nBIRDEYE_BASE_URL default https://public-api.birdeye.so\n\nClient requirements\n\nMust support batch requests where Birdeye supports it; otherwise:\n\ngroup calls by endpoint and run in parallel with p-limit concurrency\n\nCache keys:\n\nbirdeye:token:stats:<mint> TTL 15s\n\nbirdeye:token:candles:<mint>:<tf>:<window> TTL 30–60s\n\nbirdeye:token:meta:<mint> TTL 24h (if you use Birdeye for meta)\n\nUse “stale-while-revalidate” pattern:\n\nServe cached immediately if present\n\nRefresh in background if near-expiry (optional but ideal)\n\nAcceptance\n\nYou can call Birdeye for a mint and get:\n\nprice + priceChange\n\nvolume/liquidity/holders/txns\n\nOHLCV candles\n\nRedis caches are being hit (log cache hit rate in debug)\n\nPR 2 — Backend: Token “Stats Bundle” API (batch)\nGoal\n\nFrontend needs one endpoint to fetch everything needed for rendering the enriched cards.\n\nEndpoint\nPOST /v1/tokens/stats-bundle\n\nBody\n\n{\n  \"mints\": [\"So11111111111111111111111111111111111111112\", \"...\"],\n  \"timeframes\": [\"5m\", \"1h\", \"6h\", \"24h\"],\n  \"chart\": { \"timeframe\": \"6h\" }\n}\n\n\nResponse\n\n{\n  \"tokens\": {\n    \"<mint>\": {\n      \"mint\": \"<mint>\",\n      \"symbol\": \"BONK\",\n      \"name\": \"Bonk\",\n      \"image\": \"https://...\",\n      \"price\": 0.0000123,\n      \"marketCap\": 12345678,\n      \"liquidityUsd\": 123456,\n      \"volume24hUsd\": 987654,\n      \"txns24h\": 4321,\n      \"holders\": 123456,\n      \"changes\": {\n        \"5m\": -1.2,\n        \"1h\": 4.8,\n        \"6h\": 22.1,\n        \"24h\": 120.4\n      },\n      \"chart\": {\n        \"timeframe\": \"6h\",\n        \"candles\": [\n          { \"t\": 1730000000, \"o\": 0.01, \"h\": 0.012, \"l\": 0.009, \"c\": 0.011, \"v\": 1234 }\n        ]\n      },\n      \"source\": \"birdeye\"\n    }\n  }\n}\n\nImplementation details\n\nAccept up to 50 mints per request (you only need 25 trending + what’s in feed)\n\nReturn tokens keyed by mint for easy lookup\n\nIf a token fails, include it with error field; do not fail the whole response\n\nPerformance rules\n\nRequest-level concurrency cap (ex: 😍\n\nPer-endpoint concurrency cap (ex: 4)\n\nCache-first always\n\nAcceptance\n\nSingle bundle call supports rendering a full feed page without per-card token fetches\n\nPR 3 — Backend: Trending runners endpoint (top 25) using Birdeye\nGoal",
+    "intent": "CAPTURE_NOTE"
+  },
+  {
+    "id": "E-39bd4125-4143-48c8-b51b-3c0105d9a327",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "272",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T19:24:00.715Z"
+    },
+    "kind": "text",
+    "text": "You decided: don’t auto-create, just present trending.\n\nEndpoint\nGET /v1/tokens/trending?limit=25\n\nResponse is normalized into your TokenCardModel shape:\n\n{\n  \"runners\": [\n    {\n      \"mint\": \"...\",\n      \"symbol\": \"...\",\n      \"name\": \"...\",\n      \"image\": \"...\",\n      \"price\": 0.01,\n      \"changes\": { \"5m\": 1.1, \"1h\": 8.2, \"6h\": 30.5, \"24h\": 200.0 },\n      \"volume24hUsd\": 123456,\n      \"liquidityUsd\": 65432,\n      \"txns24h\": 999,\n      \"holders\": 12345\n    }\n  ]\n}\n\nCaching\n\nCache the whole trending response birdeye:trending:25 TTL 15–30s\n\nAcceptance\n\nTrending list loads fast and is stable (no giant swings from caching jitter)\n\nPR 4 — Backend: Market-volume aggregation helpers (fast, scalable)\nProblem\n\nComputing volume on the fly from raw trades will get expensive as volume grows.\n\nDeliverable (choose the simplest “good” approach)\nOption A (recommended): lightweight aggregates table\n\nCreate table market_volume_agg:\n\nmarket_id\n\nvolume_total_usdc\n\nvolume_24h_usdc\n\ntrades_total\n\ntrades_24h\n\nupdated_at\n\nUpdate it via:\n\ncron job every 1–5 minutes\n\nor append-trigger style worker (later)\n\nOption B: materialized view (if you prefer)\n\nMV refreshed periodically\n\nAcceptance\n\nFeed endpoints can query market volume without scanning trades tables\n\nPR 5 — Backend: Upgrade Price Action feed payload to include token mint + market overlays\nGoal\n\nYour FE card needs to know:\n\ntoken mint\n\nmarket state (exists, launched)\n\nexpiry\n\nstrike/threshold\n\nsnapshot value/time\n\nmarket volume (from agg)\n\nEndpoint touched\n\nGET /v1/price-action/feed (path: src/priceAction/routes.ts:200)\n\nAdd fields per item\n{\n  \"marketId\": \"...\",\n  \"mint\": \"...\",\n  \"assetClass\": \"MEME\",\n  \"templateId\": \"DOWN_PCT\",\n  \"expiryTs\": \"...\",\n  \"countdownSec\": 12345,\n  \"snapshot\": { \"value\": 0.01, \"ts\": \"...\" },\n  \"target\": { \"thresholdPct\": 20.0, \"strike\": null },\n  \"marketVolume\": { \"total\": 1234.56, \"h24\": 123.45, \"tradesH24\": 99 },\n  \"hasLaunched\": true\n}\n\nAcceptance\n\nFrontend can render all “NomNom-specific” overlays without extra API calls\n\nPR 6 — Frontend: Enrich GlassPriceActionCard UI (ONLY center cards)\nYou said:\n\n“don’t change anything but the cards in the center feed.”\n\nSo we only touch:\n\nsrc/components/glass/GlassPriceActionCard.tsx\n\nMust not touch:\n\nnav\n\nright rail\n\noverall layout\n\nother card components unless required\n\nNew card layout (keep glass aesthetic)\nHeader row\n\nLeft:\n\nToken image (circle, 28–32px) replaces NomNom logo in-card\n\n$SYMBOL + small subtitle (MEME, STOCK, etc.)\n\nRight:\n\nexpiry countdown pill: ⏱ 19h 40m or Expired\n\noptional: “Open chart” icon button\n\n“Signal strip” row (Dex-like)\n\nA compact row of pills (subtle glass chips), max 6, responsive wrap:\n\nPRICE $0.0123\n\n5M -3.7%\n\n1H +12.5%\n\n6H +55.1%\n\n24H +120.4%\n\nVOL $2.3M (token volume)\n\nLIQ $180K (if room)\n\nTXNS 4,981 (if room)\n\nHOLDERS 569 (if room)\n\nRule: always show Price + 1H + 24H + VOL. The rest collapse based on width.\n\nChart area\n\nIf hasLaunched:\n\nrender token chart candles/line for timeframe default 6h\n\noverlay:\n\na “target line” (strike or threshold marker)\n\nlabel “Target: -20%” or “Target: $12.5M”\nIf not launched:\n\nrender token chart only\n\nshow CTA button: Create market (goes to your existing create flow, prefilled)\n\nFooter\n\nShow:\n\nNomNom Vol (24h): $X (from agg)\n\noptionally Market trades (24h): N\nKeep social actions row as-is (like/rt/comment/share)\n\nData wiring\n\nIn feed-view.tsx, do NOT fetch per-card.\nInstead:\n\ngather mints from the feed response\n\ncall POST /v1/tokens/stats-bundle once\n\npass tokenStats[mint] into each GlassPriceActionCard\n\nAcceptance\n\nCenter feed cards show all requested token metrics\n\nCharts render fast and don’t stutter scroll\n\nNo “mid sparkline”: real candles or sufficiently-sampled line\n\nPR 7 — Frontend: Filter & Sort additions (minimal changes)\n\nYou already have Filter & Sort UI; just add options.\n\nAdd filters (only within existing modal)\n\nTimeframe selector for chart: 1H / 6H / 24H\n\nSort options:\n\nMost token volume (24h)\n\nMost NomNom market volume (24h)\n\nBiggest 24h mover\n\nEnding soon\n\nNew\n\nBackend support:",
+    "intent": "CAPTURE_NOTE"
+  },
+  {
+    "id": "E-0ae26ddc-312d-4788-b407-112c45adeadf",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "273",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T19:24:06.762Z"
+    },
+    "kind": "text",
+    "text": "If sort requires backend ordering, pass sort= into /v1/price-action/feed\n\nKeep defaults unchanged\n\nAcceptance\n\nFilter options update feed ordering without breaking current UX\n\nChart quality guidelines (so it looks premium, not mid)\n\nDefault chart timeframe: 6H\n\nCandle interval (suggested):\n\n1H view → 1–2m candles\n\n6H view → 5m candles\n\n24H view → 15m candles\nIf Birdeye response is too heavy:\n\nreturn only needed candles (cap at ~120 points)\n\ndownsample on backend if necessary (never on frontend per-render)\n\nFeature flag (optional but recommended)\n\nAdd env flag:\n\nFEATURE_SIGNAL_CARDS=true\nSo you can toggle in prod safely.\n\nFinal acceptance checklist\n\n Price action feed loads with one token bundle request (no N+1)\n\n Cards show: token image, timeframe % changes, token vol/liquidity/txns/holders, NomNom market volume, expiry, chart\n\n No auto-create; trending is display only\n\n Redis cache hit rate is high; Birdeye calls are bounded\n\n UI remains glassy and consistent with current design system",
+    "intent": "CAPTURE_NOTE"
+  },
+  {
+    "id": "E-691c22a4-a5b7-492d-a85c-ecab60fcc59a",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "277",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T19:24:17.849Z"
+    },
+    "kind": "text",
+    "text": "NomNom “Signal Cards” (Birdeye) — PR Tranche for Amp Code\nGoal\n\nUpgrade only the center-feed cards (Price Action feed) so they feel like Dexscreener-grade signal, without turning NomNom into a full charting app.\n\nEach center-feed card should show:\n\nToken image (top-left, replaces NomNom logo on the card)\n\nToken symbol/name + chain tag (SOL)\n\nPrice + % change by timeframe (5m / 1h / 6h / 24h)\n\nToken 24h volume + token liquidity + txns + holders (minimum set)\n\nMarket-specific volume (NomNom volume) and optional market trades count\n\nExpiry countdown / expiry timestamp\n\nChart:\n\nIf NomNom market exists: show token price chart with strike/threshold overlay (and optionally “NomNom implied prob” later)\n\nIf no NomNom market yet: show token chart + CTA “Create Market” (but NO auto-create)\n\nNon-negotiables\n\nNo auto-create markets\n\nTrending is discovery only; market creation is user-driven\n\nBatch everything (no N+1 Birdeye calls per card)\n\nRedis caching with sane TTLs\n\nDo not break existing feed; feature-flag is fine if needed\n\nData Sources\nBirdeye (primary for “signal”)\n\nUse Birdeye for:\n\ntoken price\n\nprice change (multi timeframe)\n\n24h volume\n\nliquidity\n\ntxns\n\nholders\n\nOHLCV candles (for chart)\n\nHelius (optional fallback only)\n\nKeep Helius only as fallback for token image/name/symbol when Birdeye doesn’t return it (or returns null/empty).\n\nNomNom (market-specific)\n\nUse your existing DB for:\n\nmarket volume (SUM of trades)\n\nmarket 24h volume\n\nmarket trades count (optional)\n\nexpiry\n\nsnapshot + target/strike/threshold\n\nPR 1 — Backend: Birdeye client + caching primitives\nDeliverables\n\nAdd Birdeye API client module with:\n\nrequest wrapper\n\nretry/backoff (light)\n\ntimeout\n\nstructured logging\n\nrate limit protection (concurrency + queue)\n\nRedis cache helpers\n\nFiles\n\nsrc/priceAction/birdeye.ts (new)\n\nsrc/services/cache.ts or wherever Redis helpers live (extend if needed)\n\nenv:\n\nBIRDEYE_API_KEY\n\nBIRDEYE_BASE_URL default https://public-api.birdeye.so\n\nClient requirements\n\nMust support batch requests where Birdeye supports it; otherwise:\n\ngroup calls by endpoint and run in parallel with p-limit concurrency\n\nCache keys:\n\nbirdeye:token:stats:<mint> TTL 15s\n\nbirdeye:token:candles:<mint>:<tf>:<window> TTL 30–60s\n\nbirdeye:token:meta:<mint> TTL 24h (if you use Birdeye for meta)\n\nUse “stale-while-revalidate” pattern:\n\nServe cached immediately if present\n\nRefresh in background if near-expiry (optional but ideal)\n\nAcceptance\n\nYou can call Birdeye for a mint and get:\n\nprice + priceChange\n\nvolume/liquidity/holders/txns\n\nOHLCV candles\n\nRedis caches are being hit (log cache hit rate in debug)\n\nPR 2 — Backend: Token “Stats Bundle” API (batch)\nGoal\n\nFrontend needs one endpoint to fetch everything needed for rendering the enriched cards.\n\nEndpoint\nPOST /v1/tokens/stats-bundle\n\nBody\n\n{\n  \"mints\": [\"So11111111111111111111111111111111111111112\", \"...\"],\n  \"timeframes\": [\"5m\", \"1h\", \"6h\", \"24h\"],\n  \"chart\": { \"timeframe\": \"6h\" }\n}\n\n\nResponse\n\n{\n  \"tokens\": {\n    \"<mint>\": {\n      \"mint\": \"<mint>\",\n      \"symbol\": \"BONK\",\n      \"name\": \"Bonk\",\n      \"image\": \"https://...\",\n      \"price\": 0.0000123,\n      \"marketCap\": 12345678,\n      \"liquidityUsd\": 123456,\n      \"volume24hUsd\": 987654,\n      \"txns24h\": 4321,\n      \"holders\": 123456,\n      \"changes\": {\n        \"5m\": -1.2,\n        \"1h\": 4.8,\n        \"6h\": 22.1,\n        \"24h\": 120.4\n      },\n      \"chart\": {\n        \"timeframe\": \"6h\",\n        \"candles\": [\n          { \"t\": 1730000000, \"o\": 0.01, \"h\": 0.012, \"l\": 0.009, \"c\": 0.011, \"v\": 1234 }\n        ]\n      },\n      \"source\": \"birdeye\"\n    }\n  }\n}\n\nImplementation details\n\nAccept up to 50 mints per request (you only need 25 trending + what’s in feed)\n\nReturn tokens keyed by mint for easy lookup\n\nIf a token fails, include it with error field; do not fail the whole response\n\nPerformance rules\n\nRequest-level concurrency cap (ex: 😍\n\nPer-endpoint concurrency cap (ex: 4)\n\nCache-first always\n\nAcceptance\n\nSingle bundle call supports rendering a full feed page without per-card token fetches\n\nPR 3 — Backend: Trending runners endpoint (top 25) using Birdeye\nGoal",
+    "intent": "CAPTURE_NOTE"
+  },
+  {
+    "id": "E-39e8047f-32e1-47d0-af32-e475762e1ca4",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "278",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T19:24:18.975Z"
+    },
+    "kind": "text",
+    "text": "You decided: don’t auto-create, just present trending.\n\nEndpoint\nGET /v1/tokens/trending?limit=25\n\nResponse is normalized into your TokenCardModel shape:\n\n{\n  \"runners\": [\n    {\n      \"mint\": \"...\",\n      \"symbol\": \"...\",\n      \"name\": \"...\",\n      \"image\": \"...\",\n      \"price\": 0.01,\n      \"changes\": { \"5m\": 1.1, \"1h\": 8.2, \"6h\": 30.5, \"24h\": 200.0 },\n      \"volume24hUsd\": 123456,\n      \"liquidityUsd\": 65432,\n      \"txns24h\": 999,\n      \"holders\": 12345\n    }\n  ]\n}\n\nCaching\n\nCache the whole trending response birdeye:trending:25 TTL 15–30s\n\nAcceptance\n\nTrending list loads fast and is stable (no giant swings from caching jitter)\n\nPR 4 — Backend: Market-volume aggregation helpers (fast, scalable)\nProblem\n\nComputing volume on the fly from raw trades will get expensive as volume grows.\n\nDeliverable (choose the simplest “good” approach)\nOption A (recommended): lightweight aggregates table\n\nCreate table market_volume_agg:\n\nmarket_id\n\nvolume_total_usdc\n\nvolume_24h_usdc\n\ntrades_total\n\ntrades_24h\n\nupdated_at\n\nUpdate it via:\n\ncron job every 1–5 minutes\n\nor append-trigger style worker (later)\n\nOption B: materialized view (if you prefer)\n\nMV refreshed periodically\n\nAcceptance\n\nFeed endpoints can query market volume without scanning trades tables\n\nPR 5 — Backend: Upgrade Price Action feed payload to include token mint + market overlays\nGoal\n\nYour FE card needs to know:\n\ntoken mint\n\nmarket state (exists, launched)\n\nexpiry\n\nstrike/threshold\n\nsnapshot value/time\n\nmarket volume (from agg)\n\nEndpoint touched\n\nGET /v1/price-action/feed (path: src/priceAction/routes.ts:200)\n\nAdd fields per item\n{\n  \"marketId\": \"...\",\n  \"mint\": \"...\",\n  \"assetClass\": \"MEME\",\n  \"templateId\": \"DOWN_PCT\",\n  \"expiryTs\": \"...\",\n  \"countdownSec\": 12345,\n  \"snapshot\": { \"value\": 0.01, \"ts\": \"...\" },\n  \"target\": { \"thresholdPct\": 20.0, \"strike\": null },\n  \"marketVolume\": { \"total\": 1234.56, \"h24\": 123.45, \"tradesH24\": 99 },\n  \"hasLaunched\": true\n}\n\nAcceptance\n\nFrontend can render all “NomNom-specific” overlays without extra API calls\n\nPR 6 — Frontend: Enrich GlassPriceActionCard UI (ONLY center cards)\nYou said:\n\n“don’t change anything but the cards in the center feed.”\n\nSo we only touch:\n\nsrc/components/glass/GlassPriceActionCard.tsx\n\nMust not touch:\n\nnav\n\nright rail\n\noverall layout\n\nother card components unless required\n\nNew card layout (keep glass aesthetic)\nHeader row\n\nLeft:\n\nToken image (circle, 28–32px) replaces NomNom logo in-card\n\n$SYMBOL + small subtitle (MEME, STOCK, etc.)\n\nRight:\n\nexpiry countdown pill: ⏱ 19h 40m or Expired\n\noptional: “Open chart” icon button\n\n“Signal strip” row (Dex-like)\n\nA compact row of pills (subtle glass chips), max 6, responsive wrap:\n\nPRICE $0.0123\n\n5M -3.7%\n\n1H +12.5%\n\n6H +55.1%\n\n24H +120.4%\n\nVOL $2.3M (token volume)\n\nLIQ $180K (if room)\n\nTXNS 4,981 (if room)\n\nHOLDERS 569 (if room)\n\nRule: always show Price + 1H + 24H + VOL. The rest collapse based on width.\n\nChart area\n\nIf hasLaunched:\n\nrender token chart candles/line for timeframe default 6h\n\noverlay:\n\na “target line” (strike or threshold marker)\n\nlabel “Target: -20%” or “Target: $12.5M”\nIf not launched:\n\nrender token chart only\n\nshow CTA button: Create market (goes to your existing create flow, prefilled)\n\nFooter\n\nShow:\n\nNomNom Vol (24h): $X (from agg)\n\noptionally Market trades (24h): N\nKeep social actions row as-is (like/rt/comment/share)\n\nData wiring\n\nIn feed-view.tsx, do NOT fetch per-card.\nInstead:\n\ngather mints from the feed response\n\ncall POST /v1/tokens/stats-bundle once\n\npass tokenStats[mint] into each GlassPriceActionCard\n\nAcceptance\n\nCenter feed cards show all requested token metrics\n\nCharts render fast and don’t stutter scroll\n\nNo “mid sparkline”: real candles or sufficiently-sampled line\n\nPR 7 — Frontend: Filter & Sort additions (minimal changes)\n\nYou already have Filter & Sort UI; just add options.\n\nAdd filters (only within existing modal)\n\nTimeframe selector for chart: 1H / 6H / 24H\n\nSort options:\n\nMost token volume (24h)\n\nMost NomNom market volume (24h)\n\nBiggest 24h mover\n\nEnding soon\n\nNew\n\nBackend support:",
+    "intent": "CAPTURE_NOTE"
+  },
+  {
+    "id": "E-52ccf895-8168-458a-a17d-0893005712f3",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "279",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T19:24:22.737Z"
+    },
+    "kind": "text",
+    "text": "If sort requires backend ordering, pass sort= into /v1/price-action/feed\n\nKeep defaults unchanged\n\nAcceptance\n\nFilter options update feed ordering without breaking current UX\n\nChart quality guidelines (so it looks premium, not mid)\n\nDefault chart timeframe: 6H\n\nCandle interval (suggested):\n\n1H view → 1–2m candles\n\n6H view → 5m candles\n\n24H view → 15m candles\nIf Birdeye response is too heavy:\n\nreturn only needed candles (cap at ~120 points)\n\ndownsample on backend if necessary (never on frontend per-render)\n\nFeature flag (optional but recommended)\n\nAdd env flag:\n\nFEATURE_SIGNAL_CARDS=true\nSo you can toggle in prod safely.\n\nFinal acceptance checklist\n\n Price action feed loads with one token bundle request (no N+1)\n\n Cards show: token image, timeframe % changes, token vol/liquidity/txns/holders, NomNom market volume, expiry, chart\n\n No auto-create; trending is display only\n\n Redis cache hit rate is high; Birdeye calls are bounded\n\n UI remains glassy and consistent with current design system",
+    "intent": "CAPTURE_NOTE"
+  },
+  {
+    "id": "E-8b6aca2a-c303-4037-bb62-852e39a38968",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "283",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T19:26:52.191Z"
+    },
+    "kind": "text",
+    "text": "clear notes",
+    "intent": "CLEAR_NOTES"
+  },
+  {
+    "id": "E-35fc323b-bb48-4fa1-bf68-913f377f5705",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "288",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T19:27:00.130Z"
+    },
+    "kind": "text",
+    "text": "NomNom “Signal Cards” (Birdeye) — PR Tranche for Amp Code\nGoal\n\nUpgrade only the center-feed cards (Price Action feed) so they feel like Dexscreener-grade signal, without turning NomNom into a full charting app.\n\nEach center-feed card should show:\n\nToken image (top-left, replaces NomNom logo on the card)\n\nToken symbol/name + chain tag (SOL)\n\nPrice + % change by timeframe (5m / 1h / 6h / 24h)\n\nToken 24h volume + token liquidity + txns + holders (minimum set)\n\nMarket-specific volume (NomNom volume) and optional market trades count\n\nExpiry countdown / expiry timestamp\n\nChart:\n\nIf NomNom market exists: show token price chart with strike/threshold overlay (and optionally “NomNom implied prob” later)\n\nIf no NomNom market yet: show token chart + CTA “Create Market” (but NO auto-create)\n\nNon-negotiables\n\nNo auto-create markets\n\nTrending is discovery only; market creation is user-driven\n\nBatch everything (no N+1 Birdeye calls per card)\n\nRedis caching with sane TTLs\n\nDo not break existing feed; feature-flag is fine if needed\n\nData Sources\nBirdeye (primary for “signal”)\n\nUse Birdeye for:\n\ntoken price\n\nprice change (multi timeframe)\n\n24h volume\n\nliquidity\n\ntxns\n\nholders\n\nOHLCV candles (for chart)\n\nHelius (optional fallback only)\n\nKeep Helius only as fallback for token image/name/symbol when Birdeye doesn’t return it (or returns null/empty).\n\nNomNom (market-specific)\n\nUse your existing DB for:\n\nmarket volume (SUM of trades)\n\nmarket 24h volume\n\nmarket trades count (optional)\n\nexpiry\n\nsnapshot + target/strike/threshold\n\nPR 1 — Backend: Birdeye client + caching primitives\nDeliverables\n\nAdd Birdeye API client module with:\n\nrequest wrapper\n\nretry/backoff (light)\n\ntimeout\n\nstructured logging\n\nrate limit protection (concurrency + queue)\n\nRedis cache helpers\n\nFiles\n\nsrc/priceAction/birdeye.ts (new)\n\nsrc/services/cache.ts or wherever Redis helpers live (extend if needed)\n\nenv:\n\nBIRDEYE_API_KEY\n\nBIRDEYE_BASE_URL default https://public-api.birdeye.so\n\nClient requirements\n\nMust support batch requests where Birdeye supports it; otherwise:\n\ngroup calls by endpoint and run in parallel with p-limit concurrency\n\nCache keys:\n\nbirdeye:token:stats:<mint> TTL 15s\n\nbirdeye:token:candles:<mint>:<tf>:<window> TTL 30–60s\n\nbirdeye:token:meta:<mint> TTL 24h (if you use Birdeye for meta)\n\nUse “stale-while-revalidate” pattern:\n\nServe cached immediately if present\n\nRefresh in background if near-expiry (optional but ideal)\n\nAcceptance\n\nYou can call Birdeye for a mint and get:\n\nprice + priceChange\n\nvolume/liquidity/holders/txns\n\nOHLCV candles\n\nRedis caches are being hit (log cache hit rate in debug)\n\nPR 2 — Backend: Token “Stats Bundle” API (batch)\nGoal\n\nFrontend needs one endpoint to fetch everything needed for rendering the enriched cards.\n\nEndpoint\nPOST /v1/tokens/stats-bundle\n\nBody\n\n{\n  \"mints\": [\"So11111111111111111111111111111111111111112\", \"...\"],\n  \"timeframes\": [\"5m\", \"1h\", \"6h\", \"24h\"],\n  \"chart\": { \"timeframe\": \"6h\" }\n}\n\n\nResponse\n\n{\n  \"tokens\": {\n    \"<mint>\": {\n      \"mint\": \"<mint>\",\n      \"symbol\": \"BONK\",\n      \"name\": \"Bonk\",\n      \"image\": \"https://...\",\n      \"price\": 0.0000123,\n      \"marketCap\": 12345678,\n      \"liquidityUsd\": 123456,\n      \"volume24hUsd\": 987654,\n      \"txns24h\": 4321,\n      \"holders\": 123456,\n      \"changes\": {\n        \"5m\": -1.2,\n        \"1h\": 4.8,\n        \"6h\": 22.1,\n        \"24h\": 120.4\n      },\n      \"chart\": {\n        \"timeframe\": \"6h\",\n        \"candles\": [\n          { \"t\": 1730000000, \"o\": 0.01, \"h\": 0.012, \"l\": 0.009, \"c\": 0.011, \"v\": 1234 }\n        ]\n      },\n      \"source\": \"birdeye\"\n    }\n  }\n}\n\nImplementation details\n\nAccept up to 50 mints per request (you only need 25 trending + what’s in feed)\n\nReturn tokens keyed by mint for easy lookup\n\nIf a token fails, include it with error field; do not fail the whole response\n\nPerformance rules\n\nRequest-level concurrency cap (ex: 😍\n\nPer-endpoint concurrency cap (ex: 4)\n\nCache-first always\n\nAcceptance\n\nSingle bundle call supports rendering a full feed page without per-card token fetches\n\nPR 3 — Backend: Trending runners endpoint (top 25) using Birdeye\nGoal",
+    "intent": "CAPTURE_NOTE"
+  },
+  {
+    "id": "E-b195a9b1-56eb-47ed-91be-54232ad6bdc4",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "289",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T19:27:00.473Z"
+    },
+    "kind": "text",
+    "text": "You decided: don’t auto-create, just present trending.\n\nEndpoint\nGET /v1/tokens/trending?limit=25\n\nResponse is normalized into your TokenCardModel shape:\n\n{\n  \"runners\": [\n    {\n      \"mint\": \"...\",\n      \"symbol\": \"...\",\n      \"name\": \"...\",\n      \"image\": \"...\",\n      \"price\": 0.01,\n      \"changes\": { \"5m\": 1.1, \"1h\": 8.2, \"6h\": 30.5, \"24h\": 200.0 },\n      \"volume24hUsd\": 123456,\n      \"liquidityUsd\": 65432,\n      \"txns24h\": 999,\n      \"holders\": 12345\n    }\n  ]\n}\n\nCaching\n\nCache the whole trending response birdeye:trending:25 TTL 15–30s\n\nAcceptance\n\nTrending list loads fast and is stable (no giant swings from caching jitter)\n\nPR 4 — Backend: Market-volume aggregation helpers (fast, scalable)\nProblem\n\nComputing volume on the fly from raw trades will get expensive as volume grows.\n\nDeliverable (choose the simplest “good” approach)\nOption A (recommended): lightweight aggregates table\n\nCreate table market_volume_agg:\n\nmarket_id\n\nvolume_total_usdc\n\nvolume_24h_usdc\n\ntrades_total\n\ntrades_24h\n\nupdated_at\n\nUpdate it via:\n\ncron job every 1–5 minutes\n\nor append-trigger style worker (later)\n\nOption B: materialized view (if you prefer)\n\nMV refreshed periodically\n\nAcceptance\n\nFeed endpoints can query market volume without scanning trades tables\n\nPR 5 — Backend: Upgrade Price Action feed payload to include token mint + market overlays\nGoal\n\nYour FE card needs to know:\n\ntoken mint\n\nmarket state (exists, launched)\n\nexpiry\n\nstrike/threshold\n\nsnapshot value/time\n\nmarket volume (from agg)\n\nEndpoint touched\n\nGET /v1/price-action/feed (path: src/priceAction/routes.ts:200)\n\nAdd fields per item\n{\n  \"marketId\": \"...\",\n  \"mint\": \"...\",\n  \"assetClass\": \"MEME\",\n  \"templateId\": \"DOWN_PCT\",\n  \"expiryTs\": \"...\",\n  \"countdownSec\": 12345,\n  \"snapshot\": { \"value\": 0.01, \"ts\": \"...\" },\n  \"target\": { \"thresholdPct\": 20.0, \"strike\": null },\n  \"marketVolume\": { \"total\": 1234.56, \"h24\": 123.45, \"tradesH24\": 99 },\n  \"hasLaunched\": true\n}\n\nAcceptance\n\nFrontend can render all “NomNom-specific” overlays without extra API calls\n\nPR 6 — Frontend: Enrich GlassPriceActionCard UI (ONLY center cards)\nYou said:\n\n“don’t change anything but the cards in the center feed.”\n\nSo we only touch:\n\nsrc/components/glass/GlassPriceActionCard.tsx\n\nMust not touch:\n\nnav\n\nright rail\n\noverall layout\n\nother card components unless required\n\nNew card layout (keep glass aesthetic)\nHeader row\n\nLeft:\n\nToken image (circle, 28–32px) replaces NomNom logo in-card\n\n$SYMBOL + small subtitle (MEME, STOCK, etc.)\n\nRight:\n\nexpiry countdown pill: ⏱ 19h 40m or Expired\n\noptional: “Open chart” icon button\n\n“Signal strip” row (Dex-like)\n\nA compact row of pills (subtle glass chips), max 6, responsive wrap:\n\nPRICE $0.0123\n\n5M -3.7%\n\n1H +12.5%\n\n6H +55.1%\n\n24H +120.4%\n\nVOL $2.3M (token volume)\n\nLIQ $180K (if room)\n\nTXNS 4,981 (if room)\n\nHOLDERS 569 (if room)\n\nRule: always show Price + 1H + 24H + VOL. The rest collapse based on width.\n\nChart area\n\nIf hasLaunched:\n\nrender token chart candles/line for timeframe default 6h\n\noverlay:\n\na “target line” (strike or threshold marker)\n\nlabel “Target: -20%” or “Target: $12.5M”\nIf not launched:\n\nrender token chart only\n\nshow CTA button: Create market (goes to your existing create flow, prefilled)\n\nFooter\n\nShow:\n\nNomNom Vol (24h): $X (from agg)\n\noptionally Market trades (24h): N\nKeep social actions row as-is (like/rt/comment/share)\n\nData wiring\n\nIn feed-view.tsx, do NOT fetch per-card.\nInstead:\n\ngather mints from the feed response\n\ncall POST /v1/tokens/stats-bundle once\n\npass tokenStats[mint] into each GlassPriceActionCard\n\nAcceptance\n\nCenter feed cards show all requested token metrics\n\nCharts render fast and don’t stutter scroll\n\nNo “mid sparkline”: real candles or sufficiently-sampled line\n\nPR 7 — Frontend: Filter & Sort additions (minimal changes)\n\nYou already have Filter & Sort UI; just add options.\n\nAdd filters (only within existing modal)\n\nTimeframe selector for chart: 1H / 6H / 24H\n\nSort options:\n\nMost token volume (24h)\n\nMost NomNom market volume (24h)\n\nBiggest 24h mover\n\nEnding soon\n\nNew\n\nBackend support:",
+    "intent": "CAPTURE_NOTE"
+  },
+  {
+    "id": "E-c16c8cfb-c3ab-4b05-870c-3f1989a1844a",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "290",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T19:27:00.491Z"
+    },
+    "kind": "text",
+    "text": "If sort requires backend ordering, pass sort= into /v1/price-action/feed\n\nKeep defaults unchanged\n\nAcceptance\n\nFilter options update feed ordering without breaking current UX\n\nChart quality guidelines (so it looks premium, not mid)\n\nDefault chart timeframe: 6H\n\nCandle interval (suggested):\n\n1H view → 1–2m candles\n\n6H view → 5m candles\n\n24H view → 15m candles\nIf Birdeye response is too heavy:\n\nreturn only needed candles (cap at ~120 points)\n\ndownsample on backend if necessary (never on frontend per-render)\n\nFeature flag (optional but recommended)\n\nAdd env flag:\n\nFEATURE_SIGNAL_CARDS=true\nSo you can toggle in prod safely.\n\nFinal acceptance checklist\n\n Price action feed loads with one token bundle request (no N+1)\n\n Cards show: token image, timeframe % changes, token vol/liquidity/txns/holders, NomNom market volume, expiry, chart\n\n No auto-create; trending is display only\n\n Redis cache hit rate is high; Birdeye calls are bounded\n\n UI remains glassy and consistent with current design system",
+    "intent": "CAPTURE_NOTE"
+  }
+]

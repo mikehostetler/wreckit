@@ -2,12 +2,12 @@ import { spawn } from "child_process";
 import { existsSync, mkdirSync, writeFileSync, readFileSync } from "fs";
 import { join } from "path";
 import { randomUUID } from "crypto";
-import type { MobileConfig, Ticket, RunMeta, RunEvent, RunPhase, RepoRef } from "../shared/contracts.js";
+import type { MobileConfig, Ticket, RunMeta, RunEvent, RepoRef } from "../shared/contracts.js";
 import { createLogger } from "../../src/logging.js";
 
 const log = createLogger({ verbose: true });
 
-export interface ExecutorOptions {
+export interface AmpExecutorOptions {
   config: MobileConfig;
   repoPath: string;
   sessionId: string;
@@ -22,9 +22,10 @@ export interface ExecutionResult {
   prUrl?: string;
   prNumber?: number;
   error?: string;
+  threadId?: string;
 }
 
-export class Executor {
+export class AmpExecutor {
   private config: MobileConfig;
   private repoPath: string;
   private sessionId: string;
@@ -34,7 +35,7 @@ export class Executor {
   private abortController: AbortController | null = null;
   private currentRepoPath: string;
 
-  constructor(options: ExecutorOptions) {
+  constructor(options: AmpExecutorOptions) {
     this.config = options.config;
     this.repoPath = options.repoPath;
     this.currentRepoPath = options.repoPath;
@@ -52,7 +53,7 @@ export class Executor {
       if (configRepo) {
         return configRepo.localPath;
       }
-      this.log(`Warning: Ticket repo ${ticket.repo.owner}/${ticket.repo.name} not found in config, using default`);
+      this.log(`Warning: Ticket repo ${ticket.repo.owner}/${ticket.repo.name} not found in config`);
     }
     return this.repoPath;
   }
@@ -60,7 +61,7 @@ export class Executor {
   async executeTicket(ticket: Ticket): Promise<ExecutionResult> {
     const runId = `R-${randomUUID()}`;
     this.abortController = new AbortController();
-    
+
     this.currentRepoPath = this.resolveRepoPath(ticket);
     if (this.currentRepoPath !== this.repoPath && ticket.repo) {
       const fullRepo = this.config.repos.find(
@@ -69,7 +70,7 @@ export class Executor {
       if (fullRepo && this.onRepoSwitch) {
         this.onRepoSwitch(fullRepo);
       }
-      this.log(`Switched to repo: ${ticket.repo.owner}/${ticket.repo.name} at ${this.currentRepoPath}`);
+      this.log(`Switched to repo: ${ticket.repo.owner}/${ticket.repo.name}`);
     }
 
     const runMeta: RunMeta = {
@@ -81,57 +82,43 @@ export class Executor {
     };
 
     this.saveRunMeta(runMeta);
-    this.emitEvent(runId, "started", undefined, `Starting execution for ${ticket.title}`);
+    this.emitEvent(runId, "started", undefined, `Starting Amp execution for ${ticket.title}`);
 
     try {
-      const itemId = await this.createWreckitItem(ticket);
-      if (!itemId) {
-        throw new Error("Failed to create Wreckit item");
-      }
-
       runMeta.status = "running";
       this.saveRunMeta(runMeta);
 
-      const phases: RunPhase[] = ["research", "plan", "implement", "pr"];
+      this.emitEvent(runId, "phase_started", "implement", "Amp is implementing...");
+      
+      const result = await this.runAmp(ticket);
 
-      for (const phase of phases) {
-        if (this.abortController.signal.aborted) {
-          throw new Error("Execution stopped by user");
-        }
+      if (!result.success) {
+        this.emitEvent(runId, "phase_failed", "implement", result.error || "Amp failed");
+        throw new Error(result.error || "Amp execution failed");
+      }
 
-        this.emitEvent(runId, "phase_started", phase, `Starting ${phase} phase`);
-        runMeta.currentPhase = phase;
-        this.saveRunMeta(runMeta);
+      this.emitEvent(runId, "phase_completed", "implement", "Implementation complete");
 
-        const result = await this.runWreckitPhase(itemId, phase);
-
-        if (!result.success) {
-          this.emitEvent(runId, "phase_failed", phase, result.error || `${phase} failed`);
-          throw new Error(`${phase} phase failed: ${result.error}`);
-        }
-
-        this.emitEvent(runId, "phase_completed", phase, `${phase} completed`);
-
-        if (phase === "pr" && result.prUrl) {
-          runMeta.prUrl = result.prUrl;
-          runMeta.prNumber = result.prNumber;
-          this.emitEvent(runId, "pr_opened", undefined, `PR opened: ${result.prUrl}`, {
-            prUrl: result.prUrl,
-            prNumber: result.prNumber,
-          });
-        }
+      if (result.prUrl) {
+        runMeta.prUrl = result.prUrl;
+        runMeta.prNumber = result.prNumber;
+        this.emitEvent(runId, "pr_opened", undefined, `PR opened: ${result.prUrl}`, {
+          prUrl: result.prUrl,
+          prNumber: result.prNumber,
+        });
       }
 
       runMeta.status = "completed";
       runMeta.completedAt = new Date().toISOString();
       this.saveRunMeta(runMeta);
-      this.emitEvent(runId, "completed", undefined, "Execution completed successfully");
+      this.emitEvent(runId, "completed", undefined, "Execution completed");
 
       return {
         success: true,
         runId,
         prUrl: runMeta.prUrl,
         prNumber: runMeta.prNumber,
+        threadId: result.threadId,
       };
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : "Unknown error";
@@ -156,73 +143,57 @@ export class Executor {
     }
   }
 
-  private async createWreckitItem(ticket: Ticket): Promise<string | null> {
-    const ticketNum = ticket.id.replace(/\D/g, "").padStart(3, "0");
-    const slug = ticket.title
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-|-$/g, "")
-      .slice(0, 30);
-    const itemId = `${ticketNum}-${slug}`;
-    const itemDir = join(this.currentRepoPath, ".wreckit", "items", itemId);
+  private buildAmpPrompt(ticket: Ticket): string {
+    const repoInfo = ticket.repo 
+      ? `Repository: ${ticket.repo.owner}/${ticket.repo.name}` 
+      : "";
+    
+    return `# Task: ${ticket.title}
 
-    if (!existsSync(itemDir)) {
-      mkdirSync(itemDir, { recursive: true });
-    }
+${repoInfo}
 
-    const itemJson = {
-      schema_version: 1,
-      id: itemId,
-      title: ticket.title,
-      section: "mobile",
-      state: "idea",
-      overview: `${ticket.description}\n\nAcceptance Criteria:\n${ticket.acceptanceCriteria.map((c) => `- ${c}`).join("\n")}`,
-      priority_hint: ticket.priority,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      branch: null,
-      pr_url: null,
-      pr_number: null,
-      last_error: null,
-    };
+## Description
+${ticket.description}
 
-    writeFileSync(join(itemDir, "item.json"), JSON.stringify(itemJson, null, 2));
+## Acceptance Criteria
+${ticket.acceptanceCriteria.map((c, i) => `${i + 1}. ${c}`).join("\n")}
 
-    this.log(`Created Wreckit item: ${itemId}`);
-    return itemId;
+## Instructions
+1. Implement the changes described above
+2. Make sure all acceptance criteria are met
+3. Run any relevant tests or type checks
+4. Create a pull request with a clear title and description
+5. The PR title should include the ticket ID: "${ticket.id}"
+
+Do not ask for clarification - proceed with implementation based on the requirements above.`;
   }
 
-  private itemShortId: number = 0;
+  private async runAmp(ticket: Ticket): Promise<{ 
+    success: boolean; 
+    error?: string; 
+    prUrl?: string; 
+    prNumber?: number;
+    threadId?: string;
+  }> {
+    return new Promise((resolve) => {
+      const prompt = this.buildAmpPrompt(ticket);
+      const escapedPrompt = prompt.replace(/"/g, '\\"').replace(/`/g, '\\`');
 
-  private async runWreckitPhase(
-    itemId: string,
-    phase: RunPhase
-  ): Promise<{ success: boolean; error?: string; prUrl?: string; prNumber?: number }> {
-    return new Promise(async (resolve) => {
-      if (this.itemShortId === 0) {
-        const { execSync } = await import("child_process");
-        try {
-          const listOutput = execSync(
-            `bun run ./src/index.ts list --cwd "${this.currentRepoPath}" --json 2>/dev/null || echo "[]"`,
-            { cwd: join(this.currentRepoPath, "..", "WreckitGo"), encoding: "utf-8" }
-          );
-          const items = JSON.parse(listOutput.trim() || "[]");
-          const found = items.findIndex((i: { id: string }) => i.id === itemId);
-          this.itemShortId = found >= 0 ? found + 1 : 1;
-        } catch {
-          this.itemShortId = 1;
+      this.log(`Running Amp for ticket ${ticket.id}...`);
+
+      const proc = spawn(
+        "amp",
+        [
+          "--execute", escapedPrompt,
+          "--no-ide",
+          "--dangerously-allow-all",
+        ],
+        {
+          cwd: this.currentRepoPath,
+          stdio: ["ignore", "pipe", "pipe"],
+          env: { ...process.env },
         }
-      }
-
-      const args = [phase, String(this.itemShortId), "--cwd", this.currentRepoPath];
-
-      this.log(`Running: wreckit ${args.join(" ")}`);
-
-      const proc = spawn("bun", ["run", "./src/index.ts", ...args], {
-        cwd: join(this.currentRepoPath, "..", "WreckitGo"),
-        stdio: ["ignore", "pipe", "pipe"],
-        env: { ...process.env },
-      });
+      );
 
       let stdout = "";
       let stderr = "";
@@ -230,15 +201,14 @@ export class Executor {
       proc.stdout?.on("data", (data) => {
         const text = data.toString();
         stdout += text;
-        this.log(text.trim());
+        for (const line of text.split("\n").filter((l: string) => l.trim())) {
+          this.log(line);
+        }
       });
 
       proc.stderr?.on("data", (data) => {
         const text = data.toString();
         stderr += text;
-        if (!text.includes("$")) {
-          this.log(`[stderr] ${text.trim()}`);
-        }
       });
 
       const abortHandler = () => {
@@ -247,31 +217,47 @@ export class Executor {
       };
       this.abortController?.signal.addEventListener("abort", abortHandler);
 
+      const timeout = setTimeout(() => {
+        proc.kill("SIGTERM");
+        resolve({ success: false, error: "Execution timed out (10 minutes)" });
+      }, 10 * 60 * 1000);
+
       proc.on("close", (code) => {
+        clearTimeout(timeout);
         this.abortController?.signal.removeEventListener("abort", abortHandler);
 
-        if (code === 0) {
-          const prUrlMatch = stdout.match(/https:\/\/github\.com\/[^\s]+\/pull\/\d+/);
-          const prNumberMatch = prUrlMatch?.[0].match(/\/pull\/(\d+)/);
+        const prUrlMatch = stdout.match(/https:\/\/github\.com\/[^\s]+\/pull\/\d+/);
+        const prNumberMatch = prUrlMatch?.[0].match(/\/pull\/(\d+)/);
+        const threadMatch = stdout.match(/Thread URL: (https:\/\/ampcode\.com\/threads\/T-[a-f0-9-]+)/i) 
+          || stdout.match(/(T-[a-f0-9-]+)/);
 
+        if (code === 0) {
           resolve({
             success: true,
             prUrl: prUrlMatch?.[0],
             prNumber: prNumberMatch ? parseInt(prNumberMatch[1], 10) : undefined,
+            threadId: threadMatch?.[1],
           });
         } else {
-          resolve({ success: false, error: stderr || `Exit code ${code}` });
+          const errorSummary = stderr.slice(-500) || stdout.slice(-500) || `Exit code ${code}`;
+          resolve({ 
+            success: false, 
+            error: errorSummary,
+            prUrl: prUrlMatch?.[0],
+            prNumber: prNumberMatch ? parseInt(prNumberMatch[1], 10) : undefined,
+          });
         }
       });
 
       proc.on("error", (error) => {
+        clearTimeout(timeout);
         resolve({ success: false, error: error.message });
       });
     });
   }
 
   private saveRunMeta(meta: RunMeta): void {
-    const runsDir = join(this.repoPath, ".wreckit", "sessions", this.sessionId, "runs");
+    const runsDir = join(this.currentRepoPath, ".wreckit", "sessions", this.sessionId, "runs");
     if (!existsSync(runsDir)) {
       mkdirSync(runsDir, { recursive: true });
     }
@@ -285,7 +271,7 @@ export class Executor {
   private emitEvent(
     runId: string,
     kind: RunEvent["kind"],
-    phase?: RunPhase,
+    phase?: "implement",
     message?: string,
     data?: Record<string, unknown>
   ): void {
@@ -294,7 +280,7 @@ export class Executor {
       runId,
       kind,
       timestamp: new Date().toISOString(),
-      phase,
+      phase: phase as RunEvent["phase"],
       message,
       data,
     };
@@ -303,7 +289,7 @@ export class Executor {
       this.onEvent(event);
     }
 
-    const runsDir = join(this.repoPath, ".wreckit", "sessions", this.sessionId, "runs", runId);
+    const runsDir = join(this.currentRepoPath, ".wreckit", "sessions", this.sessionId, "runs", runId);
     if (existsSync(runsDir)) {
       const eventsPath = join(runsDir, "events.json");
       let events: RunEvent[] = [];

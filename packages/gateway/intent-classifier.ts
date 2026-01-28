@@ -7,36 +7,74 @@ const INTENT_PATTERNS: Record<Intent, RegExp[]> = {
     /^new session$/i,
   ],
   SYNTHESIZE: [
-    /\b(synthesize|synthesise|make tickets?|write spec|create tickets?|generate spec)/i,
-    /\b(analyze|analyse|process notes?)/i,
-    /^synth$/i,
+    /^(synthesize|synthesise|synth)$/i,
+    /\b(make tickets?|write spec|create tickets?|generate spec)\b/i,
+    /\b(analyze|analyse|process)\s+notes?\b/i,
   ],
   EXECUTE: [
-    /\b(go|execute|implement|run|build|do it|ship|make it happen)/i,
-    /^go$/i,
+    /^(go|execute|implement|run|build|do it|ship|make it happen)$/i,
     /^impl$/i,
   ],
+  APPROVE: [
+    /^(approve|yes|confirm|lgtm|looks good)$/i,
+    /^y$/i,
+  ],
   STATUS: [
-    /\b(status|where are we|progress|what's (happening|going on)|show me|current state)/i,
-    /^status$/i,
-    /^\?$/,
+    /^(status|where are we|progress|current state)$/i,
+    /^what'?s (happening|going on)$/i,
   ],
   STOP: [
-    /\b(stop|pause|kill|cancel|abort|halt)/i,
-    /^stop$/i,
+    /^(stop|pause|kill|cancel|abort|halt)$/i,
     /^x$/i,
   ],
   MERGE: [
-    /\b(merge|ship it|deploy|push|land)/i,
-    /^merge$/i,
+    /^(merge|ship it|deploy|land)$/i,
   ],
   SWITCH_REPO: [
     /^[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-]+$/,
   ],
+  NOTES: [
+    /^(notes|show notes|view notes|my notes|list notes)$/i,
+  ],
+  CLEAR_NOTES: [
+    /^(clear notes|reset notes|delete notes|wipe notes|clear all notes)$/i,
+  ],
+  ASK: [
+    /^(ask|question|q:)\s+.+/i,
+    /^\?\s+.+/i,
+    /.+\?$/,
+  ],
+  GREP: [
+    /^(grep|search|find)\s+.+/i,
+    /^\/\/.+/i,
+  ],
+  DIFF: [
+    /^(diff|changes|show changes|what changed)$/i,
+  ],
+  REVERT: [
+    /^(revert|undo)\s+(T-\d+|last)$/i,
+  ],
+  LOGS: [
+    /^(logs|verbose|logs on|logs off)$/i,
+  ],
+  IMPORT_ISSUE: [
+    /^(issue|#)\s*#?\d+$/i,
+    /^import\s+issue\s+#?\d+$/i,
+  ],
+  IMPORT_THREAD: [
+    /^(context|import|thread)\s+@?T-[a-f0-9-]+$/i,
+    /^@T-[a-f0-9-]+$/i,
+  ],
+  AMP_CHAT: [
+    /^amp\s+threads\s+continue\s+T-[a-f0-9-]+/i,
+    /^(amp|chat|continue)\s+@?T-[a-f0-9-]+/i,
+    /^@T-[a-f0-9-]+\s+.+/i,
+  ],
+  AMP_END: [
+    /^(end chat|exit amp|stop amp|\/end)$/i,
+  ],
   HELP: [
-    /\b(help|commands|how|what can you do)/i,
-    /^help$/i,
-    /^\?{2,}$/,
+    /^(help|commands|\?\?)$/i,
   ],
   CAPTURE_NOTE: [],
   UNKNOWN: [],
@@ -69,14 +107,28 @@ Just send any text, photos, or voice messages to capture them.
 
 ⚡ **Actions**
 • \`synthesize\` - Create tickets from notes
-• \`go\` / \`execute\` - Start implementation
-• \`status\` - Show current session status
-• \`stop\` - Stop current execution
-• \`merge\` - Merge PR when ready
+• \`approve\` / \`go\` - Approve & execute tickets
+• \`status\` - Session status
+• \`notes\` - View captured notes
+• \`merge\` - Merge session PRs
+• \`stop\` - Stop execution
+
+🔍 **Research**
+• \`<question>?\` - Ask about repo (Amp)
+• \`grep <pattern>\` - Search codebase
+• \`diff\` - Show uncommitted changes
+• \`issue #123\` - Import GitHub issue
+• \`@T-xxx\` - Import Amp thread
+
+🛠️ **Advanced**
+• \`revert T-001\` - Undo ticket changes
+• \`logs\` - Toggle verbose logs
+• \`amp threads continue T-xxx\` - Amp chat
+• \`/end\` - Disconnect Amp
 
 📂 **Session**
-• \`new session\` - Start a fresh session
-• \`owner/repo\` - Switch to a different repo
+• \`new session\` - Fresh session
+• \`owner/repo\` - Switch repo
 
 💡 **Tips**
 • Screenshots work great for UI feedback

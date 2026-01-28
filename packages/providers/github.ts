@@ -9,6 +9,17 @@ export interface GitHubProvider {
   getPRChecks(owner: string, repo: string, prNumber: number): Promise<ChecksInfo>;
   mergePullRequest(owner: string, repo: string, prNumber: number, method?: "squash" | "merge" | "rebase"): Promise<boolean>;
   findPreviewUrl(owner: string, repo: string, prNumber: number): Promise<string | null>;
+  getIssue(owner: string, repo: string, issueNumber: number): Promise<IssueInfo | null>;
+}
+
+export interface IssueInfo {
+  number: number;
+  title: string;
+  body: string | null;
+  state: "open" | "closed";
+  url: string;
+  labels: string[];
+  comments: { author: string; body: string; createdAt: string }[];
 }
 
 export interface PullRequestInfo {
@@ -138,6 +149,42 @@ export class OctokitGitHubProvider implements GitHubProvider {
     } catch (error) {
       log.error(`Failed to merge PR: ${error}`);
       return false;
+    }
+  }
+
+  async getIssue(owner: string, repo: string, issueNumber: number): Promise<IssueInfo | null> {
+    try {
+      const { data: issue } = await this.octokit.issues.get({
+        owner,
+        repo,
+        issue_number: issueNumber,
+      });
+
+      const { data: commentsData } = await this.octokit.issues.listComments({
+        owner,
+        repo,
+        issue_number: issueNumber,
+        per_page: 10,
+      });
+
+      const comments = commentsData.map((c) => ({
+        author: c.user?.login || "unknown",
+        body: c.body || "",
+        createdAt: c.created_at,
+      }));
+
+      return {
+        number: issue.number,
+        title: issue.title,
+        body: issue.body ?? null,
+        state: issue.state as "open" | "closed",
+        url: issue.html_url,
+        labels: issue.labels.map((l) => (typeof l === "string" ? l : l.name || "")),
+        comments,
+      };
+    } catch (error) {
+      log.error(`Failed to get issue: ${error}`);
+      return null;
     }
   }
 

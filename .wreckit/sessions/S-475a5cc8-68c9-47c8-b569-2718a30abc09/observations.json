@@ -1,0 +1,152 @@
+{
+  "observations": [
+    {
+      "id": "OBS-001",
+      "summary": "Upgrade center-feed cards to Dexscreener-grade signals",
+      "details": "Enhance center-feed cards to display token image, price, multi-timeframe % changes, volume, liquidity, txns, holders, and expiry countdown without turning the app into a full charting tool.",
+      "priority": "high",
+      "tags": [
+        "Frontend",
+        "Goal",
+        "UI"
+      ]
+    },
+    {
+      "id": "OBS-002",
+      "summary": "Enforce 'No auto-create markets' rule",
+      "details": "Ensure trending is discovery only and market creation remains user-driven. If no market exists, show a 'Create Market' CTA instead of auto-creating.",
+      "priority": "critical",
+      "tags": [
+        "Business Logic",
+        "Constraint",
+        "Backend"
+      ]
+    },
+    {
+      "id": "OBS-003",
+      "summary": "Implement Birdeye API client with resilience patterns",
+      "details": "Create `src/priceAction/birdeye.ts` with request wrapper, retry/backoff, timeout, structured logging, and rate limit protection (concurrency + queue).",
+      "priority": "high",
+      "tags": [
+        "Backend",
+        "API",
+        "PR1"
+      ]
+    },
+    {
+      "id": "OBS-004",
+      "summary": "Implement Redis caching with specific TTLs",
+      "details": "Use Redis for caching Birdeye data (stats: 15s, candles: 30-60s, meta: 24h). Implement 'stale-while-revalidate' pattern to serve cached data immediately while refreshing in the background.",
+      "priority": "high",
+      "tags": [
+        "Backend",
+        "Performance",
+        "Caching",
+        "PR1"
+      ]
+    },
+    {
+      "id": "OBS-005",
+      "summary": "Create Token Stats Bundle API endpoint",
+      "details": "Implement `POST /v1/tokens/stats-bundle` to accept up to 50 mints and return all necessary data (price, volume, liquidity, changes, chart candles) in one request to prevent N+1 issues.",
+      "priority": "high",
+      "tags": [
+        "Backend",
+        "API",
+        "PR2"
+      ]
+    },
+    {
+      "id": "OBS-006",
+      "summary": "Create Trending runners endpoint",
+      "details": "Implement `GET /v1/tokens/trending?limit=25` using Birdeye data, normalized to the TokenCardModel shape. Cache the whole response for 15-30s.",
+      "priority": "medium",
+      "tags": [
+        "Backend",
+        "API",
+        "PR3"
+      ]
+    },
+    {
+      "id": "OBS-007",
+      "summary": "Create market volume aggregation table",
+      "details": "Create `market_volume_agg` table (Option A) with fields for total/24h volume and trade counts. Update via cron job every 1-5 minutes to avoid expensive on-the-fly calculations.",
+      "priority": "medium",
+      "tags": [
+        "Backend",
+        "Database",
+        "Performance",
+        "PR4"
+      ]
+    },
+    {
+      "id": "OBS-008",
+      "summary": "Upgrade Price Action feed payload",
+      "details": "Update `GET /v1/price-action/feed` to include token mint, market state, expiry, strike/threshold, snapshot, and aggregated market volume fields.",
+      "priority": "high",
+      "tags": [
+        "Backend",
+        "API",
+        "PR5"
+      ]
+    },
+    {
+      "id": "OBS-009",
+      "summary": "Redesign GlassPriceActionCard UI",
+      "details": "Modify `src/components/glass/GlassPriceActionCard.tsx` to include a new header (token image/symbol), signal strip (price, % changes, vol, liq, txns, holders), chart area with overlays, and footer with NomNom volume.",
+      "priority": "high",
+      "tags": [
+        "Frontend",
+        "UI",
+        "PR6"
+      ]
+    },
+    {
+      "id": "OBS-010",
+      "summary": "Implement batch data fetching in feed view",
+      "details": "In `feed-view.tsx`, gather mints from the feed response and call `POST /v1/tokens/stats-bundle` once, passing the results into each card to ensure performance.",
+      "priority": "critical",
+      "tags": [
+        "Frontend",
+        "Performance",
+        "PR6"
+      ]
+    },
+    {
+      "id": "OBS-011",
+      "summary": "Add Filter and Sort options",
+      "details": "Add Timeframe selector (1H/6H/24H) and Sort options (Token Vol, NomNom Vol, Mover, Ending Soon, New) to the existing Filter UI.",
+      "priority": "medium",
+      "tags": [
+        "Frontend",
+        "UI",
+        "PR7"
+      ]
+    },
+    {
+      "id": "OBS-012",
+      "summary": "Configure chart quality and downsampling",
+      "details": "Ensure charts use real candles or sufficiently-sampled lines. Downsample on backend if necessary (cap at ~120 points). Intervals: 1H (1-2m), 6H (5m), 24H (15m).",
+      "priority": "medium",
+      "tags": [
+        "Frontend",
+        "UI",
+        "Performance"
+      ]
+    },
+    {
+      "id": "OBS-013",
+      "summary": "Add feature flag for Signal Cards",
+      "details": "Implement `FEATURE_SIGNAL_CARDS` environment variable to allow safe toggling of the new functionality in production.",
+      "priority": "low",
+      "tags": [
+        "DevOps",
+        "Config"
+      ]
+    }
+  ],
+  "meta": {
+    "totalNotes": 3,
+    "extractedObservations": 13
+  }
+}

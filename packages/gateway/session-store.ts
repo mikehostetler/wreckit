@@ -131,6 +131,14 @@ export class SessionStore {
     return meta;
   }
 
+  setActiveAmpThread(sessionId: string, threadId: string | undefined): SessionMeta | null {
+    const meta = this.getSession(sessionId);
+    if (!meta) return null;
+    meta.activeAmpThread = threadId;
+    this.saveMeta(meta);
+    return meta;
+  }
+
   appendNote(sessionId: string, text: string, kind: NoteKind = "text"): void {
     const meta = this.getSession(sessionId);
     if (!meta) return;
@@ -145,6 +153,19 @@ export class SessionStore {
     meta.noteCount = (meta.noteCount || 0) + 1;
     meta.lastActivityAt = timestamp;
     this.saveMeta(meta);
+  }
+
+  clearNotes(sessionId: string): boolean {
+    const meta = this.getSession(sessionId);
+    if (!meta) return false;
+
+    const notesPath = this.getNotesPath(sessionId);
+    writeFileSync(notesPath, "# Session Notes\n\n");
+
+    meta.noteCount = 0;
+    meta.lastActivityAt = new Date().toISOString();
+    this.saveMeta(meta);
+    return true;
   }
 
   saveAttachment(

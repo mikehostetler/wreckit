@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added - Telegram Gateway Enhancements
+- **Inline Buttons**: Added tap-friendly inline buttons throughout the workflow
+  - After capturing 3+ notes: "Synthesize" / "View Notes" buttons
+  - After synthesis: "Approve & Execute" / "Regenerate" / "View Notes" buttons
+  - During execution: "Stop Execution" button
+  - After execution: "Merge PRs" / "View Diff" / "Status" buttons
+- **Voice Transcription**: Voice messages are now transcribed using OpenAI Whisper
+  - Requires `openai.apiKey` in config (falls back gracefully if not set)
+  - Transcribed text is automatically added to session notes
+
 ### Removed
 - Removed duplicate `idea` CLI command. Use `wreckit ideas` instead.
   - The `idea` command was identical to `ideas` and caused confusion

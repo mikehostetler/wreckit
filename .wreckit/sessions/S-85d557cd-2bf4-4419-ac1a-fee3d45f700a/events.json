@@ -115,5 +115,96 @@
     "kind": "text",
     "text": "execute",
     "intent": "EXECUTE"
+  },
+  {
+    "id": "E-2039be7e-f1e7-45aa-bf9e-91caaad36f32",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "57",
+      "userId": "1630993666",
+      "timestamp": "2026-01-27T21:51:21.043Z"
+    },
+    "kind": "text",
+    "text": "merge",
+    "intent": "MERGE"
+  },
+  {
+    "id": "E-2cccbdb3-e3ac-4a94-9317-4e61adfdf79e",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "60",
+      "userId": "1630993666",
+      "timestamp": "2026-01-27T21:52:25.933Z"
+    },
+    "kind": "text",
+    "text": "merge",
+    "intent": "MERGE"
+  },
+  {
+    "id": "E-2b6b2205-64c4-4563-a812-bf6951480d15",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "63",
+      "userId": "1630993666",
+      "timestamp": "2026-01-27T21:59:24.231Z"
+    },
+    "kind": "text",
+    "text": "merge",
+    "intent": "MERGE"
+  },
+  {
+    "id": "E-1ec63643-5486-457f-a60d-860dee036ade",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "66",
+      "userId": "1630993666",
+      "timestamp": "2026-01-27T22:00:32.093Z"
+    },
+    "kind": "text",
+    "text": "merge",
+    "intent": "MERGE"
+  },
+  {
+    "id": "E-f81a1734-761a-4747-a28b-684e0cd0808a",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "72",
+      "userId": "1630993666",
+      "timestamp": "2026-01-27T22:37:50.278Z"
+    },
+    "kind": "text",
+    "text": "merge",
+    "intent": "MERGE"
+  },
+  {
+    "id": "E-bcca577d-0dcb-4cc8-94a9-d86c38289501",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "78",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T13:17:10.243Z"
+    },
+    "kind": "text",
+    "text": "help",
+    "intent": "HELP"
+  },
+  {
+    "id": "E-d73ad506-c59b-45be-a626-1f546d0caede",
+    "ref": {
+      "platform": "telegram",
+      "chatId": "1630993666",
+      "messageId": "80",
+      "userId": "1630993666",
+      "timestamp": "2026-01-28T13:17:43.462Z"
+    },
+    "kind": "text",
+    "text": "new session",
+    "intent": "START_SESSION"
   }
 ]

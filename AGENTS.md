@@ -112,7 +112,44 @@ All session data lives in `.wreckit/sessions/<sessionId>/`:
 | `STATUS` | "status", "where are we" | Show session status |
 | `STOP` | "stop", "pause", "kill" | Hard-kill runner |
 | `MERGE` | "merge", "ship it" | Merge PR if checks pass |
+| `ASK` | "ask <question>", "? <question>", "q: <question>" | Ask about repo (no PR) |
+| `APPROVE` | "approve", "yes", "y", "lgtm" | Approve pending tickets and execute |
+| `NOTES` | "notes", "show notes", "my notes" | View session notes summary |
+| `GREP` | "grep <pattern>", "search <pattern>" | Search codebase |
+| `DIFF` | "diff", "changes" | Show uncommitted git changes |
+| `REVERT` | "revert T-001", "revert last" | Undo ticket/last commit |
+| `LOGS` | "logs" | Toggle verbose execution logs |
+| `IMPORT_ISSUE` | "issue #123", "#123" | Import GitHub issue to session |
+| `IMPORT_THREAD` | "@T-xxx" (alone) | Import Amp thread context |
+| `AMP_CHAT` | "amp threads continue T-xxx", "@T-xxx <msg>" | Connect to Amp thread |
+| `AMP_END` | "/end", "exit amp" | Disconnect from Amp chat |
 | `SWITCH_REPO` | exact "owner/repo" match | Switch active repo |
+| `CLEAR_NOTES` | "clear notes", "reset notes" | Clear all session notes |
+
+## Multi-Repo Support
+
+Tickets can target different repositories. During synthesis, the LLM will assign each ticket to the appropriate repo based on context clues (e.g., "Backend:", "Frontend:", file paths).
+
+**Config:** Add multiple repos to `~/.wreckit/mobile-config.json`:
+```json
+{
+  "repos": [
+    { "owner": "org", "name": "backend", "localPath": "/path/to/backend" },
+    { "owner": "org", "name": "frontend", "localPath": "/path/to/frontend" }
+  ]
+}
+```
+
+**Ticket format:** Each ticket can have an optional `repo` field:
+```json
+{
+  "id": "T-001",
+  "title": "Add API endpoint",
+  "repo": { "owner": "org", "name": "backend" }
+}
+```
+
+During execution, WreckitGo automatically switches repos per-ticket and notifies via Telegram.
 
 ## Milestones
 

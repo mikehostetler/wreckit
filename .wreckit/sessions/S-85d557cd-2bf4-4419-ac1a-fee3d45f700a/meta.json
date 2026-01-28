@@ -2,10 +2,10 @@
   "id": "S-85d557cd-2bf4-4419-ac1a-fee3d45f700a",
   "mode": "capture",
   "repo": {
-    "owner": "noahchristian",
+    "owner": "nomnom-markets",
     "name": "polymarket-aggregator",
     "localPath": "/Users/noahchristian/polymarket-aggregator",
-    "defaultBranch": "main"
+    "defaultBranch": "feature/test-seed-tiers"
   },
   "createdAt": "2026-01-27T20:50:17.596Z",
   "updatedAt": "2026-01-27T21:42:16.307Z",

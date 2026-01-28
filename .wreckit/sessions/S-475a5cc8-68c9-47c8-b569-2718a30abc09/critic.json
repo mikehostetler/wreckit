@@ -1,0 +1,87 @@
+{
+  "blockingQuestions": [
+    {
+      "id": "Q-001",
+      "question": "Are Birdeye API credentials and specific rate limit quotas available for the development environment?",
+      "relatedObservations": [
+        "OBS-003"
+      ],
+      "severity": "blocker"
+    },
+    {
+      "id": "Q-002",
+      "question": "What is the specific destination URL or flow for the 'Create Market' CTA when no market exists?",
+      "relatedObservations": [
+        "OBS-002"
+      ],
+      "severity": "blocker"
+    },
+    {
+      "id": "Q-003",
+      "question": "Who owns the downsampling logic: the backend (OBS-005) or the frontend (OBS-012)?",
+      "relatedObservations": [
+        "OBS-005",
+        "OBS-012"
+      ],
+      "severity": "important"
+    },
+    {
+      "id": "Q-004",
+      "question": "How should the batch endpoint (OBS-005) handle partial failures (e.g., 1 invalid mint out of 50)? Fail fast or return partial success?",
+      "relatedObservations": [
+        "OBS-005"
+      ],
+      "severity": "important"
+    }
+  ],
+  "risks": [
+    {
+      "id": "R-001",
+      "description": "Dependency on external Birdeye API introduces latency, potential outages, and cost implications.",
+      "mitigation": "Implement robust circuit breakers and ensure the fallback mechanism (serving stale cache) is well-tested.",
+      "relatedObservations": [
+        "OBS-003",
+        "OBS-004"
+      ]
+    },
+    {
+      "id": "R-002",
+      "description": "Redis memory exhaustion risk if caching large payloads for a high number of tokens.",
+      "mitigation": "Monitor Redis memory usage and implement eviction policies (e.g., LRU) if limits are approached.",
+      "relatedObservations": [
+        "OBS-004"
+      ]
+    },
+    {
+      "id": "R-003",
+      "description": "The cron job for market volume aggregation (OBS-007) may cause database performance spikes or locking.",
+      "mitigation": "Schedule the job during low-traffic hours and optimize the upsert queries.",
+      "relatedObservations": [
+        "OBS-007"
+      ]
+    },
+    {
+      "id": "R-004",
+      "description": "Frontend feed load time could degrade if the batch API (OBS-005) is slow, creating a waterfall effect.",
+      "mitigation": "Ensure the frontend implements optimistic UI updates or skeleton screens while waiting for the batch payload.",
+      "relatedObservations": [
+        "OBS-010"
+      ]
+    }
+  ],
+  "missingContext": [
+    "Current database schema to verify compatibility for the new `market_volume_agg` table.",
+    "Definition of the `TokenCardModel` interface referenced in OBS-006.",
+    "Specific calculation logic for 'NomNom volume' referenced in OBS-009.",
+    "Birdeye API documentation regarding specific endpoints for 'candles' and 'meta' data."
+  ],
+  "dependencies": [
+    "OBS-007 (DB Table creation) must precede OBS-008 (Feed payload update).",
+    "OBS-003 (Birdeye Client) must precede OBS-004, OBS-005, and OBS-006.",
+    "OBS-005 (Batch API) must precede OBS-010 (Frontend integration).",
+    "OBS-008 (Feed Payload) must precede OBS-010 (Frontend integration).",
+    "OBS-013 (Feature Flag) should be implemented before OBS-009 and OBS-010 are merged to main."
+  ],
+  "readyForImplementation": false,
+  "summary": "The observations are detailed and well-structured, but implementation is blocked by missing external API credentials (Birdeye) and undefined user flows (Create Market CTA). Additionally, the ownership of data downsampling logic needs clarification between backend and frontend teams."
+}

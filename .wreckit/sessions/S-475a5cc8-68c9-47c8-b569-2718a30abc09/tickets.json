@@ -1,0 +1,110 @@
+{
+  "tickets": [
+    {
+      "id": "T-001",
+      "title": "Fix order reconciliation logic in reconciler.ts",
+      "description": "Resolve the unimplemented TODO in src/polymarket/reconciler.ts that is causing incorrect filled quantities. This is a critical data integrity issue blocking other deployments.",
+      "priority": "critical",
+      "acceptanceCriteria": [
+        "Investigate and define the specific logic required for the unimplemented TODO",
+        "Implement the missing reconciliation logic",
+        "Verify that filled quantities are calculated correctly",
+        "Add unit tests to prevent regression"
+      ],
+      "observationIds": [
+        "OBS-007"
+      ],
+      "estimatedComplexity": "medium",
+      "dependencies": []
+    },
+    {
+      "id": "T-002",
+      "title": "Deploy and monitor async price cache (PR #156)",
+      "description": "Deploy the Redis-backed async price cache feature. Ensure the kill switch (PRICES_ENABLED) is functional and monitor the /v1/prices/health endpoint. Must define fallback behavior if Redis becomes unavailable.",
+      "priority": "high",
+      "acceptanceCriteria": [
+        "Verify PR #155 is merged and deployed",
+        "Deploy PR #156 to production",
+        "Confirm /v1/prices/health returns healthy status",
+        "Document and test Redis failure fallback behavior",
+        "Monitor logs for concurrency-limited CLOB API calls"
+      ],
+      "observationIds": [
+        "OBS-001",
+        "OBS-002"
+      ],
+      "estimatedComplexity": "medium",
+      "dependencies": [
+        "T-001",
+        "PR #155"
+      ]
+    },
+    {
+      "id": "T-003",
+      "title": "Update agent.md with market progress",
+      "description": "Update the agent.md documentation to reflect the current status of the creator flow, liquidity seeding, and general price action market progress.",
+      "priority": "medium",
+      "acceptanceCriteria": [
+        "Document status of creator flow",
+        "Document status of liquidity seeding",
+        "Document general progress on price action markets"
+      ],
+      "observationIds": [
+        "OBS-004"
+      ],
+      "estimatedComplexity": "small",
+      "dependencies": []
+    },
+    {
+      "id": "T-004",
+      "title": "Complete Helius and Oracle integration",
+      "description": "Finish the integration of Helius and Oracle modules into the market creation flow as noted in the handoff documentation.",
+      "priority": "medium",
+      "acceptanceCriteria": [
+        "Integrate Helius module into market creation flow",
+        "Integrate Oracle module into market creation flow",
+        "Verify end-to-end functionality of the integrated flow"
+      ],
+      "observationIds": [
+        "OBS-005"
+      ],
+      "estimatedComplexity": "large",
+      "dependencies": []
+    },
+    {
+      "id": "T-005",
+      "title": "Implement proxy wallet authentication",
+      "description": "Address the existing TODO in src/polymarket/client.ts regarding proxy wallet support.",
+      "priority": "low",
+      "acceptanceCriteria": [
+        "Remove TODO comment from src/polymarket/client.ts",
+        "Implement proxy wallet authentication logic",
+        "Test authentication flow"
+      ],
+      "observationIds": [
+        "OBS-006"
+      ],
+      "estimatedComplexity": "medium",
+      "dependencies": []
+    },
+    {
+      "id": "T-006",
+      "title": "Add synthesis test note",
+      "description": "Add the requested test note for synthesis.",
+      "priority": "low",
+      "acceptanceCriteria": [
+        "Test note is added to the designated location"
+      ],
+      "observationIds": [
+        "OBS-008"
+      ],
+      "estimatedComplexity": "small",
+      "dependencies": []
+    }
+  ],
+  "meta": {
+    "totalTickets": 6,
+    "blockedTickets": 2,
+    "readyTickets": 4
+  }
+}

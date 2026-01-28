@@ -167,9 +167,15 @@ export class Synthesizer {
     critic: CriticResult
   ): Promise<SlicerResult> {
     const template = loadPromptTemplate("ticket_slicer");
+    
+    const availableRepos = this.config.repos
+      .map((r) => `- ${r.owner}/${r.name}`)
+      .join("\n");
+    
     const prompt = renderTemplate(template, {
       REPO_OWNER: session.repo?.owner || "unknown",
       REPO_NAME: session.repo?.name || "unknown",
+      AVAILABLE_REPOS: availableRepos || "- (none configured)",
       OBSERVATIONS: JSON.stringify(observations.observations, null, 2),
       CRITIC_FEEDBACK: JSON.stringify(critic, null, 2),
     });
