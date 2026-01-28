@@ -123,6 +123,56 @@ describe("Story Quality Validation (Gap 3)", () => {
         expect(result.valid).toBe(true);
       });
 
+      it("passes with valid US-{item}-{seq} scoped format", () => {
+        const prd = {
+          user_stories: [
+            {
+              id: "US-073-001",
+              title: "Scoped Story",
+              acceptance_criteria: ["C1", "C2"],
+              priority: 1,
+            },
+            {
+              id: "US-035-012",
+              title: "Another Scoped Story",
+              acceptance_criteria: ["C1", "C2"],
+              priority: 2,
+            },
+            {
+              id: "US-999-999",
+              title: "Max Scoped Story",
+              acceptance_criteria: ["C1", "C2"],
+              priority: 3,
+            },
+          ],
+        };
+
+        const result = validateStoryQuality(prd, defaultOptions);
+        expect(result.valid).toBe(true);
+      });
+
+      it("passes with mixed simple and scoped formats", () => {
+        const prd = {
+          user_stories: [
+            {
+              id: "US-001",
+              title: "Simple Story",
+              acceptance_criteria: ["C1", "C2"],
+              priority: 1,
+            },
+            {
+              id: "US-073-001",
+              title: "Scoped Story",
+              acceptance_criteria: ["C1", "C2"],
+              priority: 2,
+            },
+          ],
+        };
+
+        const result = validateStoryQuality(prd, defaultOptions);
+        expect(result.valid).toBe(true);
+      });
+
       it("fails with invalid story ID format", () => {
         const prd = {
           user_stories: [
@@ -138,7 +188,9 @@ describe("Story Quality Validation (Gap 3)", () => {
         const result = validateStoryQuality(prd, defaultOptions);
         expect(result.valid).toBe(false);
         expect(
-          result.storyErrors[0].errors.some((e) => e.includes("US-###")),
+          result.storyErrors[0].errors.some((e) =>
+            e.includes("US-###") || e.includes("US-{item}-{seq}")
+          ),
         ).toBe(true);
       });
 
@@ -157,7 +209,51 @@ describe("Story Quality Validation (Gap 3)", () => {
         const result = validateStoryQuality(prd, defaultOptions);
         expect(result.valid).toBe(false);
         expect(
-          result.storyErrors[0].errors.some((e) => e.includes("US-###")),
+          result.storyErrors[0].errors.some((e) =>
+            e.includes("US-###") || e.includes("US-{item}-{seq}")
+          ),
+        ).toBe(true);
+      });
+
+      it("fails with invalid scoped format (non-numeric)", () => {
+        const prd = {
+          user_stories: [
+            {
+              id: "US-073-A01",
+              title: "Invalid Scoped Story",
+              acceptance_criteria: ["C1", "C2"],
+              priority: 1,
+            },
+          ],
+        };
+
+        const result = validateStoryQuality(prd, defaultOptions);
+        expect(result.valid).toBe(false);
+        expect(
+          result.storyErrors[0].errors.some((e) =>
+            e.includes("US-###") || e.includes("US-{item}-{seq}")
+          ),
+        ).toBe(true);
+      });
+
+      it("fails with incomplete scoped format", () => {
+        const prd = {
+          user_stories: [
+            {
+              id: "US-073-",
+              title: "Incomplete Scoped Story",
+              acceptance_criteria: ["C1", "C2"],
+              priority: 1,
+            },
+          ],
+        };
+
+        const result = validateStoryQuality(prd, defaultOptions);
+        expect(result.valid).toBe(false);
+        expect(
+          result.storyErrors[0].errors.some((e) =>
+            e.includes("US-###") || e.includes("US-{item}-{seq}")
+          ),
         ).toBe(true);
       });
 

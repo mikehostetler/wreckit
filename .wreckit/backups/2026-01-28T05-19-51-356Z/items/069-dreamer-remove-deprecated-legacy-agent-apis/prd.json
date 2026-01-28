@@ -117,7 +117,7 @@
         "File length of src/agent/runner.ts reduced by ~160 lines",
         "File length of src/agent/index.ts reduced to ~20 lines"
       ],
-      "priority": 4,
+      "priority": 5,
       "status": "done",
       "notes": "Comprehensive validation to ensure the codebase is fully functional after deprecated API removal. This is the final gate before marking the item complete. All automated checks must pass and manual smoke testing must confirm CLI functionality works correctly."
     }

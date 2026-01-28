@@ -3,14 +3,8 @@
   "id": "080-sandbox-diagnostics-cleanup",
   "title": "Implement Sandbox Diagnostics & Cleanup (Doctor Integration)",
   "section": "infrastructure",
-  "state": "critique",
+  "state": "done",
   "overview": "Integrate Sprite/Sandbox health checks into `wreckit doctor` and add automated cleanup for orphaned VMs. This ensures the sandbox environment is healthy and prevents resource leaks from crashed sessions.",
-  "branch": null,
-  "pr_url": null,
-  "pr_number": null,
-  "last_error": null,
-  "created_at": "2026-01-28T06:00:00.000Z",
-  "updated_at": "2026-01-28T04:56:19.029Z",
   "problem_statement": "Currently, if Wreckit crashes hard (power loss, OOM), ephemeral VMs may be left running indefinitely. Additionally, there is no unified way to verify that the Sprite CLI and authentication are correctly configured before running a task.",
   "motivation": "To provide a robust 'health check' for the sandbox system and a 'garbage collector' to prevent cost overruns from orphaned VMs.",
   "success_criteria": [
@@ -32,5 +26,11 @@
     "Real-time monitoring daemon"
   ],
   "priority_hint": "medium",
-  "urgency_hint": "Maintenance requirement"
+  "urgency_hint": "Maintenance requirement",
+  "branch": "wreckit/080-sandbox-diagnostics-cleanup",
+  "pr_url": "https://github.com/jmanhype/wreckit/pull/36",
+  "pr_number": 36,
+  "last_error": null,
+  "created_at": "2026-01-28T06:00:00.000Z",
+  "updated_at": "2026-01-28T06:30:00.000Z"
 }

@@ -220,7 +220,7 @@
         "Function signatures match usage patterns",
         "Generic types are properly constrained"
       ],
-      "priority": 4,
+      "priority": 5,
       "status": "done",
       "notes": "Code quality validation. Should be run after each phase to catch issues early."
     }

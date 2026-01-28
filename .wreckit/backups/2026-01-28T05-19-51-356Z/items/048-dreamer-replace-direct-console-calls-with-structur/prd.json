@@ -38,6 +38,5 @@
       "priority": 5,
       "description": "Ensure that primary CLI output remains visible by default and respects --quiet/--verbose flags."
     }
-  ],
-  "id": "048-dreamer-replace-direct-console-calls-with-structur"
+  ]
 }

@@ -87,7 +87,7 @@
         "No documentation build errors",
         "Type checking passes"
       ],
-      "priority": 4,
+      "priority": 5,
       "status": "done",
       "notes": "Documentation ensures future developers understand the module boundaries and the distinction between legacy (deprecated) and new (preferred) APIs. This is critical for maintainability. JSDoc comments help IDE autocomplete and generate documentation. Added comprehensive JSDoc comments to all exported functions with examples and migration guides."
     }

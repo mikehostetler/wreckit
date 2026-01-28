@@ -86,7 +86,7 @@
         "Documentation explains tool allowlists per phase and validation warnings",
         "Documentation includes tips for when to use different flags"
       ],
-      "priority": 4,
+      "priority": 5,
       "status": "done",
       "notes": "Documentation should be comprehensive - users should understand how to use command without reading code. Include troubleshooting section."
     },
@@ -102,7 +102,7 @@
         "All tests pass: `bun test`",
         "Code coverage > 80% for learn command module"
       ],
-      "priority": 4,
+      "priority": 6,
       "status": "done",
       "notes": "Tests should use mocking for file system operations where appropriate. Integration tests should create temporary test repositories. Unit tests complete with 15 passing tests covering merge logic, tool validation, and schema compliance."
     },
@@ -120,7 +120,7 @@
         "Extracted skills are usable in workflow phases (tested by running a full item workflow)",
         "No regressions in existing commands or workflows"
       ],
-      "priority": 4,
+      "priority": 7,
       "status": "done",
       "notes": "Final verification step. Should test on real repository with multiple completed items. Verify that existing workflows (research, plan, implement) still work with new skills. Manual verification completed: help displays correctly, dry-run works, --item flag works with ID resolution, build succeeds, no regressions detected."
     }
