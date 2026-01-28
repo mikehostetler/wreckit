@@ -26,9 +26,11 @@ export class JSRuntime {
   private logs: string[] = [];
 
   private log(level: string, ...args: any[]) {
-    this.logs.push(`[${level}] ${args.map(a => 
-      typeof a === 'object' ? JSON.stringify(a) : String(a)
-    ).join(" ")}`);
+    this.logs.push(
+      `[${level}] ${args
+        .map((a) => (typeof a === "object" ? JSON.stringify(a) : String(a)))
+        .join(" ")}`,
+    );
   }
 
   run(code: string): string {
@@ -47,7 +49,8 @@ export class JSRuntime {
 export function createRunJSTool(runtime: JSRuntime): AxFunction {
   return {
     name: "RunJS",
-    description: "Execute JavaScript code to process data. Access the global variable 'CONTEXT_DATA' to see the user's input.",
+    description:
+      "Execute JavaScript code to process data. Access the global variable 'CONTEXT_DATA' to see the user's input.",
     parameters: {
       type: "object",
       properties: {
@@ -83,7 +86,8 @@ const ReadTool: AxFunction = {
 
 const WriteTool: AxFunction = {
   name: "Write",
-  description: "Write content to a file. Creates parent directories if they don't exist.",
+  description:
+    "Write content to a file. Creates parent directories if they don't exist.",
   parameters: {
     type: "object",
     properties: {
@@ -92,7 +96,13 @@ const WriteTool: AxFunction = {
     },
     required: ["path", "content"],
   } as AxFunctionJSONSchema,
-  func: async ({ path: filePath, content }: { path: string; content: string }) => {
+  func: async ({
+    path: filePath,
+    content,
+  }: {
+    path: string;
+    content: string;
+  }) => {
     try {
       await fs.mkdir(path.dirname(filePath), { recursive: true });
       await fs.writeFile(filePath, content, "utf-8");
@@ -105,7 +115,8 @@ const WriteTool: AxFunction = {
 
 const EditTool: AxFunction = {
   name: "Edit",
-  description: "Edit a file by replacing a string with a new string. Returns success message or error.",
+  description:
+    "Edit a file by replacing a string with a new string. Returns success message or error.",
   parameters: {
     type: "object",
     properties: {
@@ -115,7 +126,15 @@ const EditTool: AxFunction = {
     },
     required: ["path", "oldText", "newText"],
   } as AxFunctionJSONSchema,
-  func: async ({ path: filePath, oldText, newText }: { path: string; oldText: string; newText: string }) => {
+  func: async ({
+    path: filePath,
+    oldText,
+    newText,
+  }: {
+    path: string;
+    oldText: string;
+    newText: string;
+  }) => {
     try {
       const content = await fs.readFile(filePath, "utf-8");
       if (!content.includes(oldText)) {
@@ -136,12 +155,24 @@ const GlobTool: AxFunction = {
   parameters: {
     type: "object",
     properties: {
-      pattern: { type: "string", description: "The glob pattern (e.g., '**/*.ts')" },
-      path: { type: "string", description: "The directory to search in (default: current directory)" },
+      pattern: {
+        type: "string",
+        description: "The glob pattern (e.g., '**/*.ts')",
+      },
+      path: {
+        type: "string",
+        description: "The directory to search in (default: current directory)",
+      },
     },
     required: ["pattern"],
   } as AxFunctionJSONSchema,
-  func: async ({ pattern, path: searchPath }: { pattern: string; path?: string }) => {
+  func: async ({
+    pattern,
+    path: searchPath,
+  }: {
+    pattern: string;
+    path?: string;
+  }) => {
     try {
       // Using 'find' as a fallback since fast-glob might not be available
       // Note: This is a simplified implementation and might not support all glob features
@@ -160,17 +191,36 @@ const GrepTool: AxFunction = {
   parameters: {
     type: "object",
     properties: {
-      pattern: { type: "string", description: "The regex pattern to search for" },
-      path: { type: "string", description: "The directory to search in (default: current directory)" },
-      include: { type: "string", description: "File pattern to include (e.g., '*.ts')" },
+      pattern: {
+        type: "string",
+        description: "The regex pattern to search for",
+      },
+      path: {
+        type: "string",
+        description: "The directory to search in (default: current directory)",
+      },
+      include: {
+        type: "string",
+        description: "File pattern to include (e.g., '*.ts')",
+      },
     },
     required: ["pattern"],
   } as AxFunctionJSONSchema,
-  func: async ({ pattern, path: searchPath, include }: { pattern: string; path?: string; include?: string }) => {
+  func: async ({
+    pattern,
+    path: searchPath,
+    include,
+  }: {
+    pattern: string;
+    path?: string;
+    include?: string;
+  }) => {
     try {
       const dir = searchPath || ".";
       const includeFlag = include ? `--include=\"${include}\"` : "";
-      const { stdout } = await execAsync(`grep -r ${includeFlag} "${pattern}" ${dir}`);
+      const { stdout } = await execAsync(
+        `grep -r ${includeFlag} "${pattern}" ${dir}`,
+      );
       return stdout.trim() || "No matches found";
     } catch (error: any) {
       // grep returns exit code 1 if no matches found, which execAsync throws as error
@@ -228,10 +278,14 @@ const spriteLogger: {
   error: (msg: string, ...args: unknown[]) => void;
   json: (data: unknown) => void;
 } = {
-  debug: (msg: string, ...args: unknown[]) => console.debug(`[Sprite] ${msg}`, ...args),
-  info: (msg: string, ...args: unknown[]) => console.info(`[Sprite] ${msg}`, ...args),
-  warn: (msg: string, ...args: unknown[]) => console.warn(`[Sprite] ${msg}`, ...args),
-  error: (msg: string, ...args: unknown[]) => console.error(`[Sprite] ${msg}`, ...args),
+  debug: (msg: string, ...args: unknown[]) =>
+    console.debug(`[Sprite] ${msg}`, ...args),
+  info: (msg: string, ...args: unknown[]) =>
+    console.info(`[Sprite] ${msg}`, ...args),
+  warn: (msg: string, ...args: unknown[]) =>
+    console.warn(`[Sprite] ${msg}`, ...args),
+  error: (msg: string, ...args: unknown[]) =>
+    console.error(`[Sprite] ${msg}`, ...args),
   json: (data: unknown) => console.log(JSON.stringify(data, null, 2)),
 };
 
@@ -243,7 +297,8 @@ const spriteLogger: {
  */
 const SpawnSpriteTool: AxFunction = {
   name: "SpawnSprite",
-  description: "Start a new Sprite VM (Firecracker microVM) for isolated, sandboxed execution. Returns connection info for the new VM.",
+  description:
+    "Start a new Sprite VM (Firecracker microVM) for isolated, sandboxed execution. Returns connection info for the new VM.",
   parameters: {
     type: "object",
     properties: {
@@ -253,7 +308,8 @@ const SpawnSpriteTool: AxFunction = {
       },
       memory: {
         type: "string",
-        description: "Memory allocation for the VM (e.g., '512MiB', '1GiB'). Default: '512MiB'",
+        description:
+          "Memory allocation for the VM (e.g., '512MiB', '1GiB'). Default: '512MiB'",
       },
       cpus: {
         type: "string",
@@ -262,7 +318,15 @@ const SpawnSpriteTool: AxFunction = {
     },
     required: ["name"],
   } as AxFunctionJSONSchema,
-  func: async ({ name, memory, cpus }: { name: string; memory?: string; cpus?: string }) => {
+  func: async ({
+    name,
+    memory,
+    cpus,
+  }: {
+    name: string;
+    memory?: string;
+    cpus?: string;
+  }) => {
     try {
       // Dynamic import to avoid circular dependency
       const { startSprite } = await import("./sprite-runner.js");
@@ -276,27 +340,39 @@ const SpawnSpriteTool: AxFunction = {
       const result = await startSprite(name, config, spriteLogger);
 
       if (result.success) {
-        return JSON.stringify({
-          success: true,
-          message: `Started Sprite '${name}'`,
-          data: {
-            name,
-            stdout: result.stdout,
-            stderr: result.stderr,
+        return JSON.stringify(
+          {
+            success: true,
+            message: `Started Sprite '${name}'`,
+            data: {
+              name,
+              stdout: result.stdout,
+              stderr: result.stderr,
+            },
           },
-        }, null, 2);
+          null,
+          2,
+        );
       } else {
-        return JSON.stringify({
-          success: false,
-          error: result.stderr || result.error || "Failed to start Sprite",
-        }, null, 2);
+        return JSON.stringify(
+          {
+            success: false,
+            error: result.stderr || result.error || "Failed to start Sprite",
+          },
+          null,
+          2,
+        );
       }
     } catch (error: any) {
       // Catch and return errors in JSON format (don't throw)
-      return JSON.stringify({
-        success: false,
-        error: error.message || "Unknown error starting Sprite",
-      }, null, 2);
+      return JSON.stringify(
+        {
+          success: false,
+          error: error.message || "Unknown error starting Sprite",
+        },
+        null,
+        2,
+      );
     }
   },
 };
@@ -309,7 +385,8 @@ const SpawnSpriteTool: AxFunction = {
  */
 const AttachSpriteTool: AxFunction = {
   name: "AttachSprite",
-  description: "Attach to a running Sprite VM. Returns console output from the VM.",
+  description:
+    "Attach to a running Sprite VM. Returns console output from the VM.",
   parameters: {
     type: "object",
     properties: {
@@ -325,30 +402,47 @@ const AttachSpriteTool: AxFunction = {
       // Dynamic import to avoid circular dependency
       const { attachSprite } = await import("./sprite-runner.js");
 
-      const result = await attachSprite(name, DEFAULT_SPRITE_CONFIG, spriteLogger);
+      const result = await attachSprite(
+        name,
+        DEFAULT_SPRITE_CONFIG,
+        spriteLogger,
+      );
 
       if (result.success) {
-        return JSON.stringify({
-          success: true,
-          message: `Attached to Sprite '${name}'`,
-          data: {
-            name,
-            stdout: result.stdout,
-            stderr: result.stderr,
+        return JSON.stringify(
+          {
+            success: true,
+            message: `Attached to Sprite '${name}'`,
+            data: {
+              name,
+              stdout: result.stdout,
+              stderr: result.stderr,
+            },
           },
-        }, null, 2);
+          null,
+          2,
+        );
       } else {
-        return JSON.stringify({
-          success: false,
-          error: result.stderr || result.error || "Failed to attach to Sprite",
-        }, null, 2);
+        return JSON.stringify(
+          {
+            success: false,
+            error:
+              result.stderr || result.error || "Failed to attach to Sprite",
+          },
+          null,
+          2,
+        );
       }
     } catch (error: any) {
       // Catch and return errors in JSON format (don't throw)
-      return JSON.stringify({
-        success: false,
-        error: error.message || "Unknown error attaching to Sprite",
-      }, null, 2);
+      return JSON.stringify(
+        {
+          success: false,
+          error: error.message || "Unknown error attaching to Sprite",
+        },
+        null,
+        2,
+      );
     }
   },
 };
@@ -360,7 +454,8 @@ const AttachSpriteTool: AxFunction = {
  */
 const ListSpritesTool: AxFunction = {
   name: "ListSprites",
-  description: "List all active Sprite VMs. Returns a JSON array with Sprite information (ID, state, PID, etc.).",
+  description:
+    "List all active Sprite VMs. Returns a JSON array with Sprite information (ID, state, PID, etc.).",
   parameters: {
     type: "object",
     properties: {},
@@ -375,26 +470,38 @@ const ListSpritesTool: AxFunction = {
 
       if (result.success) {
         const sprites = parseWispJson(result.stdout, spriteLogger);
-        return JSON.stringify({
-          success: true,
-          message: `Active Sprites: ${Array.isArray(sprites) ? sprites.length : 0}`,
-          data: {
-            sprites: sprites || [],
-            rawOutput: result.stdout,
+        return JSON.stringify(
+          {
+            success: true,
+            message: `Active Sprites: ${Array.isArray(sprites) ? sprites.length : 0}`,
+            data: {
+              sprites: sprites || [],
+              rawOutput: result.stdout,
+            },
           },
-        }, null, 2);
+          null,
+          2,
+        );
       } else {
-        return JSON.stringify({
-          success: false,
-          error: result.stderr || result.error || "Failed to list Sprites",
-        }, null, 2);
+        return JSON.stringify(
+          {
+            success: false,
+            error: result.stderr || result.error || "Failed to list Sprites",
+          },
+          null,
+          2,
+        );
       }
     } catch (error: any) {
       // Catch and return errors in JSON format (don't throw)
-      return JSON.stringify({
-        success: false,
-        error: error.message || "Unknown error listing Sprites",
-      }, null, 2);
+      return JSON.stringify(
+        {
+          success: false,
+          error: error.message || "Unknown error listing Sprites",
+        },
+        null,
+        2,
+      );
     }
   },
 };
@@ -422,30 +529,133 @@ const KillSpriteTool: AxFunction = {
       // Dynamic import to avoid circular dependency
       const { killSprite } = await import("./sprite-runner.js");
 
-      const result = await killSprite(name, DEFAULT_SPRITE_CONFIG, spriteLogger);
+      const result = await killSprite(
+        name,
+        DEFAULT_SPRITE_CONFIG,
+        spriteLogger,
+      );
 
       if (result.success) {
-        return JSON.stringify({
-          success: true,
-          message: `Killed Sprite '${name}'`,
-          data: {
-            name,
-            stdout: result.stdout,
-            stderr: result.stderr,
+        return JSON.stringify(
+          {
+            success: true,
+            message: `Killed Sprite '${name}'`,
+            data: {
+              name,
+              stdout: result.stdout,
+              stderr: result.stderr,
+            },
           },
-        }, null, 2);
+          null,
+          2,
+        );
       } else {
-        return JSON.stringify({
-          success: false,
-          error: result.stderr || result.error || "Failed to kill Sprite",
-        }, null, 2);
+        return JSON.stringify(
+          {
+            success: false,
+            error: result.stderr || result.error || "Failed to kill Sprite",
+          },
+          null,
+          2,
+        );
       }
     } catch (error: any) {
       // Catch and return errors in JSON format (don't throw)
-      return JSON.stringify({
-        success: false,
-        error: error.message || "Unknown error killing Sprite",
-      }, null, 2);
+      return JSON.stringify(
+        {
+          success: false,
+          error: error.message || "Unknown error killing Sprite",
+        },
+        null,
+        2,
+      );
+    }
+  },
+};
+
+/**
+ * ExecSpriteTool - Execute a command inside a running Sprite VM.
+ *
+ * This tool allows RLM agents to run arbitrary commands inside Sprite VMs,
+ * enabling them to perform work (clone, build, test) inside the sandbox.
+ */
+const ExecSpriteTool: AxFunction = {
+  name: "ExecSprite",
+  description:
+    "Execute a command inside a running Sprite VM. Returns command output and exit code.",
+  parameters: {
+    type: "object",
+    properties: {
+      name: {
+        type: "string",
+        description: "Name/ID of the Sprite VM to execute command in",
+      },
+      command: {
+        type: "array",
+        items: { type: "string" },
+        description:
+          "Command and arguments to execute (e.g., ['npm', 'install'])",
+      },
+    },
+    required: ["name", "command"],
+  } as AxFunctionJSONSchema,
+  func: async ({ name, command }: { name: string; command: string[] }) => {
+    try {
+      // Dynamic import to avoid circular dependency
+      const { execSprite } = await import("./sprite-runner.js");
+
+      const result = await execSprite(
+        name,
+        command,
+        DEFAULT_SPRITE_CONFIG,
+        spriteLogger,
+      );
+
+      if (result.success) {
+        return JSON.stringify(
+          {
+            success: true,
+            message: `Executed command in Sprite '${name}'`,
+            data: {
+              name,
+              command,
+              exitCode: result.exitCode,
+              stdout: result.stdout,
+              stderr: result.stderr,
+            },
+          },
+          null,
+          2,
+        );
+      } else {
+        // Command failed (non-zero exit code) - return failure with exit code
+        return JSON.stringify(
+          {
+            success: false,
+            message: `Command failed with exit code ${result.exitCode}`,
+            error: result.stderr || result.error || "Command execution failed",
+            data: {
+              name,
+              command,
+              exitCode: result.exitCode,
+              stdout: result.stdout,
+              stderr: result.stderr,
+            },
+          },
+          null,
+          2,
+        );
+      }
+    } catch (error: any) {
+      // Catch and return errors in JSON format (don't throw)
+      return JSON.stringify(
+        {
+          success: false,
+          error: error.message || "Unknown error executing command",
+        },
+        null,
+        2,
+      );
     }
   },
 };
@@ -462,9 +672,13 @@ const ALL_TOOLS: ToolRegistry = {
   AttachSprite: AttachSpriteTool,
   ListSprites: ListSpritesTool,
   KillSprite: KillSpriteTool,
+  ExecSprite: ExecSpriteTool,
 };
 
-export function buildToolRegistry(allowedTools?: string[], jsRuntime?: JSRuntime): AxFunction[] {
+export function buildToolRegistry(
+  allowedTools?: string[],
+  jsRuntime?: JSRuntime,
+): AxFunction[] {
   let tools = allowedTools
     ? allowedTools
         .map((name) => ALL_TOOLS[name])
@@ -474,10 +688,10 @@ export function buildToolRegistry(allowedTools?: string[], jsRuntime?: JSRuntime
   // If a JS runtime is provided, always add the RunJS tool (it's the core RLM mechanic)
   // But we respect allowlists if "RunJS" is explicitly excluded (which it won't be in most cases)
   if (jsRuntime) {
-     const runJsTool = createRunJSTool(jsRuntime);
-     if (!allowedTools || allowedTools.includes("RunJS")) {
-        tools.push(runJsTool);
-     }
+    const runJsTool = createRunJSTool(jsRuntime);
+    if (!allowedTools || allowedTools.includes("RunJS")) {
+      tools.push(runJsTool);
+    }
   }
 
   return tools;

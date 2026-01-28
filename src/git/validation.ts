@@ -222,16 +222,20 @@ export async function isGitRepo(cwd: string): Promise<boolean> {
   });
 }
 
-export async function hasUncommittedChanges(
-  options: { cwd: string; logger: Logger; dryRun?: boolean },
-): Promise<boolean> {
+export async function hasUncommittedChanges(options: {
+  cwd: string;
+  logger: Logger;
+  dryRun?: boolean;
+}): Promise<boolean> {
   const result = await runGitCommand(["status", "--porcelain"], options);
   return result.stdout.length > 0;
 }
 
-export async function isDetachedHead(
-  options: { cwd: string; logger: Logger; dryRun?: boolean },
-): Promise<boolean> {
+export async function isDetachedHead(options: {
+  cwd: string;
+  logger: Logger;
+  dryRun?: boolean;
+}): Promise<boolean> {
   const result = await runGitCommand(
     ["symbolic-ref", "--quiet", "HEAD"],
     options,
@@ -239,9 +243,11 @@ export async function isDetachedHead(
   return result.exitCode !== 0;
 }
 
-export async function hasRemote(
-  options: { cwd: string; logger: Logger; dryRun?: boolean },
-): Promise<boolean> {
+export async function hasRemote(options: {
+  cwd: string;
+  logger: Logger;
+  dryRun?: boolean;
+}): Promise<boolean> {
   const result = await runGitCommand(["remote"], options);
   return result.exitCode === 0 && result.stdout.length > 0;
 }

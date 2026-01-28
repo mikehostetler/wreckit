@@ -81,7 +81,7 @@ export function parseGitStatusPorcelain(
     const statusCodeRaw = line.substring(0, 2);
     // Trim to handle cases like "M " (modified in work tree only)
     const statusCode = statusCodeRaw.trim();
-    
+
     // The path always starts at index 3 (after "XY ")
     // We don't use indexOf(" ") because it might match the leading space
     // in " M file.txt" or spaces inside the filename
@@ -102,9 +102,11 @@ export function parseGitStatusPorcelain(
  * @param options - Git options
  * @returns Array of file changes
  */
-export async function getGitStatus(
-  options: { cwd: string; logger: Logger; dryRun?: boolean },
-): Promise<GitFileChange[]> {
+export async function getGitStatus(options: {
+  cwd: string;
+  logger: Logger;
+  dryRun?: boolean;
+}): Promise<GitFileChange[]> {
   const result = await runGitCommand(["status", "--porcelain"], options);
   return parseGitStatusPorcelain(result.stdout, options.cwd);
 }

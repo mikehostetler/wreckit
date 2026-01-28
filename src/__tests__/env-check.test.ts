@@ -1,4 +1,3 @@
-
 import { describe, expect, it } from "bun:test";
 
 describe("Environment Check", () => {
@@ -10,7 +9,9 @@ describe("Environment Check", () => {
       console.log("ZAI_API_KEY is MISSING.");
     }
     // Check other keys
-    if (process.env.ANTHROPIC_API_KEY) console.log("ANTHROPIC_API_KEY is present.");
-    if (process.env.ANTHROPIC_AUTH_TOKEN) console.log("ANTHROPIC_AUTH_TOKEN is present.");
+    if (process.env.ANTHROPIC_API_KEY)
+      console.log("ANTHROPIC_API_KEY is present.");
+    if (process.env.ANTHROPIC_AUTH_TOKEN)
+      console.log("ANTHROPIC_AUTH_TOKEN is present.");
   });
 });

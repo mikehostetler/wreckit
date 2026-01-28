@@ -109,7 +109,10 @@ describe("getAgentConfigUnion", () => {
     expect(result.kind).toBe("process");
     if (result.kind === "process") {
       expect(result.command).toBe("claude");
-      expect(result.args).toEqual(["--dangerously-skip-permissions", "--print"]);
+      expect(result.args).toEqual([
+        "--dangerously-skip-permissions",
+        "--print",
+      ]);
       expect(result.completion_signal).toBe("FINISHED");
     }
   });

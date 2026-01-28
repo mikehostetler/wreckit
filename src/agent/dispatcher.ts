@@ -1,5 +1,14 @@
 import type { Logger } from "../logging";
-import type { AgentConfigUnion, ProcessAgentConfig, ClaudeSdkAgentConfig, AmpSdkAgentConfig, CodexSdkAgentConfig, OpenCodeSdkAgentConfig, RlmSdkAgentConfig, SpriteAgentConfig } from "../schemas";
+import type {
+  AgentConfigUnion,
+  ProcessAgentConfig,
+  ClaudeSdkAgentConfig,
+  AmpSdkAgentConfig,
+  CodexSdkAgentConfig,
+  OpenCodeSdkAgentConfig,
+  RlmSdkAgentConfig,
+  SpriteAgentConfig,
+} from "../schemas";
 import type { AgentEvent } from "../tui/agentEvents";
 import { runProcessAgent } from "./process-runner.js";
 import type { AgentResult } from "./result";
@@ -18,7 +27,7 @@ function exhaustiveCheck(x: never): never {
  */
 export async function dispatchAgent(
   config: AgentConfigUnion,
-  options: CommonRunAgentOptions
+  options: CommonRunAgentOptions,
 ): Promise<AgentResult> {
   const { logger, dryRun = false, mockAgent = false } = options;
 

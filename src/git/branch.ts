@@ -1,6 +1,11 @@
 import type { Logger } from "../logging";
 import { runGitCommand } from "./index";
-import { BranchError, PushError, MergeConflictError, GitError } from "../errors";
+import {
+  BranchError,
+  PushError,
+  MergeConflictError,
+  GitError,
+} from "../errors";
 
 // Re-export GitOptions from index for type compatibility
 export type { GitOptions } from "./index";
@@ -63,7 +68,12 @@ export async function branchExists(
 export async function cleanupBranch(
   branchName: string,
   baseBranch: string,
-  options: { cwd: string; logger: Logger; dryRun?: boolean; deleteRemote?: boolean },
+  options: {
+    cwd: string;
+    logger: Logger;
+    dryRun?: boolean;
+    deleteRemote?: boolean;
+  },
 ): Promise<BranchCleanupResult> {
   const { logger, dryRun = false, deleteRemote = true } = options;
   const result: BranchCleanupResult = {
@@ -284,9 +294,11 @@ export async function mergeAndPushToBase(
   }
 }
 
-export async function getBranchSyncStatus(
-  options: { cwd: string; logger: Logger; dryRun?: boolean },
-): Promise<"synced" | "ahead" | "behind" | "diverged" | "no-upstream"> {
+export async function getBranchSyncStatus(options: {
+  cwd: string;
+  logger: Logger;
+  dryRun?: boolean;
+}): Promise<"synced" | "ahead" | "behind" | "diverged" | "no-upstream"> {
   const branch = await runGitCommand(
     ["rev-parse", "--abbrev-ref", "HEAD"],
     options,

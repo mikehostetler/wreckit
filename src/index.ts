@@ -22,6 +22,7 @@ import {
   spriteListCommand,
   spriteKillCommand,
   spriteAttachCommand,
+  spriteExecCommand,
 } from "./commands/sprite";
 import { learnCommand } from "./commands/learn";
 import { dreamCommand } from "./commands/dream";
@@ -54,7 +55,10 @@ program
   .option("--retry-failed", "Include previously failed items when resuming")
   .option("--no-healing", "Disable automatic self-healing (Item 038)")
   .option("--cwd <path>", "Override the working directory")
-  .option("--agent <kind>", "Agent kind to use (claude_sdk, amp_sdk, codex_sdk, opencode_sdk, rlm)")
+  .option(
+    "--agent <kind>",
+    "Agent kind to use (claude_sdk, amp_sdk, codex_sdk, opencode_sdk, rlm)",
+  )
   .option("--rlm", "Shorthand for --agent rlm");
 
 program.action(async () => {
@@ -444,7 +448,10 @@ program
 const spriteCmd = program
   .command("sprite")
   .description("Manage Sprite VMs (Firecracker microVMs)")
-  .addHelpText("beforeAll", "\nCommands for managing isolated Firecracker microVMs via Wisp.\n");
+  .addHelpText(
+    "beforeAll",
+    "\nCommands for managing isolated Firecracker microVMs via Wisp.\n",
+  );
 
 spriteCmd
   .command("start <name>")
@@ -541,6 +548,34 @@ spriteCmd
         await spriteAttachCommand(
           {
             name,
+            cwd: resolveCwd(globalOpts.cwd),
+            json: options.json,
+          },
+          logger,
+        );
+      },
+      logger,
+      {
+        verbose: globalOpts.verbose,
+        quiet: globalOpts.quiet,
+        dryRun: globalOpts.dryRun,
+        cwd: resolveCwd(globalOpts.cwd),
+      },
+    );
+  });
+
+spriteCmd
+  .command("exec <name> <command...>")
+  .description("Execute a command inside a running Sprite VM")
+  .option("--json", "Output as JSON")
+  .action(async (name, command, options, cmd) => {
+    const globalOpts = cmd.optsWithGlobals();
+    await executeCommand(
+      async () => {
+        await spriteExecCommand(
+          {
+            name,
+            command,
             cwd: resolveCwd(globalOpts.cwd),
             json: options.json,
           },

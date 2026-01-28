@@ -1,7 +1,11 @@
 import type { ConfigResolved } from "../config";
 import type { Logger } from "../logging";
 import type { AgentEvent } from "../tui/agentEvents";
-import type { AgentConfigUnion, ProcessAgentConfig, ClaudeSdkAgentConfig } from "../schemas";
+import type {
+  AgentConfigUnion,
+  ProcessAgentConfig,
+  ClaudeSdkAgentConfig,
+} from "../schemas";
 
 // ============================================================
 // Lifecycle Management (Re-exported from lifecycle module)
@@ -123,11 +127,23 @@ function exhaustiveCheck(x: never): never {
  * });
  * ```
  */
-export async function runAgentUnion(options: UnionRunAgentOptions): Promise<AgentResult> {
-  const { config, logger, dryRun = false, mockAgent = false, cwd, prompt } = options;
+export async function runAgentUnion(
+  options: UnionRunAgentOptions,
+): Promise<AgentResult> {
+  const {
+    config,
+    logger,
+    dryRun = false,
+    mockAgent = false,
+    cwd,
+    prompt,
+  } = options;
 
   if (dryRun) {
-    const kindLabel = config.kind === "process" ? `process: ${config.command} ${config.args.join(" ")}` : `${config.kind} agent`;
+    const kindLabel =
+      config.kind === "process"
+        ? `process: ${config.command} ${config.args.join(" ")}`
+        : `${config.kind} agent`;
     logger.info(`[dry-run] Would run ${kindLabel}`);
     logger.info(`[dry-run] Working directory: ${cwd}`);
     logger.info(`[dry-run] Prompt length: ${prompt.length} characters`);
@@ -143,7 +159,10 @@ export async function runAgentUnion(options: UnionRunAgentOptions): Promise<Agen
   if (mockAgent) {
     logger.info(`[mock-agent] Simulating ${config.kind} agent run...`);
     // Use completion_signal from config if it's a process agent, otherwise default to "DONE"
-    const completionSignal = config.kind === "process" ? config.completion_signal : "<promise>COMPLETE</promise>";
+    const completionSignal =
+      config.kind === "process"
+        ? config.completion_signal
+        : "<promise>COMPLETE</promise>";
     const mockLines = [
       `🤖 [mock-agent] Starting simulated ${config.kind} agent run...`,
       "📋 [mock-agent] Analyzing prompt...",

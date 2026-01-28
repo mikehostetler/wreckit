@@ -19,8 +19,9 @@ mock.module("../../commands/run", () => ({
   runCommand: mockedRunCommand,
 }));
 
-const { orchestrateAll, orchestrateNext, getNextIncompleteItem } =
-  await import("../../commands/orchestrator");
+const { orchestrateAll, orchestrateNext, getNextIncompleteItem } = await import(
+  "../../commands/orchestrator"
+);
 
 function createMockLogger(): Logger {
   return {

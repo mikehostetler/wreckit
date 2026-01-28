@@ -16,6 +16,7 @@ import {
   spriteListCommand,
   spriteKillCommand,
   spriteAttachCommand,
+  spriteExecCommand,
 } from "../../commands/sprite";
 import type { Logger } from "../../logging";
 
@@ -53,7 +54,7 @@ async function setupSpriteConfig(tempDir: string): Promise<void> {
     merge_mode: "pr",
     agent: {
       kind: "sprite",
-      wispPath: "wisp",
+      wispPath: "sprite",
       maxVMs: 5,
       defaultMemory: "512MiB",
       defaultCPUs: "1",
@@ -141,12 +142,9 @@ describe("spriteStartCommand", () => {
     const spawnSpy = mockSpawnSuccess("Started sprite test-sprite\n");
 
     const consoleSpy = spyOn(console, "log");
-    await spriteStartCommand(
-      { name: "test-sprite", cwd: tempDir },
-      mockLogger
-    );
+    await spriteStartCommand({ name: "test-sprite", cwd: tempDir }, mockLogger);
 
-    expect(spawnSpy).toHaveBeenCalledWith("wisp", [
+    expect(spawnSpy).toHaveBeenCalledWith("sprite", [
       "start",
       "test-sprite",
       "--memory",
@@ -157,7 +155,7 @@ describe("spriteStartCommand", () => {
 
     const calls = consoleSpy.mock.calls.map((c) => String(c[0]));
     expect(calls.some((c) => c.includes("Started Sprite 'test-sprite'"))).toBe(
-      true
+      true,
     );
 
     consoleSpy.mockRestore();
@@ -172,10 +170,10 @@ describe("spriteStartCommand", () => {
 
     await spriteStartCommand(
       { name: "test-sprite", memory: "1GiB", cpus: "2", cwd: tempDir },
-      mockLogger
+      mockLogger,
     );
 
-    expect(spawnSpy).toHaveBeenCalledWith("wisp", [
+    expect(spawnSpy).toHaveBeenCalledWith("sprite", [
       "start",
       "test-sprite",
       "--memory",
@@ -196,7 +194,7 @@ describe("spriteStartCommand", () => {
     const consoleSpy = spyOn(console, "log");
     await spriteStartCommand(
       { name: "test-sprite", cwd: tempDir, json: true },
-      mockLogger
+      mockLogger,
     );
 
     const calls = consoleSpy.mock.calls.map((c) => String(c[0]));
@@ -220,16 +218,11 @@ describe("spriteStartCommand", () => {
     });
 
     await expect(
-      spriteStartCommand(
-        { name: "test-sprite", cwd: tempDir },
-        mockLogger
-      )
+      spriteStartCommand({ name: "test-sprite", cwd: tempDir }, mockLogger),
     ).rejects.toThrow();
 
     const calls = consoleSpy.mock.calls.map((c) => String(c[0]));
-    expect(
-      calls.some((c) => c.includes("Wisp CLI not found"))
-    ).toBe(true();
+    expect(calls.some((c) => c.includes("Wisp CLI not found"))).toBe(true);
 
     consoleSpy.mockRestore();
     exitSpy.mockRestore();
@@ -261,7 +254,7 @@ describe("spriteStartCommand", () => {
     await fs.writeFile(configPath, JSON.stringify(config, null, 2), "utf-8");
 
     await expect(
-      spriteStartCommand({ name: "test-sprite", cwd: tempDir }, mockLogger)
+      spriteStartCommand({ name: "test-sprite", cwd: tempDir }, mockLogger),
     ).rejects.toThrow("Agent kind must be 'sprite'");
   });
 });
@@ -361,11 +354,11 @@ describe("spriteKillCommand", () => {
     const consoleSpy = spyOn(console, "log");
     await spriteKillCommand({ name: "test-sprite", cwd: tempDir }, mockLogger);
 
-    expect(spawnSpy).toHaveBeenCalledWith("wisp", ["kill", "test-sprite"]);
+    expect(spawnSpy).toHaveBeenCalledWith("sprite", ["kill", "test-sprite"]);
 
     const calls = consoleSpy.mock.calls.map((c) => String(c[0]));
     expect(calls.some((c) => c.includes("Killed Sprite 'test-sprite'"))).toBe(
-      true
+      true,
     );
 
     consoleSpy.mockRestore();
@@ -381,7 +374,7 @@ describe("spriteKillCommand", () => {
     const consoleSpy = spyOn(console, "log");
     await spriteKillCommand(
       { name: "test-sprite", cwd: tempDir, json: true },
-      mockLogger
+      mockLogger,
     );
 
     const calls = consoleSpy.mock.calls.map((c) => String(c[0]));
@@ -417,14 +410,14 @@ describe("spriteAttachCommand", () => {
     const consoleSpy = spyOn(console, "log");
     await spriteAttachCommand(
       { name: "test-sprite", cwd: tempDir },
-      mockLogger
+      mockLogger,
     );
 
-    expect(spawnSpy).toHaveBeenCalledWith("wisp", ["attach", "test-sprite"]);
+    expect(spawnSpy).toHaveBeenCalledWith("sprite", ["attach", "test-sprite"]);
 
     const calls = consoleSpy.mock.calls.map((c) => String(c[0]));
     expect(
-      calls.some((c) => c.includes("Attached to Sprite 'test-sprite'"))
+      calls.some((c) => c.includes("Attached to Sprite 'test-sprite'")),
     ).toBe(true);
 
     consoleSpy.mockRestore();
@@ -440,7 +433,7 @@ describe("spriteAttachCommand", () => {
     const consoleSpy = spyOn(console, "log");
     await spriteAttachCommand(
       { name: "test-sprite", cwd: tempDir, json: true },
-      mockLogger
+      mockLogger,
     );
 
     const calls = consoleSpy.mock.calls.map((c) => String(c[0]));
@@ -450,5 +443,203 @@ describe("spriteAttachCommand", () => {
     expect(jsonOutput).toContain("test-sprite");
 
     consoleSpy.mockRestore();
+  });
+});
+
+describe("spriteExecCommand", () => {
+  let tempDir: string;
+  let mockLogger: Logger & { messages: string[] };
+
+  beforeEach(async () => {
+    mockLogger = createMockLogger();
+  });
+
+  afterEach(async () => {
+    if (tempDir) {
+      await fs.rm(tempDir, { recursive: true, force: true });
+    }
+  });
+
+  it("executes a command in a Sprite successfully", async () => {
+    tempDir = await setupTempGitRepo();
+    await setupSpriteConfig(tempDir);
+
+    const mockStdout = "file1.txt\nfile2.txt\n";
+    const spawnSpy = mockSpawnSuccess(mockStdout);
+
+    const consoleSpy = spyOn(console, "log");
+    await spriteExecCommand(
+      { name: "test-sprite", command: ["ls", "-la"], cwd: tempDir },
+      mockLogger,
+    );
+
+    expect(spawnSpy).toHaveBeenCalledWith("sprite", [
+      "exec",
+      "test-sprite",
+      "ls",
+      "-la",
+    ]);
+
+    const calls = consoleSpy.mock.calls.map((c) => String(c[0]));
+    expect(
+      calls.some((c) => c.includes("Executed command in Sprite 'test-sprite'")),
+    ).toBe(true);
+    expect(calls.some((c) => c.includes("file1.txt"))).toBe(true);
+
+    consoleSpy.mockRestore();
+    spawnSpy.mockRestore();
+  });
+
+  it("handles command execution failure (non-zero exit code)", async () => {
+    tempDir = await setupTempGitRepo();
+    await setupSpriteConfig(tempDir);
+
+    const mockStderr = "Error: Command not found\n";
+    const spawnSpy = mockSpawnFailure(1, mockStderr);
+
+    const consoleSpy = spyOn(console, "log");
+    const consoleErrorSpy = spyOn(console, "error");
+    const exitSpy = spyOn(process, "exit").mockImplementation((code) => {
+      throw new Error(`Process exited with code ${code}`);
+    });
+
+    await expect(
+      spriteExecCommand(
+        { name: "test-sprite", command: ["invalid-command"], cwd: tempDir },
+        mockLogger,
+      ),
+    ).rejects.toThrow();
+
+    expect(consoleErrorSpy).toHaveBeenCalled();
+    const errorCalls = consoleErrorSpy.mock.calls.map((c) => String(c[0]));
+    expect(
+      errorCalls.some((c) => c.includes("Command failed with exit code 1")),
+    ).toBe(true);
+
+    consoleSpy.mockRestore();
+    consoleErrorSpy.mockRestore();
+    exitSpy.mockRestore();
+    spawnSpy.mockRestore();
+  });
+
+  it("outputs JSON format when --json flag is provided", async () => {
+    tempDir = await setupTempGitRepo();
+    await setupSpriteConfig(tempDir);
+
+    const mockStdout = "Command output\n";
+    const spawnSpy = mockSpawnSuccess(mockStdout);
+
+    const consoleSpy = spyOn(console, "log");
+    await spriteExecCommand(
+      {
+        name: "test-sprite",
+        command: ["echo", "hello"],
+        cwd: tempDir,
+        json: true,
+      },
+      mockLogger,
+    );
+
+    const calls = consoleSpy.mock.calls.map((c) => String(c[0]));
+    const jsonOutput = calls.find((c) => c.includes('"success": true'));
+
+    expect(jsonOutput).toBeDefined();
+    const parsed = JSON.parse(jsonOutput!);
+    expect(parsed.success).toBe(true);
+    expect(parsed.data.name).toBe("test-sprite");
+    expect(parsed.data.command).toEqual(["echo", "hello"]);
+    expect(parsed.data.exitCode).toBe(0);
+    expect(parsed.data.stdout).toBe("Command output");
+
+    consoleSpy.mockRestore();
+    spawnSpy.mockRestore();
+  });
+
+  it("outputs JSON format for command failures", async () => {
+    tempDir = await setupTempGitRepo();
+    await setupSpriteConfig(tempDir);
+
+    const mockStderr = "Command failed\n";
+    const spawnSpy = mockSpawnFailure(2, mockStderr);
+
+    const consoleSpy = spyOn(console, "log");
+    const consoleErrorSpy = spyOn(console, "error");
+    const exitSpy = spyOn(process, "exit").mockImplementation((code) => {
+      throw new Error(`Process exited with code ${code}`);
+    });
+
+    await expect(
+      spriteExecCommand(
+        {
+          name: "test-sprite",
+          command: ["failing-command"],
+          cwd: tempDir,
+          json: true,
+        },
+        mockLogger,
+      ),
+    ).rejects.toThrow();
+
+    const errorCalls = consoleErrorSpy.mock.calls.map((c) => String(c[0]));
+    const jsonOutput = errorCalls.find((c) => c.includes('"success": false'));
+
+    expect(jsonOutput).toBeDefined();
+    const parsed = JSON.parse(jsonOutput!);
+    expect(parsed.success).toBe(false);
+    expect(parsed.data.exitCode).toBe(2);
+
+    consoleSpy.mockRestore();
+    consoleErrorSpy.mockRestore();
+    exitSpy.mockRestore();
+    spawnSpy.mockRestore();
+  });
+
+  it("handles Sprite binary not found error", async () => {
+    tempDir = await setupTempGitRepo();
+    await setupSpriteConfig(tempDir);
+
+    const spawnSpy = mockSpawnError("ENOENT");
+
+    const consoleSpy = spyOn(console, "log");
+    const consoleErrorSpy = spyOn(console, "error");
+    const exitSpy = spyOn(process, "exit").mockImplementation((code) => {
+      throw new Error(`Process exited with code ${code}`);
+    });
+
+    await expect(
+      spriteExecCommand(
+        { name: "test-sprite", command: ["ls"], cwd: tempDir },
+        mockLogger,
+      ),
+    ).rejects.toThrow();
+
+    const errorCalls = consoleErrorSpy.mock.calls.map((c) => String(c[0]));
+    expect(errorCalls.some((c) => c.includes("not found"))).toBe(true);
+
+    consoleSpy.mockRestore();
+    consoleErrorSpy.mockRestore();
+    exitSpy.mockRestore();
+    spawnSpy.mockRestore();
+  });
+
+  it("handles both stdout and stderr output", async () => {
+    tempDir = await setupTempGitRepo();
+    await setupSpriteConfig(tempDir);
+
+    const mockStdout = "Standard output\n";
+    const mockStderr = "Warning message\n";
+    const spawnSpy = mockSpawnSuccess(mockStdout, mockStderr);
+
+    const consoleLogSpy = spyOn(console, "log");
+    await spriteExecCommand(
+      { name: "test-sprite", command: ["npm", "install"], cwd: tempDir },
+      mockLogger,
+    );
+
+    const logCalls = consoleLogSpy.mock.calls.map((c) => String(c[0]));
+    expect(logCalls.some((c) => c.includes("Standard output"))).toBe(true);
+
+    consoleLogSpy.mockRestore();
+    spawnSpy.mockRestore();
   });
 });
