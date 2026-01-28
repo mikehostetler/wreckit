@@ -36,6 +36,8 @@ export interface ConfigResolved {
   branch_cleanup: BranchCleanupResolved;
   // Add optional skills (Item 033)
   skills?: SkillConfig;
+  // Add optional doctor configuration (Item 038)
+  doctor?: import("./schemas").DoctorConfig;
 }
 
 export interface ConfigOverrides {
@@ -166,13 +168,16 @@ export function mergeWithDefaults(partial: Partial<Config>): ConfigResolved {
  * and enable bi-directional sync.
  */
 function applySandboxMode(config: ConfigResolved): ConfigResolved {
-  // If already using sprite, just enable syncOnSuccess
+  // If already using sprite, just enable syncOnSuccess and syncEnabled
   if (config.agent.kind === "sprite") {
     return {
       ...config,
       agent: {
         ...config.agent,
+        syncEnabled: true,
         syncOnSuccess: true,
+        // Remove explicit vmName to force ephemeral mode
+        vmName: undefined,
       },
     };
   }

@@ -278,8 +278,9 @@ export async function runSpriteAgent(
         }
         if (c.functionCall && onAgentEvent) {
           onAgentEvent({
-            type: "tool_use",
-            tool: c.functionCall.name,
+            type: "tool_started",
+            toolUseId: `tool-${Date.now()}`,
+            toolName: c.functionCall.name,
             input: c.functionCall.arguments,
           });
         }
