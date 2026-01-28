@@ -28,6 +28,7 @@ export interface PhaseOptions {
   force?: boolean;
   dryRun?: boolean;
   cwd?: string;
+  sandbox?: boolean;
 }
 
 /**
@@ -156,10 +157,14 @@ export async function runPhaseCommand(
   options: PhaseOptions,
   logger: Logger,
 ): Promise<void> {
-  const { force = false, dryRun = false, cwd } = options;
+  const { force = false, dryRun = false, cwd, sandbox } = options;
 
   const root = findRootFromOptions(options);
-  const config = await loadConfig(root);
+  const config = await loadConfig(
+    root,
+    sandbox ? { sandbox } : undefined,
+    logger,
+  );
 
   const itemDir = getItemDir(root, itemId);
   let item;

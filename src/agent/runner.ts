@@ -84,6 +84,8 @@ export interface UnionRunAgentOptions {
   mcpServers?: Record<string, unknown>;
   /** Restrict agent to only specific tools (e.g., MCP tools). Prevents use of Read, Write, Bash, etc. */
   allowedTools?: string[];
+  /** Item ID for VM naming (used when ephemeral mode is enabled) */
+  itemId?: string;
 }
 
 function exhaustiveCheck(x: never): never {
@@ -292,6 +294,8 @@ export async function runAgentUnion(
 
     case "sprite": {
       const { runSpriteAgent } = await import("./sprite-runner.js");
+      // Detect ephemeral mode: auto-generated VM name means ephemeral
+      const isEphemeral = !config.vmName;
       return runSpriteAgent(config, {
         config,
         cwd: options.cwd,
@@ -302,6 +306,8 @@ export async function runAgentUnion(
         onStdoutChunk: options.onStdoutChunk,
         onStderrChunk: options.onStderrChunk,
         timeoutSeconds: options.timeoutSeconds,
+        ephemeral: isEphemeral,
+        itemId: options.itemId,
       });
     }
 

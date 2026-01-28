@@ -86,9 +86,7 @@ export const SpriteAgentSchema = z.object({
   vmName: z
     .string()
     .optional()
-    .describe(
-      "Name of the Sprite VM to use (auto-generated if not provided)",
-    ),
+    .describe("Name of the Sprite VM to use (auto-generated if not provided)"),
   syncEnabled: z
     .boolean()
     .default(true)
@@ -100,7 +98,9 @@ export const SpriteAgentSchema = z.object({
   syncOnSuccess: z
     .boolean()
     .default(false)
-    .describe("Automatically pull files from VM after successful agent completion"),
+    .describe(
+      "Automatically pull files from VM after successful agent completion",
+    ),
   maxVMs: z.number().default(5).describe("Maximum concurrent VMs allowed"),
   defaultMemory: z
     .string()

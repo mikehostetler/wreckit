@@ -1,0 +1,228 @@
+{
+  "schema_version": 1,
+  "id": "079-sandbox-usability-layer",
+  "branch_name": "wreckit/079-sandbox-usability-layer",
+  "user_stories": [
+    {
+      "id": "US-001",
+      "title": "Extend ConfigOverrides interface to support sandbox flag",
+      "acceptance_criteria": [
+        "ConfigOverrides interface in src/config.ts includes sandbox?: boolean field",
+        "applySandboxMode() helper function transforms config to Sprite agent with appropriate defaults",
+        "applyOverrides() function calls applySandboxMode() when sandbox: true is passed",
+        "Transformation sets agent.kind to 'sprite'",
+        "Transformation enables syncOnSuccess: true for bi-directional sync",
+        "Transformation preserves other config fields (base_branch, etc.)",
+        "If config already has sprite agent, syncOnSuccess is set to true without overwriting other fields",
+        "Function is type-safe and passes TypeScript compilation",
+        "Logger shows 'Sandbox mode: Using Sprite agent with ephemeral VM' when enabled"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Foundation for all other stories. Must be completed first. The applySandboxMode function should be testable in isolation."
+    },
+    {
+      "id": "US-002",
+      "title": "Add --sandbox global CLI flag",
+      "acceptance_criteria": [
+        "Global options in src/index.ts include --sandbox flag with descriptive help text",
+        "Flag follows existing pattern of --agent and --rlm flags",
+        "Flag is available to all commands (research, plan, implement, run, etc.)",
+        "Flag value is extracted from opts using opts.sandbox",
+        "Running 'wreckit --help' shows --sandbox in options list",
+        "Flag defaults to false (not enabled) when not specified",
+        "Flag is properly typed in TypeScript"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "User-facing entry point. Must match existing CLI flag patterns for consistency."
+    },
+    {
+      "id": "US-003",
+      "title": "Pass sandbox flag through orchestration layer",
+      "acceptance_criteria": [
+        "orchestrateAll() function accepts sandbox parameter in options interface",
+        "Main program action handler passes opts.sandbox to orchestrateAll()",
+        "orchestrateAll() passes sandbox to runCommand() calls",
+        "runCommand() RunOptions interface includes sandbox?: boolean field",
+        "runCommand() passes sandbox to loadConfig(root, { sandbox })",
+        "runPhaseCommand() accepts and passes sandbox parameter",
+        "All phase commands (research, plan, implement, critique, pr, complete) pass globalOpts.sandbox to runPhaseCommand()",
+        "Type checking passes with no implicit any types"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Ensures flag propagates from CLI through all layers to config loading. Changes may be needed in orchestrator.ts if it doesn't already accept sandbox parameter."
+    },
+    {
+      "id": "US-004",
+      "title": "Add ephemeral mode support to Sprite runner",
+      "acceptance_criteria": [
+        "SpriteRunAgentOptions interface includes ephemeral?: boolean field",
+        "Interface includes itemId?: string field for VM naming",
+        "VM name generation uses format: wreckit-sandbox-${itemId}-${timestamp} when itemId is available",
+        "VM name generation uses format: wreckit-sandbox-agent-${timestamp} when itemId is not available",
+        "Ephemeral VM tracking variable (currentEphemeralVM) is defined at module level",
+        "getCurrentEphemeralVM() function returns current VM info",
+        "VM is tracked in currentEphemeralVM when ephemeral: true",
+        "VM tracking is set to null if VM fails to start",
+        "finally block calls killSprite() when ephemeral: true and vmName exists",
+        "Cleanup logs show 'Cleaning up ephemeral VM: ${vmName}'",
+        "Cleanup success logs show 'Ephemeral VM ${vmName} cleaned up successfully'",
+        "Cleanup failure logs show warning with manual cleanup command",
+        "Cleanup is wrapped in try/catch to prevent masking actual errors",
+        "currentEphemeralVM is set to null after cleanup attempt",
+        "Function works correctly when dryRun: true (no actual cleanup)"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Core functionality for automatic VM lifecycle. The finally block is critical - it must execute in all cases (success, error, timeout)."
+    },
+    {
+      "id": "US-005",
+      "title": "Update agent runner dispatch to pass ephemeral and itemId",
+      "acceptance_criteria": [
+        "runAgentUnion() detects ephemeral mode from config (ephemeral if !config.vmName)",
+        "Sprite case in runAgentUnion passes ephemeral: isEphemeral to runSpriteAgent()",
+        "RunAgentOptions interface includes itemId?: string field",
+        "Sprite case passes itemId: options.itemId to runSpriteAgent()",
+        "Workflow layer passes itemId: item.id when calling runAgentUnion()",
+        "Type checking passes with no errors",
+        "Ephemeral detection logic correctly identifies user-configured VMs as non-ephemeral"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Connects the sprite runner to the dispatch system. The ephemeral detection logic is key: auto-generated VM names = ephemeral, explicit vmName = persistent."
+    },
+    {
+      "id": "US-006",
+      "title": "Enhance interrupt handler with cleanup callback",
+      "acceptance_criteria": [
+        "CleanupHandler interface defined with cleanup: () => Promise<void> and optional timeout field",
+        "setupInterruptHandler() accepts optional cleanup parameter of type CleanupHandler",
+        "Interrupt handler calls cleanup.cleanup() on first Ctrl+C",
+        "Cleanup has default timeout of 10 seconds",
+        "If cleanup times out, error is logged and force exit proceeds",
+        "Second Ctrl+C forces immediate exit (existing behavior preserved)",
+        "Logs show 'Interrupted. Cleaning up...' when cleanup starts",
+        "Logs show 'Cleanup completed' when cleanup succeeds",
+        "Logs show 'Cleanup failed' when cleanup throws",
+        "TypeScript compilation passes"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "Critical for Ctrl+C safety. The timeout prevents hanging on cleanup failures. Double-tap to force exit is preserved from original behavior."
+    },
+    {
+      "id": "US-007",
+      "title": "Register VM cleanup handler in run command",
+      "acceptance_criteria": [
+        "runCommand() checks if config.agent.kind === 'sprite'",
+        "When using Sprite agent, setupInterruptHandler() is called with cleanup callback",
+        "Cleanup callback retrieves current VM using getCurrentEphemeralVM()",
+        "Cleanup callback calls killSprite() for the current VM",
+        "Cleanup callback logs cleanup actions and results",
+        "Cleanup is wrapped in try/catch to handle errors gracefully",
+        "Cleanup callback is only registered once (not duplicated on phase transitions)",
+        "VM cleanup works when interrupted during agent execution",
+        "VM cleanup works when interrupted during sync",
+        "Manual cleanup command is logged if cleanup fails"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "Integration point between interrupt handler and Sprite VM cleanup. Should only register cleanup when actually using Sprite agent. Consider centralizing this registration in main() rather than per-command."
+    },
+    {
+      "id": "US-008",
+      "title": "Add comprehensive integration tests",
+      "acceptance_criteria": [
+        "Integration test file created at tests/integration/sandbox.test.ts",
+        "Test verifies config transformation with sandbox override",
+        "Test verifies agent.kind is 'sprite' after sandbox transformation",
+        "Test verifies syncOnSuccess is true after sandbox transformation",
+        "Test verifies ephemeral mode works with dry-run",
+        "Test covers VM cleanup on success (mocked)",
+        "Test covers VM cleanup on failure (mocked)",
+        "Test covers VM cleanup on timeout (mocked)",
+        "Test covers multiple concurrent sandboxes (mocked)",
+        "Test covers interrupt handling (mocked)",
+        "All new tests pass with npm test",
+        "Existing tests continue to pass (no regressions)"
+      ],
+      "priority": 4,
+      "status": "pending",
+      "notes": "Automated test coverage. Some tests may need to mock Sprite CLI since CI environment may not have it installed. Focus on testing the logic, not the actual VM operations."
+    },
+    {
+      "id": "US-009",
+      "title": "Create user documentation for sandbox mode",
+      "acceptance_criteria": [
+        "README.md includes 'Sandbox Mode' section",
+        "Documentation shows basic usage: 'wreckit run <item-id> --sandbox'",
+        "Documentation shows usage with individual phases",
+        "Documentation explains what sandbox mode does (isolates execution, auto-cleanup, sync)",
+        "Documentation explains how it works (VM lifecycle, sync behavior, cleanup)",
+        "Documentation includes manual VM management commands for advanced users",
+        "Documentation lists requirements (Sprite CLI, Sprites.dev account)",
+        "Documentation is clear and accurate",
+        "Code examples in documentation are syntactically correct",
+        "Links to Sprite installation are correct"
+      ],
+      "priority": 4,
+      "status": "pending",
+      "notes": "Critical for user adoption. Should explain both the simple --sandbox usage and the advanced manual VM management for power users."
+    },
+    {
+      "id": "US-010",
+      "title": "Enhance error messages for missing Sprite CLI",
+      "acceptance_criteria": [
+        "Sprite CLI not found error includes installation instructions",
+        "Error message mentions 'https://sprites.dev' for Sprite CLI installation",
+        "Error message suggests using --sandbox flag if appropriate",
+        "Error is logged at ERROR level",
+        "Error message is clear and actionable",
+        "Error handling in runWispCommand() preserves error details"
+      ],
+      "priority": 4,
+      "status": "done",
+      "notes": "Improves user experience when Sprite is not installed. The existing error handling is good, just needs enhancement to mention sandbox mode."
+    },
+    {
+      "id": "US-011",
+      "title": "Perform end-to-end manual testing",
+      "acceptance_criteria": [
+        "Normal execution test: VM created, agent runs, VM destroyed, changes synced",
+        "Interrupt test: Ctrl+C during execution triggers VM cleanup",
+        "Failure test: Agent failure still triggers VM cleanup",
+        "Concurrent sandboxes test: Multiple runs use different VM names",
+        "Missing Sprite CLI test: Clear error message with installation instructions",
+        "Config interaction test: --sandbox flag overrides config.json sprite settings",
+        "Sync on success test: File modifications are pulled back from VM",
+        "Dry-run test: --dry-run shows correct config without creating VM",
+        "All edge cases pass without errors",
+        "No orphaned VMs after any test scenario",
+        "wreckit sprite list shows no VMs after all tests complete"
+      ],
+      "priority": 4,
+      "status": "pending",
+      "notes": "Critical validation step. Must be performed manually by a human tester. Test environment should have Sprite CLI installed."
+    },
+    {
+      "id": "US-012",
+      "title": "Verify type safety and linting",
+      "acceptance_criteria": [
+        "npm run typecheck passes with no errors",
+        "npm run lint passes with no errors",
+        "npm run build succeeds without errors",
+        "No implicit any types introduced",
+        "No unused variables",
+        "All new interfaces and types are exported if needed by other modules",
+        "Function signatures match usage patterns",
+        "Generic types are properly constrained"
+      ],
+      "priority": 5,
+      "status": "done",
+      "notes": "Code quality validation. Should be run after each phase to catch issues early."
+    }
+  ]
+}

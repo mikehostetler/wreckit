@@ -6,14 +6,16 @@
       "dependency-analysis",
       "documentation-analysis",
       "pattern-detection",
-      "error-pattern-detection"
+      "error-pattern-detection",
+      "source-item-analysis"
     ],
     "plan": [
       "documentation-writer",
       "architecture-design",
       "user-story-breakdown",
       "estimation",
-      "test-strategy"
+      "test-strategy",
+      "interactive-merge"
     ],
     "implement": [
       "full-capability",
@@ -32,7 +34,9 @@
       "error-detection-healing",
       "remote-tool-proxying",
       "binary-data-encoding",
-      "command-injection-prevention"
+      "command-injection-prevention",
+      "mcp-server-integration",
+      "file-operations"
     ],
     "pr": [
       "git-integration",
@@ -49,7 +53,8 @@
     ],
     "learn": [
       "pattern-extraction",
-      "skill-compilation"
+      "skill-compilation",
+      "agent-based-analysis"
     ],
     "strategy": [
       "codebase-analysis",
@@ -860,6 +865,103 @@
           "type": "file",
           "path": "src/fs/lock.ts",
           "description": "FileLock implementation patterns"
+        }
+      ]
+    },
+    {
+      "id": "mcp-server-integration",
+      "name": "MCP Server Integration",
+      "description": "Creates and manages Model Context Protocol (MCP) servers for extending agent capabilities. Handles server initialization, tool registration, lifecycle management, and graceful shutdown. Based on item 033 skill loading patterns.",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Grep"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": "src/agent/mcp/wreckitMcpServer.ts",
+          "description": "MCP server implementation patterns"
+        }
+      ]
+    },
+    {
+      "id": "file-operations",
+      "name": "File Operations",
+      "description": "Atomic file writes, safe JSON operations, file locking, and backup/restore mechanisms. Prevents data corruption during concurrent operations and provides rollback capability. Based on patterns from items 032 (backup), 076 (atomic writes), and fs/lock.ts.",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": "src/fs/atomic.ts",
+          "description": "Atomic write patterns"
+        },
+        {
+          "type": "file",
+          "path": "src/fs/lock.ts",
+          "description": "File lock patterns"
+        }
+      ]
+    },
+    {
+      "id": "source-item-analysis",
+      "name": "Source Item Analysis",
+      "description": "Analyzes source items (research.md, plan.md, implemented code) to extract patterns for skill compilation. Reads item artifacts, identifies tool usage patterns, context requirements, and phase applicability. Used by wreckit learn command for pattern extraction.",
+      "tools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": ".wreckit/items/",
+          "description": "Source items directory for analysis"
+        },
+        {
+          "type": "git_status",
+          "description": "Repository state for context"
+        }
+      ]
+    },
+    {
+      "id": "agent-based-analysis",
+      "name": "Agent-Based Analysis",
+      "description": "Runs autonomous agents to analyze codebases and extract insights. Uses agent SDK with Read, Write, Glob, Grep tools for pattern detection, produces structured output with schema validation. Based on patterns from strategy command (item 034) and learn command.",
+      "tools": [
+        "Read",
+        "Write",
+        "Glob",
+        "Grep"
+      ],
+      "required_context": [
+        {
+          "type": "git_status",
+          "description": "Current repository state"
+        }
+      ]
+    },
+    {
+      "id": "interactive-merge",
+      "name": "Interactive Merge",
+      "description": "Provides interactive merge capability for configuration files (skills.json, etc.) using TTY detection, readline prompts, and conflict resolution. Allows users to choose between conflicting values during merge operations. Based on item 041 patterns.",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Grep"
+      ],
+      "required_context": [
+        {
+          "type": "git_status",
+          "description": "Check for TTY environment availability"
         }
       ]
     }

@@ -58,9 +58,13 @@ program
   .option("--cwd <path>", "Override the working directory")
   .option(
     "--agent <kind>",
-    "Agent kind to use (claude_sdk, amp_sdk, codex_sdk, opencode_sdk, rlm)",
+    "Agent kind to use (claude_sdk, amp_sdk, codex_sdk, opencode_sdk, rlm, sprite)",
   )
-  .option("--rlm", "Shorthand for --agent rlm");
+  .option("--rlm", "Shorthand for --agent rlm")
+  .option(
+    "--sandbox",
+    "Run in isolated Sprite VM with automatic cleanup (implies --agent sprite)",
+  );
 
 program.action(async () => {
   const opts = program.opts();
@@ -93,6 +97,7 @@ program.action(async () => {
           retryFailed: opts.retryFailed,
           noHealing: opts.noHealing, // Pass through --no-healing flag (Item 038)
           agentKind, // Pass agent kind override
+          sandbox: opts.sandbox, // Pass sandbox flag
         },
         logger,
       );
@@ -243,6 +248,7 @@ program
             force: options.force,
             dryRun: globalOpts.dryRun,
             cwd,
+            sandbox: globalOpts.sandbox,
           },
           logger,
         );
@@ -275,6 +281,7 @@ program
             force: options.force,
             dryRun: globalOpts.dryRun,
             cwd,
+            sandbox: globalOpts.sandbox,
           },
           logger,
         );
@@ -307,6 +314,7 @@ program
             force: options.force,
             dryRun: globalOpts.dryRun,
             cwd,
+            sandbox: globalOpts.sandbox,
           },
           logger,
         );
@@ -339,6 +347,7 @@ program
             force: options.force,
             dryRun: globalOpts.dryRun,
             cwd,
+            sandbox: globalOpts.sandbox,
           },
           logger,
         );
@@ -366,7 +375,7 @@ program
         await runPhaseCommand(
           "complete",
           resolvedId,
-          { dryRun: globalOpts.dryRun, cwd },
+          { dryRun: globalOpts.dryRun, cwd, sandbox: globalOpts.sandbox },
           logger,
         );
       },
@@ -394,7 +403,12 @@ program
         await runPhaseCommand(
           "critique",
           resolvedId,
-          { force: options.force, dryRun: globalOpts.dryRun, cwd },
+          {
+            force: options.force,
+            dryRun: globalOpts.dryRun,
+            cwd,
+            sandbox: globalOpts.sandbox,
+          },
           logger,
         );
       },
@@ -596,9 +610,19 @@ spriteCmd
 spriteCmd
   .command("pull <name>")
   .description("Pull files from a Sprite VM back to the host")
-  .option("--vm-path <path>", "Path in VM to pull from (default: /home/user/project)")
-  .option("--destination <dir>", "Local destination directory (default: current directory)")
-  .option("--exclude <pattern>", "Exclude patterns (can be used multiple times)", [])
+  .option(
+    "--vm-path <path>",
+    "Path in VM to pull from (default: /home/user/project)",
+  )
+  .option(
+    "--destination <dir>",
+    "Local destination directory (default: current directory)",
+  )
+  .option(
+    "--exclude <pattern>",
+    "Exclude patterns (can be used multiple times)",
+    [],
+  )
   .option("--json", "Output as JSON")
   .action(async (name, options, cmd) => {
     const globalOpts = cmd.optsWithGlobals();
@@ -643,6 +667,7 @@ program
             force: options.force,
             dryRun: globalOpts.dryRun,
             cwd,
+            sandbox: globalOpts.sandbox,
           },
           logger,
         );
@@ -951,7 +976,57 @@ program
   });
 
 async function main(): Promise<void> {
-  setupInterruptHandler(logger);
+  // Set up interrupt handler with VM cleanup capability
+  setupInterruptHandler(logger, {
+    cleanup: async () => {
+      // Clean up any ephemeral VM if running
+      const { getCurrentEphemeralVM } = await import(
+        "./agent/sprite-runner.js"
+      );
+      const currentVM = getCurrentEphemeralVM();
+      if (currentVM) {
+        const { killSprite } = await import("./agent/sprite-core.js");
+        const { loadConfig } = await import("./config.js");
+        const { findRepoRoot } = await import("./fs/paths.js");
+        const { resolveCwd } = await import("./fs/paths.js");
+
+        try {
+          const cwd = resolveCwd(process.cwd());
+          const root = findRepoRoot(cwd);
+          const config = await loadConfig(root);
+
+          if (config.agent.kind === "sprite") {
+            logger.info(`Cleaning up ephemeral VM: ${currentVM.vmName}`);
+            const result = await killSprite(
+              currentVM.vmName,
+              config.agent,
+              logger,
+            );
+            if (result.success) {
+              logger.info(
+                `Ephemeral VM ${currentVM.vmName} cleaned up successfully`,
+              );
+            } else {
+              logger.warn(
+                `Failed to clean up ephemeral VM ${currentVM.vmName}`,
+              );
+              logger.warn(
+                `Manual cleanup: wreckit sprite kill ${currentVM.vmName}`,
+              );
+            }
+          }
+        } catch (err) {
+          logger.error(
+            `Error cleaning up ephemeral VM: ${(err as Error).message}`,
+          );
+          logger.warn(
+            `Manual cleanup: wreckit sprite kill ${currentVM.vmName}`,
+          );
+        }
+      }
+    },
+    timeout: 10000, // 10 seconds
+  });
 
   // Global error handlers to prevent silent crashes in autonomous mode
   process.on("unhandledRejection", (reason) => {

@@ -530,6 +530,7 @@ export async function runPhasePlan(
     const skillResult = loadSkillsForPhase("plan", config.skills);
 
     const result = await runAgentUnion({
+      itemId: itemId,
       config: agentConfig,
       cwd: itemDir,
       prompt,
@@ -808,6 +809,7 @@ export async function runPhaseImplement(
 
     const agentConfig = getAgentConfigUnion(config);
     const result = await runAgentUnion({
+      itemId: itemId,
       config: agentConfig,
       cwd: itemDir,
       prompt,
@@ -1336,6 +1338,7 @@ export async function runPhasePr(
 
       const agentConfig = getAgentConfigUnion(config);
       const result = await runAgentUnion({
+        itemId: itemId,
         config: agentConfig,
         cwd: itemDir,
         prompt,
