@@ -306,13 +306,12 @@ export async function dreamCommand(
     throw new Error(error);
   }
 
-  // CRITICAL: MCP tool call is REQUIRED - no JSON fallback
+  // Allow 0 items if agent succeeded (e.g. no issues found)
   if (capturedIdeas.length === 0) {
-    throw new McpToolNotCalledError(
-      "Dreamer agent did not call the required MCP tool (save_dream_ideas). " +
-        "The agent must use the structured tool call to save ideas. " +
-        "This prevents unstructured output that bypasses validation.",
+    logger.info(
+      "Dreamer agent completed but did not save any ideas (codebase may be clean).",
     );
+    return;
   }
 
   // Enforce [DREAMER] prefix on all generated ideas
