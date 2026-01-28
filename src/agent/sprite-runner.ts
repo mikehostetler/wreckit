@@ -9,6 +9,19 @@ import {
   SpriteKillError,
   SpriteExecError,
 } from "../errors";
+import {
+  AxAgent,
+  AxAIAnthropic,
+  AxAIOpenAI,
+  AxAIGoogleGemini,
+  type AxAIService,
+  type AxFunction,
+} from "@ax-llm/ax";
+import { buildAxAIEnv } from "./env";
+import { buildRemoteToolRegistry } from "./remote-tools";
+import { adaptMcpServersToAxTools } from "./mcp/mcporterAdapter";
+import { registerSdkController, unregisterSdkController } from "./lifecycle";
+import { AgentEvent } from "../tui/agentEvents";
 
 // ============================================================
 // Sprite Runner - Sprites.dev CLI Wrapper
@@ -486,7 +499,7 @@ export async function execSprite(
 }
 
 // ============================================================
-// Sprite Agent Runner (US-073-005)
+// Sprite Agent Runner (US-073-005 & US-076-003)
 // ============================================================
 
 export interface SpriteRunAgentOptions {
@@ -499,32 +512,61 @@ export interface SpriteRunAgentOptions {
   timeoutSeconds?: number;
   onStdoutChunk?: (chunk: string) => void;
   onStderrChunk?: (chunk: string) => void;
+  onAgentEvent?: (event: AgentEvent) => void;
+  mcpServers?: Record<string, unknown>;
+  allowedTools?: string[];
+}
+
+/**
+ * Ensure a Sprite VM is running. Starts it if it doesn't exist or isn't running.
+ */
+async function ensureSpriteRunning(
+  name: string,
+  config: SpriteAgentConfig,
+  logger: Logger
+): Promise<boolean> {
+  // Check if VM already exists
+  const listResult = await listSprites(config, logger);
+  const sprites = parseWispJson(listResult.stdout, logger) as WispSpriteInfo[];
+  
+  // If list fails or returns null, we can't be sure. Assume not running.
+  const exists = Array.isArray(sprites) && sprites.some(s => s.name === name && s.state === "running");
+
+  if (exists) {
+    logger.debug(`Sprite VM '${name}' is already running`);
+    return true;
+  }
+
+  // Start new VM
+  logger.info(`Starting Sprite VM '${name}'...`);
+  try {
+    const startResult = await startSprite(name, config, logger);
+    return startResult.success;
+  } catch (err) {
+    logger.error(`Failed to start Sprite VM '${name}': ${err}`);
+    return false;
+  }
+}
+
+function handleAxAIError(error: any, logger: Logger): string {
+  const msg = error instanceof Error ? error.message : String(error);
+  logger.error(`AxAI Error: ${msg}`);
+  return `Agent Error: ${msg}`;
 }
 
 /**
  * Run a Sprite agent.
  *
- * This is a minimal implementation that satisfies the agent runner interface.
- * For now, it verifies Wisp connectivity by listing Sprites. Full agent
- * execution inside Sprites (file mounting, code transfer, etc.) is deferred
- * to a follow-up item.
- *
- * @param config - Sprite agent configuration
- * @param options - Agent execution options
- * @returns Promise<AgentResult> with execution result
+ * Executes the agent loop using remote tools proxied to the Sprite VM.
  */
 export async function runSpriteAgent(
   config: SpriteAgentConfig,
   options: SpriteRunAgentOptions,
 ): Promise<AgentResult> {
-  const { logger, dryRun = false, mockAgent = false, cwd, prompt } = options;
+  const { logger, dryRun = false, mockAgent = false, cwd, prompt, onStdoutChunk, onAgentEvent } = options;
 
-  // Handle dry-run mode
   if (dryRun) {
-    logger.info(`[dry-run] Would run Sprite agent`);
-    logger.info(`[dry-run] Wisp path: ${config.wispPath}`);
-    logger.info(`[dry-run] Working directory: ${cwd}`);
-    logger.info(`[dry-run] Prompt length: ${prompt.length} characters`);
+    logger.info(`[dry-run] Would run Sprite agent in VM: ${config.vmName || "auto-generated"}`);
     return {
       success: true,
       output: "[dry-run] No output",
@@ -534,101 +576,146 @@ export async function runSpriteAgent(
     };
   }
 
-  // Handle mock-agent mode
-  if (mockAgent) {
-    logger.info(`[mock-agent] Simulating Sprite agent run...`);
-    const completionSignal = "<promise>COMPLETE</promise>";
-    const mockLines = [
-      `🤖 [mock-agent] Starting simulated Sprite agent run...`,
-      `📋 [mock-agent] Wisp path: ${config.wispPath}`,
-      `🔍 [mock-agent] Verifying Wisp connectivity...`,
-      `✅ [mock-agent] Wisp is accessible`,
-      `📦 [mock-agent] Full agent execution in Sprites is not yet implemented`,
-      completionSignal,
-    ];
-    let output = "";
-    for (const line of mockLines) {
-      const chunk = line + "\n";
-      output += chunk;
-      if (options.onStdoutChunk) {
-        options.onStdoutChunk(chunk);
-      }
-    }
-    return {
-      success: true,
-      output,
-      timedOut: false,
-      exitCode: 0,
-      completionDetected: true,
-    };
-  }
-
-  // Normal mode: Verify Wisp connectivity by listing Sprites
-  logger.info(`Verifying Wisp connectivity...`);
+  const abortController = new AbortController();
+  registerSdkController(abortController);
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
   try {
-    const result = await listSprites(config, logger);
-
-    if (!result.success) {
-      logger.error(
-        `Wisp connectivity check failed: ${result.stderr || result.error}`,
-      );
+    // 1. Initialize or connect to Sprite VM
+    const vmName = config.vmName || `wreckit-agent-${Date.now()}`;
+    logger.info(`Initializing Sprite environment (${vmName})...`);
+    
+    const vmReady = await ensureSpriteRunning(vmName, config, logger);
+    if (!vmReady) {
       return {
         success: false,
-        output:
-          result.stderr || result.error || "Wisp connectivity check failed",
-        timedOut: false,
-        exitCode: result.exitCode,
-        completionDetected: false,
-      };
-    }
-
-    const sprites = parseWispJson(result.stdout, logger);
-    const spriteList = sprites as WispSpriteInfo[] | null;
-    const spriteCount = Array.isArray(spriteList) ? spriteList.length : 0;
-
-    logger.info(`Wisp is accessible. Active Sprites: ${spriteCount}`);
-
-    const output = [
-      `✅ Wisp connectivity verified`,
-      `📋 Active Sprites: ${spriteCount}`,
-      ``,
-      `Note: Full agent execution inside Sprites is not yet implemented.`,
-      `This is a placeholder that verifies Wisp connectivity.`,
-      ``,
-      `Use the CLI commands to manage Sprites manually:`,
-      `  wreckit sprite start <name>  - Start a new Sprite`,
-      `  wreckit sprite list           - List active Sprites`,
-      `  wreckit sprite attach <name>  - Attach to a running Sprite`,
-      `  wreckit sprite kill <name>    - Terminate a Sprite`,
-    ].join("\n");
-
-    return {
-      success: true,
-      output,
-      timedOut: false,
-      exitCode: 0,
-      completionDetected: true,
-    };
-  } catch (err) {
-    if (err instanceof WispNotFoundError) {
-      logger.error(err.message);
-      return {
-        success: false,
-        output: err.message,
+        output: "Failed to initialize Sprite VM",
         timedOut: false,
         exitCode: 1,
         completionDetected: false,
       };
     }
 
-    logger.error(`Sprite agent failed: ${err}`);
+    // 2. Build Environment (API Keys)
+    // We assume the user configures AI provider keys in their local env or config
+    // The agent runs locally, tools run remotely.
+    const env = await buildAxAIEnv({ cwd, logger, provider: "anthropic" }); // Defaulting to anthropic for now if not in config
+
+    // 3. Initialize AI Service
+    // TODO: Support provider selection from config. For now use Anthropic as default or what's in env.
+    // Ideally config.aiProvider should exist on SpriteAgentConfig or we assume standard keys.
+    let ai: AxAIService;
+    
+    // Auto-detect provider based on keys
+    if (env.ANTHROPIC_API_KEY) {
+       ai = new AxAIAnthropic({
+        apiKey: env.ANTHROPIC_API_KEY,
+        apiURL: env.ANTHROPIC_BASE_URL,
+        config: { maxRetries: 3 },
+      });
+    } else if (env.OPENAI_API_KEY) {
+      ai = new AxAIOpenAI({
+        apiKey: env.OPENAI_API_KEY,
+        config: { maxRetries: 3 },
+      });
+    } else if (env.GOOGLE_API_KEY) {
+      ai = new AxAIGoogleGemini({
+        apiKey: env.GOOGLE_API_KEY,
+        config: { maxRetries: 3 },
+      });
+    } else {
+       // Default fallback
+       throw new Error("No AI API key found (ANTHROPIC_API_KEY, OPENAI_API_KEY, or GOOGLE_API_KEY)");
+    }
+
+    // 4. Build Tools (Remote)
+    const remoteTools = buildRemoteToolRegistry(vmName, config, logger, options.allowedTools);
+    
+    // Add MCP tools if any (these run locally on host, be careful!)
+    let mcpTools: AxFunction[] = [];
+    if (options.mcpServers) {
+      mcpTools = adaptMcpServersToAxTools(options.mcpServers, options.allowedTools);
+    }
+    
+    const tools = [...remoteTools, ...mcpTools];
+    logger.debug(`Loaded ${tools.length} tools for Sprite agent`);
+
+    // 5. Initialize Agent
+    const agent = new AxAgent({
+      ai,
+      name: "Sprite Agent",
+      description: `You are an expert software engineer working inside a sandboxed Linux microVM.
+      You have access to standard tools (Bash, Read, Write) which execute INSIDE the VM.
+      The VM starts empty. You may need to install tools or clone repositories first.
+      `,
+      signature: "task:string -> answer:string",
+      functions: tools,
+    });
+
+    // 6. Setup Timeout
+    if (options.timeoutSeconds && options.timeoutSeconds > 0) {
+      timeoutId = setTimeout(() => {
+        abortController.abort();
+        logger.warn(`Agent timed out after ${options.timeoutSeconds}s`);
+      }, options.timeoutSeconds * 1000);
+    }
+
+    // 7. Run Agent Loop
+    logger.info(`Starting Sprite agent execution in ${vmName}`);
+    
+    let fullOutput = "";
+    // Pass the user's prompt directly as the task
+    const stream = agent.streamingForward(ai, { task: prompt });
+
+    for await (const chunk of stream) {
+      if (abortController.signal.aborted) {
+        throw new Error("Agent aborted");
+      }
+
+      if (typeof chunk === "string") {
+        process.stdout.write(chunk);
+        fullOutput += chunk;
+        if (onStdoutChunk) onStdoutChunk(chunk);
+      } else if (chunk && typeof chunk === "object") {
+        const c = chunk as any;
+        if (c.content) {
+          process.stdout.write(c.content);
+          fullOutput += c.content;
+          if (onStdoutChunk) onStdoutChunk(c.content);
+        }
+        
+        if (c.functionCall && onAgentEvent) {
+          onAgentEvent({
+            type: "tool_use",
+            tool: c.functionCall.name,
+            input: c.functionCall.arguments,
+          });
+        }
+      }
+    }
+
+    if (timeoutId) clearTimeout(timeoutId);
+
+    return {
+      success: true,
+      output: fullOutput,
+      timedOut: false,
+      exitCode: 0,
+      completionDetected: true,
+    };
+
+  } catch (err: any) {
+    if (timeoutId) clearTimeout(timeoutId);
+    const errorOutput = handleAxAIError(err, logger);
+    
     return {
       success: false,
-      output: `Sprite agent failed: ${err}`,
-      timedOut: false,
+      output: errorOutput,
+      timedOut: err.message === "Agent aborted",
       exitCode: 1,
       completionDetected: false,
     };
+  } finally {
+    unregisterSdkController(abortController);
   }
 }

@@ -24,7 +24,8 @@
       "doctor",
       "refactoring",
       "schema-validation",
-      "logging-standardization"
+      "logging-standardization",
+      "backup-restore"
     ],
     "pr": [
       "git-integration",
@@ -576,6 +577,58 @@
           "type": "file",
           "path": "src/logging/index.ts",
           "description": "Logger interface definition"
+        }
+      ]
+    },
+    {
+      "id": "backup-restore",
+      "name": "Backup and Restore",
+      "description": "Creates backups before destructive operations and provides restore capability for rollback. Uses file system operations to backup modified files, tracks backup sessions, and can restore from backups on failure. Based on patterns from item 032 and doctor.ts backup system.",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": ".wreckit/backups/",
+          "description": "Backup directory for existing backup sessions"
+        }
+      ]
+    },
+    {
+      "id": "interactive-cli",
+      "name": "Interactive CLI",
+      "description": "Creates interactive command-line experiences using readline for user input, TTY detection for environment awareness, and formatted console output. Handles user prompts, confirmations, and selections. Based on patterns from items 041 (interactive merge) and 042 (ideas-interview).",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit"
+      ],
+      "required_context": [
+        {
+          "type": "git_status",
+          "description": "Check for TTY environment availability"
+        }
+      ]
+    },
+    {
+      "id": "state-management",
+      "name": "State Management",
+      "description": "Manages application state for UI components and workflows. Creates state factories, update functions, and subscription mechanisms. Based on patterns from TUI dashboard.ts and React state management.",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Grep"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": "src/tui/dashboard.ts",
+          "description": "Existing state management patterns"
         }
       ]
     }

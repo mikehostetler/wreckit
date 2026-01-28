@@ -83,6 +83,12 @@ export const SpriteAgentSchema = z.object({
     .describe(
       "Sprites.dev authentication token (optional, can use SPRITES_TOKEN env var)",
     ),
+  vmName: z
+    .string()
+    .optional()
+    .describe(
+      "Name of the Sprite VM to use (auto-generated if not provided)",
+    ),
   maxVMs: z.number().default(5).describe("Maximum concurrent VMs allowed"),
   defaultMemory: z
     .string()
