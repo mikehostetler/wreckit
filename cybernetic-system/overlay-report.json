@@ -1,0 +1,164 @@
+{
+  "summary": {
+    "avg_coverage_pct": 0.0,
+    "cold_module_count": 11,
+    "dead_code_count": 6,
+    "ghost_path_count": 2,
+    "hot_module_count": 0,
+    "modules_analyzed": 11
+  },
+  "dead_code": [
+    {
+      "arity": 1,
+      "file": "/Users/speed/cybernetic-amcp/lib/cybernetic/core/mcp/handler.ex",
+      "function": "handle_discovery",
+      "line": 71,
+      "module": "Elixir.Cybernetic.Core.MCP.Handler",
+      "type": "public"
+    },
+    {
+      "arity": 2,
+      "file": "/Users/speed/cybernetic-amcp/lib/cybernetic/core/mcp/server.ex",
+      "function": "handle_send_telegram",
+      "line": 119,
+      "module": "Elixir.Cybernetic.Core.MCP.Server",
+      "type": "public"
+    },
+    {
+      "arity": 3,
+      "file": "/Users/speed/cybernetic-amcp/lib/cybernetic/integrations/oh_my_opencode/mcp_provider.ex",
+      "function": "handle_tool_call",
+      "line": 143,
+      "module": "Elixir.Cybernetic.Integrations.OhMyOpencode.MCPProvider",
+      "type": "public"
+    },
+    {
+      "arity": 2,
+      "file": "/Users/speed/cybernetic-amcp/lib/cybernetic/core/mcp/transports/hermes_client.ex",
+      "function": "handle_event",
+      "line": 73,
+      "module": "Elixir.Cybernetic.MCP.HermesClient",
+      "type": "public"
+    },
+    {
+      "arity": 1,
+      "file": "/Users/speed/cybernetic-amcp/lib/mix/tasks/cyb.archeology.ex",
+      "function": "run",
+      "line": 75,
+      "module": "Elixir.Mix.Tasks.Cyb.Archeology",
+      "type": "public"
+    },
+    {
+      "arity": 1,
+      "file": "/Users/speed/cybernetic-amcp/lib/mix/tasks/cyb.probe.ex",
+      "function": "run",
+      "line": 19,
+      "module": "Elixir.Mix.Tasks.Cyb.Probe",
+      "type": "public"
+    }
+  ],
+  "ghost_paths": [
+    {
+      "arity": 2,
+      "execution_count": 5,
+      "function": "publish",
+      "module": "Elixir.Cybernetic.Core.Transport.AMQP"
+    },
+    {
+      "arity": 2,
+      "execution_count": 3,
+      "function": "call",
+      "module": "Elixir.Cybernetic.Edge.Gateway.Endpoint"
+    }
+  ],
+  "module_coverage": [
+    {
+      "cold_path": true,
+      "coverage_pct": 0.0,
+      "dynamic_function_count": 0,
+      "hot_path": false,
+      "module": "Elixir.Cybernetic.Capabilities.MCPRouter",
+      "static_function_count": 0
+    },
+    {
+      "cold_path": true,
+      "coverage_pct": 0.0,
+      "dynamic_function_count": 0,
+      "hot_path": false,
+      "module": "Elixir.Cybernetic.Core.MCP.Handler",
+      "static_function_count": 1
+    },
+    {
+      "cold_path": true,
+      "coverage_pct": 0.0,
+      "dynamic_function_count": 0,
+      "hot_path": false,
+      "module": "Elixir.Cybernetic.Core.MCP.Hermes.Registry",
+      "static_function_count": 0
+    },
+    {
+      "cold_path": true,
+      "coverage_pct": 0.0,
+      "dynamic_function_count": 0,
+      "hot_path": false,
+      "module": "Elixir.Cybernetic.Core.MCP.Server",
+      "static_function_count": 1
+    },
+    {
+      "cold_path": true,
+      "coverage_pct": 0.0,
+      "dynamic_function_count": 0,
+      "hot_path": false,
+      "module": "Elixir.Cybernetic.Core.Transport.AMQP.Consumer",
+      "static_function_count": 0
+    },
+    {
+      "cold_path": true,
+      "coverage_pct": 0.0,
+      "dynamic_function_count": 0,
+      "hot_path": false,
+      "module": "Elixir.Cybernetic.Integrations.OhMyOpencode.MCPProvider",
+      "static_function_count": 1
+    },
+    {
+      "cold_path": true,
+      "coverage_pct": 0.0,
+      "dynamic_function_count": 0,
+      "hot_path": false,
+      "module": "Elixir.Cybernetic.MCP.Core",
+      "static_function_count": 0
+    },
+    {
+      "cold_path": true,
+      "coverage_pct": 0.0,
+      "dynamic_function_count": 0,
+      "hot_path": false,
+      "module": "Elixir.Cybernetic.MCP.HermesClient",
+      "static_function_count": 1
+    },
+    {
+      "cold_path": true,
+      "coverage_pct": 0.0,
+      "dynamic_function_count": 0,
+      "hot_path": false,
+      "module": "Elixir.Cybernetic.VSM.System1.Agents.TelegramAgent",
+      "static_function_count": 0
+    },
+    {
+      "cold_path": true,
+      "coverage_pct": 0.0,
+      "dynamic_function_count": 0,
+      "hot_path": false,
+      "module": "Elixir.Mix.Tasks.Cyb.Archeology",
+      "static_function_count": 1
+    },
+    {
+      "cold_path": true,
+      "coverage_pct": 0.0,
+      "dynamic_function_count": 0,
+      "hot_path": false,
+      "module": "Elixir.Mix.Tasks.Cyb.Probe",
+      "static_function_count": 1
+    }
+  ]
+}

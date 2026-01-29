@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "id": "002-system-audit-resilience-check",
+  "title": "System Audit & Resilience Check",
+  "state": "done",
+  "overview": "Need to verify operational status and resilience of the Cybernetic AMCP system components.\n\n**Motivation:** System reliability assurance and confidence verification.\n\n**Success criteria:**\n- Verify all 5 VSM systems (S1-S5) are operational\n- Check resilience of Ralph Wiggum loops (TelegramAgent, etc.)\n- Provide a confidence report",
+  "branch": "wreckit/002-system-audit-resilience-check",
+  "pr_url": "https://github.com/jmanhype/cybernetic-amcp/pull/81",
+  "pr_number": 81,
+  "last_error": null,
+  "created_at": "2026-01-22T15:15:32.805Z",
+  "updated_at": "2026-01-22T15:35:53.761Z",
+  "problem_statement": "Need to verify operational status and resilience of the Cybernetic AMCP system components.",
+  "motivation": "System reliability assurance and confidence verification.",
+  "success_criteria": [
+    "Verify all 5 VSM systems (S1-S5) are operational",
+    "Check resilience of Ralph Wiggum loops (TelegramAgent, etc.)",
+    "Provide a confidence report"
+  ]
+}

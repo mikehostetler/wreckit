@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "base_branch": "main",
+  "branch_prefix": "wreckit/",
+  "merge_mode": "pr",
+  "agent": {
+    "mode": "sdk",
+    "command": "claude",
+    "args": [
+      "--dangerously-skip-permissions",
+      "--print"
+    ],
+    "completion_signal": "<promise>COMPLETE</promise>"
+  },
+  "max_iterations": 100,
+  "timeout_seconds": 3600,
+  "pr_checks": {
+    "commands": [],
+    "secret_scan": false,
+    "require_all_stories_done": true,
+    "allow_unsafe_direct_merge": false,
+    "allowed_remote_patterns": []
+  },
+  "branch_cleanup": {
+    "enabled": true,
+    "delete_remote": true
+  }
+}

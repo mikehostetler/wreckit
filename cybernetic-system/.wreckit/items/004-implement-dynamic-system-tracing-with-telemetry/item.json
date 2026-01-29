@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "id": "004-implement-dynamic-system-tracing-with-telemetry",
+  "title": "Implement Dynamic System Tracing with :telemetry",
+  "section": "backend",
+  "state": "implementing",
+  "overview": "Static analysis (Item 003) missed dynamic dispatch patterns and dependencies that only become visible at runtime.\n\n**Motivation:** Dynamic tracing will capture the actual execution paths that static analysis cannot see, particularly for dynamic dispatch patterns. This will help validate archeology findings by comparing dynamic traces against static call graphs to identify 'invisible' dependencies.\n\n**Success criteria:**\n- Traces capture execution flow from HTTP/AMQP entry points to deep internal functions\n- Disjoint events (HTTP request -> AMQP publish -> AMQP consume) are correlated via Trace IDs into a single cohesive story\n- Output JSON is compatible with static analysis format for easy comparison\n- Traces identify dependencies that were invisible to static analysis\n\n**Technical constraints:**\n- Must use :telemetry for instrumentation\n- Must attach to existing telemetry events (Phoenix, Ecto, Oban)\n- Must add new :telemetry.span/3 spans to critical gaps (VSM message handlers, internal service bridges)\n- Collector must use GenServer + ETS for in-memory buffering\n- Spans must be grouped by trace_id\n- Output format must be JSON compatible with existing static analysis format\n\n**In scope:**\n- Creating Cybernetic.Archeology.DynamicTracer module\n- Attaching to existing telemetry events\n- Adding new telemetry spans to identified gaps\n- Implementing ephemeral trace collector (GenServer + ETS)\n- Creating mix cyb.trace task\n- Generating synthetic traffic for testing\n- Outputting traces to dynamic-traces.json",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-22T18:52:45.606Z",
+  "updated_at": "2026-01-22T19:10:33.004Z",
+  "problem_statement": "Static analysis (Item 003) missed dynamic dispatch patterns and dependencies that only become visible at runtime.",
+  "motivation": "Dynamic tracing will capture the actual execution paths that static analysis cannot see, particularly for dynamic dispatch patterns. This will help validate archeology findings by comparing dynamic traces against static call graphs to identify 'invisible' dependencies.",
+  "success_criteria": [
+    "Traces capture execution flow from HTTP/AMQP entry points to deep internal functions",
+    "Disjoint events (HTTP request -> AMQP publish -> AMQP consume) are correlated via Trace IDs into a single cohesive story",
+    "Output JSON is compatible with static analysis format for easy comparison",
+    "Traces identify dependencies that were invisible to static analysis"
+  ],
+  "technical_constraints": [
+    "Must use :telemetry for instrumentation",
+    "Must attach to existing telemetry events (Phoenix, Ecto, Oban)",
+    "Must add new :telemetry.span/3 spans to critical gaps (VSM message handlers, internal service bridges)",
+    "Collector must use GenServer + ETS for in-memory buffering",
+    "Spans must be grouped by trace_id",
+    "Output format must be JSON compatible with existing static analysis format"
+  ],
+  "scope_in_scope": [
+    "Creating Cybernetic.Archeology.DynamicTracer module",
+    "Attaching to existing telemetry events",
+    "Adding new telemetry spans to identified gaps",
+    "Implementing ephemeral trace collector (GenServer + ETS)",
+    "Creating mix cyb.trace task",
+    "Generating synthetic traffic for testing",
+    "Outputting traces to dynamic-traces.json"
+  ],
+  "scope_out_of_scope": []
+}

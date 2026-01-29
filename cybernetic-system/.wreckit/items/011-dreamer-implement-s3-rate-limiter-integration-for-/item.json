@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "id": "011-dreamer-implement-s3-rate-limiter-integration-for-",
+  "title": "[DREAMER] Implement S3 Rate Limiter Integration for S4 Router",
+  "section": "Feature",
+  "state": "idea",
+  "overview": "In lib/cybernetic/vsm/system4/router.ex at lines 246-256, the check_budget/2 function calls Cybernetic.VSM.System3.RateLimiter.request_tokens/3 but wraps it in a rescue clause that always returns :ok if the RateLimiter fails. The TODO comment at line 247 states 'Integrate with S3 RateLimiter', suggesting this integration was planned but not completed. This means LLM requests are not properly rate-limited by token budget.\n\n**Motivation:** Without proper S3 Rate Limiter integration:\n1. LLM API costs can spiral unexpectedly (no per-provider budget enforcement)\n2. Providers may rate-limit the entire application (e.g., Anthropic RPM limits)\n3. Low-priority episodes may consume budget meant for high-priority work\n4. The telemetry for budget denial (line 320-329) will never fire\n\nThe System 3 layer exists (lib/cybernetic/vsm/system3/rate_limiter.ex) but isn't properly wired into S4's routing decisions.\n\n**Success criteria:**\n- check_budget/2 properly integrates with System3.RateLimiter\n- Rate limits are enforced per-provider (anthropic, openai, together, ollama)\n- Budget denial telemetry events are emitted when limits hit\n- Priority-based budget allocation (high-priority episodes can exceed limits)\n- Graceful fallback when RateLimiter is unavailable (dev mode)\n- Tests verify budget enforcement prevents runaway API calls\n\n**Technical constraints:**\n- System3.RateLimiter exists but API may need adaptation\n- Must handle case where RateLimiter process is not started\n- Need per-provider budget configuration\n- Token counting must be accurate (input + output tokens)\n- Should emit telemetry on both denial and allowance\n\n**In scope:**\n- lib/cybernetic/vsm/system4/router.ex (lines 144-154, 246-256, 320-329)\n- lib/cybernetic/vsm/system3/rate_limiter.ex (ensure API supports S4's needs)\n- config/*.exs (rate limiter budget configuration)\n- test/cybernetic/vsm/system4/router_test.exs (add budget tests)\n**Out of scope:**\n- Dynamic budget adjustment (that's a separate feature)\n- Cross-node budget sharing (local budget is MVP)\n- UI for budget monitoring (telemetry is sufficient)\n\n**Signals:** priority: high, urgency: Direct impact on production costs and reliability; TODO present at line 247.",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-29T01:39:01.629Z",
+  "updated_at": "2026-01-29T01:39:01.629Z",
+  "problem_statement": "In lib/cybernetic/vsm/system4/router.ex at lines 246-256, the check_budget/2 function calls Cybernetic.VSM.System3.RateLimiter.request_tokens/3 but wraps it in a rescue clause that always returns :ok if the RateLimiter fails. The TODO comment at line 247 states 'Integrate with S3 RateLimiter', suggesting this integration was planned but not completed. This means LLM requests are not properly rate-limited by token budget.",
+  "motivation": "Without proper S3 Rate Limiter integration:\n1. LLM API costs can spiral unexpectedly (no per-provider budget enforcement)\n2. Providers may rate-limit the entire application (e.g., Anthropic RPM limits)\n3. Low-priority episodes may consume budget meant for high-priority work\n4. The telemetry for budget denial (line 320-329) will never fire\n\nThe System 3 layer exists (lib/cybernetic/vsm/system3/rate_limiter.ex) but isn't properly wired into S4's routing decisions.",
+  "success_criteria": [
+    "check_budget/2 properly integrates with System3.RateLimiter",
+    "Rate limits are enforced per-provider (anthropic, openai, together, ollama)",
+    "Budget denial telemetry events are emitted when limits hit",
+    "Priority-based budget allocation (high-priority episodes can exceed limits)",
+    "Graceful fallback when RateLimiter is unavailable (dev mode)",
+    "Tests verify budget enforcement prevents runaway API calls"
+  ],
+  "technical_constraints": [
+    "System3.RateLimiter exists but API may need adaptation",
+    "Must handle case where RateLimiter process is not started",
+    "Need per-provider budget configuration",
+    "Token counting must be accurate (input + output tokens)",
+    "Should emit telemetry on both denial and allowance"
+  ],
+  "scope_in_scope": [
+    "lib/cybernetic/vsm/system4/router.ex (lines 144-154, 246-256, 320-329)",
+    "lib/cybernetic/vsm/system3/rate_limiter.ex (ensure API supports S4's needs)",
+    "config/*.exs (rate limiter budget configuration)",
+    "test/cybernetic/vsm/system4/router_test.exs (add budget tests)"
+  ],
+  "scope_out_of_scope": [
+    "Dynamic budget adjustment (that's a separate feature)",
+    "Cross-node budget sharing (local budget is MVP)",
+    "UI for budget monitoring (telemetry is sufficient)"
+  ],
+  "priority_hint": "high",
+  "urgency_hint": "Direct impact on production costs and reliability; TODO present at line 247."
+}

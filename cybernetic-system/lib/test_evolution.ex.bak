@@ -1,0 +1,14 @@
+defmodule TestEvolution do
+  def hello do
+    IO.puts "hello world"
+    :ok
+  end
+
+  def ugly_code(x) do
+    if x == 1 do
+      true
+    else
+      false
+    end
+  end
+end

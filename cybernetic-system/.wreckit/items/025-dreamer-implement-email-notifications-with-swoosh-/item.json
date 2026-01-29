@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "id": "025-dreamer-implement-email-notifications-with-swoosh-",
+  "title": "[DREAMER] Implement email notifications with Swoosh adapter",
+  "section": "features",
+  "state": "idea",
+  "overview": "Critical system alerts, policy violations, and operational notifications cannot be sent via email. The email notification channel is non-functional, limiting the platform's ability to alert operators of important events.\n\n**Motivation:** Email notifications are a core operational requirement. Without functional email delivery, operators miss critical alerts, policy violations go unnoticed, and system reliability decreases.\n\n**Success criteria:**\n- Emails sent via Swoosh adapter\n- Supports multiple email providers (SendGrid, AWS SES, SMTP)\n- Template rendering for notification content\n- Delivery status tracking\n- Bounce and complaint handling\n\n**Technical constraints:**\n- Must use Swoosh library\n- Needs proper template rendering\n- Should support multiple providers\n- Delivery tracking required\n- Rate limiting to prevent blocking\n\n**In scope:**\n- Implement send_email_request/2 with Swoosh\n- Add email template rendering\n- Configure provider (SendGrid/SES/SMTP)\n- Add delivery tracking\n- Write integration tests\n**Out of scope:**\n- Notification channel management (already exists)\n- SMS or other channels (separate)\n- Email preference management (future)\n\n**Signals:** priority: medium, urgency: Operational alerting blocked",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-29T01:39:51.053Z",
+  "updated_at": "2026-01-29T01:39:51.053Z",
+  "problem_statement": "Critical system alerts, policy violations, and operational notifications cannot be sent via email. The email notification channel is non-functional, limiting the platform's ability to alert operators of important events.",
+  "motivation": "Email notifications are a core operational requirement. Without functional email delivery, operators miss critical alerts, policy violations go unnoticed, and system reliability decreases.",
+  "success_criteria": [
+    "Emails sent via Swoosh adapter",
+    "Supports multiple email providers (SendGrid, AWS SES, SMTP)",
+    "Template rendering for notification content",
+    "Delivery status tracking",
+    "Bounce and complaint handling"
+  ],
+  "technical_constraints": [
+    "Must use Swoosh library",
+    "Needs proper template rendering",
+    "Should support multiple providers",
+    "Delivery tracking required",
+    "Rate limiting to prevent blocking"
+  ],
+  "scope_in_scope": [
+    "Implement send_email_request/2 with Swoosh",
+    "Add email template rendering",
+    "Configure provider (SendGrid/SES/SMTP)",
+    "Add delivery tracking",
+    "Write integration tests"
+  ],
+  "scope_out_of_scope": [
+    "Notification channel management (already exists)",
+    "SMS or other channels (separate)",
+    "Email preference management (future)"
+  ],
+  "priority_hint": "medium",
+  "urgency_hint": "Operational alerting blocked"
+}

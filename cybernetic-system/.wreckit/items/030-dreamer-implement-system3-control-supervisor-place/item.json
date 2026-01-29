@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "id": "030-dreamer-implement-system3-control-supervisor-place",
+  "title": "[DREAMER] Implement System3 Control Supervisor placeholder functions",
+  "section": "features",
+  "state": "idea",
+  "overview": "System3 Control Supervisor relies on placeholder functions that return mock data or have empty implementations. This prevents proper system health monitoring, intervention determination, and resource management.\n\n**Motivation:** System3 is the control layer of the VSM architecture. Without proper implementation of health monitoring and intervention logic, the system cannot self-regulate or maintain homeostasis.\n\n**Success criteria:**\n- query_system_status/1 returns real system metrics\n- determine_health_status/1 analyzes actual health data\n- Intervention actions are properly executed\n- Resource limit policies are enforced\n- Telemetry tracks control actions\n\n**Technical constraints:**\n- Must integrate with telemetry/metrics system\n- Needs access to process and VM metrics\n- Control actions must be safe\n- Should not cause cascading failures\n\n**In scope:**\n- Implement query_system_status/1 with real metrics\n- Implement determine_health_status/1 with health rules\n- Add proper intervention execution\n- Implement resource limit checking\n- Write tests for control actions\n**Out of scope:**\n- System3 architecture (already exists)\n- VSM principles (documented elsewhere)\n- UI for monitoring (separate)\n\n**Signals:** priority: medium, urgency: System3 incomplete",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-29T01:39:51.055Z",
+  "updated_at": "2026-01-29T01:39:51.055Z",
+  "problem_statement": "System3 Control Supervisor relies on placeholder functions that return mock data or have empty implementations. This prevents proper system health monitoring, intervention determination, and resource management.",
+  "motivation": "System3 is the control layer of the VSM architecture. Without proper implementation of health monitoring and intervention logic, the system cannot self-regulate or maintain homeostasis.",
+  "success_criteria": [
+    "query_system_status/1 returns real system metrics",
+    "determine_health_status/1 analyzes actual health data",
+    "Intervention actions are properly executed",
+    "Resource limit policies are enforced",
+    "Telemetry tracks control actions"
+  ],
+  "technical_constraints": [
+    "Must integrate with telemetry/metrics system",
+    "Needs access to process and VM metrics",
+    "Control actions must be safe",
+    "Should not cause cascading failures"
+  ],
+  "scope_in_scope": [
+    "Implement query_system_status/1 with real metrics",
+    "Implement determine_health_status/1 with health rules",
+    "Add proper intervention execution",
+    "Implement resource limit checking",
+    "Write tests for control actions"
+  ],
+  "scope_out_of_scope": [
+    "System3 architecture (already exists)",
+    "VSM principles (documented elsewhere)",
+    "UI for monitoring (separate)"
+  ],
+  "priority_hint": "medium",
+  "urgency_hint": "System3 incomplete"
+}

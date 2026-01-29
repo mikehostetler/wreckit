@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "id": "008-dreamer-implement-s4-memory-crdt-synchronization",
+  "title": "[DREAMER] Implement S4 Memory CRDT Synchronization",
+  "section": "Feature",
+  "state": "idea",
+  "overview": "In lib/cybernetic/vsm/system4/memory.ex at line 364, the broadcast_memory_update/3 function constructs a CRDT event message but the actual call to Cybernetic.Core.CRDT.ContextGraph.add_event/3 is commented out. This prevents distributed state synchronization of conversation memory across nodes.\n\n**Motivation:** The VSM architecture is designed for distributed operation. Without CRDT sync of S4 memory, each node maintains its own isolated memory context, breaking the 'distributed state synchronization' feature advertised in README line 60. This becomes critical in multi-node deployments where conversations span multiple agents.\n\n**Success criteria:**\n- Cybernetic.Core.CRDT.ContextGraph.add_event/3 is properly integrated\n- Memory updates are broadcast to CRDT layer on store/4 calls\n- Remote memory updates are received and merged into local state\n- Memory state converges correctly across node joins/leaves\n- Tests verify CRDT sync behavior for memory operations\n\n**Technical constraints:**\n- ContextGraph module exists at lib/cybernetic/core/crdt/context_graph.ex\n- DeltaCrdt is already in dependencies (mix.exs line 39)\n- Must handle case where ContextGraph is not available (graceful degradation)\n- Need to ensure causal ordering of memory updates\n\n**In scope:**\n- lib/cybernetic/vsm/system4/memory.ex (lines 355-374, specifically line 364)\n- lib/cybernetic/core/crdt/context_graph.ex (add_event/3 if it exists, otherwise implement)\n- test/cybernetic/vsm/system4/memory_test.exs (add distributed sync tests)\n**Out of scope:**\n- Semantic search improvements\n- Embedding service integration\n- Memory cleanup/TTL tuning\n\n**Signals:** priority: high, urgency: TODO comment present at line 364; blocks distributed system functionality.",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-29T01:39:01.627Z",
+  "updated_at": "2026-01-29T01:39:01.627Z",
+  "problem_statement": "In lib/cybernetic/vsm/system4/memory.ex at line 364, the broadcast_memory_update/3 function constructs a CRDT event message but the actual call to Cybernetic.Core.CRDT.ContextGraph.add_event/3 is commented out. This prevents distributed state synchronization of conversation memory across nodes.",
+  "motivation": "The VSM architecture is designed for distributed operation. Without CRDT sync of S4 memory, each node maintains its own isolated memory context, breaking the 'distributed state synchronization' feature advertised in README line 60. This becomes critical in multi-node deployments where conversations span multiple agents.",
+  "success_criteria": [
+    "Cybernetic.Core.CRDT.ContextGraph.add_event/3 is properly integrated",
+    "Memory updates are broadcast to CRDT layer on store/4 calls",
+    "Remote memory updates are received and merged into local state",
+    "Memory state converges correctly across node joins/leaves",
+    "Tests verify CRDT sync behavior for memory operations"
+  ],
+  "technical_constraints": [
+    "ContextGraph module exists at lib/cybernetic/core/crdt/context_graph.ex",
+    "DeltaCrdt is already in dependencies (mix.exs line 39)",
+    "Must handle case where ContextGraph is not available (graceful degradation)",
+    "Need to ensure causal ordering of memory updates"
+  ],
+  "scope_in_scope": [
+    "lib/cybernetic/vsm/system4/memory.ex (lines 355-374, specifically line 364)",
+    "lib/cybernetic/core/crdt/context_graph.ex (add_event/3 if it exists, otherwise implement)",
+    "test/cybernetic/vsm/system4/memory_test.exs (add distributed sync tests)"
+  ],
+  "scope_out_of_scope": [
+    "Semantic search improvements",
+    "Embedding service integration",
+    "Memory cleanup/TTL tuning"
+  ],
+  "priority_hint": "high",
+  "urgency_hint": "TODO comment present at line 364; blocks distributed system functionality."
+}

@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "id": "005-mock-amqp-publisher-for-in-memory-tracing",
+  "branch_name": "wreckit/005-mock-amqp-publisher-for-in-memory-tracing",
+  "user_stories": [
+    {
+      "id": "US-001",
+      "title": "Create MockPublisher GenServer",
+      "acceptance_criteria": [
+        "Registers as AMQP Publisher",
+        "Implements handle_call publish",
+        "Only starts in test/dev"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": ""
+    },
+    {
+      "id": "US-002",
+      "title": "Implement routing logic",
+      "acceptance_criteria": [
+        "Parses routing keys",
+        "Dispatches to handlers",
+        "Preserves trace IDs"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": ""
+    },
+    {
+      "id": "US-003",
+      "title": "Emit telemetry",
+      "acceptance_criteria": [
+        "Emits publish events",
+        "Includes metadata",
+        "Captured by collector"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": ""
+    },
+    {
+      "id": "US-004",
+      "title": "Integrate with trace task",
+      "acceptance_criteria": [
+        "Starts mock if needed",
+        "Logs startup status",
+        "Prevents crashes"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": ""
+    },
+    {
+      "id": "US-005",
+      "title": "Verify end-to-end tracing",
+      "acceptance_criteria": [
+        "No crashes",
+        "Multi-system traces",
+        "Valid JSON output"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": ""
+    }
+  ]
+}

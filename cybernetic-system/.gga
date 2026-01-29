@@ -1,0 +1,18 @@
+# Gentleman Guardian Angel Configuration
+# AI-powered code review on every commit
+
+# AI Provider (required)
+# Options: claude, gemini, codex, ollama:<model>
+PROVIDER="claude"
+
+# File patterns to review (comma-separated globs)
+FILE_PATTERNS="*.ex,*.exs"
+
+# Patterns to exclude from review (comma-separated globs)
+EXCLUDE_PATTERNS="*_test.exs,test_helper.exs,deps/*,_build/*,*.generated.ex"
+
+# File containing your coding standards
+RULES_FILE="AGENTS.md"
+
+# Fail if AI response is ambiguous (recommended for CI)
+STRICT_MODE="true"

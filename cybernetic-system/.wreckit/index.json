@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "items": [
+    {
+      "id": "001-audit-blackice-repository-for-technical-debt-and-d",
+      "state": "idea",
+      "title": "Audit Blackice Repository for Technical Debt and Dead Code"
+    }
+  ],
+  "generated_at": "2026-01-22T00:00:00.000Z"
+}

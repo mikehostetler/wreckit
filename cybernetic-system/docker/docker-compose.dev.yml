@@ -1,0 +1,73 @@
+# Development overrides for docker-compose.yml
+# Usage: docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+services:
+  # Override cybernetic app for development
+  cybernetic:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.dev
+    environment:
+      MIX_ENV: dev
+      PHX_SERVER: "true"
+      # Enable live reload
+      LIVE_RELOAD: "true"
+    volumes:
+      # Mount source code for live reload
+      - ../lib:/app/lib:cached
+      - ../config:/app/config:cached
+      - ../priv:/app/priv:cached
+      - ../test:/app/test:cached
+      - ../mix.exs:/app/mix.exs:cached
+      - ../mix.lock:/app/mix.lock:cached
+      - ../CLAUDE.md:/app/CLAUDE.md:ro
+      # Persist deps and build artifacts
+      - dev_deps:/app/deps
+      - dev_build:/app/_build
+    # Smaller resource limits for dev
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  # Reduce postgres resource usage in dev
+  postgres:
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+  # Reduce redis resource usage in dev
+  redis:
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+
+  # Reduce rabbitmq resource usage in dev
+  rabbitmq:
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+  # Ollama with reduced memory in dev (optional)
+  ollama:
+    profiles:
+      - ollama
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+        reservations:
+          memory: 2G
+
+volumes:
+  dev_deps:
+  dev_build:

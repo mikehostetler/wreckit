@@ -1,0 +1,225 @@
+{
+  "summary": {
+    "entry_points_covered": [
+      "unknown"
+    ],
+    "total_spans": 8,
+    "trace_count": 8
+  },
+  "traces": [
+    {
+      "trace_id": "1e01c43085eec5f2824a44067725170c",
+      "span_count": 1,
+      "entry_point": null,
+      "spans": [
+        {
+          "arity": 2,
+          "function": "publish",
+          "line": 0,
+          "module": "Elixir.Cybernetic.Core.Transport.AMQP",
+          "timestamp": 1769111569267484,
+          "file": "lib/cybernetic/core/transport/amqp.ex",
+          "metadata": {
+            "source": "system2",
+            "routing_key": "s4.intelligence",
+            "payload_size": 380,
+            "event_type": "amqp_publish",
+            "cyb.commands": "cyb.commands"
+          },
+          "trace_id": "1e01c43085eec5f2824a44067725170c",
+          "span_id": "155316b2d970e264",
+          "duration_us": 0,
+          "parent_span_id": null
+        }
+      ]
+    },
+    {
+      "trace_id": "358251dae79239ab56d5446b23e761f7",
+      "span_count": 1,
+      "entry_point": null,
+      "spans": [
+        {
+          "arity": 2,
+          "function": "call",
+          "line": 0,
+          "module": "Elixir.Cybernetic.Edge.Gateway.Endpoint",
+          "timestamp": 1769111569160699,
+          "file": "lib/cybernetic/edge/gateway/endpoint.ex",
+          "metadata": {
+            "request_path": "/v1/events",
+            "conn": {
+              "status": 200,
+              "method": "GET",
+              "route_path": "/v1/events"
+            },
+            "event_type": "phoenix_request"
+          },
+          "trace_id": "358251dae79239ab56d5446b23e761f7",
+          "span_id": "dab21c9e80c923c9",
+          "duration_us": 800,
+          "parent_span_id": null
+        }
+      ]
+    },
+    {
+      "trace_id": "3a083b3d5c275d1f13b610f47ad069e5",
+      "span_count": 1,
+      "entry_point": null,
+      "spans": [
+        {
+          "arity": 2,
+          "function": "publish",
+          "line": 0,
+          "module": "Elixir.Cybernetic.Core.Transport.AMQP",
+          "timestamp": 1769111569279692,
+          "file": "lib/cybernetic/core/transport/amqp.ex",
+          "metadata": {
+            "source": "system2",
+            "routing_key": "s2.sync_response",
+            "payload_size": 184,
+            "event_type": "amqp_publish",
+            "cyb.events": "cyb.events"
+          },
+          "trace_id": "3a083b3d5c275d1f13b610f47ad069e5",
+          "span_id": "2f7abe5fb509efd8",
+          "duration_us": 0,
+          "parent_span_id": null
+        }
+      ]
+    },
+    {
+      "trace_id": "62b35714f6413a84d822041e1f5b7903",
+      "span_count": 1,
+      "entry_point": null,
+      "spans": [
+        {
+          "arity": 2,
+          "function": "publish",
+          "line": 0,
+          "module": "Elixir.Cybernetic.Core.Transport.AMQP",
+          "timestamp": 1769111569169800,
+          "file": "lib/cybernetic/core/transport/amqp.ex",
+          "metadata": {
+            "source": "system2",
+            "routing_key": "s4.intelligence",
+            "payload_size": 453,
+            "event_type": "amqp_publish",
+            "cyb.commands": "cyb.commands"
+          },
+          "trace_id": "62b35714f6413a84d822041e1f5b7903",
+          "span_id": "f3357648cd22c9b8",
+          "duration_us": 0,
+          "parent_span_id": null
+        }
+      ]
+    },
+    {
+      "trace_id": "818f366ea36a375531ba0e23db14501e",
+      "span_count": 1,
+      "entry_point": null,
+      "spans": [
+        {
+          "arity": 2,
+          "function": "call",
+          "line": 0,
+          "module": "Elixir.Cybernetic.Edge.Gateway.Endpoint",
+          "timestamp": 1769111569160695,
+          "file": "lib/cybernetic/edge/gateway/endpoint.ex",
+          "metadata": {
+            "request_path": "/v1/generate",
+            "conn": {
+              "status": 200,
+              "method": "POST",
+              "route_path": "/v1/generate"
+            },
+            "event_type": "phoenix_request"
+          },
+          "trace_id": "818f366ea36a375531ba0e23db14501e",
+          "span_id": "a870100a91699470",
+          "duration_us": 1500,
+          "parent_span_id": null
+        }
+      ]
+    },
+    {
+      "trace_id": "85c96f3cfb872f47badb1837c7cb8aaf",
+      "span_count": 1,
+      "entry_point": null,
+      "spans": [
+        {
+          "arity": 2,
+          "function": "publish",
+          "line": 0,
+          "module": "Elixir.Cybernetic.Core.Transport.AMQP",
+          "timestamp": 1769111569256555,
+          "file": "lib/cybernetic/core/transport/amqp.ex",
+          "metadata": {
+            "source": "system2",
+            "routing_key": "s4.intelligence",
+            "payload_size": 421,
+            "event_type": "amqp_publish",
+            "cyb.commands": "cyb.commands"
+          },
+          "trace_id": "85c96f3cfb872f47badb1837c7cb8aaf",
+          "span_id": "c31da0e820bad637",
+          "duration_us": 0,
+          "parent_span_id": null
+        }
+      ]
+    },
+    {
+      "trace_id": "cac7205e19c7dc58c4508da4994f69f6",
+      "span_count": 1,
+      "entry_point": null,
+      "spans": [
+        {
+          "arity": 2,
+          "function": "call",
+          "line": 0,
+          "module": "Elixir.Cybernetic.Edge.Gateway.Endpoint",
+          "timestamp": 1769111569160701,
+          "file": "lib/cybernetic/edge/gateway/endpoint.ex",
+          "metadata": {
+            "request_path": "/telegram/webhook",
+            "conn": {
+              "status": 200,
+              "method": "POST",
+              "route_path": "/telegram/webhook"
+            },
+            "event_type": "phoenix_request"
+          },
+          "trace_id": "cac7205e19c7dc58c4508da4994f69f6",
+          "span_id": "8d78b8eed8ee71c3",
+          "duration_us": 1200,
+          "parent_span_id": null
+        }
+      ]
+    },
+    {
+      "trace_id": "fe98aa80615c279d16111f90506903a3",
+      "span_count": 1,
+      "entry_point": null,
+      "spans": [
+        {
+          "arity": 2,
+          "function": "publish",
+          "line": 0,
+          "module": "Elixir.Cybernetic.Core.Transport.AMQP",
+          "timestamp": 1769111569168642,
+          "file": "lib/cybernetic/core/transport/amqp.ex",
+          "metadata": {
+            "source": "system1",
+            "routing_key": "s2.coordinate",
+            "payload_size": 307,
+            "event_type": "amqp_publish",
+            "cyb.commands": "cyb.commands"
+          },
+          "trace_id": "fe98aa80615c279d16111f90506903a3",
+          "span_id": "bfdfd42d22ccd513",
+          "duration_us": 0,
+          "parent_span_id": null
+        }
+      ]
+    }
+  ]
+}

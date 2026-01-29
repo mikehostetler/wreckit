@@ -1,0 +1,43 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch:
+    timeout: 1s
+    send_batch_size: 1024
+  resource:
+    attributes:
+      - action: insert
+        key: service.name
+        value: cybernetic
+      - action: insert
+        key: service.version
+        value: "0.1.0"
+
+exporters:
+  otlp:
+    endpoint: cyb-jaeger:4317
+    tls:
+      insecure: true
+    headers:
+      "x-trace-source": "cybernetic"
+  prometheus:
+    endpoint: "0.0.0.0:8889"
+  logging:
+    loglevel: debug
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch, resource]
+      exporters: [otlp, logging]
+    metrics:
+      receivers: [otlp]
+      processors: [batch, resource]
+      exporters: [prometheus, logging]
