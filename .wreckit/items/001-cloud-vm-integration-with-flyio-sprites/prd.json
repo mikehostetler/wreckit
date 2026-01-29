@@ -176,8 +176,8 @@
         "All tests pass"
       ],
       "priority": 6,
-      "status": "pending",
-      "notes": "Unit tests for session persistence layer."
+      "status": "done",
+      "notes": "Unit tests for session persistence layer. All 7 tests passing in src/__tests__/sprite-session-store.test.ts"
     },
     {
       "id": "US-010",
@@ -195,8 +195,8 @@
         "All tests pass"
       ],
       "priority": 6,
-      "status": "pending",
-      "notes": "Unit tests for limits enforcement module."
+      "status": "done",
+      "notes": "Unit tests for limits enforcement module. All 6 tests passing in src/__tests__/limits.test.ts"
     },
     {
       "id": "US-011",
@@ -213,8 +213,8 @@
         "All tests pass (may need to mock sprite calls)"
       ],
       "priority": 6,
-      "status": "pending",
-      "notes": "Unit tests for compute backend abstraction."
+      "status": "done",
+      "notes": "Unit tests for compute backend abstraction. All 4 tests passing in src/__tests__/compute-backend.test.ts"
     },
     {
       "id": "US-012",
@@ -233,8 +233,8 @@
         "All tests pass"
       ],
       "priority": 6,
-      "status": "pending",
-      "notes": "Schema validation tests for new config sections."
+      "status": "done",
+      "notes": "Schema validation tests for new config sections. All 5 tests passing in src/__tests__/config-schema-new.test.ts"
     }
   ]
 }
