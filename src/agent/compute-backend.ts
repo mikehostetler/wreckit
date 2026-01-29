@@ -1,29 +1,25 @@
-import type { Logger } from "../logging";
+import type { Logger } from "pino";
 import type { ComputeConfig, LimitsConfig, AgentConfigUnion } from "../schemas";
 import { runAgentUnion } from "./runner";
 import { runSpriteAgent } from "./sprite-runner";
-import { enforceLimits, LimitsTracker } from "./limits";
 import { SpriteSessionStore } from "./sprite-session-store";
 
+/**
+ * Options for executing an agent on a backend
+ */
 export interface ExecuteAgentOptions {
   itemId: string;
-  agentConfig: unknown;
+  agentConfig: AgentConfigUnion;
   computeConfig: ComputeConfig;
   limitsConfig?: LimitsConfig;
   cwd: string;
   logger: Logger;
   sessionId?: string;
-  // Common runner options
-  prompt?: string;
-  dryRun?: boolean;
-  timeoutSeconds?: number;
-  onStdoutChunk?: (chunk: string) => void;
-  onStderrChunk?: (chunk: string) => void;
-  onAgentEvent?: (event: any) => void;
-  mcpServers?: Record<string, unknown>;
-  allowedTools?: string[];
 }
 
+/**
+ * Result from agent execution
+ */
 export interface AgentResult {
   success: boolean;
   error?: string;
@@ -33,46 +29,44 @@ export interface AgentResult {
   output: string;
 }
 
+/**
+ * Compute backend interface
+ * Abstraction for different execution backends (local, sprites, etc.)
+ */
 export interface ComputeBackend {
   readonly kind: "local" | "sprites";
   executeAgent(options: ExecuteAgentOptions): Promise<AgentResult>;
 }
 
+/**
+ * Local backend - runs agent on the host machine
+ */
 export class LocalBackend implements ComputeBackend {
   readonly kind = "local" as const;
 
   async executeAgent(options: ExecuteAgentOptions): Promise<AgentResult> {
-    const { itemId, agentConfig, limitsConfig, cwd, logger } = options;
+    const { itemId, agentConfig, cwd, logger } = options;
 
-    logger.debug({ itemId }, "Executing agent in local backend");
+    logger.info({ itemId }, "Executing agent in local backend");
 
     const startTime = Date.now();
 
     try {
       // Call existing agent runner
       const result = await runAgentUnion({
-        config: agentConfig as AgentConfigUnion,
+        itemId,
+        config: agentConfig,
         cwd,
-        prompt: options.prompt || "",
         logger,
-        dryRun: options.dryRun,
-        timeoutSeconds: options.timeoutSeconds,
-        onStdoutChunk: options.onStdoutChunk,
-        onStderrChunk: options.onStderrChunk,
-        onAgentEvent: options.onAgentEvent,
-        mcpServers: options.mcpServers,
-        allowedTools: options.allowedTools,
-        itemId: options.itemId,
-        limits: limitsConfig, // Pass limitsConfig to runAgentUnion
       });
 
       return {
         success: result.success,
-        iterations: (result as any).iterations || 0,
+        iterations: result.iterations || 0,
         duration: (Date.now() - startTime) / 1000,
-        filesModified: (result as any).filesModified || [],
+        filesModified: result.filesModified || [],
         output: result.output || "",
-        error: result.success ? undefined : result.output,
+        error: result.error,
       };
     } catch (error) {
       logger.error({ error, itemId }, "Local execution failed");
@@ -88,9 +82,12 @@ export class LocalBackend implements ComputeBackend {
   }
 }
 
+/**
+ * Sprites backend - runs agent in Fly.io Sprite VM
+ */
 export class SpritesBackend implements ComputeBackend {
   readonly kind = "sprites" as const;
-  private spritesConfig: NonNullable<ComputeConfig["sprites"]>;
+  private readonly spritesConfig: NonNullable<ComputeConfig["sprites"]>;
   private sessionStore: SpriteSessionStore | null = null;
 
   constructor(spritesConfig?: NonNullable<ComputeConfig["sprites"]>) {
@@ -105,16 +102,21 @@ export class SpritesBackend implements ComputeBackend {
   }
 
   async executeAgent(options: ExecuteAgentOptions): Promise<AgentResult> {
-    const { itemId, agentConfig, limitsConfig, cwd, logger, sessionId } = options;
+    const {
+      itemId,
+      agentConfig,
+      limitsConfig,
+      cwd,
+      logger,
+      sessionId,
+    } = options;
 
-    logger.debug({ itemId, sessionId }, "Executing agent in sprites backend");
+    logger.info({ itemId, sessionId }, "Executing agent in sprites backend");
 
     const startTime = Date.now();
 
     // Load session if resuming
     let session = null;
-    let vmName = this.spritesConfig.vmName;
-
     if (sessionId) {
       const store = this.getSessionStore(cwd, logger);
       session = await store.load(sessionId);
@@ -132,7 +134,6 @@ export class SpritesBackend implements ComputeBackend {
 
       // Mark session as running
       await store.updateState(sessionId, "running");
-      vmName = session.vmName;
 
       logger.info(
         {
@@ -145,28 +146,19 @@ export class SpritesBackend implements ComputeBackend {
     }
 
     try {
-      // Call sprite runner with limits and session info
+      // Call sprite runner with session info
       const result = await runSpriteAgent({
         itemId,
         config: {
-          ...(agentConfig as any),
+          ...agentConfig,
           ...this.spritesConfig,
-          vmName, // Use session VM if resuming
         },
         limits: limitsConfig,
         cwd,
         logger,
-        prompt: options.prompt || "",
-        dryRun: options.dryRun,
-        timeoutSeconds: options.timeoutSeconds,
-        onStdoutChunk: options.onStdoutChunk,
-        onStderrChunk: options.onStderrChunk,
-        onAgentEvent: options.onAgentEvent,
-        mcpServers: options.mcpServers,
-        allowedTools: options.allowedTools,
         sessionId,
-        ephemeral: !vmName, // Ephemeral if no vmName specified/loaded
         resumeFromIteration: session?.checkpoint?.iteration,
+        vmName: session?.vmName, // Use existing VM if resuming
       });
 
       // Update session state on success
@@ -176,12 +168,11 @@ export class SpritesBackend implements ComputeBackend {
       }
 
       return {
-        success: result.success,
-        iterations: 0, // Sprite runner handles tracking internally
+        success: true,
+        iterations: result.iterations || 0,
         duration: (Date.now() - startTime) / 1000,
-        filesModified: [], // Files synced back
-        output: result.output,
-        error: result.success ? undefined : result.output,
+        filesModified: result.filesModified || [],
+        output: result.output || "",
       };
     } catch (error) {
       // Update session state on error
@@ -193,23 +184,15 @@ export class SpritesBackend implements ComputeBackend {
       }
 
       logger.error({ error, itemId }, "Sprites execution failed");
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : String(error),
-        iterations: 0,
-        duration: (Date.now() - startTime) / 1000,
-        filesModified: [],
-        output: "",
-      };
+      throw error;
     }
   }
 }
 
-export function createComputeBackend(config?: ComputeConfig): ComputeBackend {
-  if (!config) {
-    return new LocalBackend();
-  }
-
+/**
+ * Factory function to create a compute backend from config
+ */
+export function createComputeBackend(config: ComputeConfig): ComputeBackend {
   switch (config.backend) {
     case "local":
       return new LocalBackend();
@@ -218,17 +201,19 @@ export function createComputeBackend(config?: ComputeConfig): ComputeBackend {
       if (!config.sprites) {
         throw new Error(
           "Sprites backend requires sprites configuration. " +
-            "Add 'sprites' section to compute config.",
+            'Add "sprites" section to compute config.',
         );
       }
       return new SpritesBackend(config.sprites);
 
     default:
-      // Fallback to local
-      return new LocalBackend();
+      throw new Error(`Unknown compute backend: ${config.backend}`);
   }
 }
 
+/**
+ * Execute an agent on the specified backend
+ */
 export async function executeAgentOnBackend(
   backend: ComputeBackend,
   options: ExecuteAgentOptions,

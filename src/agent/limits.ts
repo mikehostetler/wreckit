@@ -1,26 +1,45 @@
-import type { Logger } from "../logging";
+import type { Logger } from "pino";
 import type { LimitsConfig } from "../schemas";
 
+/**
+ * Context for enforcing limits
+ */
 export interface LimitsContext {
   iterations: number;
   durationSeconds: number;
   progressSteps: number;
 }
 
+/**
+ * Error thrown when a limit is exceeded
+ */
 export class LimitExceededError extends Error {
   constructor(
-    public limitType: "iterations" | "duration" | "progress" | "budget",
-    public limitValue: number,
-    public actualValue: number,
+    public readonly limitType: "iterations" | "duration" | "progress" | "budget",
+    public readonly limitValue: number,
+    public readonly actualValue: number,
   ) {
     super(
       `Limit exceeded: ${limitType} (${actualValue} > ${limitValue}). ` +
-        `Adjust limits.${limitType === "iterations" ? "maxIterations" : limitType === "duration" ? "maxDurationSeconds" : limitType === "progress" ? "maxProgressSteps" : "maxBudgetDollars"} to increase.`,
+        `Adjust limits.${
+          limitType === "iterations"
+            ? "maxIterations"
+            : limitType === "duration"
+            ? "maxDurationSeconds"
+            : limitType === "progress"
+            ? "maxProgressSteps"
+            : "maxBudgetDollars"
+        } to increase.`,
     );
     this.name = "LimitExceededError";
   }
 }
 
+/**
+ * Enforce resource limits for agent execution
+ *
+ * @throws {LimitExceededError} When any limit is exceeded
+ */
 export function enforceLimits(
   limits: LimitsConfig,
   context: LimitsContext,
@@ -97,21 +116,41 @@ export function enforceLimits(
 
   // Log current usage for debugging
   logger.debug(
-    `Limits check passed: ${context.iterations}/${limits.maxIterations} iterations, ` +
-      `${context.durationSeconds.toFixed(1)}s/${limits.maxDurationSeconds}s, ` +
-      `${context.progressSteps}/${limits.maxProgressSteps} steps`,
+    {
+      iterations: { current: context.iterations, max: limits.maxIterations },
+      duration: {
+        current: context.durationSeconds,
+        max: limits.maxDurationSeconds,
+      },
+      progress: {
+        current: context.progressSteps,
+        max: limits.maxProgressSteps,
+      },
+      ...(limits.maxBudgetDollars && {
+        budget: {
+          current: estimateCost(context.durationSeconds),
+          max: limits.maxBudgetDollars,
+        },
+      }),
+    },
+    "Limits check passed",
   );
 }
 
-// Rough cost estimation based on Sprites.dev pricing
-// This is approximate - actual costs depend on region, VM size, etc.
+/**
+ * Rough cost estimation based on Sprites.dev pricing
+ * This is approximate - actual costs depend on region, VM size, etc.
+ */
 function estimateCost(durationSeconds: number): number {
   // Assume $0.00023 per second (based on 512MiB VM pricing)
   return durationSeconds * 0.00023;
 }
 
+/**
+ * Tracker for agent execution limits
+ */
 export class LimitsTracker {
-  private startTime: number;
+  private readonly startTime: number;
   private progressSteps: number = 0;
 
   constructor() {

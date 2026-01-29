@@ -191,7 +191,7 @@ export interface BuildSpriteEnvOptions extends BuildSdkEnvOptions {
 
 /**
  * Build environment specifically for Sprite CLI operations.
- * Handles Sprites.dev authentication token.
+ * Handles Sprites.dev authentication token and GitHub token.
  */
 export async function buildSpriteEnv(
   options: BuildSpriteEnvOptions,
@@ -200,7 +200,7 @@ export async function buildSpriteEnv(
   const baseEnv = await buildSdkEnv(options);
   const spriteEnv: Record<string, string> = { ...baseEnv };
 
-  // Add token if provided (from config or explicit parameter)
+  // Add SPRITES_TOKEN if provided (from config or explicit parameter)
   if (token) {
     spriteEnv.SPRITES_TOKEN = token;
     logger.debug("Sprites token loaded from config");
@@ -208,14 +208,16 @@ export async function buildSpriteEnv(
     logger.debug("Sprites token loaded from environment");
   }
 
-  // Redact token from logs for security
-  if (spriteEnv.SPRITES_TOKEN) {
-    logger.debug("SPRITES_TOKEN: present (redacted)");
+  // Log GITHUB_TOKEN status (for debugging)
+  if (baseEnv.GITHUB_TOKEN) {
+    logger.debug("GITHUB_TOKEN: present (redacted)");
+  } else {
+    logger.debug("GITHUB_TOKEN: not found in environment");
   }
 
-  // Add GITHUB_TOKEN if present
-  if (spriteEnv.GITHUB_TOKEN) {
-    logger.debug("GITHUB_TOKEN: present (redacted)");
+  // Redact SPRITES_TOKEN from logs for security
+  if (spriteEnv.SPRITES_TOKEN) {
+    logger.debug("SPRITES_TOKEN: present (redacted)");
   }
 
   return spriteEnv;

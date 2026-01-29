@@ -7,10 +7,9 @@ import { AgentEvent } from "../tui/agentEvents";
 import { findRepoRoot } from "../fs/paths";
 import { syncProjectToVM } from "../fs/sync";
 import type { Logger } from "../logging";
-import type { SpriteAgentConfig, LimitsConfig } from "../schemas";
+import type { SpriteAgentConfig } from "../schemas";
 import type { AgentResult } from "./runner";
 import type { AxAIService, AxFunction } from "@ax-llm/ax";
-import { enforceLimits, LimitsTracker, LimitExceededError } from "./limits";
 
 // Re-export core primitives
 export * from "./sprite-core";
@@ -41,13 +40,18 @@ export interface SpriteRunAgentOptions {
   onAgentEvent?: (event: AgentEvent) => void;
   mcpServers?: Record<string, unknown>;
   allowedTools?: string[];
-  limits?: LimitsConfig;
   /** If true, VM will be automatically cleaned up after execution */
   ephemeral?: boolean;
   /** Item ID for VM naming (used when ephemeral is true) */
   itemId?: string;
-  /** Iteration to resume from (for session resume) */
+  /** Session ID for resume functionality */
+  sessionId?: string;
+  /** Resume from this iteration (for resume functionality) */
   resumeFromIteration?: number;
+  /** Use this specific VM name (for resume functionality) */
+  vmName?: string;
+  /** Limits configuration */
+  limits?: import("./limits").LimitsConfig;
 }
 
 // ============================================================ 
@@ -154,6 +158,10 @@ export async function runSpriteAgent(
     onAgentEvent,
     ephemeral = false,
     itemId,
+    sessionId,
+    resumeFromIteration = 0,
+    vmName: providedVmName,
+    limits,
   } = options;
 
   if (dryRun) {
@@ -165,11 +173,12 @@ export async function runSpriteAgent(
   registerSdkController(abortController);
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
-  const vmName = config.vmName || (ephemeral && itemId ? `wreckit-sandbox-${itemId}-${Date.now()}` : `wreckit-sandbox-agent-${Date.now()}`);
+  // Use provided VM name if resuming, otherwise generate or use config
+  const vmName = providedVmName || config.vmName || (ephemeral && itemId ? `wreckit-sandbox-${itemId}-${Date.now()}` : `wreckit-sandbox-agent-${Date.now()}`);
 
   try {
     // 1. Initialize VM
-    logger.info(`Initializing Sprite environment (${vmName})...`);
+    logger.info({ vmName, resumeFromIteration, sessionId }, sessionId ? `Resuming Sprite execution in ${vmName}` : `Initializing Sprite environment (${vmName})...`);
     if (ephemeral) currentEphemeralVM = { vmName, startTime: Date.now() };
 
     const vmReady = await ensureSpriteRunning(vmName, config, logger);
@@ -209,22 +218,28 @@ When you are finished, summarize your work and stop.`,
 
     let fullOutput = "";
     let completionDetected = false;
-    let loopCount = options.resumeFromIteration || 0;
+    let loopCount = resumeFromIteration; // Start from resumed iteration
     const MAX_LOOPS = 100;
+
+    // Import limits enforcement if limits provided
+    let limitsTracker: import("./limits").LimitsTracker | undefined;
+    if (limits) {
+      const { LimitsTracker } = await import("./limits.js");
+      limitsTracker = new LimitsTracker();
+    }
 
     if (options.timeoutSeconds && options.timeoutSeconds > 0) {
       timeoutId = setTimeout(() => abortController.abort(), options.timeoutSeconds * 1000);
     }
 
-    const limitsTracker = options.limits ? new LimitsTracker() : undefined;
-
     while (loopCount < MAX_LOOPS && !completionDetected) {
       if (abortController.signal.aborted) throw new Error("Agent aborted");
 
-      // Enforce limits
-      if (options.limits && limitsTracker) {
+      // Enforce limits if provided
+      if (limits && limitsTracker) {
+        const { enforceLimits } = await import("./limits.js");
         const context = limitsTracker.getContext(loopCount);
-        enforceLimits(options.limits, context, logger);
+        enforceLimits(limits, context, logger);
       }
 
       loopCount++;
@@ -256,10 +271,6 @@ When you are finished, summarize your work and stop.`,
       const allCalls = [...nativeCalls, ...xmlCalls];
 
       if (allCalls.length > 0) {
-        if (limitsTracker) {
-          limitsTracker.incrementProgress(allCalls.length);
-        }
-
         // If we only have XML calls, we need to push an assistant message to history 
         // to maintain the turn sequence (Assistant Tool Call -> Tool Result)
         if (nativeCalls.length === 0 && result.content) {
@@ -343,31 +354,26 @@ When you are finished, summarize your work and stop.`,
       } else {
         completionDetected = true;
       }
-
-      // Save checkpoint if sessionId provided
-      if (options.sessionId) {
-        const { SpriteSessionStore } = await import("./sprite-session-store.js");
-        const sessionStore = new SpriteSessionStore(options.cwd, logger);
-        // We only update the checkpoint, keeping the existing state
-        // This is safe because session is already in 'running' state
-        try {
-          const session = await sessionStore.load(options.sessionId);
-          if (session) {
-            await sessionStore.updateState(options.sessionId, session.state, {
-              checkpoint: {
-                iteration: loopCount,
-                progressLog: fullOutput.slice(-1000), // Keep last 1kb
-                timestamp: new Date().toISOString(),
-              },
-            });
-          }
-        } catch (err) {
-          logger.warn(`Failed to save checkpoint for session ${options.sessionId}: ${err}`);
-        }
-      }
     }
 
     if (timeoutId) clearTimeout(timeoutId);
+
+    // Save session checkpoint if sessionId provided
+    if (sessionId && loopCount > resumeFromIteration) {
+      const { SpriteSessionStore } = await import("./sprite-session-store.js");
+      const store = new SpriteSessionStore(cwd, logger);
+
+      const session = await store.load(sessionId);
+      if (session) {
+        await store.updateState(sessionId, session.state, {
+          checkpoint: {
+            iteration: loopCount,
+            progressLog: "Agent checkpoint",
+            timestamp: new Date().toISOString(),
+          },
+        });
+      }
+    }
 
     // 5. Sync Back
     if (config.syncOnSuccess) {
@@ -392,18 +398,6 @@ When you are finished, summarize your work and stop.`,
 
   } catch (err: any) {
     if (timeoutId) clearTimeout(timeoutId);
-    
-    if (err instanceof LimitExceededError) {
-      logger.warn(`Agent stopped due to limits: ${err.message}`);
-      return { 
-        success: false, 
-        output: `Agent stopped due to resource limits: ${err.message}\n\nPartial Output:\n${fullOutput}`, 
-        timedOut: false, 
-        exitCode: 1, 
-        completionDetected: false 
-      };
-    }
-
     return { success: false, output: handleAxAIError(err, logger), timedOut: err.message === "Agent aborted", exitCode: 1, completionDetected: false };
   } finally {
     unregisterSdkController(abortController);
