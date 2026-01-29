@@ -1,6 +1,6 @@
-import type { Logger } from "pino";
+import type { Logger } from "../logging";
 import type { ComputeConfig, LimitsConfig, AgentConfigUnion } from "../schemas";
-import { runAgentUnion } from "./runner";
+import { runAgentUnion, type AgentResult } from "./runner";
 import { runSpriteAgent } from "./sprite-runner";
 import { SpriteSessionStore } from "./sprite-session-store";
 
@@ -13,20 +13,15 @@ export interface ExecuteAgentOptions {
   computeConfig: ComputeConfig;
   limitsConfig?: LimitsConfig;
   cwd: string;
+  prompt: string;
   logger: Logger;
   sessionId?: string;
-}
-
-/**
- * Result from agent execution
- */
-export interface AgentResult {
-  success: boolean;
-  error?: string;
-  iterations: number;
-  duration: number;
-  filesModified: string[];
-  output: string;
+  onStdoutChunk?: (chunk: string) => void;
+  onStderrChunk?: (chunk: string) => void;
+  onAgentEvent?: (event: import("../tui/agentEvents").AgentEvent) => void;
+  mcpServers?: Record<string, unknown>;
+  allowedTools?: string[];
+  timeoutSeconds?: number;
 }
 
 /**
@@ -45,38 +40,35 @@ export class LocalBackend implements ComputeBackend {
   readonly kind = "local" as const;
 
   async executeAgent(options: ExecuteAgentOptions): Promise<AgentResult> {
-    const { itemId, agentConfig, cwd, logger } = options;
+    const { itemId, agentConfig, cwd, logger, prompt } = options;
 
     logger.info({ itemId }, "Executing agent in local backend");
-
-    const startTime = Date.now();
 
     try {
       // Call existing agent runner
       const result = await runAgentUnion({
-        itemId,
         config: agentConfig,
         cwd,
+        prompt,
         logger,
+        onStdoutChunk: options.onStdoutChunk,
+        onStderrChunk: options.onStderrChunk,
+        onAgentEvent: options.onAgentEvent,
+        mcpServers: options.mcpServers,
+        allowedTools: options.allowedTools,
+        timeoutSeconds: options.timeoutSeconds,
+        itemId,
       });
 
-      return {
-        success: result.success,
-        iterations: result.iterations || 0,
-        duration: (Date.now() - startTime) / 1000,
-        filesModified: result.filesModified || [],
-        output: result.output || "",
-        error: result.error,
-      };
+      return result;
     } catch (error) {
       logger.error({ error, itemId }, "Local execution failed");
       return {
         success: false,
-        error: error instanceof Error ? error.message : String(error),
-        iterations: 0,
-        duration: (Date.now() - startTime) / 1000,
-        filesModified: [],
-        output: "",
+        output: error instanceof Error ? error.message : String(error),
+        timedOut: false,
+        exitCode: 1,
+        completionDetected: false,
       };
     }
   }
@@ -109,11 +101,10 @@ export class SpritesBackend implements ComputeBackend {
       cwd,
       logger,
       sessionId,
+      prompt,
     } = options;
 
     logger.info({ itemId, sessionId }, "Executing agent in sprites backend");
-
-    const startTime = Date.now();
 
     // Load session if resuming
     let session = null;
@@ -146,34 +137,39 @@ export class SpritesBackend implements ComputeBackend {
     }
 
     try {
+      // Merge agent config with sprites config
+      // Note: agentConfig must be kind="sprite" for sprites backend
+      const mergedConfig = {
+        ...agentConfig,
+        ...this.spritesConfig,
+      };
+
       // Call sprite runner with session info
-      const result = await runSpriteAgent({
-        itemId,
-        config: {
-          ...agentConfig,
-          ...this.spritesConfig,
-        },
-        limits: limitsConfig,
+      const result = await runSpriteAgent(mergedConfig, {
         cwd,
+        prompt,
         logger,
+        onStdoutChunk: options.onStdoutChunk,
+        onStderrChunk: options.onStderrChunk,
+        onAgentEvent: options.onAgentEvent,
+        mcpServers: options.mcpServers,
+        allowedTools: options.allowedTools,
+        timeoutSeconds: options.timeoutSeconds,
         sessionId,
         resumeFromIteration: session?.checkpoint?.iteration,
-        vmName: session?.vmName, // Use existing VM if resuming
+        vmName: session?.vmName,
+        limits: limitsConfig,
+        ephemeral: !session?.vmName, // Ephemeral if no existing VM
+        itemId,
       });
 
       // Update session state on success
-      if (sessionId) {
+      if (sessionId && result.success) {
         const store = this.getSessionStore(cwd, logger);
         await store.updateState(sessionId, "completed");
       }
 
-      return {
-        success: true,
-        iterations: result.iterations || 0,
-        duration: (Date.now() - startTime) / 1000,
-        filesModified: result.filesModified || [],
-        output: result.output || "",
-      };
+      return result;
     } catch (error) {
       // Update session state on error
       if (sessionId) {
@@ -184,7 +180,13 @@ export class SpritesBackend implements ComputeBackend {
       }
 
       logger.error({ error, itemId }, "Sprites execution failed");
-      throw error;
+      return {
+        success: false,
+        output: error instanceof Error ? error.message : String(error),
+        timedOut: false,
+        exitCode: 1,
+        completionDetected: false,
+      };
     }
   }
 }
@@ -192,13 +194,16 @@ export class SpritesBackend implements ComputeBackend {
 /**
  * Factory function to create a compute backend from config
  */
-export function createComputeBackend(config: ComputeConfig): ComputeBackend {
-  switch (config.backend) {
+export function createComputeBackend(config?: ComputeConfig): ComputeBackend {
+  // Default to local backend if no config provided
+  const backend = config?.backend || "local";
+
+  switch (backend) {
     case "local":
       return new LocalBackend();
 
     case "sprites":
-      if (!config.sprites) {
+      if (!config?.sprites) {
         throw new Error(
           "Sprites backend requires sprites configuration. " +
             'Add "sprites" section to compute config.',
@@ -207,7 +212,7 @@ export function createComputeBackend(config: ComputeConfig): ComputeBackend {
       return new SpritesBackend(config.sprites);
 
     default:
-      throw new Error(`Unknown compute backend: ${config.backend}`);
+      throw new Error(`Unknown compute backend: ${backend}`);
   }
 }
 

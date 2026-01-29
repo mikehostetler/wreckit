@@ -8,9 +8,9 @@
   "branch": "wreckit/001-cloud-vm-integration-with-flyio-sprites",
   "pr_url": "https://github.com/jmanhype/wreckit/pull/40",
   "pr_number": 40,
-  "last_error": "PR not merged yet",
+  "last_error": null,
   "created_at": "2026-01-22T18:39:42.078Z",
-  "updated_at": "2026-01-29T04:57:17.689Z",
+  "updated_at": "2026-01-29T05:08:39.031Z",
   "problem_statement": "Agent tasks currently run only on local machines, limiting scalability and requiring local resources.",
   "motivation": "Enables remote execution, better resource management, and scalable compute for Wreckit agent tasks.",
   "success_criteria": [
@@ -44,5 +44,9 @@
     "Built-in cost tracking (relies on Fly.io dashboard)"
   ],
   "priority_hint": "high",
-  "urgency_hint": "Feature branch ready for testing"
+  "urgency_hint": "Feature branch ready for testing",
+  "completed_at": "2026-01-29T05:08:39.031Z",
+  "merged_at": "2026-01-29T05:00:52Z",
+  "merge_commit_sha": "cd6f293aed7c4e754bb78b8a9821f8329e5506fa",
+  "checks_passed": false
 }
