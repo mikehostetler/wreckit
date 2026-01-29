@@ -22,7 +22,7 @@ export interface TransitionError {
  */
 export function applyStateTransition(
   item: Readonly<Item>,
-  ctx: ValidationContext
+  ctx: ValidationContext,
 ): TransitionResult | TransitionError {
   const nextState = getNextState(item.state);
 

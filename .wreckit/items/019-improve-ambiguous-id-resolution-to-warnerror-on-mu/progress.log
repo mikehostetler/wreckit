@@ -1,0 +1,44 @@
+# Progress Log
+
+## 2025-01-24 - Implementation Complete
+
+### Summary
+Successfully implemented three-tier ID resolution with ambiguity detection as specified in spec 009-cli.md Gap 3.
+
+### Changes Made
+
+1. **src/errors.ts**
+   - Added `AmbiguousIdError` class extending `WreckitError` with code "AMBIGUOUS_ID"
+   - Added `ItemNotFoundError` class extending `WreckitError` with code "ITEM_NOT_FOUND"
+   - Error message for AmbiguousIdError lists all matching IDs and suggests using full ID
+
+2. **src/domain/resolveId.ts**
+   - Rewrote `resolveId` function to implement three-tier matching:
+     - Tier 1: Exact full ID match
+     - Tier 2: Numeric prefix match (handles zero-padding: "1" matches "001-...")
+     - Tier 3: Slug suffix match (case-insensitive for better UX)
+   - Added helper functions `findByNumericPrefix` and `findBySlugSuffix`
+   - Ambiguity detection at Tier 2 and Tier 3 throws `AmbiguousIdError`
+   - No match throws `ItemNotFoundError`
+
+3. **src/__tests__/domain/resolveId.test.ts**
+   - Restructured tests into logical groups:
+     - Exact match (Tier 1)
+     - Numeric prefix match (Tier 2)
+     - Slug suffix match (Tier 3)
+     - Ambiguity detection
+     - Resolution priority order
+   - Added 12 comprehensive test cases covering all scenarios
+   - All tests passing
+
+### User Stories Completed
+- US-001: Define AmbiguousIdError type ✅
+- US-002: Implement three-tier ID resolution logic ✅
+- US-003: Implement ambiguity detection and error reporting ✅
+- US-004: Update and expand ID resolution tests ✅
+
+### Notes
+- Pre-existing test failures in src/__tests__/edge-cases/config.test.ts are unrelated to this change
+- Slug suffix matching is case-insensitive per recommendation for better UX
+- Resolution order strictly follows spec: Exact > Numeric > Slug
+[2026-01-24T15:46:13.127Z] Completed iteration 1 for story US-001

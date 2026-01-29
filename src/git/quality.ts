@@ -25,7 +25,7 @@ export interface RunCommandOptions {
 async function runCommand(
   command: string,
   args: string[],
-  options: RunCommandOptions
+  options: RunCommandOptions,
 ): Promise<{ stdout: string; exitCode: number }> {
   const { cwd, logger, dryRun = false } = options;
 
@@ -57,11 +57,11 @@ async function runCommand(
     let stdout = "";
     let stderr = "";
 
-    proc.stdout.on("data", (data) => {
+    proc.stdout?.on("data", (data) => {
       stdout += data.toString();
     });
 
-    proc.stderr.on("data", (data) => {
+    proc.stderr?.on("data", (data) => {
       stderr += data.toString();
     });
 
@@ -86,7 +86,7 @@ async function runCommand(
  * @returns Result indicating success/failure and any errors
  */
 export async function runQualityChecks(
-  options: QualityCheckOptions
+  options: QualityCheckOptions,
 ): Promise<QualityCheckResult> {
   const { cwd, logger, dryRun, checks } = options;
   const errors: string[] = [];
@@ -134,12 +134,24 @@ export async function runQualityChecks(
 const SECRET_PATTERNS = [
   { name: "Private key", pattern: /-----BEGIN\s+(RSA\s+)?PRIVATE\s+KEY-----/i },
   { name: "AWS access key", pattern: /\bAKIA[0-9A-Z]{16}\b/ },
-  { name: "GitHub personal access token", pattern: /\b(ghp_|github_pat_|gho_)[a-zA-Z0-9_]{36,}\b/ },
+  {
+    name: "GitHub personal access token",
+    pattern: /\b(ghp_|github_pat_|gho_)[a-zA-Z0-9_]{36,}\b/,
+  },
   { name: "GitHub OAuth token", pattern: /\bghu_[a-zA-Z0-9_]{36,}\b/ },
   { name: "Slack token", pattern: /\bxox[bpr]-[a-zA-Z0-9-]+\b/ },
-  { name: "Password in assignment", pattern: /\b(password|passwd|pwd)\s*=\s*['"][^'"]{4,}['"]/i },
-  { name: "API key in assignment", pattern: /\b(api_key|apikey|secret)\s*=\s*['"][^'"]{4,}['"]/i },
-  { name: "Bearer token", pattern: /\b[Aa]uthorization:\s*[Bb]earer\s+[a-zA-Z0-9_\-\.]+\b/ },
+  {
+    name: "Password in assignment",
+    pattern: /\b(password|passwd|pwd)\s*=\s*['"][^'"]{4,}['"]/i,
+  },
+  {
+    name: "API key in assignment",
+    pattern: /\b(api_key|apikey|secret)\s*=\s*['"][^'"]{4,}['"]/i,
+  },
+  {
+    name: "Bearer token",
+    pattern: /\b[Aa]uthorization:\s*[Bb]earer\s+[a-zA-Z0-9_\-\.]+\b/,
+  },
 ];
 
 export interface SecretScanResult {
@@ -201,7 +213,7 @@ export function scanForSecrets(diff: string): SecretScanResult {
  */
 async function getDiff(
   options: { cwd: string; logger: Logger; dryRun?: boolean },
-  staged: boolean
+  staged: boolean,
 ): Promise<string> {
   const args = staged ? ["diff", "--staged"] : ["diff"];
   const result = await runGitCommand(args, options);
@@ -215,7 +227,7 @@ async function getDiff(
  * @returns Result indicating if secrets were found
  */
 export async function runSecretScan(
-  options: QualityCheckOptions
+  options: QualityCheckOptions,
 ): Promise<{ found: boolean; errors: string[] }> {
   const { cwd, logger, dryRun, checks } = options;
 
@@ -235,14 +247,16 @@ export async function runSecretScan(
   const diff = await getDiff({ cwd, logger, dryRun }, true);
 
   // If no staged changes, check unstaged
-  const diffToScan = diff || await getDiff({ cwd, logger, dryRun }, false);
+  const diffToScan = diff || (await getDiff({ cwd, logger, dryRun }, false));
 
   const result = scanForSecrets(diffToScan);
 
   if (result.found) {
     const errors: string[] = [];
     for (const secret of result.secrets) {
-      errors.push(`Potential ${secret.pattern} found at line ${secret.lineNumber}: ${secret.line}`);
+      errors.push(
+        `Potential ${secret.pattern} found at line ${secret.lineNumber}: ${secret.line}`,
+      );
     }
     return { found: true, errors };
   }
@@ -261,7 +275,7 @@ export async function runSecretScan(
  * @returns Result indicating if all checks passed
  */
 export async function runPrePushQualityGates(
-  options: QualityCheckOptions
+  options: QualityCheckOptions,
 ): Promise<QualityCheckResult> {
   const { cwd, logger, dryRun, checks } = options;
 

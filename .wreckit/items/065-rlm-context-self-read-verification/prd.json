@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "id": "065-rlm-context-self-read-verification",
+  "branch_name": "wreckit/065-rlm-context-self-read-verification",
+  "user_stories": [
+    {
+      "id": "US-001",
+      "title": "Add RLM context self-read verification test",
+      "acceptance_criteria": [
+        "New test case added to src/agent/__tests__/rlm-real.test.ts after line 65",
+        "Test stores prompt in CONTEXT_DATA instructing agent to output 'I SEE YOU'",
+        "Test configures RLM with only RunJS tool (allowedTools: ['RunJS'])",
+        "Test uses claude-3-haiku-20240307 model for fast execution",
+        "Test uses zai provider with fallback to anthropic",
+        "Test verifies result.success === true",
+        "Test verifies result.output contains 'I SEE YOU' message",
+        "Test includes 60s timeout",
+        "Test skips if API key not available",
+        "Test logs success message with console.log",
+        "Test passes when run with bun test src/agent/__tests__/rlm-real.test.ts"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "This is a single-story item. The test follows the existing pattern from rlm-real.test.ts:24-65 but verifies output instead of file side effects. The test proves that the RLM architecture can read its own context data through the RunJS tool."
+    }
+  ]
+}

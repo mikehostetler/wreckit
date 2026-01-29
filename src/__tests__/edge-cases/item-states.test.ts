@@ -1,4 +1,14 @@
-import { describe, it, expect, beforeEach, afterEach, afterAll, mock, spyOn, vi } from "bun:test";
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  afterAll,
+  mock,
+  spyOn,
+  vi,
+} from "bun:test";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import * as os from "node:os";
@@ -12,10 +22,7 @@ import {
   type ConfigOverrides,
 } from "../../config";
 import { writeItem, writePrd, readItem } from "../../fs";
-import {
-  buildValidationContext,
-  getNextPhase,
-} from "../../workflow";
+import { buildValidationContext, getNextPhase } from "../../workflow";
 
 const mockedSpawn = vi.fn();
 
@@ -68,17 +75,17 @@ async function createWreckitDir(root: string): Promise<void> {
       schema_version: 1,
       base_branch: "main",
       branch_prefix: "wreckit/",
-      agent: { command: "amp", args: [], completion_signal: "DONE" },
+      agent: { kind: "claude_sdk", model: "claude-sonnet-4-20250514" },
       max_iterations: 100,
       timeout_seconds: 3600,
-    })
+    }),
   );
 }
 
 async function createItem(
   root: string,
   id: string,
-  overrides: Partial<Item> = {}
+  overrides: Partial<Item> = {},
 ): Promise<string> {
   const itemDir = path.join(root, ".wreckit", "items", id);
   await fs.mkdir(itemDir, { recursive: true });
@@ -103,11 +110,17 @@ async function createItem(
 }
 
 async function createResearch(itemDir: string): Promise<void> {
-  await fs.writeFile(path.join(itemDir, "research.md"), "# Research\n\nResearch content here.");
+  await fs.writeFile(
+    path.join(itemDir, "research.md"),
+    "# Research\n\nResearch content here.",
+  );
 }
 
 async function createPlan(itemDir: string): Promise<void> {
-  await fs.writeFile(path.join(itemDir, "plan.md"), "# Plan\n\nPlan content here.");
+  await fs.writeFile(
+    path.join(itemDir, "plan.md"),
+    "# Plan\n\nPlan content here.",
+  );
 }
 
 async function createPrd(
@@ -121,7 +134,7 @@ async function createPrd(
       status: "pending",
       notes: "",
     },
-  ]
+  ],
 ): Promise<void> {
   const prd: Prd = {
     schema_version: 1,
@@ -172,7 +185,9 @@ describe("Edge Cases: Item States & Artifacts (Tests 47-50)", () => {
     });
 
     it("planned state without plan.md does not crash", async () => {
-      const itemDir = await createItem(tempDir, "002-item", { state: "planned" });
+      const itemDir = await createItem(tempDir, "002-item", {
+        state: "planned",
+      });
       await createResearch(itemDir);
 
       const item = await readItem(itemDir);
@@ -184,7 +199,9 @@ describe("Edge Cases: Item States & Artifacts (Tests 47-50)", () => {
     });
 
     it("planned state without prd.json does not crash", async () => {
-      const itemDir = await createItem(tempDir, "003-item", { state: "planned" });
+      const itemDir = await createItem(tempDir, "003-item", {
+        state: "planned",
+      });
       await createResearch(itemDir);
       await createPlan(itemDir);
 
@@ -197,7 +214,9 @@ describe("Edge Cases: Item States & Artifacts (Tests 47-50)", () => {
     });
 
     it("implementing state with all artifacts missing still builds context", async () => {
-      const itemDir = await createItem(tempDir, "004-item", { state: "implementing" });
+      const itemDir = await createItem(tempDir, "004-item", {
+        state: "implementing",
+      });
 
       const item = await readItem(itemDir);
       const ctx = await buildValidationContext(tempDir, item);
@@ -211,7 +230,9 @@ describe("Edge Cases: Item States & Artifacts (Tests 47-50)", () => {
 
   describe("Test 48: Empty PRD or no stories", () => {
     it("prd.json with empty user_stories array does not cause errors", async () => {
-      const itemDir = await createItem(tempDir, "001-empty-prd", { state: "planned" });
+      const itemDir = await createItem(tempDir, "001-empty-prd", {
+        state: "planned",
+      });
       await createResearch(itemDir);
       await createPlan(itemDir);
       await createPrd(itemDir, []);
@@ -224,7 +245,9 @@ describe("Edge Cases: Item States & Artifacts (Tests 47-50)", () => {
     });
 
     it("implementing state with empty stories array works correctly", async () => {
-      const itemDir = await createItem(tempDir, "002-empty-stories", { state: "implementing" });
+      const itemDir = await createItem(tempDir, "002-empty-stories", {
+        state: "implementing",
+      });
       await createResearch(itemDir);
       await createPlan(itemDir);
       await createPrd(itemDir, []);
@@ -252,17 +275,26 @@ describe("Edge Cases: Item States & Artifacts (Tests 47-50)", () => {
         updated_at: new Date().toISOString(),
       };
 
-      expect(getNextPhase(item)).toBe("pr");
+      expect(getNextPhase(item)).toBe("critique");
     });
   });
 
   describe("Test 49: All story statuses", () => {
     it("handles stories with 'pending' status", async () => {
-      const itemDir = await createItem(tempDir, "001-pending", { state: "implementing" });
+      const itemDir = await createItem(tempDir, "001-pending", {
+        state: "implementing",
+      });
       await createResearch(itemDir);
       await createPlan(itemDir);
       await createPrd(itemDir, [
-        { id: "US-001", title: "Pending", acceptance_criteria: [], priority: 1, status: "pending", notes: "" },
+        {
+          id: "US-001",
+          title: "Pending",
+          acceptance_criteria: [],
+          priority: 1,
+          status: "pending",
+          notes: "",
+        },
       ]);
 
       const item = await readItem(itemDir);
@@ -272,11 +304,20 @@ describe("Edge Cases: Item States & Artifacts (Tests 47-50)", () => {
     });
 
     it("handles stories with 'done' status", async () => {
-      const itemDir = await createItem(tempDir, "002-done", { state: "implementing" });
+      const itemDir = await createItem(tempDir, "002-done", {
+        state: "implementing",
+      });
       await createResearch(itemDir);
       await createPlan(itemDir);
       await createPrd(itemDir, [
-        { id: "US-001", title: "Done", acceptance_criteria: [], priority: 1, status: "done", notes: "" },
+        {
+          id: "US-001",
+          title: "Done",
+          acceptance_criteria: [],
+          priority: 1,
+          status: "done",
+          notes: "",
+        },
       ]);
 
       const item = await readItem(itemDir);
@@ -286,12 +327,28 @@ describe("Edge Cases: Item States & Artifacts (Tests 47-50)", () => {
     });
 
     it("handles mixed story statuses", async () => {
-      const itemDir = await createItem(tempDir, "003-mixed", { state: "implementing" });
+      const itemDir = await createItem(tempDir, "003-mixed", {
+        state: "implementing",
+      });
       await createResearch(itemDir);
       await createPlan(itemDir);
       await createPrd(itemDir, [
-        { id: "US-001", title: "Done", acceptance_criteria: [], priority: 1, status: "done", notes: "" },
-        { id: "US-002", title: "Pending", acceptance_criteria: [], priority: 2, status: "pending", notes: "" },
+        {
+          id: "US-001",
+          title: "Done",
+          acceptance_criteria: [],
+          priority: 1,
+          status: "done",
+          notes: "",
+        },
+        {
+          id: "US-002",
+          title: "Pending",
+          acceptance_criteria: [],
+          priority: 2,
+          status: "pending",
+          notes: "",
+        },
       ]);
 
       const item = await readItem(itemDir);
@@ -361,13 +418,32 @@ describe("Edge Cases: Item States & Artifacts (Tests 47-50)", () => {
       expect(getNextPhase(item)).toBe("implement");
     });
 
-    it("implementing state allows pr phase", () => {
+    it("implementing state allows critique phase", () => {
       const item: Item = {
         schema_version: 1,
         id: "004-implementing",
         title: "Implementing item",
         section: "test",
         state: "implementing",
+        overview: "Test",
+        branch: null,
+        pr_url: null,
+        pr_number: null,
+        last_error: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      expect(getNextPhase(item)).toBe("critique");
+    });
+
+    it("critique state allows pr phase", () => {
+      const item: Item = {
+        schema_version: 1,
+        id: "004a-critique",
+        title: "Critique item",
+        section: "test",
+        state: "critique",
         overview: "Test",
         branch: null,
         pr_url: null,
@@ -464,8 +540,8 @@ describe("Edge Cases: Config Overrides (Tests 51-65)", () => {
         path.join(tempDir, ".wreckit", "config.json"),
         JSON.stringify({
           base_branch: "main",
-          agent: { command: "test", args: [], completion_signal: "DONE" },
-        })
+          agent: { kind: "claude_sdk", model: "claude-sonnet-4-20250514" },
+        }),
       );
 
       const config = await loadConfig(tempDir, { baseBranch: "develop" });
@@ -477,8 +553,8 @@ describe("Edge Cases: Config Overrides (Tests 51-65)", () => {
         path.join(tempDir, ".wreckit", "config.json"),
         JSON.stringify({
           branch_prefix: "wreckit/",
-          agent: { command: "test", args: [], completion_signal: "DONE" },
-        })
+          agent: { kind: "claude_sdk", model: "claude-sonnet-4-20250514" },
+        }),
       );
 
       const config = await loadConfig(tempDir, { branchPrefix: "custom/" });
@@ -493,8 +569,13 @@ describe("Edge Cases: Config Overrides (Tests 51-65)", () => {
           branch_prefix: "wreckit/",
           max_iterations: 100,
           timeout_seconds: 3600,
-          agent: { command: "claude", args: ["--print"], completion_signal: "DONE" },
-        })
+          agent: {
+            kind: "process",
+            command: "claude",
+            args: ["--print"],
+            completion_signal: "DONE",
+          },
+        }),
       );
 
       const overrides: ConfigOverrides = {
@@ -511,7 +592,7 @@ describe("Edge Cases: Config Overrides (Tests 51-65)", () => {
       expect(config.branch_prefix).toBe("dev/");
       expect(config.max_iterations).toBe(50);
       expect(config.timeout_seconds).toBe(1800);
-      expect(config.agent.command).toBe("custom-agent");
+      expect((config.agent as any).command).toBe("custom-agent");
     });
 
     it("overrides work with missing config.json (defaults + overrides)", async () => {
@@ -546,8 +627,13 @@ describe("Edge Cases: Config Overrides (Tests 51-65)", () => {
           branch_prefix: "custom/",
           max_iterations: 500,
           timeout_seconds: 7200,
-          agent: { command: "claude", args: ["--print"], completion_signal: "CUSTOM" },
-        })
+          agent: {
+            kind: "process",
+            command: "claude",
+            args: ["--print"],
+            completion_signal: "CUSTOM",
+          },
+        }),
       );
 
       const config = await loadConfig(tempDir, { baseBranch: "master" });
@@ -556,7 +642,7 @@ describe("Edge Cases: Config Overrides (Tests 51-65)", () => {
       expect(config.branch_prefix).toBe("custom/");
       expect(config.max_iterations).toBe(500);
       expect(config.timeout_seconds).toBe(7200);
-      expect(config.agent.completion_signal).toBe("CUSTOM");
+      expect((config.agent as any).completion_signal).toBe("CUSTOM");
     });
   });
 });
@@ -669,7 +755,10 @@ describe("Edge Cases: Flag Combinations & Interactions (Tests 66-68)", () => {
     });
 
     it("no runtime error when both flags are set", () => {
-      const processTuiFlags = (noTui: boolean, tuiDebug: boolean): { enableTui: boolean; debugTui: boolean } => {
+      const processTuiFlags = (
+        noTui: boolean,
+        tuiDebug: boolean,
+      ): { enableTui: boolean; debugTui: boolean } => {
         if (noTui) {
           return { enableTui: false, debugTui: false };
         }

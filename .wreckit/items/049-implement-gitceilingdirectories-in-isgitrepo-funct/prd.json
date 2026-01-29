@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "id": "049-implement-gitceilingdirectories-in-isgitrepo-funct",
+  "branch_name": "wreckit/049-implement-gitceilingdirectories-in-isgitrepo-funct",
+  "user_stories": [
+    {
+      "id": "US-001",
+      "title": "Add verification test for GIT_CEILING_DIRECTORIES fix in isGitRepo()",
+      "acceptance_criteria": [
+        "New test suite 'isGitRepo' added to src/__tests__/git/index.test.ts",
+        "Test 'returns false when in subdirectory of git repo but ceiling is set' verifies temp directories return false even when test runs inside a git repo",
+        "Test 'returns true when directory is actually a git repo' verifies legitimate git repos are still detected correctly",
+        "Tests use real filesystem operations and git commands (no mocks)",
+        "Tests properly clean up temp directories in finally blocks",
+        "Test file compiles without syntax errors: bun build src/__tests__/git/index.test.ts",
+        "New tests pass: bun test src/__tests__/git/index.test.ts",
+        "All existing tests continue to pass: bun test"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "The core implementation is already complete in src/git/index.ts:313-322. This story adds test coverage to validate the fix works. Test should be added after line 353 in src/__tests__/git/index.test.ts. Import isGitRepo from git module: const { isGitRepo } = await import('../../git')"
+    },
+    {
+      "id": "US-002",
+      "title": "Validate full test suite passes locally after adding isGitRepo tests",
+      "acceptance_criteria": [
+        "Full test suite executes successfully: bun test",
+        "All git integration tests pass: bun test src/__tests__/git/index.test.ts",
+        "All edge case tests pass: bun test src/__tests__/edge-cases/",
+        "No test timeouts or hangs",
+        "No warnings or skipped tests in output",
+        "Temp directories are properly cleaned up (no /tmp/wreckit-* leftovers)",
+        "Test execution time is reasonable (< 5 minutes)"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "This is a validation phase with no code changes. Run tests to ensure the fix from US-001 doesn't break anything and validates the ceiling directory behavior works locally."
+    },
+    {
+      "id": "US-003",
+      "title": "Verify git integration tests pass in CI environment",
+      "acceptance_criteria": [
+        "Changes pushed to branch wreckit/049-implement-gitceilingdirectories-in-isgitrepo-funct",
+        "GitHub Actions CI workflow completes without errors",
+        "All git integration tests pass in CI",
+        "Tests mentioned in specs/fix-git-tests-ci.md:204 (the original 23 failing tests) now pass",
+        "No new test failures introduced by the changes",
+        "CI logs show temp directories created in /tmp/ and properly isolated",
+        "GIT_CEILING_DIRECTORIES appears in CI logs (indicating environment variable is being set)",
+        "CI test execution time is reasonable"
+      ],
+      "priority": 3,
+      "status": "pending",
+      "notes": "This is the critical validation step that confirms the fix works in the actual CI environment. If CI tests fail, debug by examining specific test failure messages. Common issues: temp directory cleanup failures, git not available in CI, path resolution differences."
+    },
+    {
+      "id": "US-004",
+      "title": "Update ROADMAP.md to reflect completed Milestone M1 objectives",
+      "acceptance_criteria": [
+        "ROADMAP.md lines 11-15 updated to mark completed objectives with [x]",
+        "Objective 1 (Implement GIT_CEILING_DIRECTORIES) marked as complete",
+        "Objective 2 (Add verification test) marked as complete",
+        "Objective 3 (Ensure all 23 failing tests pass) marked as complete",
+        "Objective 5 (Verify no regressions) marked as complete",
+        "Objective 4 (Document git behavior) remains [ ] if documentation not added",
+        "ROADMAP.md has no unintended changes to other milestones",
+        "Markdown syntax is correct and checkboxes render properly"
+      ],
+      "priority": 4,
+      "status": "pending",
+      "notes": "Only update ROADMAP.md after US-003 (CI validation) succeeds. The roadmap should accurately reflect the completion state. Objective 4 (documentation) is optional and can be deferred to US-005 or left incomplete."
+    },
+    {
+      "id": "US-005",
+      "title": "Document GIT_CEILING_DIRECTORIES fix in testing documentation",
+      "acceptance_criteria": [
+        "Documentation added explaining why GIT_CEILING_DIRECTORIES is needed",
+        "Documentation explains the CI vs local testing environment difference",
+        "Documentation includes examples or code snippets showing correct usage",
+        "Documentation helps future contributors understand the fix",
+        "Documentation is in appropriate location (README.md testing section or new TESTING.md)",
+        "Documentation file is valid markdown with no broken links",
+        "References to specs/fix-git-tests-ci.md or src/git/index.ts implementation are accurate"
+      ],
+      "priority": 4,
+      "status": "pending",
+      "notes": "This is an optional story. If time-constrained or if existing inline comments (src/git/index.ts:313-315) are sufficient, this story can be deferred or skipped. Priority 4 allows this to be done last or not at all. Consider creating TESTING.md if README doesn't have a testing section."
+    }
+  ]
+}

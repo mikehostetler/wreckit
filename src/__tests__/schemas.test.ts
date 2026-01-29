@@ -1,6 +1,6 @@
 import { describe, it, expect } from "bun:test";
 import {
-  WorkflowStateSchema,
+  ItemStateSchema,
   StoryStatusSchema,
   ConfigSchema,
   ItemSchema,
@@ -8,18 +8,27 @@ import {
   PrdSchema,
   IndexItemSchema,
   IndexSchema,
+  BatchProgressSchema,
 } from "../schemas";
 
-describe("WorkflowStateSchema", () => {
+describe("ItemStateSchema", () => {
   it("accepts valid states", () => {
-    const states = ["idea", "researched", "planned", "implementing", "in_pr", "done"];
+    const states = [
+      "idea",
+      "researched",
+      "planned",
+      "implementing",
+      "critique",
+      "in_pr",
+      "done",
+    ] as const;
     for (const state of states) {
-      expect(WorkflowStateSchema.parse(state)).toBe(state);
+      expect(ItemStateSchema.parse(state)).toBe(state);
     }
   });
 
   it("rejects invalid state", () => {
-    expect(() => WorkflowStateSchema.parse("invalid")).toThrow();
+    expect(() => ItemStateSchema.parse("invalid")).toThrow();
   });
 });
 
@@ -35,12 +44,13 @@ describe("StoryStatusSchema", () => {
 });
 
 describe("ConfigSchema", () => {
-  it("parses valid config from SPEC", () => {
+  it("parses valid config from SPEC (legacy format)", () => {
     const config = {
       schema_version: 1,
       base_branch: "main",
       branch_prefix: "wreckit/",
       agent: {
+        mode: "process",
         command: "amp",
         args: ["--dangerously-allow-all"],
         completion_signal: "<promise>COMPLETE</promise>",
@@ -50,12 +60,12 @@ describe("ConfigSchema", () => {
     };
     const result = ConfigSchema.parse(config);
     expect(result).toMatchObject(config);
-    expect(result.agent.mode).toBe("process");
   });
 
   it("applies defaults for optional fields", () => {
     const config = {
       agent: {
+        mode: "process",
         command: "amp",
         args: [],
         completion_signal: "DONE",
@@ -67,6 +77,23 @@ describe("ConfigSchema", () => {
     expect(result.branch_prefix).toBe("wreckit/");
     expect(result.max_iterations).toBe(100);
     expect(result.timeout_seconds).toBe(3600);
+  });
+
+  it("parses valid config from SPEC (new kind format)", () => {
+    const config = {
+      schema_version: 1,
+      base_branch: "main",
+      branch_prefix: "wreckit/",
+      agent: {
+        kind: "claude_sdk",
+        model: "claude-sonnet-4",
+        max_tokens: 4096,
+      },
+      max_iterations: 100,
+      timeout_seconds: 3600,
+    };
+    const result = ConfigSchema.parse(config);
+    expect(result).toMatchObject(config);
   });
 
   it("rejects missing agent config", () => {
@@ -89,7 +116,7 @@ describe("ItemSchema", () => {
       last_error: null,
       created_at: "2025-01-12T00:00:00Z",
       updated_at: "2025-01-12T00:00:00Z",
-    };
+    } as const;
     const result = ItemSchema.parse(item);
     expect(result).toEqual(item);
   });
@@ -157,6 +184,65 @@ describe("ItemSchema", () => {
     };
     expect(() => ItemSchema.parse(item)).toThrow();
   });
+
+  it("accepts item with depends_on and campaign fields", () => {
+    const item = {
+      schema_version: 1,
+      id: "002-feature",
+      title: "Feature name",
+      state: "idea",
+      overview: "Description",
+      branch: null,
+      pr_url: null,
+      pr_number: null,
+      last_error: null,
+      created_at: "2025-01-12T00:00:00Z",
+      updated_at: "2025-01-12T00:00:00Z",
+      depends_on: ["001-setup", "001-core"],
+      campaign: "M1",
+    };
+    const result = ItemSchema.parse(item);
+    expect(result.depends_on).toEqual(["001-setup", "001-core"]);
+    expect(result.campaign).toBe("M1");
+  });
+
+  it("accepts item without depends_on and campaign fields (backwards compatibility)", () => {
+    const item = {
+      schema_version: 1,
+      id: "001-feature",
+      title: "Feature name",
+      state: "idea",
+      overview: "Description",
+      branch: null,
+      pr_url: null,
+      pr_number: null,
+      last_error: null,
+      created_at: "2025-01-12T00:00:00Z",
+      updated_at: "2025-01-12T00:00:00Z",
+    };
+    const result = ItemSchema.parse(item);
+    expect(result.depends_on).toBeUndefined();
+    expect(result.campaign).toBeUndefined();
+  });
+
+  it("accepts item with empty depends_on array", () => {
+    const item = {
+      schema_version: 1,
+      id: "001-feature",
+      title: "Feature name",
+      state: "idea",
+      overview: "Description",
+      branch: null,
+      pr_url: null,
+      pr_number: null,
+      last_error: null,
+      created_at: "2025-01-12T00:00:00Z",
+      updated_at: "2025-01-12T00:00:00Z",
+      depends_on: [],
+    };
+    const result = ItemSchema.parse(item);
+    expect(result.depends_on).toEqual([]);
+  });
 });
 
 describe("StorySchema", () => {
@@ -166,7 +252,7 @@ describe("StorySchema", () => {
       title: "Story title",
       acceptance_criteria: ["Criterion 1", "Criterion 2"],
       priority: 1,
-      status: "pending",
+      status: "pending" as const,
       notes: "",
     };
     const result = StorySchema.parse(story);
@@ -209,7 +295,7 @@ describe("StorySchema", () => {
 describe("PrdSchema", () => {
   it("parses valid prd from SPEC", () => {
     const prd = {
-      schema_version: 1,
+      schema_version: 1 as const,
       id: "section/001-slug",
       branch_name: "wreckit/001-slug",
       user_stories: [
@@ -218,7 +304,7 @@ describe("PrdSchema", () => {
           title: "Story title",
           acceptance_criteria: ["Criterion 1", "Criterion 2"],
           priority: 1,
-          status: "pending",
+          status: "pending" as const,
           notes: "",
         },
       ],
@@ -253,7 +339,7 @@ describe("IndexItemSchema", () => {
       id: "foundation/001-core-types",
       state: "idea",
       title: "Core Types",
-    };
+    } as const;
     const result = IndexItemSchema.parse(indexItem);
     expect(result).toEqual(indexItem);
   });
@@ -266,6 +352,27 @@ describe("IndexItemSchema", () => {
     };
     expect(() => IndexItemSchema.parse(indexItem)).toThrow();
   });
+
+  it("accepts index item with depends_on field", () => {
+    const indexItem = {
+      id: "002-feature",
+      state: "idea",
+      title: "Feature",
+      depends_on: ["001-setup"],
+    };
+    const result = IndexItemSchema.parse(indexItem);
+    expect(result.depends_on).toEqual(["001-setup"]);
+  });
+
+  it("accepts index item without depends_on field (backwards compatibility)", () => {
+    const indexItem = {
+      id: "001-setup",
+      state: "done",
+      title: "Setup",
+    };
+    const result = IndexItemSchema.parse(indexItem);
+    expect(result.depends_on).toBeUndefined();
+  });
 });
 
 describe("IndexSchema", () => {
@@ -273,7 +380,11 @@ describe("IndexSchema", () => {
     const index = {
       schema_version: 1,
       items: [
-        { id: "foundation/001-core-types", state: "idea", title: "Core Types" },
+        {
+          id: "foundation/001-core-types",
+          state: "idea" as const,
+          title: "Core Types",
+        },
       ],
       generated_at: "2025-01-12T00:00:00Z",
     };
@@ -296,5 +407,113 @@ describe("IndexSchema", () => {
       generated_at: "2025-01-12T00:00:00Z",
     };
     expect(() => IndexSchema.parse(index)).toThrow();
+  });
+});
+
+describe("BatchProgressSchema", () => {
+  it("parses valid batch progress", () => {
+    const progress = {
+      schema_version: 1 as const,
+      session_id: "abc-123",
+      pid: 12345,
+      started_at: "2025-01-12T00:00:00Z",
+      updated_at: "2025-01-12T00:00:00Z",
+      parallel: 1,
+      queued_items: ["001-test", "002-test"],
+      current_item: "001-test",
+      completed: [] as string[],
+      failed: [] as string[],
+      skipped: [] as string[],
+      healing_attempts: 0,
+      last_healing_at: null,
+    };
+    const result = BatchProgressSchema.parse(progress);
+    expect(result).toEqual(progress);
+  });
+
+  it("accepts null for current_item", () => {
+    const progress = {
+      schema_version: 1,
+      session_id: "abc-123",
+      pid: 12345,
+      started_at: "2025-01-12T00:00:00Z",
+      updated_at: "2025-01-12T00:00:00Z",
+      parallel: 1,
+      queued_items: [],
+      current_item: null,
+      completed: ["001-done"],
+      failed: [],
+      skipped: ["002-skip"],
+      healing_attempts: 0,
+      last_healing_at: null,
+    };
+    const result = BatchProgressSchema.parse(progress);
+    expect(result.current_item).toBeNull();
+    expect(result.completed).toEqual(["001-done"]);
+    expect(result.skipped).toEqual(["002-skip"]);
+  });
+
+  it("rejects missing session_id", () => {
+    const progress = {
+      schema_version: 1,
+      pid: 12345,
+      started_at: "2025-01-12T00:00:00Z",
+      updated_at: "2025-01-12T00:00:00Z",
+      parallel: 1,
+      queued_items: [],
+      current_item: null,
+      completed: [],
+      failed: [],
+      skipped: [],
+    };
+    expect(() => BatchProgressSchema.parse(progress)).toThrow();
+  });
+
+  it("rejects wrong schema_version", () => {
+    const progress = {
+      schema_version: 2,
+      session_id: "abc-123",
+      pid: 12345,
+      started_at: "2025-01-12T00:00:00Z",
+      updated_at: "2025-01-12T00:00:00Z",
+      parallel: 1,
+      queued_items: [],
+      current_item: null,
+      completed: [],
+      failed: [],
+      skipped: [],
+    };
+    expect(() => BatchProgressSchema.parse(progress)).toThrow();
+  });
+
+  it("rejects missing pid", () => {
+    const progress = {
+      schema_version: 1,
+      session_id: "abc-123",
+      started_at: "2025-01-12T00:00:00Z",
+      updated_at: "2025-01-12T00:00:00Z",
+      parallel: 1,
+      queued_items: [],
+      current_item: null,
+      completed: [],
+      failed: [],
+      skipped: [],
+    };
+    expect(() => BatchProgressSchema.parse(progress)).toThrow();
+  });
+
+  it("rejects missing arrays", () => {
+    const progress = {
+      schema_version: 1,
+      session_id: "abc-123",
+      pid: 12345,
+      started_at: "2025-01-12T00:00:00Z",
+      updated_at: "2025-01-12T00:00:00Z",
+      parallel: 1,
+      queued_items: [],
+      current_item: null,
+      // missing completed, failed, skipped
+    };
+    expect(() => BatchProgressSchema.parse(progress)).toThrow();
   });
 });

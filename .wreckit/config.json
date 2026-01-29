@@ -2,12 +2,18 @@
   "schema_version": 1,
   "base_branch": "main",
   "branch_prefix": "wreckit/",
+  "merge_mode": "pr",
   "agent": {
+    "kind": "rlm",
+    "model": "glm-4.7",
     "mode": "sdk",
     "command": "claude",
     "args": [],
     "completion_signal": "<promise>COMPLETE</promise>"
   },
   "max_iterations": 100,
-  "timeout_seconds": 3600
+  "timeout_seconds": 3600,
+  "pr_checks": {
+    "allow_unsafe_direct_merge": false
+  }
 }

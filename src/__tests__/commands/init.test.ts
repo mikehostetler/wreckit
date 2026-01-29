@@ -1,4 +1,13 @@
-import { describe, expect, it, beforeEach, afterEach, mock, spyOn, vi } from "bun:test";
+import {
+  describe,
+  expect,
+  it,
+  beforeEach,
+  afterEach,
+  mock,
+  spyOn,
+  vi,
+} from "bun:test";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import * as os from "node:os";
@@ -67,9 +76,10 @@ describe("initCommand", () => {
     expect(config.schema_version).toBe(1);
     expect(config.base_branch).toBe("main");
     expect(config.branch_prefix).toBe("wreckit/");
-    expect(config.agent.command).toBe("claude");
-    expect(config.agent.args).toEqual(["--dangerously-skip-permissions", "--print"]);
-    expect(config.agent.completion_signal).toBe("<promise>COMPLETE</promise>");
+    expect(config.agent.kind).toBe("claude_sdk");
+    if (config.agent.kind === "claude_sdk") {
+      expect(config.agent.model).toBe("claude-sonnet-4-20250514");
+    }
     expect(config.max_iterations).toBe(100);
     expect(config.timeout_seconds).toBe(3600);
   });
@@ -92,7 +102,12 @@ describe("initCommand", () => {
 
     await initCommand({ cwd: tempDir }, mockLogger);
 
-    const researchPath = path.join(tempDir, ".wreckit", "prompts", "research.md");
+    const researchPath = path.join(
+      tempDir,
+      ".wreckit",
+      "prompts",
+      "research.md",
+    );
     const content = await fs.readFile(researchPath, "utf-8");
 
     expect(content).toContain("# Research Phase");
@@ -118,7 +133,12 @@ describe("initCommand", () => {
 
     await initCommand({ cwd: tempDir }, mockLogger);
 
-    const implementPath = path.join(tempDir, ".wreckit", "prompts", "implement.md");
+    const implementPath = path.join(
+      tempDir,
+      ".wreckit",
+      "prompts",
+      "implement.md",
+    );
     const content = await fs.readFile(implementPath, "utf-8");
 
     expect(content).toContain("# Implementation Phase");
@@ -131,10 +151,10 @@ describe("initCommand", () => {
     await fs.mkdir(path.join(tempDir, ".wreckit"), { recursive: true });
 
     await expect(initCommand({ cwd: tempDir }, mockLogger)).rejects.toThrow(
-      WreckitExistsError
+      WreckitExistsError,
     );
     await expect(initCommand({ cwd: tempDir }, mockLogger)).rejects.toThrow(
-      ".wreckit/ already exists"
+      ".wreckit/ already exists",
     );
   });
 
@@ -145,7 +165,7 @@ describe("initCommand", () => {
     await fs.writeFile(
       path.join(wreckitDir, "old-file.txt"),
       "old content",
-      "utf-8"
+      "utf-8",
     );
 
     await initCommand({ force: true, cwd: tempDir }, mockLogger);
@@ -154,17 +174,19 @@ describe("initCommand", () => {
     expect(entries).not.toContain("old-file.txt");
     expect(entries).toContain("config.json");
     expect(entries).toContain("prompts");
-    expect(mockLogger.messages.some((m) => m.includes("Overwriting"))).toBe(true);
+    expect(mockLogger.messages.some((m) => m.includes("Overwriting"))).toBe(
+      true,
+    );
   });
 
   it("fails if not in git repo", async () => {
     tempDir = await setupTempDir();
 
     await expect(initCommand({ cwd: tempDir }, mockLogger)).rejects.toThrow(
-      NotGitRepoError
+      NotGitRepoError,
     );
     await expect(initCommand({ cwd: tempDir }, mockLogger)).rejects.toThrow(
-      "Not a git repository"
+      "Not a git repository",
     );
   });
 
@@ -175,11 +197,17 @@ describe("initCommand", () => {
     await initCommand({ cwd: tempDir }, mockLogger);
 
     const calls = consoleSpy.mock.calls.map((c) => String(c[0]));
-    expect(calls.some((c) => c.includes("Initialized .wreckit/ directory"))).toBe(true);
+    expect(
+      calls.some((c) => c.includes("Initialized .wreckit/ directory")),
+    ).toBe(true);
     expect(calls.some((c) => c.includes("Created config.json"))).toBe(true);
-    expect(calls.some((c) => c.includes("Created prompts/research.md"))).toBe(true);
+    expect(calls.some((c) => c.includes("Created prompts/research.md"))).toBe(
+      true,
+    );
     expect(calls.some((c) => c.includes("Created prompts/plan.md"))).toBe(true);
-    expect(calls.some((c) => c.includes("Created prompts/implement.md"))).toBe(true);
+    expect(calls.some((c) => c.includes("Created prompts/implement.md"))).toBe(
+      true,
+    );
     consoleSpy.mockRestore();
   });
 });

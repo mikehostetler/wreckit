@@ -9,7 +9,11 @@ interface AgentActivityPaneProps {
   height: number;
 }
 
-export function AgentActivityPane({ state, width, height }: AgentActivityPaneProps): React.ReactElement {
+export function AgentActivityPane({
+  state,
+  width,
+  height,
+}: AgentActivityPaneProps): React.ReactElement {
   const innerWidth = width - 2;
   const itemId = state.currentItem;
 
@@ -38,14 +42,19 @@ export function AgentActivityPane({ state, width, height }: AgentActivityPanePro
 
   return (
     <Box flexDirection="column" width={width} height={height}>
-      <Text dimColor>{"─".repeat(10)} Agent Activity {"─".repeat(Math.max(0, innerWidth - 28))}</Text>
+      <Text dimColor>
+        {"─".repeat(10)} Agent Activity{" "}
+        {"─".repeat(Math.max(0, innerWidth - 28))}
+      </Text>
 
       {recentTools.map((tool, idx) => (
-        <ToolCallItem 
-          key={tool.toolUseId} 
-          tool={tool} 
+        <ToolCallItem
+          key={tool.toolUseId}
+          tool={tool}
           width={innerWidth}
-          showResult={idx === recentTools.length - 1 && tool.status === "completed"}
+          showResult={
+            idx === recentTools.length - 1 && tool.status === "completed"
+          }
         />
       ))}
 

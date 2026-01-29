@@ -15,10 +15,12 @@ Your reasoning and intermediate thoughts can be in natural language, but do not 
 Use the `save_parsed_ideas` tool to save the parsed ideas. Each idea in the array should have:
 
 Required fields:
+
 - `title` (string) — A concise title (ideally under 60 characters).
 - `description` (string) — A short description of what this idea is about (1–3 sentences).
 
 Optional fields (include when the information is present or can be safely inferred):
+
 - `problemStatement` (string) — The core problem or question this idea is meant to address.
 - `motivation` (string) — Why this is needed or valuable (business, UX, developer, or reliability reasons).
 - `successCriteria` (string[]) — Concrete hints of what "done" or "success" looks like.
@@ -49,6 +51,7 @@ Optional fields (include when the information is present or can be safely inferr
 ## Stage Boundaries
 
 You are in the IDEA PREPARATION stage ONLY.
+
 - DO NOT read any files from the codebase
 - DO NOT write any code or make any changes
 - DO NOT execute any commands
@@ -58,5 +61,5 @@ You are in the IDEA PREPARATION stage ONLY.
 ## Document to parse:
 
 ---
-{{input}}
----
+
+## {{input}}

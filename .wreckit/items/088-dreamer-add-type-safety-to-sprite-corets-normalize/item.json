@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "id": "088-dreamer-add-type-safety-to-sprite-corets-normalize",
+  "title": "[DREAMER] Add type safety to sprite-core.ts normalizeSprites function",
+  "state": "idea",
+  "overview": "Function normalizeSprites at line 217 accepts `data: any` and returns `any`. The function also uses `s: any` when mapping sprites. This bypasses TypeScript's type checking for sprite data structures.\n\n**Motivation:** Proper typing for sprite data would catch API contract mismatches at compile time, improve IDE autocomplete, and make the code more self-documenting. The current 'any' types defeat the purpose of TypeScript.\n\n**Success criteria:**\n- Define Sprite or SpriteApiResponse interface\n- Type normalizeSprites parameters and return value properly\n- Remove 'any' casts from sprite mapping\n- Add tests for API response variations\n\n**Technical constraints:**\n- Must handle both array and object responses from API\n- Must handle missing fields gracefully\n- Sprite API may be external and poorly documented\n\n**In scope:**\n- src/agent/sprite-core.ts:217 function signature\n- src/agent/sprite-core.ts:225 sprite mapping\n- Define SpriteData interface\n**Out of scope:**\n- Refactoring entire Sprite API integration\n- Changes to Sprite VM management\n\n**Signals:** priority: low, urgency: Code quality - type safety gap",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-28T15:35:06.948Z",
+  "updated_at": "2026-01-28T15:35:06.948Z",
+  "problem_statement": "Function normalizeSprites at line 217 accepts `data: any` and returns `any`. The function also uses `s: any` when mapping sprites. This bypasses TypeScript's type checking for sprite data structures.",
+  "motivation": "Proper typing for sprite data would catch API contract mismatches at compile time, improve IDE autocomplete, and make the code more self-documenting. The current 'any' types defeat the purpose of TypeScript.",
+  "success_criteria": [
+    "Define Sprite or SpriteApiResponse interface",
+    "Type normalizeSprites parameters and return value properly",
+    "Remove 'any' casts from sprite mapping",
+    "Add tests for API response variations"
+  ],
+  "technical_constraints": [
+    "Must handle both array and object responses from API",
+    "Must handle missing fields gracefully",
+    "Sprite API may be external and poorly documented"
+  ],
+  "scope_in_scope": [
+    "src/agent/sprite-core.ts:217 function signature",
+    "src/agent/sprite-core.ts:225 sprite mapping",
+    "Define SpriteData interface"
+  ],
+  "scope_out_of_scope": [
+    "Refactoring entire Sprite API integration",
+    "Changes to Sprite VM management"
+  ],
+  "priority_hint": "low",
+  "urgency_hint": "Code quality - type safety gap"
+}

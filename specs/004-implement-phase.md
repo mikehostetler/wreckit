@@ -20,13 +20,13 @@ Implementation is about **executing the plan**, not **improvising**. The agent s
 
 ### Guardrails Required
 
-| Guardrail | Purpose |
-|-----------|---------|
-| **Story-Scoped Changes** | Changes should relate to the story being implemented |
-| **No Unplanned Refactors** | Agent should not refactor unrelated code |
-| **Acceptance Criteria Focus** | Work should satisfy stated criteria, nothing more |
-| **Test Evidence** | Implementation should be accompanied by passing tests |
-| **Atomic Commits** | Each story should produce coherent, reviewable commits |
+| Guardrail                     | Purpose                                                |
+| ----------------------------- | ------------------------------------------------------ |
+| **Story-Scoped Changes**      | Changes should relate to the story being implemented   |
+| **No Unplanned Refactors**    | Agent should not refactor unrelated code               |
+| **Acceptance Criteria Focus** | Work should satisfy stated criteria, nothing more      |
+| **Test Evidence**             | Implementation should be accompanied by passing tests  |
+| **Atomic Commits**            | Each story should produce coherent, reviewable commits |
 
 ### What the Agent Should NOT Do
 
@@ -81,10 +81,10 @@ Stories are selected by priority order as defined in the PRD. The system filters
 
 ### Story Status Values
 
-| Status | Description |
-|--------|-------------|
-| `pending` | Not yet started |
-| `done` | Successfully completed |
+| Status    | Description            |
+| --------- | ---------------------- |
+| `pending` | Not yet started        |
+| `done`    | Successfully completed |
 
 ## Agent Behavior
 
@@ -135,35 +135,35 @@ When the phase completes successfully (all stories done), the state remains `imp
 
 A story marked "done" should have evidence of completion:
 
-| Evidence Type | Description |
-|---------------|-------------|
-| **Code changes** | Git diff shows relevant modifications |
-| **Tests pass** | Related tests run successfully |
-| **Acceptance criteria met** | Each criterion has observable verification |
-| **Commits created** | Work is committed with descriptive messages |
+| Evidence Type               | Description                                 |
+| --------------------------- | ------------------------------------------- |
+| **Code changes**            | Git diff shows relevant modifications       |
+| **Tests pass**              | Related tests run successfully              |
+| **Acceptance criteria met** | Each criterion has observable verification  |
+| **Commits created**         | Work is committed with descriptive messages |
 
 **Current Gap:** Story completion is status-based only. The system accepts `done` status without verifying that acceptance criteria are actually met. No automated test execution is required.
 
 ### What Good Implementation Looks Like
 
-| Quality Signal | Description |
-|----------------|-------------|
-| **Tests added/updated** | Behavior changes have corresponding test coverage |
-| **Lint/typecheck passes** | Code meets project standards |
-| **Minimal diff** | Changes aligned to story scope, no unrelated churn |
-| **Atomic commits** | Each commit is coherent and reviewable |
-| **No TODOs introduced** | Work is complete, not deferred |
-| **Security basics** | No secrets committed, no unsafe patterns |
+| Quality Signal            | Description                                        |
+| ------------------------- | -------------------------------------------------- |
+| **Tests added/updated**   | Behavior changes have corresponding test coverage  |
+| **Lint/typecheck passes** | Code meets project standards                       |
+| **Minimal diff**          | Changes aligned to story scope, no unrelated churn |
+| **Atomic commits**        | Each commit is coherent and reviewable             |
+| **No TODOs introduced**   | Work is complete, not deferred                     |
+| **Security basics**       | No secrets committed, no unsafe patterns           |
 
 ### What Poor Implementation Looks Like
 
-| Anti-Pattern | Risk |
-|--------------|------|
-| **Story marked done without code changes** | False completion |
-| **Large unrelated refactors** | Scope creep, review burden |
-| **No tests for behavior changes** | Regression risk |
-| **Multiple stories in one iteration** | Tangled commits, harder rollback |
-| **Direct merge without CI** | Ships broken code |
+| Anti-Pattern                               | Risk                             |
+| ------------------------------------------ | -------------------------------- |
+| **Story marked done without code changes** | False completion                 |
+| **Large unrelated refactors**              | Scope creep, review burden       |
+| **No tests for behavior changes**          | Regression risk                  |
+| **Multiple stories in one iteration**      | Tangled commits, harder rollback |
+| **Direct merge without CI**                | Ships broken code                |
 
 ### Verification (Recommended)
 
@@ -179,13 +179,13 @@ Before accepting a story as done:
 
 ## Error Scenarios
 
-| Error | Cause | Handling |
-|-------|-------|----------|
-| PRD not found or invalid | Missing or malformed PRD at start | Fail immediately, do not transition state |
-| PRD became invalid during implementation | File corrupted mid-run | Fail immediately, preserve current state |
-| Max iterations reached | Too many iterations with stories pending | Fail, state remains `implementing` for retry |
-| Agent timeout | Agent exceeded configured timeout | Fail immediately, partial work preserved |
-| Agent error | Agent subprocess failed | Fail immediately, partial work preserved |
+| Error                                    | Cause                                    | Handling                                     |
+| ---------------------------------------- | ---------------------------------------- | -------------------------------------------- |
+| PRD not found or invalid                 | Missing or malformed PRD at start        | Fail immediately, do not transition state    |
+| PRD became invalid during implementation | File corrupted mid-run                   | Fail immediately, preserve current state     |
+| Max iterations reached                   | Too many iterations with stories pending | Fail, state remains `implementing` for retry |
+| Agent timeout                            | Agent exceeded configured timeout        | Fail immediately, partial work preserved     |
+| Agent error                              | Agent subprocess failed                  | Fail immediately, partial work preserved     |
 
 ### Iteration Limits
 
@@ -205,21 +205,21 @@ The PRD serves as the source of truth. On resume, the system reads the current P
 
 ## Template Variables
 
-| Variable | Description |
-|----------|-------------|
-| `{{title}}` | Item title for context |
-| `{{research}}` | Research phase output |
-| `{{plan}}` | Plan phase output |
-| `{{prd}}` | Current PRD with story statuses |
-| `{{progress}}` | Implementation progress so far |
+| Variable                | Description                                 |
+| ----------------------- | ------------------------------------------- |
+| `{{title}}`             | Item title for context                      |
+| `{{research}}`          | Research phase output                       |
+| `{{plan}}`              | Plan phase output                           |
+| `{{prd}}`               | Current PRD with story statuses             |
+| `{{progress}}`          | Implementation progress so far              |
 | `{{completion_signal}}` | Instructions for signaling story completion |
 
 ## Configuration
 
-| Option | Effect |
-|--------|--------|
-| `max_iterations` | Maximum story implementation attempts before failure |
-| `timeout_seconds` | Per-iteration agent timeout |
+| Option            | Effect                                               |
+| ----------------- | ---------------------------------------------------- |
+| `max_iterations`  | Maximum story implementation attempts before failure |
+| `timeout_seconds` | Per-iteration agent timeout                          |
 
 ---
 
@@ -229,11 +229,11 @@ The PRD serves as the source of truth. On resume, the system reads the current P
 
 If the agent marks a story "done" without actually completing it:
 
-| Scenario | Current Behavior | Impact |
-|----------|------------------|--------|
-| Story marked done, no code changes | Accepted as complete | Empty implementation ships |
-| Story marked done, tests fail | Accepted as complete | Broken code ships |
-| Story marked done, criteria not met | Accepted as complete | Incomplete feature ships |
+| Scenario                            | Current Behavior     | Impact                     |
+| ----------------------------------- | -------------------- | -------------------------- |
+| Story marked done, no code changes  | Accepted as complete | Empty implementation ships |
+| Story marked done, tests fail       | Accepted as complete | Broken code ships          |
+| Story marked done, criteria not met | Accepted as complete | Incomplete feature ships   |
 
 **Risk:** In direct merge mode, false completions merge immediately without review. In PR mode, they create PRs that may pass cursory review.
 
@@ -241,11 +241,11 @@ If the agent marks a story "done" without actually completing it:
 
 If the agent makes changes beyond the story scope:
 
-| Scenario | Current Behavior | Impact |
-|----------|------------------|--------|
-| Refactors unrelated code | Changes included in PR | Review burden, regression risk |
-| Adds unplanned features | Changes included in PR | Scope creep, maintenance burden |
-| Changes architecture | Changes included in PR | Unexpected system changes |
+| Scenario                 | Current Behavior       | Impact                          |
+| ------------------------ | ---------------------- | ------------------------------- |
+| Refactors unrelated code | Changes included in PR | Review burden, regression risk  |
+| Adds unplanned features  | Changes included in PR | Scope creep, maintenance burden |
+| Changes architecture     | Changes included in PR | Unexpected system changes       |
 
 **Risk:** All changes made during implementation are included in the PR. There is no filtering or scope validation.
 
@@ -253,12 +253,12 @@ If the agent makes changes beyond the story scope:
 
 The agent has full git access during implementation:
 
-| Capability | Risk |
-|------------|------|
-| Create commits | Can make arbitrary commits with any message |
-| Create branches | Could switch to wrong branch |
-| Modify history | Could rebase, amend, or force-push |
-| Access other branches | Could pull in unrelated changes |
+| Capability            | Risk                                        |
+| --------------------- | ------------------------------------------- |
+| Create commits        | Can make arbitrary commits with any message |
+| Create branches       | Could switch to wrong branch                |
+| Modify history        | Could rebase, amend, or force-push          |
+| Access other branches | Could pull in unrelated changes             |
 
 **Mitigation:** The PR phase verifies the current branch matches the expected branch before proceeding.
 
@@ -266,11 +266,11 @@ The agent has full git access during implementation:
 
 If the agent cannot complete a story, iterations continue until the limit:
 
-| Scenario | Handling |
-|----------|----------|
-| Agent fails repeatedly | Up to max_iterations attempts |
-| Agent marks done incorrectly then undoes | Loop continues |
-| Agent stuck in infinite loop | Timeout per iteration + max iterations cap |
+| Scenario                                 | Handling                                   |
+| ---------------------------------------- | ------------------------------------------ |
+| Agent fails repeatedly                   | Up to max_iterations attempts              |
+| Agent marks done incorrectly then undoes | Loop continues                             |
+| Agent stuck in infinite loop             | Timeout per iteration + max iterations cap |
 
 **Mitigation:** `max_iterations` (default: 100) prevents truly infinite loops, but a stuck agent can consume significant time/cost.
 
@@ -278,20 +278,20 @@ If the agent cannot complete a story, iterations continue until the limit:
 
 ## Implementation Status
 
-| Feature | Status | Notes |
-|---------|--------|-------|
-| **Core implement phase** | ✅ Implemented | See `src/workflow/itemWorkflow.ts:runPhaseImplement` |
-| **Iteration loop** | ✅ Implemented | Processes one story per iteration |
-| **Story selection by priority** | ✅ Implemented | Filters `pending` stories, selects first |
-| **MCP tool: update_story_status** | ✅ Implemented | See `src/agent/mcp/wreckitMcpServer.ts` |
-| **Progress log** | ✅ Implemented | Appends to `progress.log` after each iteration |
-| **PRD status updates** | ✅ Implemented | Updates `prd.json` as stories complete |
-| **Tool allowlist (full access)** | ✅ Implemented | See `src/agent/toolAllowlist.ts` |
-| **Max iterations limit** | ✅ Implemented | Configurable via `max_iterations` |
-| **Resumability** | ✅ Implemented | Reads PRD state, skips completed stories |
-| **State transitions** | ✅ Implemented | `planned` → `implementing` |
-| **Error handling** | ✅ Implemented | `last_error` set on failure |
-| **Dry-run mode** | ✅ Implemented | `--dry-run` flag works |
+| Feature                           | Status         | Notes                                                |
+| --------------------------------- | -------------- | ---------------------------------------------------- |
+| **Core implement phase**          | ✅ Implemented | See `src/workflow/itemWorkflow.ts:runPhaseImplement` |
+| **Iteration loop**                | ✅ Implemented | Processes one story per iteration                    |
+| **Story selection by priority**   | ✅ Implemented | Filters `pending` stories, selects first             |
+| **MCP tool: update_story_status** | ✅ Implemented | See `src/agent/mcp/wreckitMcpServer.ts`              |
+| **Progress log**                  | ✅ Implemented | Appends to `progress.log` after each iteration       |
+| **PRD status updates**            | ✅ Implemented | Updates `prd.json` as stories complete               |
+| **Tool allowlist (full access)**  | ✅ Implemented | See `src/agent/toolAllowlist.ts`                     |
+| **Max iterations limit**          | ✅ Implemented | Configurable via `max_iterations`                    |
+| **Resumability**                  | ✅ Implemented | Reads PRD state, skips completed stories             |
+| **State transitions**             | ✅ Implemented | `planned` → `implementing`                           |
+| **Error handling**                | ✅ Implemented | `last_error` set on failure                          |
+| **Dry-run mode**                  | ✅ Implemented | `--dry-run` flag works                               |
 
 ---
 
@@ -302,6 +302,7 @@ If the agent cannot complete a story, iterations continue until the limit:
 ~~The system trusts the agent's assertion that a story is "done" without verifying acceptance criteria are met.~~
 
 **Status:** Mitigated - When a story is marked as done via MCP tool, the system now verifies:
+
 - Story exists in the PRD
 - Story has acceptance criteria defined
 - Acceptance criteria are not empty

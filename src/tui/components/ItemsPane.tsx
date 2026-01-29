@@ -25,12 +25,17 @@ export function ItemsPane({
   }
 
   // Auto-scroll to keep active item visible
-  const activeIndex = state.items.findIndex((item) => item.id === state.currentItem);
+  const activeIndex = state.items.findIndex(
+    (item) => item.id === state.currentItem,
+  );
   let scrollOffset = 0;
   if (activeIndex >= 0) {
     // Keep active item in the middle of the visible area when possible
     const middleOffset = Math.floor(height / 2);
-    scrollOffset = Math.max(0, Math.min(activeIndex - middleOffset, state.items.length - height));
+    scrollOffset = Math.max(
+      0,
+      Math.min(activeIndex - middleOffset, state.items.length - height),
+    );
   }
 
   const visibleItems = state.items.slice(scrollOffset, scrollOffset + height);
@@ -46,7 +51,9 @@ export function ItemsPane({
       {visibleItems.map((item, idx) => {
         const icon = getStateIcon(item.state);
         const isActive = item.id === state.currentItem;
-        const storyInfo = item.currentStoryId ? ` [${item.currentStoryId}]` : "";
+        const storyInfo = item.currentStoryId
+          ? ` [${item.currentStoryId}]`
+          : "";
 
         const idPart = truncate(item.id, 25);
         const statePart = item.state.padEnd(12);
@@ -76,7 +83,9 @@ export function ItemsPane({
       })}
       {showScrollIndicator && scrollOffset + height < state.items.length && (
         <Box>
-          <Text dimColor>↓ {state.items.length - scrollOffset - height} more</Text>
+          <Text dimColor>
+            ↓ {state.items.length - scrollOffset - height} more
+          </Text>
         </Box>
       )}
     </Box>

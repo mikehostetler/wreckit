@@ -1,0 +1,284 @@
+{
+  "phase_skills": {
+    "research": [
+      "code-exploration",
+      "context-awareness",
+      "dependency-analysis",
+      "documentation-analysis",
+      "pattern-detection",
+      "error-pattern-detection",
+      "source-item-analysis",
+      "codebase-analysis",
+      "architecture-analysis",
+      "existing-implementation-audit",
+      "gap-analysis"
+    ],
+    "plan": [
+      "documentation-writer",
+      "architecture-design",
+      "user-story-breakdown",
+      "estimation",
+      "test-strategy",
+      "interactive-merge",
+      "technical-design",
+      "risk-assessment"
+    ],
+    "implement": [
+      "full-capability",
+      "test-driven-development",
+      "test-coverage-analysis",
+      "error-handling",
+      "code-organization",
+      "media-generation",
+      "doctor",
+      "refactoring",
+      "schema-validation",
+      "logging-standardization",
+      "backup-restore",
+      "interactive-cli",
+      "state-management",
+      "error-detection-healing",
+      "remote-tool-proxying",
+      "binary-data-encoding",
+      "command-injection-prevention",
+      "mcp-server-integration",
+      "file-operations",
+      "cli-flag-implementation",
+      "config-override-layer",
+      "lifecycle-management",
+      "test-implementation",
+      "documentation-site-creation"
+    ],
+    "pr": [
+      "git-integration",
+      "verification",
+      "documentation-update"
+    ],
+    "complete": [
+      "verification",
+      "documentation-update"
+    ],
+    "media": [
+      "manim-generation",
+      "remotion-generation"
+    ],
+    "learn": [
+      "pattern-extraction",
+      "skill-compilation",
+      "agent-based-analysis"
+    ],
+    "strategy": [
+      "codebase-analysis",
+      "roadmap-planning"
+    ]
+  },
+  "skills": [
+    {
+      "id": "architecture-analysis",
+      "name": "Architecture Analysis",
+      "description": "Analyzes system architecture including module boundaries, design patterns, and integration points. Reads architecture documentation (docs/architecture/), studies code organization with Glob, and identifies patterns with Grep. Essential for understanding large-scale refactoring tasks like agent runner dispatch systems. Based on patterns from item 066.",
+      "tools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": "docs/architecture/",
+          "description": "Architecture documentation for system overview"
+        },
+        {
+          "type": "git_status",
+          "description": "Current repository state for context"
+        }
+      ],
+      "mcp_servers": {}
+    },
+    {
+      "id": "existing-implementation-audit",
+      "name": "Existing Implementation Audit",
+      "description": "Audits existing implementations to determine feature completeness. Reads source files to verify implementation status, identifies gaps between requirements and code, and documents what already exists vs what needs to be built. Uses Read to examine code, Grep to find patterns, and file analysis to assess completeness. Critical for avoiding duplicate work and scoping implementation accurately. Based on patterns from items 021 (progress persistence) and 044 (documentation site).",
+      "tools": [
+        "Read",
+        "Grep",
+        "Glob"
+      ],
+      "required_context": [
+        {
+          "type": "git_status",
+          "description": "Current repository state to identify existing implementations"
+        }
+      ],
+      "mcp_servers": {}
+    },
+    {
+      "id": "gap-analysis",
+      "name": "Gap Analysis",
+      "description": "Identifies gaps between current state and desired end state. Analyzes requirements, existing implementations, and documentation to find missing features, incomplete implementations, or inconsistencies. Uses Read to study current state, Grep to find patterns, and documentation review to understand requirements. Produces structured gap lists with impact assessment. Based on patterns from items 021 and 044.",
+      "tools": [
+        "Read",
+        "Grep",
+        "Glob"
+      ],
+      "required_context": [
+        {
+          "type": "git_status",
+          "description": "Current state for gap identification"
+        }
+      ],
+      "mcp_servers": {}
+    },
+    {
+      "id": "technical-design",
+      "name": "Technical Design",
+      "description": "Creates detailed technical design documents with implementation approach, phases, changes required per file, and success criteria. Reads research findings to understand context, uses Grep to find relevant files, and produces structured plan.md with phase breakdowns. Includes automated and manual verification steps. Enforces required sections and validation. Based on patterns from items 004 and 079.",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Glob",
+        "Grep"
+      ],
+      "required_context": [
+        {
+          "type": "phase_artifact",
+          "path": "research.md",
+          "description": "Research findings for technical design"
+        },
+        {
+          "type": "git_status",
+          "description": "Baseline repository state for write containment validation"
+        }
+      ],
+      "mcp_servers": {}
+    },
+    {
+      "id": "risk-assessment",
+      "name": "Risk Assessment",
+      "description": "Identifies and mitigates risks for implementation plans. Analyzes technical risks, breaking changes, performance implications, and security concerns. Creates risk matrices with impact/severity ratings and mitigation strategies. Uses Read to understand code patterns, Grep to find dangerous patterns, and documentation to understand constraints. Based on patterns from items 079 (VM orphaning risks) and 066 (API breaking changes).",
+      "tools": [
+        "Read",
+        "Grep",
+        "Glob"
+      ],
+      "required_context": [
+        {
+          "type": "phase_artifact",
+          "path": "research.md",
+          "description": "Research findings for risk identification"
+        }
+      ],
+      "mcp_servers": {}
+    },
+    {
+      "id": "cli-flag-implementation",
+      "name": "CLI Flag Implementation",
+      "description": "Implements CLI flags and options using commander.js. Adds flags to global options or command-specific options, wires them through command handlers, and ensures proper precedence and validation. Uses Edit to modify src/index.ts and command files, Grep to find existing flag patterns, and Read to understand CLI structure. Based on patterns from items 079 (--sandbox flag) and 066 (--rlm flag).",
+      "tools": [
+        "Read",
+        "Edit",
+        "Grep"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": "src/index.ts",
+          "description": "Main CLI entry point for flag definitions"
+        },
+        {
+          "type": "phase_artifact",
+          "path": "plan.md",
+          "description": "Implementation plan with flag requirements"
+        }
+      ],
+      "mcp_servers": {}
+    },
+    {
+      "id": "config-override-layer",
+      "name": "Config Override Layer",
+      "description": "Implements configuration override system that transforms CLI flags into config changes. Extends ConfigOverrides interface, adds override transformation logic, and integrates with loadConfig/applyOverrides. Uses Edit to modify src/config.ts, Read to understand existing patterns, and Grep to find override usage. Based on patterns from item 079 (sandbox mode config transformation).",
+      "tools": [
+        "Read",
+        "Edit",
+        "Grep"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": "src/config.ts",
+          "description": "Config system for override implementation"
+        },
+        {
+          "type": "file",
+          "path": "src/schemas.ts",
+          "description": "Schema definitions for type safety"
+        }
+      ],
+      "mcp_servers": {}
+    },
+    {
+      "id": "lifecycle-management",
+      "name": "Lifecycle Management",
+      "description": "Implements resource lifecycle management including initialization, cleanup, and interrupt handling. Uses try/finally blocks for cleanup guarantee, registers interrupt handlers for SIGINT, and manages resource allocation/deallocation. Supports ephemeral resources that auto-cleanup. Based on patterns from item 079 (VM lifecycle) and general cleanup patterns.",
+      "tools": [
+        "Read",
+        "Edit",
+        "Write",
+        "Grep"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": "src/cli-utils.ts",
+          "description": "Interrupt handler utilities"
+        }
+      ],
+      "mcp_servers": {}
+    },
+    {
+      "id": "test-implementation",
+      "name": "Test Implementation",
+      "description": "Implements unit tests, integration tests, and test coverage. Uses bun test framework, creates test files in src/__tests__/, mocks dependencies via vi.mock(), and ensures test isolation. Writes atomic test cases with clear arrange/act/assert structure. Uses Bash to run tests, Write to create test files, and Read to understand existing test patterns. Based on patterns from item 021 (test gaps).",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": "src/__tests__/",
+          "description": "Test directory for patterns"
+        }
+      ],
+      "mcp_servers": {}
+    },
+    {
+      "id": "documentation-site-creation",
+      "name": "Documentation Site Creation",
+      "description": "Creates and configures documentation sites using VitePress or similar static site generators. Sets up project structure, configures deployment (GitHub Pages), creates content organization, and integrates API documentation generation. Uses Write to create config files, Bash to run build commands, and Read to understand existing patterns. Based on patterns from item 044.",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Glob"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": "docs/.vitepress/config.ts",
+          "description": "Existing VitePress configuration"
+        },
+        {
+          "type": "file",
+          "path": ".github/workflows/deploy-docs.yml",
+          "description": "Deployment workflow configuration"
+        }
+      ],
+      "mcp_servers": {}
+    }
+  ]
+}

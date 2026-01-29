@@ -13,7 +13,7 @@ import { randomBytes } from "node:crypto";
  */
 export async function safeWriteJson<T>(
   filePath: string,
-  data: T
+  data: T,
 ): Promise<void> {
   const dir = path.dirname(filePath);
   await fs.mkdir(dir, { recursive: true });
@@ -46,7 +46,7 @@ export async function safeWriteJson<T>(
  * @returns Array of paths that were cleaned up
  */
 export async function cleanupOrphanedTmpFiles(
-  dirPath: string
+  dirPath: string,
 ): Promise<string[]> {
   const cleaned: string[] = [];
 

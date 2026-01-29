@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "id": "091-recursive-evolution-the-geneticist",
+  "branch_name": "wreckit/091-recursive-evolution-the-geneticist",
+  "user_stories": [
+    {
+      "id": "US-001",
+      "title": "Implement Intelligent Error Pattern Analysis",
+      "acceptance_criteria": [
+        "Analyze healing-log.jsonl for recurrent patterns",
+        "Cluster similar errors (e.g. git locks)",
+        "Map patterns to target prompts (plan, implement, etc)"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Enhance analyzeHealingLogs"
+    },
+    {
+      "id": "US-002",
+      "title": "Implement Prompt Optimization Agent Loop",
+      "acceptance_criteria": [
+        "Create specialized optimization prompt",
+        "Run agent to rewrite prompt text",
+        "Validate preserved variables and structure"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Use runAgentUnion"
+    },
+    {
+      "id": "US-003",
+      "title": "Implement Git Branch and PR Submission",
+      "acceptance_criteria": [
+        "Create feature branch for optimization",
+        "Commit changes to prompt file",
+        "Push branch and create GitHub PR"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "Use src/git modules"
+    },
+    {
+      "id": "US-004",
+      "title": "Integrate Configuration and Safety Controls",
+      "acceptance_criteria": [
+        "Respect geneticist config options",
+        "Implement dry-run mode",
+        "Add rollback/logging for safety"
+      ],
+      "priority": 4,
+      "status": "done",
+      "notes": "Update schemas.ts"
+    }
+  ]
+}

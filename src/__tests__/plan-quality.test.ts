@@ -134,7 +134,7 @@ Testing
         const result = validatePlanQuality(content, defaultOptions);
         expect(result.valid).toBe(false);
         expect(result.phases).toBe(0);
-        expect(result.errors.some(e => e.includes("phase"))).toBe(true);
+        expect(result.errors.some((e) => e.includes("phase"))).toBe(true);
       });
 
       it("only counts ### headers within the Phases section", () => {
@@ -216,7 +216,7 @@ Testing
         const result = validatePlanQuality(content, options);
         expect(result.valid).toBe(false);
         expect(result.phases).toBe(1);
-        expect(result.errors.some(e => e.includes("at least 2"))).toBe(true);
+        expect(result.errors.some((e) => e.includes("at least 2"))).toBe(true);
       });
     });
 
@@ -459,13 +459,20 @@ Test it
         const result = validatePlanQuality("", defaultOptions);
         expect(result.valid).toBe(false);
         expect(result.errors.length).toBeGreaterThan(0);
-        expect(result.missingSections.length).toBe(defaultOptions.requiredSections.length);
+        expect(result.missingSections.length).toBe(
+          defaultOptions.requiredSections.length,
+        );
       });
 
       it("handles content with no sections", () => {
-        const result = validatePlanQuality("Just some text with no structure", defaultOptions);
+        const result = validatePlanQuality(
+          "Just some text with no structure",
+          defaultOptions,
+        );
         expect(result.valid).toBe(false);
-        expect(result.missingSections.length).toBe(defaultOptions.requiredSections.length);
+        expect(result.missingSections.length).toBe(
+          defaultOptions.requiredSections.length,
+        );
       });
 
       it("allows custom options", () => {

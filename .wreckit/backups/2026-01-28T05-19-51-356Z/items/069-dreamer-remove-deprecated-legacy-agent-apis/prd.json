@@ -1,0 +1,125 @@
+{
+  "schema_version": 1,
+  "id": "069-dreamer-remove-deprecated-legacy-agent-apis",
+  "branch_name": "wreckit/069-dreamer-remove-deprecated-legacy-agent-apis",
+  "user_stories": [
+    {
+      "id": "US-001",
+      "title": "Migrate test files to use modern agent APIs",
+      "acceptance_criteria": [
+        "src/__tests__/agent.test.ts imports runAgentUnion, getAgentConfigUnion, AgentConfigUnion, UnionRunAgentOptions instead of legacy APIs",
+        "src/__tests__/agent.test.ts all tests pass with modern APIs",
+        "src/__tests__/edge-cases/mock-agent.isospec.ts imports and uses modern APIs",
+        "src/__tests__/edge-cases/dry-run.isospec.ts imports and uses modern APIs",
+        "src/__tests__/edge-cases/errors.isospec.ts imports and uses modern APIs",
+        "All test assertions remain equivalent after migration",
+        "bun test passes with all tests green",
+        "bun run typecheck passes with no type errors"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "This is the foundation story - tests must be migrated before we can remove the deprecated implementations. Migration involves: (1) updating imports, (2) changing AgentConfig to AgentConfigUnion, (3) changing RunAgentOptions to UnionRunAgentOptions, (4) replacing runAgent() calls with runAgentUnion(), (5) replacing getAgentConfig() calls with getAgentConfigUnion(), (6) updating config objects to use 'kind' instead of 'mode', (7) moving timeout_seconds/max_iterations from config to options."
+    },
+    {
+      "id": "US-002",
+      "title": "Remove deprecated type definitions from src/agent/runner.ts",
+      "acceptance_criteria": [
+        "AgentConfig interface (lines 32-39) deleted from src/agent/runner.ts",
+        "RunAgentOptions interface (lines 57-70) deleted from src/agent/runner.ts",
+        "AgentResult interface remains (used by modern API)",
+        "bun run typecheck passes with no type errors",
+        "No compilation errors about missing types"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "After tests are migrated (US-001), these type definitions are no longer used and can be safely removed. The AgentResult interface must be kept as it's used by the modern API."
+    },
+    {
+      "id": "US-003",
+      "title": "Remove deprecated function implementations from src/agent/runner.ts",
+      "acceptance_criteria": [
+        "getAgentConfig() function (lines 114-138) deleted from src/agent/runner.ts",
+        "simulateMockAgent() helper function (lines 140-170) deleted from src/agent/runner.ts",
+        "runAgent() function (lines 190-256) deleted from src/agent/runner.ts",
+        "runLegacyProcessAgent() helper function (lines 263-288) deleted from src/agent/runner.ts",
+        "Legacy API section comment block removed",
+        "Modern API implementations remain unchanged (runAgentUnion, getAgentConfigUnion)",
+        "bun test passes - tests use modern APIs now",
+        "bun run typecheck passes with no errors"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "These deprecated functions are the core legacy API. After tests are migrated (US-001), they have no remaining callers and can be removed. The modern runAgentUnion has its own inline mock-agent implementation, so simulateMockAgent is safe to remove."
+    },
+    {
+      "id": "US-004",
+      "title": "Remove deprecated re-exports from src/agent/index.ts",
+      "acceptance_criteria": [
+        "Legacy API section (lines 22-56) deleted from src/agent/index.ts",
+        "No re-exports of runAgent, getAgentConfig, AgentConfig, or RunAgentOptions",
+        "Only modern API exports remain: runAgentUnion, getAgentConfigUnion, AgentResult, UnionRunAgentOptions",
+        "Lifecycle exports remain unchanged: terminateAllAgents, registerSdkController, unregisterSdkController, etc.",
+        "Section header updated to remove 'Preferred' and 'New' labels",
+        "bun run build succeeds",
+        "Module exports are clean - only modern API accessible"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "This completes the removal from the public API surface. After the implementations are removed (US-002, US-003), the re-exports must also be removed to prevent external access to the deleted APIs."
+    },
+    {
+      "id": "US-005",
+      "title": "Regenerate API documentation",
+      "acceptance_criteria": [
+        "bun run docs:api executes successfully",
+        "docs/api/agent/runner/README.md lists only modern functions (runAgentUnion, getAgentConfigUnion, etc.)",
+        "docs/api/agent/runner/functions/getAgentConfig.md removed",
+        "docs/api/agent/runner/functions/runAgent.md removed",
+        "docs/api/agent/runner/interfaces/AgentConfig.md removed",
+        "docs/api/agent/runner/interfaces/RunAgentOptions.md removed",
+        "docs/api/agent/runner/functions/getAgentConfigUnion.md present and correct",
+        "docs/api/agent/runner/functions/runAgentUnion.md present and correct",
+        "docs/api/agent/runner/interfaces/UnionRunAgentOptions.md present and correct"
+      ],
+      "priority": 4,
+      "status": "done",
+      "notes": "Typedoc generates API documentation from JSDoc comments and TypeScript types. After removing the deprecated code, running 'bun run docs:api' will automatically regenerate the documentation to reflect the current state."
+    },
+    {
+      "id": "US-006",
+      "title": "Update CHANGELOG.md with breaking change entry",
+      "acceptance_criteria": [
+        "CHANGELOG.md [Unreleased] section updated with 'Removed' entry",
+        "Entry documents all removed APIs: runAgent, getAgentConfig, AgentConfig, RunAgentOptions",
+        "Entry includes migration guide for external consumers",
+        "Entry explains key differences: mode-based to kind-based, no automatic fallback",
+        "Migration guide includes code examples showing old vs new usage",
+        "Entry notes this is a breaking change",
+        "Entry notes all internal code and tests already migrated"
+      ],
+      "priority": 4,
+      "status": "done",
+      "notes": "This is a breaking change for any external consumers (though none are identified). The CHANGELOG entry must provide clear migration guidance including code examples. The migration guide should show: (1) old import statements, (2) new import statements, (3) old function calls, (4) new function calls, (5) key behavioral differences (mode vs kind, no auto-fallback)."
+    },
+    {
+      "id": "US-007",
+      "title": "Final validation and smoke testing",
+      "acceptance_criteria": [
+        "bun run typecheck passes with no errors",
+        "bun run lint passes with no formatting issues",
+        "bun run build succeeds with clean compilation",
+        "bun test passes - all tests green",
+        "wreckit --help displays usage correctly",
+        "wreckit status works (if in a wreckit repo)",
+        "wreckit run --dry-run executes without errors (if applicable)",
+        "No runtime errors in production workflow execution",
+        "Grep search confirms no legacy API usage remains in src/",
+        "File length of src/agent/runner.ts reduced by ~160 lines",
+        "File length of src/agent/index.ts reduced to ~20 lines"
+      ],
+      "priority": 5,
+      "status": "done",
+      "notes": "Comprehensive validation to ensure the codebase is fully functional after deprecated API removal. This is the final gate before marking the item complete. All automated checks must pass and manual smoke testing must confirm CLI functionality works correctly."
+    }
+  ]
+}

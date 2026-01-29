@@ -1,0 +1,154 @@
+{
+  "schema_version": 1,
+  "id": "081-refine-validators-and-repair-metadata",
+  "branch_name": "wreckit/081-refine-validators-and-repair-metadata",
+  "user_stories": [
+    {
+      "id": "US-081-001",
+      "title": "Update story ID validation regex to accept scoped format",
+      "acceptance_criteria": [
+        "Regex pattern accepts both US-### and US-{item}-{seq} formats (e.g., US-001, US-073-001)",
+        "Pattern rejects invalid formats (US-A01, US-, US-073-A01)",
+        "Error message communicates both accepted formats clearly",
+        "Existing simple format (US-###) continues to work without changes",
+        "Scoped format (US-073-001, US-035-012) passes validation without warnings"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "This is an additive change - backward compatible with existing PRDs. Regex change at src/domain/validation.ts:701."
+    },
+    {
+      "id": "US-081-002",
+      "title": "Add diagnostic detection for missing PRD id field",
+      "acceptance_criteria": [
+        "Doctor detects when prd.json is missing required 'id' field",
+        "Diagnostic code is PRD_MISSING_ID",
+        "Severity is 'error' (blocks validation)",
+        "Diagnostic is marked fixable: true",
+        "Diagnostic includes clear message: 'prd.json missing required 'id' field'",
+        "Detection occurs in diagnoseItem() function at src/doctor.ts:396"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Missing id is critical - PRD cannot be properly referenced without it. Early return prevents cascade of errors."
+    },
+    {
+      "id": "US-081-003",
+      "title": "Add diagnostic detection for missing PRD branch_name field",
+      "acceptance_criteria": [
+        "Doctor detects when prd.json is missing required 'branch_name' field",
+        "Diagnostic code is PRD_MISSING_BRANCH_NAME",
+        "Severity is 'error' (required field)",
+        "Diagnostic is marked fixable: true",
+        "Diagnostic includes clear message: 'prd.json missing required 'branch_name' field'",
+        "Detection allows continuation (branch_name not needed for story validation)"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "branch_name is required for git operations but not for story quality validation, so we can continue checking other issues."
+    },
+    {
+      "id": "US-081-004",
+      "title": "Add diagnostic detection for out-of-range story priorities",
+      "acceptance_criteria": [
+        "Doctor detects stories with priority < 1 or priority > 4",
+        "Diagnostic code is PRD_INVALID_PRIORITY",
+        "Severity is 'warning' (data issue, not blocking)",
+        "Diagnostic is marked fixable: true",
+        "Diagnostic message includes count of affected stories",
+        "Detection handles all stories in PRD (may have multiple violations)"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Priority range [1, 4] is defined in validation options. Invalid priorities don't block PRD but should be fixed for consistency."
+    },
+    {
+      "id": "US-081-005",
+      "title": "Implement auto-repair for missing PRD id field",
+      "acceptance_criteria": [
+        "Repair infers id from item directory name (e.g., 073-integrate-wisp-go-stack)",
+        "Backup is created before modification using backupFile()",
+        "Backup manifest records operation as 'modified'",
+        "Repaired PRD passes PrdSchema.safeParse() validation",
+        "Repaired PRD is written using fs.writeFile() with proper locking",
+        "Success message: 'Added missing field 'id''",
+        "Error message on failure: 'Failed to repair PRD: {details}'"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Inference is safe because item directory name is always available when diagnosing. Pattern matches existing STATE_FILE_MISMATCH fix at src/doctor.ts:987."
+    },
+    {
+      "id": "US-081-006",
+      "title": "Implement auto-repair for missing PRD branch_name field",
+      "acceptance_criteria": [
+        "Repair infers branch_name as 'wreckit/{prd.id}'",
+        "Uses prd.id if available, falls back to diagnostic.itemId",
+        "Backup is created before modification using backupFile()",
+        "Backup manifest records operation as 'modified'",
+        "Repaired PRD passes PrdSchema.safeParse() validation",
+        "Repaired PRD is written using fs.writeFile() with proper locking",
+        "Success message: 'Added missing field 'branch_name''",
+        "Error message on failure: 'Failed to repair PRD: {details}'"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Standard wreckit branch naming pattern is wreckit/{item-id}. This is a safe default that can be manually changed if needed."
+    },
+    {
+      "id": "US-081-007",
+      "title": "Implement auto-repair for out-of-range story priorities",
+      "acceptance_criteria": [
+        "Priorities < 1 are clamped to 1",
+        "Priorities > 4 are clamped to 4",
+        "Valid priorities (1-4) remain unchanged",
+        "Clamping is logged with warning: 'Clamped {count} priorities to [1, 4] range in {itemId}'",
+        "Backup is created before modification using backupFile()",
+        "Backup manifest records operation as 'modified'",
+        "Repaired PRD passes PrdSchema.safeParse() validation",
+        "Repaired PRD is written using fs.writeFile() with proper locking",
+        "Success message: 'Clamped priorities to [1, 4] range'",
+        "Error message on failure: 'Failed to repair PRD: {details}'"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Logging is important here because clamping changes user data. Users should be aware when priorities are adjusted."
+    },
+    {
+      "id": "US-081-008",
+      "title": "Add unit tests for story ID validation patterns",
+      "acceptance_criteria": [
+        "Test simple format: US-001, US-073, US-999 → pass validation",
+        "Test scoped format: US-073-001, US-035-012, US-999-999 → pass validation",
+        "Test invalid format: US-A01 → fail validation with error",
+        "Test invalid format: US- → fail validation with error",
+        "Test invalid format: US-073-A01 → fail validation with error",
+        "Test error message includes both accepted formats",
+        "Tests run with 'npm test' and pass",
+        "No regressions in existing validation tests"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "Create new test file src/__tests__/story-id-validation.test.ts. Focus on edge cases that could break the regex."
+    },
+    {
+      "id": "US-081-009",
+      "title": "Add integration tests for PRD auto-repair",
+      "acceptance_criteria": [
+        "Test repair of missing id field → id added, backup created",
+        "Test repair of missing branch_name field → branch_name added, backup created",
+        "Test repair of priority < 1 → clamped to 1, backup created",
+        "Test repair of priority > 4 → clamped to 4, backup created",
+        "Test backup manifest contains correct metadata (session_id, file paths, diagnostic code)",
+        "Test repaired PRD passes schema validation",
+        "Test repair failure is handled gracefully (returns error message)",
+        "Test multiple violations in same PRD (e.g., missing id + invalid priorities)",
+        "Tests run with 'npm test' and pass",
+        "No regressions in existing doctor tests"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "Add tests to existing src/__tests__/doctor.test.ts. Use createPrd() helper function with overrides to simulate various PRD states."
+    }
+  ]
+}

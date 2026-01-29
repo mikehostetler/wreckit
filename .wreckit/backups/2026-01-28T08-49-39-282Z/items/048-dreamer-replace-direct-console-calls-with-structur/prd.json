@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "item_id": "048-dreamer-replace-direct-console-calls-with-structur",
+  "title": "[DREAMER] Replace direct console calls with structured logging",
+  "user_stories": [
+    {
+      "id": "US-001",
+      "title": "Replace console calls in show and list commands",
+      "status": "done",
+      "priority": 1,
+      "description": "Convert all console.log calls in src/commands/show.ts and src/commands/list.ts to use the structured logger."
+    },
+    {
+      "id": "US-002",
+      "title": "Replace console calls in phase and status commands",
+      "status": "done",
+      "priority": 2,
+      "description": "Convert all console.log and console.warn calls in src/commands/phase.ts and src/commands/status.ts to use the structured logger."
+    },
+    {
+      "id": "US-003",
+      "title": "Replace console calls in doctor command and logic",
+      "status": "done",
+      "priority": 3,
+      "description": "Convert all console calls in src/doctor.ts and src/commands/doctor.ts to use the structured logger."
+    },
+    {
+      "id": "US-004",
+      "title": "Audit and replace miscellaneous console calls",
+      "status": "done",
+      "priority": 4,
+      "description": "Scan and replace console calls in src/workflow/itemWorkflow.ts and src/agent/healingRunner.ts."
+    },
+    {
+      "id": "US-005",
+      "title": "Verify output visibility and level control",
+      "status": "done",
+      "priority": 5,
+      "description": "Ensure that primary CLI output remains visible by default and respects --quiet/--verbose flags."
+    }
+  ],
+  "id": "048-dreamer-replace-direct-console-calls-with-structur",
+  "branch_name": "wreckit/048-dreamer-replace-direct-console-calls-with-structur"
+}

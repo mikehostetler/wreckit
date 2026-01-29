@@ -1,0 +1,171 @@
+{
+  "schema_version": 1,
+  "id": "075-implement-sprite-exec",
+  "branch_name": "wreckit/075-implement-sprite-exec",
+  "user_stories": [
+    {
+      "id": "US-075-001",
+      "title": "Add SpriteExecError error class and SPRITE_EXEC_FAILED error code",
+      "acceptance_criteria": [
+        "SPRITE_EXEC_FAILED added to ErrorCodes enum in src/errors.ts (line 57)",
+        "SpriteExecError class created extending WreckitError",
+        "SpriteExecError includes spriteName and message in error context",
+        "SpriteExecError matches pattern of SpriteStartError, SpriteAttachError, SpriteKillError",
+        "Error class is importable and type-checking passes"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Foundation error handling must be in place before using it in execSprite() function."
+    },
+    {
+      "id": "US-075-002",
+      "title": "Implement execSprite() core function in sprite-runner.ts",
+      "acceptance_criteria": [
+        "execSprite() function exported from src/agent/sprite-runner.ts",
+        "Function accepts name, command[], config, logger, and optional streaming callbacks",
+        "Function calls runWispCommand() with args ['exec', name, ...command]",
+        "Function returns WispResult with exitCode, stdout, stderr, success",
+        "Function throws SpriteExecError for subprocess errors (spawn failure, timeout)",
+        "Function does NOT throw for command failures (non-zero exit code returns success=false)",
+        "Function throws WispNotFoundError if Sprite binary not found",
+        "Function includes JSDoc documentation with usage example",
+        "Module comment updated to include 'exec: Execute a command inside a running Sprite'",
+        "Type-checking passes (npm run typecheck)"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Core primitive that both CLI and RLM layers depend on. Must distinguish between subprocess errors (throw) and command failures (return success=false)."
+    },
+    {
+      "id": "US-075-003",
+      "title": "Add SpriteExecOptions interface to sprite.ts",
+      "acceptance_criteria": [
+        "SpriteExecOptions interface defined in src/commands/sprite.ts",
+        "Interface includes: name: string, command: string[], cwd?: string, json?: boolean",
+        "Interface matches pattern of SpriteStartOptions, SpriteListOptions, etc.",
+        "Type-checking passes"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Simple interface definition, no logic. Follow existing patterns."
+    },
+    {
+      "id": "US-075-004",
+      "title": "Implement spriteExecCommand() in sprite.ts",
+      "acceptance_criteria": [
+        "spriteExecCommand() function defined in src/commands/sprite.ts",
+        "Function imports execSprite from sprite-runner",
+        "Function imports SpriteExecError from errors",
+        "Function calls getSpriteConfig() to load and validate config",
+        "Function calls execSprite() with name, command, config, logger",
+        "Function outputs human-readable format with emoji prefixes (✅/❌) by default",
+        "Function outputs JSON format when --json flag provided",
+        "JSON output includes: success, message, data.name, data.command, data.exitCode, data.stdout, data.stderr",
+        "Function catches SpriteExecError and outputs error message",
+        "Function catches WispNotFoundError and outputs error message",
+        "Function exits with code 1 for command failures (non-zero exit code)",
+        "Function includes JSDoc with usage examples",
+        "Type-checking passes"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "CLI command implementation. Must handle both success and failure paths with appropriate output formats. Follow spriteStartCommand pattern."
+    },
+    {
+      "id": "US-075-005",
+      "title": "Register sprite exec subcommand in CLI",
+      "acceptance_criteria": [
+        "spriteExecCommand imported in src/index.ts",
+        "'exec' subcommand registered with spriteCmd at src/index.ts",
+        "Command uses .command('exec <name> <command...>') for variadic argument capture",
+        "Command includes --json option",
+        "Command description: 'Execute a command inside a running Sprite VM'",
+        "Command action wires up executeCommand wrapper with global options",
+        "Command respects --cwd, --verbose, --quiet, --dry-run global options",
+        "wreckit sprite --help shows 'exec' subcommand",
+        "wreckit sprite exec --help shows usage and options",
+        "Build succeeds (npm run build)"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "CLI registration. Variadic arguments capture all command parts into array automatically."
+    },
+    {
+      "id": "US-075-006",
+      "title": "Create ExecSpriteTool in rlm-tools.ts",
+      "acceptance_criteria": [
+        "ExecSpriteTool constant defined in src/agent/rlm-tools.ts",
+        "Tool name: 'ExecSprite'",
+        "Tool description: 'Execute a command inside a running Sprite VM. Returns command output and exit code.'",
+        "Tool parameters: name (string, required), command (array of strings, required)",
+        "Tool uses dynamic import to avoid circular dependency",
+        "Tool calls execSprite() with DEFAULT_SPRITE_CONFIG and spriteLogger",
+        "Tool returns JSON.stringify() result with success, message, data fields",
+        "Tool catches all errors and returns as JSON (never throws)",
+        "Tool returns success=false with exitCode for command failures (non-zero exit)",
+        "Type-checking passes"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "RLM tool for agent access. Must catch errors and return as JSON to avoid crashing RLM framework."
+    },
+    {
+      "id": "US-075-007",
+      "title": "Register ExecSprite tool in RLM tool registry",
+      "acceptance_criteria": [
+        "ExecSprite: ExecSpriteTool added to ALL_TOOLS registry in src/agent/rlm-tools.ts",
+        "buildToolRegistry() includes ExecSprite when allowedTools includes it",
+        "Tool accessible to agents via buildToolRegistry() function",
+        "Type-checking passes"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "Simple registration in existing tool registry."
+    },
+    {
+      "id": "US-075-008",
+      "title": "Add unit tests for spriteExecCommand",
+      "acceptance_criteria": [
+        "spriteExecCommand imported in src/__tests__/commands/sprite.test.ts",
+        "describe('spriteExecCommand', ...) test suite added",
+        "Test for successful execution with mocked spawn()",
+        "Test verifies correct arguments passed to spawn()",
+        "Test verifies success message includes Sprite name",
+        "Test for command failure (non-zero exit code)",
+        "Test verifies error message includes exit code",
+        "Test verifies process.exit(1) called for command failures",
+        "Test for JSON output format with --json flag",
+        "Test verifies JSON.parse() succeeds on output",
+        "Test verifies JSON includes success, message, data.exitCode, data.stdout, data.stderr",
+        "Test for Sprite binary not found error (ENOENT)",
+        "Test verifies error message includes 'not found'",
+        "Test for both stdout and stderr output",
+        "Test verifies both console.log and console.error called",
+        "All tests pass: npm test -- src/__tests__/commands/sprite.test.ts",
+        "No regressions in existing Sprite command tests"
+      ],
+      "priority": 4,
+      "status": "done",
+      "notes": "Comprehensive test coverage using existing mock helpers (mockSpawnSuccess, mockSpawnFailure, mockSpawnError)."
+    },
+    {
+      "id": "US-075-009",
+      "title": "Integration testing and verification",
+      "acceptance_criteria": [
+        "wreckit sprite --help displays exec subcommand",
+        "wreckit sprite exec --help shows usage",
+        "Command accepts variadic arguments (e.g., wreckit sprite exec my-vm ls -la)",
+        "Command executes without TypeScript errors",
+        "Command outputs human-readable format by default",
+        "Command outputs valid JSON with --json flag",
+        "Error handling works for Sprite not found",
+        "Error handling works for command failures",
+        "Existing Sprite commands (start/attach/list/kill) still work",
+        "All automated checks pass: typecheck, lint, build, test"
+      ],
+      "priority": 4,
+      "status": "done",
+      "notes": "Final verification that everything integrates correctly. Manual testing of CLI help and basic functionality."
+    }
+  ]
+}

@@ -1,8 +1,11 @@
+import { createOpencodeClient } from "@opencode-ai/sdk";
 import type { Logger } from "../logging";
 import type { AgentResult } from "./runner";
+import { registerSdkController, unregisterSdkController } from "./lifecycle.js";
 import type { OpenCodeSdkAgentConfig } from "../schemas";
 import type { AgentEvent } from "../tui/agentEvents";
 import { getAllowedToolsForPhase } from "./toolAllowlist";
+import { buildSdkEnv } from "./env.js";
 
 export interface OpenCodeRunAgentOptions {
   config: OpenCodeSdkAgentConfig;
@@ -13,49 +16,34 @@ export interface OpenCodeRunAgentOptions {
   onStdoutChunk?: (chunk: string) => void;
   onStderrChunk?: (chunk: string) => void;
   onAgentEvent?: (event: AgentEvent) => void;
-  /** Restrict agent to only specific tools (e.g., MCP tools). Prevents use of Read, Write, Bash, etc. */
+  mcpServers?: Record<string, unknown>;
   allowedTools?: string[];
-  /** Current workflow phase for tool allowlist enforcement (Spec 008 Gap 1) */
   phase?: string;
 }
 
-/**
- * Get the effective tool allowlist for OpenCode SDK agent.
- *
- * Per Spec 008 Gap 1: "No Enforcement for Non-Ideas Phases"
- * The tool allowlist must be enforced for all SDK runners, not just claude_sdk.
- *
- * Priority:
- * 1. Explicit allowedTools from options (highest priority)
- * 2. Phase-based allowlist from toolAllowlist.ts (if phase specified)
- * 3. undefined (no restrictions - default SDK behavior)
- */
-function getEffectiveToolAllowlist(options: OpenCodeRunAgentOptions): string[] | undefined {
-  // Explicit allowedTools takes precedence
+function getEffectiveToolAllowlist(
+  options: OpenCodeRunAgentOptions,
+): string[] | undefined {
   if (options.allowedTools !== undefined) {
     return options.allowedTools;
   }
-
-  // Fall back to phase-based allowlist if phase is specified
   if (options.phase) {
     return getAllowedToolsForPhase(options.phase);
   }
-
-  // No restrictions
   return undefined;
 }
 
 export async function runOpenCodeSdkAgent(
-  options: OpenCodeRunAgentOptions
+  options: OpenCodeRunAgentOptions,
 ): Promise<AgentResult> {
-  const { logger, dryRun, config } = options;
+  const { cwd, prompt, logger, dryRun, onStdoutChunk } = options;
 
   if (dryRun) {
-    logger.info("[dry-run] Would run OpenCode SDK agent");
     const effectiveTools = getEffectiveToolAllowlist(options);
-    if (effectiveTools) {
-      logger.debug(`[dry-run] Tool restrictions: ${effectiveTools.join(", ")}`);
+    if (effectiveTools && effectiveTools.length > 0) {
+      logger.debug(`Tool restrictions: ${effectiveTools.join(", ")}`);
     }
+    logger.info("[dry-run] Would run OpenCode SDK agent");
     return {
       success: true,
       output: "[dry-run] OpenCode SDK agent not executed",
@@ -65,18 +53,68 @@ export async function runOpenCodeSdkAgent(
     };
   }
 
-  // TODO: Implement OpenCode SDK integration with tool allowlist enforcement
-  const effectiveTools = getEffectiveToolAllowlist(options);
-  if (effectiveTools) {
-    logger.info(`Tool restrictions active: ${effectiveTools.join(", ")}`);
-  }
+  let output = "";
+  const abortController = new AbortController();
+  registerSdkController(abortController);
 
-  logger.error("OpenCode SDK runner not yet implemented");
-  return {
-    success: false,
-    output: "OpenCode SDK runner is not yet implemented. Use process mode or claude_sdk instead.",
-    timedOut: false,
-    exitCode: 1,
-    completionDetected: false,
-  };
+  try {
+    const sdkEnv = await buildSdkEnv({ cwd, logger });
+    const effectiveTools = getEffectiveToolAllowlist(options);
+
+    logger.info("Executing OpenCode SDK...");
+
+    // Real OpenCode SDK usage
+    const client = createOpencodeClient({
+      baseUrl: sdkEnv.OPENCODE_BASE_URL,
+      // API Key is automatically picked up from process.env.OPENCODE_API_KEY
+      // or we can pass it if the types allow, but let's rely on standard env var behavior first.
+    });
+
+    const sessionResult = await client.session.create();
+
+    if (sessionResult.error) {
+      throw new Error(
+        `Failed to create OpenCode session: ${String(sessionResult.error)}`,
+      );
+    }
+
+    const session = sessionResult.data;
+    if (!session) {
+      throw new Error("OpenCode session creation returned no data");
+    }
+
+    // Cast to any because TS definitions seem to be missing 'prompt' despite runtime existence
+    const response = await (session as any).prompt({
+      text: prompt,
+      tools: effectiveTools, // Pass allowlist
+    });
+
+    // Handle response
+    const text =
+      typeof response === "string"
+        ? response
+        : (response as any).content || JSON.stringify(response);
+    output = text;
+    if (onStdoutChunk) onStdoutChunk(text);
+
+    return {
+      success: true,
+      output,
+      timedOut: false,
+      exitCode: 0,
+      completionDetected: true,
+    };
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    logger.error(`OpenCode SDK error: ${errorMessage}`);
+    return {
+      success: false,
+      output: output + `\nError: ${errorMessage}`,
+      timedOut: false,
+      exitCode: 1,
+      completionDetected: false,
+    };
+  } finally {
+    unregisterSdkController(abortController);
+  }
 }

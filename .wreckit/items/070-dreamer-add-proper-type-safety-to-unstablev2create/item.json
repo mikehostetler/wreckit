@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "id": "070-dreamer-add-proper-type-safety-to-unstablev2create",
+  "title": "[DREAMER] Add proper type safety to unstable_v2_createSession env option",
+  "state": "idea",
+  "overview": "TypeScript's type safety is being bypassed with 'as any' casts, which can hide type errors and make refactoring dangerous. The env option should be properly typed in the SDK or at the boundary.\n\n**Motivation:** Proper typing prevents runtime errors, improves IDE autocomplete, and makes the code more maintainable. The 'as any' cast suggests the SDK types don't match actual usage needs.\n\n**Success criteria:**\n- Remove 'as any' cast from unstable_v2_createSession call\n- Add proper type definition for env option in session creation\n- Verify type safety passes TypeScript strict checks\n\n**Technical constraints:**\n- Depends on @anthropic-ai/claude-agent-sdk type definitions\n- May need to extend or override SDK types if env is missing from them\n- Must maintain runtime functionality (env: sdkEnv)\n\n**In scope:**\n- src/domain/ideas-interview.ts:371 type cast\n- Type definition for session options with env\n**Out of scope:**\n- Modifying the actual SDK package\n- Changes to how sdkEnv is built\n\n**Signals:** priority: low, urgency: Code quality - type safety gap",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-27T21:19:06.144Z",
+  "updated_at": "2026-01-27T21:19:06.144Z",
+  "problem_statement": "TypeScript's type safety is being bypassed with 'as any' casts, which can hide type errors and make refactoring dangerous. The env option should be properly typed in the SDK or at the boundary.",
+  "motivation": "Proper typing prevents runtime errors, improves IDE autocomplete, and makes the code more maintainable. The 'as any' cast suggests the SDK types don't match actual usage needs.",
+  "success_criteria": [
+    "Remove 'as any' cast from unstable_v2_createSession call",
+    "Add proper type definition for env option in session creation",
+    "Verify type safety passes TypeScript strict checks"
+  ],
+  "technical_constraints": [
+    "Depends on @anthropic-ai/claude-agent-sdk type definitions",
+    "May need to extend or override SDK types if env is missing from them",
+    "Must maintain runtime functionality (env: sdkEnv)"
+  ],
+  "scope_in_scope": [
+    "src/domain/ideas-interview.ts:371 type cast",
+    "Type definition for session options with env"
+  ],
+  "scope_out_of_scope": [
+    "Modifying the actual SDK package",
+    "Changes to how sdkEnv is built"
+  ],
+  "priority_hint": "low",
+  "urgency_hint": "Code quality - type safety gap"
+}

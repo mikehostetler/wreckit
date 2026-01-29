@@ -8,12 +8,17 @@ import {
   readItem,
   writeIndex,
 } from "../fs";
-import { dirExists } from "../fs/util";
+import { dirExists, checkPathAccess } from "../fs/util";
+import {
+  FileNotFoundError,
+  InvalidJsonError,
+  SchemaValidationError,
+} from "../errors";
 
 const ITEM_DIR_PATTERN = /^(\d+)-(.+)$/;
 
 export function parseItemId(
-  id: string
+  id: string,
 ): { number: string; slug: string } | null {
   const match = id.match(ITEM_DIR_PATTERN);
   if (!match) return null;
@@ -33,6 +38,7 @@ export function toIndexItem(item: Item): IndexItem {
     id: item.id,
     state: item.state,
     title: item.title,
+    depends_on: item.depends_on,
   };
 }
 
@@ -44,13 +50,28 @@ export function buildIndex(items: Item[]): Index {
   };
 }
 
-export async function scanItems(root: string): Promise<Item[]> {
+export interface ScanItemsOptions {
+  logger?: unknown;
+}
+
+export async function scanItems(
+  root: string,
+  _options?: ScanItemsOptions,
+): Promise<Item[]> {
   const itemsDir = getItemsDir(root);
 
   let entries: string[];
   try {
     entries = await fs.readdir(itemsDir);
-  } catch {
+  } catch (err) {
+    // ENOENT means items directory doesn't exist yet - expected case
+    if ((err as NodeJS.ErrnoException).code === "ENOENT") {
+      return [];
+    }
+    // Permission or I/O errors should warn, not silently return empty
+    console.warn(
+      `Warning: Cannot read items directory ${itemsDir}: ${err instanceof Error ? err.message : String(err)}`,
+    );
     return [];
   }
 
@@ -68,7 +89,7 @@ export async function scanItems(root: string): Promise<Item[]> {
     } catch (err) {
       const itemJsonPath = path.join(itemDirPath, "item.json");
       console.warn(
-        `Warning: Skipping invalid item at ${itemJsonPath}: ${err instanceof Error ? err.message : String(err)}`
+        `Warning: Skipping invalid item at ${itemJsonPath}: ${err instanceof Error ? err.message : String(err)}`,
       );
     }
   }
@@ -89,16 +110,18 @@ export async function refreshIndex(root: string): Promise<Index> {
   return index;
 }
 
-export async function getItem(
-  root: string,
-  id: string
-): Promise<Item | null> {
+export async function getItem(root: string, id: string): Promise<Item | null> {
   const itemDir = getItemDir(root, id);
 
   try {
     return await readItem(itemDir);
-  } catch {
-    return null;
+  } catch (err) {
+    // Expected "not found" conditions (Spec 002 Gap 3)
+    if (err instanceof FileNotFoundError) return null;
+    if (err instanceof InvalidJsonError) return null;
+    if (err instanceof SchemaValidationError) return null;
+    // Unexpected errors - re-throw
+    throw err;
   }
 }
 
@@ -106,10 +129,11 @@ export async function itemExists(root: string, id: string): Promise<boolean> {
   const itemDir = getItemDir(root, id);
   const itemJsonPath = path.join(itemDir, "item.json");
 
-  try {
-    await fs.access(itemJsonPath);
-    return true;
-  } catch {
-    return false;
+  // Use error-aware check (Spec 002 Gap 3)
+  const check = await checkPathAccess(itemJsonPath);
+  if (check.error) {
+    // Permission error - throw instead of returning false
+    throw check.error;
   }
+  return check.exists;
 }

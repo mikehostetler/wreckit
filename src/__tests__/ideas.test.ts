@@ -35,7 +35,9 @@ describe("parseIdeasFromText", () => {
   });
 
   it("bullet points become separate items", () => {
-    const result = parseIdeasFromText("- First item\n- Second item\n* Third item");
+    const result = parseIdeasFromText(
+      "- First item\n- Second item\n* Third item",
+    );
     expect(result).toHaveLength(3);
     expect(result[0].title).toBe("First item");
     expect(result[1].title).toBe("Second item");
@@ -49,12 +51,12 @@ describe("parseIdeasFromText", () => {
 
   it("consecutive lines become title + description", () => {
     const result = parseIdeasFromText(
-      "# Add dark mode\nAllow users to toggle between themes\nThis is important for accessibility"
+      "# Add dark mode\nAllow users to toggle between themes\nThis is important for accessibility",
     );
     expect(result).toHaveLength(1);
     expect(result[0].title).toBe("Add dark mode");
     expect(result[0].description).toBe(
-      "Allow users to toggle between themes\nThis is important for accessibility"
+      "Allow users to toggle between themes\nThis is important for accessibility",
     );
   });
 
@@ -71,9 +73,13 @@ The login page times out after 30 seconds
     const result = parseIdeasFromText(input);
     expect(result).toHaveLength(4);
     expect(result[0].title).toBe("Add dark mode support");
-    expect(result[0].description).toBe("Allow users to toggle between light and dark themes");
+    expect(result[0].description).toBe(
+      "Allow users to toggle between light and dark themes",
+    );
     expect(result[1].title).toBe("Fix login timeout");
-    expect(result[1].description).toBe("The login page times out after 30 seconds");
+    expect(result[1].description).toBe(
+      "The login page times out after 30 seconds",
+    );
     expect(result[2].title).toBe("Update CI to use Node 20");
     expect(result[3].title).toBe("Add unit tests for auth module");
   });
@@ -155,7 +161,9 @@ describe("allocateItemId", () => {
 
   it("returns correct dir path", async () => {
     const result = await allocateItemId(tempDir, "test");
-    expect(result.dir).toBe(path.join(tempDir, ".wreckit", "items", "001-test"));
+    expect(result.dir).toBe(
+      path.join(tempDir, ".wreckit", "items", "001-test"),
+    );
   });
 });
 
@@ -236,14 +244,70 @@ describe("createItemFromIdea", () => {
     expect(item.overview).toContain("priority: high");
 
     // Structured fields are also stored
-    expect(item.problem_statement).toBe("Users see vague 'Something went wrong' errors");
+    expect(item.problem_statement).toBe(
+      "Users see vague 'Something went wrong' errors",
+    );
     expect(item.motivation).toBe("Reduce support tickets");
-    expect(item.success_criteria).toEqual(["Specific error messages for common failures"]);
-    expect(item.technical_constraints).toEqual(["Don't change the API contract"]);
+    expect(item.success_criteria).toEqual([
+      "Specific error messages for common failures",
+    ]);
+    expect(item.technical_constraints).toEqual([
+      "Don't change the API contract",
+    ]);
     expect(item.scope_in_scope).toEqual(["Web login flow"]);
     expect(item.scope_out_of_scope).toEqual(["Mobile app"]);
     expect(item.priority_hint).toBe("high");
     expect(item.urgency_hint).toBe("Before Q3 launch");
+  });
+
+  it("maps dependsOn to depends_on", () => {
+    const idea: ParsedIdea = {
+      title: "Add tests",
+      description: "Test the feature",
+      dependsOn: ["001-add-feature", "002-setup-db"],
+    };
+
+    const item = createItemFromIdea("003-add-tests", idea);
+
+    expect(item.depends_on).toEqual(["001-add-feature", "002-setup-db"]);
+  });
+
+  it("maps campaign field", () => {
+    const idea: ParsedIdea = {
+      title: "Milestone 1 task",
+      description: "Part of milestone 1",
+      campaign: "M1",
+    };
+
+    const item = createItemFromIdea("001-milestone-1-task", idea);
+
+    expect(item.campaign).toBe("M1");
+  });
+
+  it("handles both dependsOn and campaign together", () => {
+    const idea: ParsedIdea = {
+      title: "Second task",
+      description: "Depends on first task",
+      dependsOn: ["001-first-task"],
+      campaign: "M2",
+    };
+
+    const item = createItemFromIdea("002-second-task", idea);
+
+    expect(item.depends_on).toEqual(["001-first-task"]);
+    expect(item.campaign).toBe("M2");
+  });
+
+  it("leaves depends_on and campaign undefined when not provided", () => {
+    const idea: ParsedIdea = {
+      title: "Simple idea",
+      description: "No dependencies",
+    };
+
+    const item = createItemFromIdea("001-simple-idea", idea);
+
+    expect(item.depends_on).toBeUndefined();
+    expect(item.campaign).toBeUndefined();
   });
 });
 
@@ -260,7 +324,9 @@ describe("persistItems", () => {
   });
 
   it("creates directories and item.json", async () => {
-    const ideas: ParsedIdea[] = [{ title: "Add dark mode", description: "Theme support" }];
+    const ideas: ParsedIdea[] = [
+      { title: "Add dark mode", description: "Theme support" },
+    ];
 
     const result = await persistItems(tempDir, ideas);
 
@@ -272,7 +338,7 @@ describe("persistItems", () => {
       ".wreckit",
       "items",
       "001-add-dark-mode",
-      "item.json"
+      "item.json",
     );
     const content = await fs.readFile(itemPath, "utf-8");
     const item = JSON.parse(content);
@@ -282,7 +348,9 @@ describe("persistItems", () => {
 
   it("skips existing items", async () => {
     const itemsDir = path.join(tempDir, ".wreckit", "items");
-    await fs.mkdir(path.join(itemsDir, "001-add-dark-mode"), { recursive: true });
+    await fs.mkdir(path.join(itemsDir, "001-add-dark-mode"), {
+      recursive: true,
+    });
 
     const ideas: ParsedIdea[] = [{ title: "Add dark mode", description: "" }];
     const result = await persistItems(tempDir, ideas);

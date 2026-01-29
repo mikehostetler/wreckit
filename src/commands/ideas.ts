@@ -4,7 +4,10 @@ import type { Logger } from "../logging";
 import { findRootFromOptions } from "../fs/paths";
 import { persistItems, generateSlug } from "../domain/ideas";
 import { parseIdeasWithAgent } from "../domain/ideas-agent";
-import { runIdeaInterview, runSimpleInterview } from "../domain/ideas-interview";
+import {
+  runIdeaInterview,
+  runSimpleInterview,
+} from "../domain/ideas-interview";
 import { FileNotFoundError } from "../errors";
 import { hasUncommittedChanges, isGitRepo } from "../git";
 
@@ -62,7 +65,7 @@ function hasStdinInput(): boolean {
 async function warnIfUncommittedChanges(
   root: string,
   logger: Logger,
-  dryRun?: boolean
+  dryRun?: boolean,
 ): Promise<void> {
   // Skip check in dryRun mode or if not in a git repo
   if (dryRun) {
@@ -80,7 +83,7 @@ async function warnIfUncommittedChanges(
       "⚠️  You have uncommitted changes. " +
         "The idea phase is for planning and exploration only. " +
         "The agent is configured to read-only and cannot make code changes, " +
-        "but you may want to commit your work first."
+        "but you may want to commit your work first.",
     );
   }
 }
@@ -88,7 +91,7 @@ async function warnIfUncommittedChanges(
 export async function ideasCommand(
   options: IdeasOptions,
   logger: Logger,
-  inputOverride?: string
+  inputOverride?: string,
 ): Promise<void> {
   const root = findRootFromOptions(options);
 
@@ -96,17 +99,21 @@ export async function ideasCommand(
   await warnIfUncommittedChanges(root, logger, options.dryRun);
 
   let ideas: Awaited<ReturnType<typeof parseIdeasWithAgent>> = [];
-  
+
   // Determine input mode
   if (inputOverride !== undefined) {
     // Direct input override (for testing)
     logger.info("Parsing ideas with agent...");
-    ideas = await parseIdeasWithAgent(inputOverride, root, { verbose: options.verbose });
+    ideas = await parseIdeasWithAgent(inputOverride, root, {
+      verbose: options.verbose,
+    });
   } else if (options.file) {
     // File input
     const input = await readFile(options.file);
     logger.info("Parsing ideas with agent...");
-    ideas = await parseIdeasWithAgent(input, root, { verbose: options.verbose });
+    ideas = await parseIdeasWithAgent(input, root, {
+      verbose: options.verbose,
+    });
   } else if (hasStdinInput()) {
     // Piped stdin input
     const input = await readStdin();
@@ -115,7 +122,9 @@ export async function ideasCommand(
       return;
     }
     logger.info("Parsing ideas with agent...");
-    ideas = await parseIdeasWithAgent(input, root, { verbose: options.verbose });
+    ideas = await parseIdeasWithAgent(input, root, {
+      verbose: options.verbose,
+    });
   } else {
     // No input and TTY - start interview mode
     try {

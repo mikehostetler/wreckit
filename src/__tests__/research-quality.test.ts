@@ -110,7 +110,7 @@ Questions
         const result = validateResearchQuality(content, defaultOptions);
         expect(result.valid).toBe(false);
         expect(result.citations).toBe(1);
-        expect(result.errors.some(e => e.includes("citation"))).toBe(true);
+        expect(result.errors.some((e) => e.includes("citation"))).toBe(true);
       });
 
       it("correctly counts various citation formats", () => {
@@ -194,7 +194,7 @@ Questions
         const result = validateResearchQuality(content, defaultOptions);
         expect(result.valid).toBe(false);
         expect(result.citations).toBe(0);
-        expect(result.errors.some(e => e.includes("citation"))).toBe(true);
+        expect(result.errors.some((e) => e.includes("citation"))).toBe(true);
       });
     });
 
@@ -375,8 +375,10 @@ Questions
 
         const result = validateResearchQuality(content, defaultOptions);
         expect(result.valid).toBe(false);
-        expect(result.summaryLength).toBeLessThan(defaultOptions.minSummaryLength);
-        expect(result.errors.some(e => e.includes("Summary"))).toBe(true);
+        expect(result.summaryLength).toBeLessThan(
+          defaultOptions.minSummaryLength,
+        );
+        expect(result.errors.some((e) => e.includes("Summary"))).toBe(true);
       });
 
       it("fails with insufficient current state analysis", () => {
@@ -412,7 +414,11 @@ Questions
 
         const result = validateResearchQuality(content, defaultOptions);
         expect(result.valid).toBe(false);
-        expect(result.errors.some(e => e.includes("Current State Analysis") || e.includes("length"))).toBe(true);
+        expect(
+          result.errors.some(
+            (e) => e.includes("Current State Analysis") || e.includes("length"),
+          ),
+        ).toBe(true);
       });
     });
 
@@ -424,9 +430,14 @@ Questions
       });
 
       it("handles content with no sections", () => {
-        const result = validateResearchQuality("Just some text with no structure", defaultOptions);
+        const result = validateResearchQuality(
+          "Just some text with no structure",
+          defaultOptions,
+        );
         expect(result.valid).toBe(false);
-        expect(result.missingSections.length).toBe(defaultOptions.requiredSections.length);
+        expect(result.missingSections.length).toBe(
+          defaultOptions.requiredSections.length,
+        );
       });
 
       it("allows custom options", () => {

@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "id": "093-fix-silent-error-swallowing",
+  "branch_name": "wreckit/093-fix-silent-error-swallowing",
+  "user_stories": [
+    {
+      "id": "US-001",
+      "title": "Fix critical sync-back error handling in sprite-runner.ts",
+      "acceptance_criteria": [
+        "Empty catch block at line 279 is replaced with error logging",
+        "Sync-back failures are logged using logger.error()",
+        "Agent returns failure result (not success) when sync-back fails"
+      ],
+      "priority": 1,
+      "status": "done"
+    },
+    {
+      "id": "US-002",
+      "title": "Fix VM cleanup error logging in sprite-runner.ts",
+      "acceptance_criteria": [
+        "Empty catch block at line 399 is replaced with warning logging",
+        "Cleanup failures are logged using logger.warn()"
+      ],
+      "priority": 2,
+      "status": "done"
+    },
+    {
+      "id": "US-003",
+      "title": "Fix item.json parse error logging in strategy.ts",
+      "acceptance_criteria": [
+        "Empty catch block at lines 27-32 is replaced with warning logging",
+        "Individual item parse failures are logged using logger.warn()"
+      ],
+      "priority": 2,
+      "status": "done"
+    },
+    {
+      "id": "US-004",
+      "title": "Fix items directory read error logging in strategy.ts",
+      "acceptance_criteria": [
+        "Empty catch block at lines 34-37 is replaced with warning logging",
+        "Directory read failures are logged using logger.warn()"
+      ],
+      "priority": 2,
+      "status": "done"
+    },
+    {
+      "id": "US-005",
+      "title": "Fix critique JSON parse error logging in critique.ts",
+      "acceptance_criteria": [
+        "Three nested empty catch blocks are replaced with debug logging",
+        "JSON parse failures in fallback strategies are logged using logger.debug()"
+      ],
+      "priority": 3,
+      "status": "done"
+    },
+    {
+      "id": "US-006",
+      "title": "Fix directory creation error logging in sync.ts",
+      "acceptance_criteria": [
+        "Empty catch block at lines 95-98 is replaced with conditional error logging",
+        "Only non-EEXIST errors are logged using logger.warn()"
+      ],
+      "priority": 3,
+      "status": "done"
+    },
+    {
+      "id": "US-007",
+      "title": "Fix quoted args JSON parse error logging in rlm-runner.ts",
+      "acceptance_criteria": [
+        "Empty catch block at line 156 is replaced with debug logging",
+        "JSON parse failures for quoted arguments are logged using logger.debug()"
+      ],
+      "priority": 4,
+      "status": "done"
+    }
+  ]
+}

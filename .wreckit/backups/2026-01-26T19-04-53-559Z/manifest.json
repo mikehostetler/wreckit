@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "session_id": "2026-01-26T19-04-53-559Z",
+  "created_at": "2026-01-26T19:04:53.563Z",
+  "reason": "doctor-fix",
+  "files": [
+    {
+      "original_path": ".wreckit/batch-progress.json",
+      "backup_path": "batch-progress.json",
+      "operation": "deleted",
+      "diagnostic_code": "BATCH_PROGRESS_CORRUPT",
+      "item_id": null
+    }
+  ]
+}

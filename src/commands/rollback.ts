@@ -20,7 +20,7 @@ export interface RollbackResult {
 export async function rollbackCommand(
   itemId: string,
   options: RollbackOptions,
-  logger: Logger
+  logger: Logger,
 ): Promise<RollbackResult> {
   const { force = false, dryRun = false, cwd } = options;
   const root = findRootFromOptions(options);
@@ -41,7 +41,8 @@ export async function rollbackCommand(
     return {
       success: false,
       rollbackSha: null,
-      error: "No rollback anchor found. Rollback is only available for items completed via direct merge mode.",
+      error:
+        "No rollback anchor found. Rollback is only available for items completed via direct merge mode.",
     };
   }
 
@@ -56,19 +57,21 @@ export async function rollbackCommand(
   const gitOptions: GitOptions = { cwd: root, logger, dryRun };
 
   if (dryRun) {
-    logger.info(`[dry-run] Would rollback ${config.base_branch} to ${item.rollback_sha}`);
+    logger.info(
+      `[dry-run] Would rollback ${config.base_branch} to ${item.rollback_sha}`,
+    );
     logger.info(`[dry-run] Would reset item ${itemId} to state 'implementing'`);
     return { success: true, rollbackSha: item.rollback_sha };
   }
 
   logger.warn(
     `Rolling back ${config.base_branch} to ${item.rollback_sha}. ` +
-    `This will FORCE PUSH to the remote and may disrupt other collaborators.`
+      `This will FORCE PUSH to the remote and may disrupt other collaborators.`,
   );
 
   const checkoutResult = await runGitCommand(
     ["checkout", config.base_branch],
-    gitOptions
+    gitOptions,
   );
   if (checkoutResult.exitCode !== 0) {
     return {
@@ -80,7 +83,7 @@ export async function rollbackCommand(
 
   const resetResult = await runGitCommand(
     ["reset", "--hard", item.rollback_sha],
-    gitOptions
+    gitOptions,
   );
   if (resetResult.exitCode !== 0) {
     return {
@@ -92,7 +95,7 @@ export async function rollbackCommand(
 
   const pushResult = await runGitCommand(
     ["push", "--force", "origin", config.base_branch],
-    gitOptions
+    gitOptions,
   );
   if (pushResult.exitCode !== 0) {
     return {

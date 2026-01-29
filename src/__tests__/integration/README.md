@@ -45,6 +45,7 @@ wreckit run features/001-add-a-hello-world-function --dry-run
 ### 3. Compare Outputs
 
 Both modes should:
+
 - Produce equivalent output structure
 - Handle errors similarly
 - Respect timeout settings
@@ -65,6 +66,12 @@ The test suite includes:
    - Run `npm test` to execute all tests
    - Tests use shell commands for process mode
    - SDK mode uses mock implementations to avoid API calls
+
+3. **SDK Integration tests** (`src/__tests__/sdk-integration/*.integration.test.ts`):
+   - Tests for Amp, Codex, and OpenCode experimental SDK runners
+   - Mock-based testing (no API credentials required)
+   - Covers: message formatting, event emission, error handling, SDK options
+   - Run with: `bun test ./src/__tests__/sdk-integration/*.integration.test.ts`
 
 ## Verification Checklist
 

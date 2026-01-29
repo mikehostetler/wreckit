@@ -1,0 +1,463 @@
+{
+  "phase_skills": {
+    "research": [
+      "codebase-exploration",
+      "research-documentation",
+      "dependency-analysis",
+      "error-pattern-detection"
+    ],
+    "plan": [
+      "codebase-exploration",
+      "design-documentation",
+      "prd-creation",
+      "estimation",
+      "test-strategy"
+    ],
+    "implement": [
+      "codebase-exploration",
+      "code-implementation",
+      "story-tracking",
+      "test-driven-development",
+      "error-handling",
+      "schema-validation",
+      "logging-standardization"
+    ],
+    "pr": [
+      "git-operations",
+      "pr-generation",
+      "quality-gates",
+      "verification"
+    ],
+    "complete": [
+      "verification",
+      "git-operations",
+      "audit-trail"
+    ],
+    "learn": [
+      "pattern-extraction",
+      "skill-compilation"
+    ]
+  },
+  "skills": [
+    {
+      "id": "codebase-exploration",
+      "name": "Codebase Exploration",
+      "description": "Read-only codebase analysis for understanding project structure, patterns, and conventions. Supports finding relevant files with Glob, reading implementation details with Read, and searching for patterns with Grep. Essential capability used across research, plan, and implement phases to gather context and locate code.",
+      "tools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ],
+      "required_context": [],
+      "mcp_servers": {}
+    },
+    {
+      "id": "research-documentation",
+      "name": "Research Documentation",
+      "description": "Creates comprehensive research.md artifacts documenting codebase findings, architectural patterns, key files with line references (path:123 format), technical considerations, risks with mitigations, and recommended approaches. Enforces read-only security model - writes only to item directory. Validated for required sections, citation density, and minimum content length. Used in research phase to produce structured analysis from exploration.",
+      "tools": [
+        "Read",
+        "Write",
+        "Glob",
+        "Grep"
+      ],
+      "required_context": [
+        {
+          "type": "item_metadata",
+          "description": "Item ID, title, overview for research context"
+        },
+        {
+          "type": "git_status",
+          "description": "Baseline repository state for write containment validation"
+        }
+      ],
+      "mcp_servers": {}
+    },
+    {
+      "id": "dependency-analysis",
+      "name": "Dependency Analysis",
+      "description": "Analyzes item dependencies and execution order using Read and Grep to understand depends_on fields, campaign groupings, and dependency chains between items. Reads .wreckit/index.json for item relationships. Critical for orchestrator-safe planning and understanding item execution constraints.",
+      "tools": [
+        "Read",
+        "Grep",
+        "Glob"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": ".wreckit/index.json",
+          "description": "Item index for dependency analysis"
+        }
+      ],
+      "mcp_servers": {}
+    },
+    {
+      "id": "error-pattern-detection",
+      "name": "Error Pattern Detection",
+      "description": "Detects and classifies error patterns from agent execution output, logs, and codebase. Identifies recoverable errors (git locks, npm failures, JSON corruption, permission issues) vs non-recoverable errors using pattern matching on stderr/stdout. Reads src/errors.ts for error type definitions. Suggests recovery actions and distinguishes ENOENT from permission/I/O errors.",
+      "tools": [
+        "Read",
+        "Grep"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": "src/errors.ts",
+          "description": "Error type definitions for pattern matching"
+        }
+      ],
+      "mcp_servers": {}
+    },
+    {
+      "id": "design-documentation",
+      "name": "Design Documentation",
+      "description": "Creates detailed plan.md artifacts with implementation strategy, current vs desired state analysis, phased approach with dependencies, success criteria per phase, and testing strategies. Reads research findings to design solutions while maintaining design-only constraints (no code changes outside item directory). Git status comparison before/after ensures write containment. Validated for required sections, file references, and structure. Used in plan phase to produce actionable implementation blueprints.",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Glob",
+        "Grep"
+      ],
+      "required_context": [
+        {
+          "type": "phase_artifact",
+          "path": "research.md",
+          "description": "Research findings to inform design"
+        },
+        {
+          "type": "git_status",
+          "description": "Baseline repository state for write containment validation"
+        }
+      ],
+      "mcp_servers": {}
+    },
+    {
+      "id": "prd-creation",
+      "name": "PRD Creation",
+      "description": "Creates structured prd.json with user stories, acceptance criteria (3-7 specific criteria per story), priorities (1-4 scale), implementation notes, and story IDs (US-### format). Uses MCP tool save_prd for structured data capture or direct file writes. Validates story quality including acceptance criteria density (2+ minimum), ID format compliance, and priority ranges. Enforces schema_version: 1. Used in plan phase to produce executable work items for implementation.",
+      "tools": [
+        "Write",
+        "Edit"
+      ],
+      "required_context": [
+        {
+          "type": "phase_artifact",
+          "path": "research.md",
+          "description": "Research findings to inform story design"
+        },
+        {
+          "type": "item_metadata",
+          "description": "Item ID and branch name for PRD metadata"
+        }
+      ],
+      "mcp_servers": {
+        "wreckit": ["save_prd"]
+      }
+    },
+    {
+      "id": "estimation",
+      "name": "Effort Estimation",
+      "description": "Estimates implementation effort based on codebase complexity, file counts, dependency depth, and historical patterns. Uses Glob to analyze scope, Read to study similar items, and Grep to find complexity indicators. Provides realistic effort estimates considering test requirements, refactoring needs, and integration points.",
+      "tools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ],
+      "required_context": [],
+      "mcp_servers": {}
+    },
+    {
+      "id": "test-strategy",
+      "name": "Test Strategy",
+      "description": "Develops comprehensive testing strategies including unit tests, integration tests, edge case coverage, and test coverage goals. Reads existing test patterns from src/__tests__/, uses Glob to find test files, and Grep to understand testing conventions. Creates phased testing approach aligned with implementation phases. Identifies test gaps and coverage targets.",
+      "tools": [
+        "Read",
+        "Grep",
+        "Glob"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": "src/__tests__/",
+          "description": "Existing test directory for patterns"
+        }
+      ],
+      "mcp_servers": {}
+    },
+    {
+      "id": "code-implementation",
+      "name": "Code Implementation",
+      "description": "Full-implementation capability including reading, writing, editing code, running tests via Bash, executing commands, and committing changes. Used in implement phase to execute user stories iteratively with max_iterations limit. Maintains story scope through PRD context and prompt instructions. Supports atomic commits per story, test execution (npm test, bun test), and iterative development with progress tracking.",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Glob",
+        "Grep",
+        "Bash"
+      ],
+      "required_context": [
+        {
+          "type": "phase_artifact",
+          "path": "research.md",
+          "description": "Research findings for implementation context"
+        },
+        {
+          "type": "phase_artifact",
+          "path": "plan.md",
+          "description": "Implementation plan and approach"
+        },
+        {
+          "type": "phase_artifact",
+          "path": "prd.json",
+          "description": "User stories and acceptance criteria"
+        },
+        {
+          "type": "phase_artifact",
+          "path": "progress.log",
+          "description": "Implementation progress so far"
+        }
+      ],
+      "mcp_servers": {}
+    },
+    {
+      "id": "story-tracking",
+      "name": "Story Tracking",
+      "description": "Updates user story status from pending to done as work is completed. Verifies story completion including story existence in PRD, acceptance criteria presence, and criteria non-empty. Uses MCP tool update_story_status with story_id and status parameters. Provides progress logging by appending to progress.log after each iteration. Enables resumability by reading current PRD state and skipping completed stories. Used in implement phase to track progress through PRD iterations.",
+      "tools": [],
+      "required_context": [
+        {
+          "type": "phase_artifact",
+          "path": "prd.json",
+          "description": "PRD to update with story status"
+        }
+      ],
+      "mcp_servers": {
+        "wreckit": ["update_story_status"]
+      }
+    },
+    {
+      "id": "test-driven-development",
+      "name": "Test-Driven Development",
+      "description": "Follows TDD practices: write tests first, implement code to pass tests, refactor while maintaining green tests. Uses Write for test files, Bash for running test commands (bun test, npm test), and Read to understand existing test patterns. Creates atomic test cases aligned with acceptance criteria. Ensures behavior changes have corresponding test coverage.",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": "src/__tests__/",
+          "description": "Existing test directory for patterns"
+        }
+      ],
+      "mcp_servers": {}
+    },
+    {
+      "id": "error-handling",
+      "name": "Error Handling",
+      "description": "Implements proper error handling using WreckitError classes from src/errors.ts, error codes, and recovery patterns. Uses Read to understand error types, Grep to find unhandled errors, and Edit to add try-catch blocks, error propagation, and structured error responses. Distinguishes recoverable errors (use retry) from fatal errors (abort immediately).",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Grep"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": "src/errors.ts",
+          "description": "Error type definitions"
+        }
+      ],
+      "mcp_servers": {}
+    },
+    {
+      "id": "schema-validation",
+      "name": "Schema Validation",
+      "description": "Implements and uses Zod schemas for runtime validation of configuration files, data structures, and API payloads. Reads src/schemas.ts for existing schema patterns, uses Grep to find validation needs, and Edit to add schema definitions. Validates item.json, prd.json, and config files against schemas. Provides clear validation error messages.",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Grep"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": "src/schemas.ts",
+          "description": "Existing schema definitions"
+        }
+      ],
+      "mcp_servers": {}
+    },
+    {
+      "id": "logging-standardization",
+      "name": "Logging Standardization",
+      "description": "Standardizes logging throughout the codebase by replacing direct console.log/error/warn with the Logger interface from src/logging/index.ts. Uses Grep to find console calls, Read to understand context, and Edit to replace with Logger calls. Ensures consistent log levels, output formatting, and testability. Supports TTY-aware output and structured logging.",
+      "tools": [
+        "Read",
+        "Edit",
+        "Grep"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": "src/logging/index.ts",
+          "description": "Logger interface definition"
+        }
+      ],
+      "mcp_servers": {}
+    },
+    {
+      "id": "git-operations",
+      "name": "Git Operations",
+      "description": "Git repository operations including branch management (create, switch, tracking), commit creation with conventional commit format, push/pull operations, merge operations, status checks, and conflict detection. Uses Bash for git commands, Read for understanding repo state, and Glob/Grep for finding git-related files. Supports preflight validation, branch cleanup, rollback anchors, and quality gates. Used in PR phase for branch operations and in complete phase for cleanup.",
+      "tools": [
+        "Bash",
+        "Read",
+        "Glob",
+        "Grep"
+      ],
+      "required_context": [
+        {
+          "type": "git_status",
+          "description": "Current repository state for operations"
+        },
+        {
+          "type": "item_metadata",
+          "description": "Item ID for branch naming (branch_prefix + item_id)"
+        }
+      ],
+      "mcp_servers": {}
+    },
+    {
+      "id": "pr-generation",
+      "name": "PR Generation",
+      "description": "Generates pull request titles and descriptions based on item context, PRD stories, and git diffs. Uses Bash to run git diff, Read to understand item metadata and PRD, and Grep for analyzing changes. Creates conventional commit formatted PR titles (feat/fix/docs item-id: title). PR body includes summary of changes, testing notes, and acceptance criteria fulfilled. Updates existing PRs or creates new ones via gh CLI.",
+      "tools": [
+        "Read",
+        "Glob",
+        "Grep",
+        "Bash"
+      ],
+      "required_context": [
+        {
+          "type": "phase_artifact",
+          "path": "prd.json",
+          "description": "User stories for PR description"
+        },
+        {
+          "type": "item_metadata",
+          "description": "Item title and overview for PR context"
+        }
+      ],
+      "mcp_servers": {}
+    },
+    {
+      "id": "quality-gates",
+      "name": "Quality Gates",
+      "description": "Runs pre-push quality checks including tests, linting, typechecking, and secret scanning. Uses Bash to execute configured commands from pr_checks in config, scans git diff for credential patterns (private keys, AWS keys, GitHub tokens, etc.). Fails phase if any gate fails unless --skip-checks flag is used. Configurable via config.json pr_checks.commands and pr_checks.secret_scan settings.",
+      "tools": [
+        "Bash",
+        "Grep",
+        "Read"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": ".wreckit/config.json",
+          "description": "Quality gate configuration"
+        },
+        {
+          "type": "git_status",
+          "description": "Git state for secret scanning"
+        }
+      ],
+      "mcp_servers": {}
+    },
+    {
+      "id": "verification",
+      "name": "Verification",
+      "description": "Read-only verification of completion status including PR merge verification via gh CLI, base branch validation (merged to correct branch), head branch validation (correct PR), merge commit existence checks, CI check status logging, and audit trail recording. Supports both PR mode (verifies state === MERGED) and direct merge mode (verifies merge landed on remote via SHA comparison). Records completion metadata: completed_at, merged_at, merge_commit_sha, checks_passed.",
+      "tools": [
+        "Read",
+        "Glob",
+        "Grep",
+        "Bash"
+      ],
+      "required_context": [
+        {
+          "type": "item_metadata",
+          "description": "Item PR number and branch for verification"
+        },
+        {
+          "type": "git_status",
+          "description": "Repository state for verification checks"
+        }
+      ],
+      "mcp_servers": {}
+    },
+    {
+      "id": "audit-trail",
+      "name": "Audit Trail",
+      "description": "Records completion metadata for audit and debugging including completed_at timestamp, merged_at from GitHub, merge_commit_sha for exact commit, base_branch that received merge, completion_mode (pr/direct), checks_passed from CI status, and completion_warnings. Appends human-readable entry to progress.log. Stores structured metadata in item.json. Enables rollback and recovery by recording rollback_sha in direct merge mode.",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit"
+      ],
+      "required_context": [
+        {
+          "type": "git_status",
+          "description": "Git state for SHA extraction"
+        },
+        {
+          "type": "item_metadata",
+          "description": "Item for metadata storage"
+        }
+      ],
+      "mcp_servers": {}
+    },
+    {
+      "id": "pattern-extraction",
+      "name": "Pattern Extraction",
+      "description": "Analyzes completed work (research.md, plan.md, implemented code, test files) to extract reusable patterns that can be compiled into Skill artifacts. Uses Read to analyze artifacts, Glob to find related files, Grep to identify recurring patterns, and Write to document findings. Identifies tool combinations, context requirements, and phase applicability. Used by wreckit learn command for knowledge capture.",
+      "tools": [
+        "Read",
+        "Write",
+        "Glob",
+        "Grep"
+      ],
+      "required_context": [
+        {
+          "type": "git_status",
+          "description": "Current repository state"
+        }
+      ],
+      "mcp_servers": {}
+    },
+    {
+      "id": "skill-compilation",
+      "name": "Skill Compilation",
+      "description": "Compiles extracted patterns into skill definitions following the SkillConfigSchema format. Creates skill IDs (kebab-case), names, descriptions, tool arrays, required_context objects, and mcp_servers configurations. Maps skills to phases via phase_skills. Reads existing skills.json for merging (append or replace strategy), uses Edit to merge skills, and Write to output compiled skills. Validates skill uniqueness and phase tool permissions.",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Grep"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": ".wreckit/skills.json",
+          "description": "Existing skills for merging"
+        }
+      ],
+      "mcp_servers": {}
+    }
+  ]
+}

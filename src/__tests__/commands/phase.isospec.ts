@@ -1,4 +1,12 @@
-import { describe, it, expect, beforeEach, afterEach, vi, mock } from "bun:test";
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  vi,
+  mock,
+} from "bun:test";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import * as os from "node:os";
@@ -96,7 +104,7 @@ describe("runPhaseCommand", () => {
     await fs.writeFile(
       path.join(itemDir, "item.json"),
       JSON.stringify(item, null, 2),
-      "utf-8"
+      "utf-8",
     );
     return itemDir;
   }
@@ -104,7 +112,7 @@ describe("runPhaseCommand", () => {
   describe("item lookup", () => {
     it("throws error for non-existent item", async () => {
       await expect(
-        runPhaseCommand("research", "nonexistent/001-missing", {}, mockLogger)
+        runPhaseCommand("research", "nonexistent/001-missing", {}, mockLogger),
       ).rejects.toThrow("Item not found");
     });
 
@@ -113,7 +121,7 @@ describe("runPhaseCommand", () => {
       await setupItem(item);
 
       mockedRunPhaseResearch.mockResolvedValue(
-        createSuccessResult({ ...item, state: "researched" })
+        createSuccessResult({ ...item, state: "researched" }),
       );
 
       await runPhaseCommand("research", item.id, {}, mockLogger);
@@ -127,7 +135,7 @@ describe("runPhaseCommand", () => {
       await setupItem(item);
 
       mockedRunPhaseResearch.mockResolvedValue(
-        createSuccessResult({ ...item, state: "researched" })
+        createSuccessResult({ ...item, state: "researched" }),
       );
 
       await runPhaseCommand("research", item.id, {}, mockLogger);
@@ -140,7 +148,7 @@ describe("runPhaseCommand", () => {
       await setupItem(item);
 
       mockedRunPhasePlan.mockResolvedValue(
-        createSuccessResult({ ...item, state: "planned" })
+        createSuccessResult({ ...item, state: "planned" }),
       );
 
       await runPhaseCommand("plan", item.id, {}, mockLogger);
@@ -153,7 +161,7 @@ describe("runPhaseCommand", () => {
       await setupItem(item);
 
       mockedRunPhaseImplement.mockResolvedValue(
-        createSuccessResult({ ...item, state: "implementing" })
+        createSuccessResult({ ...item, state: "implementing" }),
       );
 
       await runPhaseCommand("implement", item.id, {}, mockLogger);
@@ -166,7 +174,7 @@ describe("runPhaseCommand", () => {
       await setupItem(item);
 
       mockedRunPhasePr.mockResolvedValue(
-        createSuccessResult({ ...item, state: "in_pr" })
+        createSuccessResult({ ...item, state: "in_pr" }),
       );
 
       await runPhaseCommand("pr", item.id, {}, mockLogger);
@@ -179,7 +187,7 @@ describe("runPhaseCommand", () => {
       await setupItem(item);
 
       mockedRunPhaseComplete.mockResolvedValue(
-        createSuccessResult({ ...item, state: "done" })
+        createSuccessResult({ ...item, state: "done" }),
       );
 
       await runPhaseCommand("complete", item.id, {}, mockLogger);
@@ -197,7 +205,7 @@ describe("runPhaseCommand", () => {
 
       expect(mockedRunPhaseResearch).not.toHaveBeenCalled();
       expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.stringContaining("skipping")
+        expect.stringContaining("skipping"),
       );
     });
 
@@ -206,7 +214,7 @@ describe("runPhaseCommand", () => {
       await setupItem(item);
 
       mockedRunPhaseResearch.mockResolvedValue(
-        createSuccessResult({ ...item, state: "researched" })
+        createSuccessResult({ ...item, state: "researched" }),
       );
 
       await runPhaseCommand("research", item.id, { force: true }, mockLogger);
@@ -221,7 +229,7 @@ describe("runPhaseCommand", () => {
 
       expect(mockedRunPhasePlan).not.toHaveBeenCalled();
       expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.stringContaining("skipping")
+        expect.stringContaining("skipping"),
       );
     });
 
@@ -230,7 +238,7 @@ describe("runPhaseCommand", () => {
       await setupItem(item);
 
       mockedRunPhasePlan.mockResolvedValue(
-        createSuccessResult({ ...item, state: "planned" })
+        createSuccessResult({ ...item, state: "planned" }),
       );
 
       await runPhaseCommand("plan", item.id, { force: true }, mockLogger);
@@ -244,7 +252,7 @@ describe("runPhaseCommand", () => {
       await setupItem(item);
 
       await expect(
-        runPhaseCommand("implement", item.id, {}, mockLogger)
+        runPhaseCommand("implement", item.id, {}, mockLogger),
       ).rejects.toThrow("invalid transition");
     });
 
@@ -253,7 +261,7 @@ describe("runPhaseCommand", () => {
       await setupItem(item);
 
       await expect(
-        runPhaseCommand("research", item.id, {}, mockLogger)
+        runPhaseCommand("research", item.id, {}, mockLogger),
       ).rejects.toThrow("invalid transition");
     });
 
@@ -262,7 +270,7 @@ describe("runPhaseCommand", () => {
       await setupItem(item);
 
       await expect(
-        runPhaseCommand("plan", item.id, {}, mockLogger)
+        runPhaseCommand("plan", item.id, {}, mockLogger),
       ).rejects.toThrow("expected 'researched'");
     });
   });
@@ -276,16 +284,16 @@ describe("runPhaseCommand", () => {
 
       expect(mockedRunPhaseResearch).not.toHaveBeenCalled();
       expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.stringContaining("DRY RUN")
+        expect.stringContaining("DRY RUN"),
       );
       expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.stringContaining("Current:")
+        expect.stringContaining("Current:"),
       );
       expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.stringContaining("Target:")
+        expect.stringContaining("Target:"),
       );
       expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.stringContaining("No changes made")
+        expect.stringContaining("No changes made"),
       );
     });
   });
@@ -296,14 +304,14 @@ describe("runPhaseCommand", () => {
       await setupItem(item);
 
       mockedRunPhaseResearch.mockResolvedValue(
-        createSuccessResult({ ...item, state: "researched" })
+        createSuccessResult({ ...item, state: "researched" }),
       );
 
       await runPhaseCommand("research", item.id, { force: true }, mockLogger);
 
       expect(mockedRunPhaseResearch).toHaveBeenCalledWith(
         item.id,
-        expect.objectContaining({ force: true })
+        expect.objectContaining({ force: true }),
       );
     });
   });
@@ -314,11 +322,11 @@ describe("runPhaseCommand", () => {
       await setupItem(item);
 
       mockedRunPhaseResearch.mockResolvedValue(
-        createFailureResult(item, "Agent failed")
+        createFailureResult(item, "Agent failed"),
       );
 
       await expect(
-        runPhaseCommand("research", item.id, {}, mockLogger)
+        runPhaseCommand("research", item.id, {}, mockLogger),
       ).rejects.toThrow("Agent failed");
     });
 
@@ -332,7 +340,7 @@ describe("runPhaseCommand", () => {
       });
 
       await expect(
-        runPhaseCommand("research", item.id, {}, mockLogger)
+        runPhaseCommand("research", item.id, {}, mockLogger),
       ).rejects.toThrow("research");
     });
   });
@@ -343,7 +351,7 @@ describe("runPhaseCommand", () => {
       await setupItem(item);
 
       mockedRunPhaseImplement.mockResolvedValue(
-        createSuccessResult({ ...item, state: "implementing" })
+        createSuccessResult({ ...item, state: "implementing" }),
       );
 
       await runPhaseCommand("implement", item.id, {}, mockLogger);
@@ -355,7 +363,7 @@ describe("runPhaseCommand", () => {
       await setupItem(item);
 
       mockedRunPhaseImplement.mockResolvedValue(
-        createSuccessResult({ ...item, state: "implementing" })
+        createSuccessResult({ ...item, state: "implementing" }),
       );
 
       await runPhaseCommand("implement", item.id, {}, mockLogger);

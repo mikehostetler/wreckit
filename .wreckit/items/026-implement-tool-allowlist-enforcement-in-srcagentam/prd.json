@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "id": "026-implement-tool-allowlist-enforcement-in-srcagentam",
+  "branch_name": "wreckit/026-implement-tool-allowlist-enforcement-in-srcagentam",
+  "user_stories": [
+    {
+      "id": "US-001",
+      "title": "Implement Amp SDK runner core execution",
+      "acceptance_criteria": [
+        "runAmpSdkAgent() calls Claude Agent SDK query() function instead of returning stub error",
+        "SDK query receives effective tool allowlist via tools option when getEffectiveToolAllowlist() returns a value",
+        "AbortController is registered with registerSdkController() at start and unregistered in finally block",
+        "Timeout triggers AbortController.abort() after 3600 seconds (default timeout)",
+        "SDK messages stream to onStdoutChunk/onStderrChunk callbacks based on message type",
+        "Environment is built via buildSdkEnv() for credential resolution",
+        "MCP servers are passed to SDK via mcpServers option when provided",
+        "Build succeeds: bun run build compiles without errors",
+        "Existing tests pass: bun test shows no regressions"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Core implementation following claude-sdk-runner.ts pattern. Must import: query from @anthropic-ai/claude-agent-sdk, registerSdkController/unregisterSdkController from runner.js, buildSdkEnv from env.js. Preserve existing getEffectiveToolAllowlist() and dry-run logic."
+    },
+    {
+      "id": "US-002",
+      "title": "Implement error handling for Amp SDK runner",
+      "acceptance_criteria": [
+        "Authentication errors (401, API key, /login) show clear message with credential setup instructions",
+        "Rate limit errors (429, rate limit) show appropriate retry message",
+        "Context/token errors (context, tokens, too large) show task breakdown suggestion",
+        "Network errors (ECONNREFUSED, ENOTFOUND, network) show connection check message",
+        "Generic errors include error message in output",
+        "All errors set success: false and completionDetected: false in AgentResult"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Implement handleSdkError() helper following claude-sdk-runner.ts:114-222 pattern"
+    },
+    {
+      "id": "US-003",
+      "title": "Implement message formatting and event emission",
+      "acceptance_criteria": [
+        "Assistant messages with text blocks emit assistant_text AgentEvent",
+        "Tool_use blocks emit tool_started AgentEvent with toolUseId, toolName, and input",
+        "Tool_result messages emit tool_result AgentEvent with toolUseId and result",
+        "Error messages emit error AgentEvent with message",
+        "Result messages emit run_result AgentEvent with subtype",
+        "formatSdkMessage() converts SDK messages to string output for terminal streaming"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Implement formatSdkMessage() and emitAgentEventsFromSdkMessage() helpers following claude-sdk-runner.ts:224-300 pattern. These enable TUI integration and output streaming."
+    },
+    {
+      "id": "US-004",
+      "title": "Add unit tests for Amp SDK runner",
+      "acceptance_criteria": [
+        "Test file exists at src/__tests__/amp-sdk-runner.test.ts",
+        "Test: dry-run mode returns success without calling SDK",
+        "Test: dry-run logs tool restrictions when allowedTools provided",
+        "Test: explicit allowedTools takes precedence over phase-based allowlist",
+        "Test: falls back to phase-based allowlist when no explicit tools",
+        "Test: no tool restrictions when neither allowedTools nor phase specified",
+        "All tests pass: bun test src/__tests__/amp-sdk-runner.test.ts"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Focus on testable behavior in dry-run mode. Use dynamic import to avoid SDK initialization"
+    },
+    {
+      "id": "US-005",
+      "title": "Update ROADMAP.md to mark Amp SDK as complete",
+      "acceptance_criteria": [
+        "ROADMAP.md line 22 shows [x] for: Implement tool allowlist enforcement in src/agent/amp-sdk-runner.ts",
+        "No markdown formatting errors in ROADMAP.md"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "Documentation update after implementation verified working"
+    }
+  ]
+}

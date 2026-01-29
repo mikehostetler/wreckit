@@ -3,6 +3,7 @@
 You are tasked with creating a detailed implementation plan through thorough analysis. Be skeptical, thorough, and produce a high-quality technical specification.
 
 ## Item Details
+
 - **ID:** {{id}}
 - **Title:** {{title}}
 - **Section:** {{section}}
@@ -12,6 +13,7 @@ You are tasked with creating a detailed implementation plan through thorough ana
 - **Working Directory:** {{item_path}}
 
 ## Research Summary
+
 {{research}}
 
 ## Planning Process
@@ -43,6 +45,7 @@ You are tasked with creating a detailed implementation plan through thorough ana
 ### Step 3: Create User Stories
 
 For each discrete piece of work:
+
 - Clear acceptance criteria
 - Priority (1 = highest)
 - Estimated complexity
@@ -53,30 +56,53 @@ Create TWO files at `{{item_path}}`:
 
 ### 1. plan.md - Detailed Implementation Plan
 
-```markdown
+**CRITICAL:** You MUST use the EXACT section headers below. Do not paraphrase or omit them. The system validates these headers strictly.
+
+Required Headers:
+
+1. `# {{title}} Implementation Plan` (Top-level header)
+2. `## Implementation Plan Title`
+3. `## Overview`
+4. `## Current State`
+5. `## Desired End State`
+6. `## What We're NOT Doing`
+7. `## Implementation Approach`
+8. `## Phases`
+9. `## Testing Strategy`
+
+Structure:
+
+````markdown
 # {{title}} Implementation Plan
 
 ## Implementation Plan Title
+
 [Brief, descriptive title for this implementation plan]
 
 ## Overview
+
 [Brief description of what we're implementing and why]
 
 ## Current State
+
 [What exists now, what's missing, key constraints discovered]
 
 ## Desired End State
+
 [Specification of the desired end state and how to verify it]
 
 ### Key Discoveries:
+
 - [Important finding with file:line reference]
 - [Pattern to follow]
 - [Constraint to work within]
 
 ## What We're NOT Doing
+
 [Explicitly list out-of-scope items to prevent scope creep]
 
 ## Implementation Approach
+
 [High-level strategy and reasoning]
 
 ---
@@ -86,27 +112,32 @@ Create TWO files at `{{item_path}}`:
 ### Phase 1: [Descriptive Name]
 
 #### Overview
+
 [What this phase accomplishes]
 
 #### Changes Required:
 
 ##### 1. [Component/File Group]
+
 **File**: `path/to/file.ext`
 **Changes**: [Summary of changes]
 
 ```[language]
 // Specific code to add/modify
 ```
+````
 
 #### Success Criteria:
 
 ##### Automated Verification:
+
 - [ ] Tests pass: `npm test` or relevant command
 - [ ] Type checking passes: `npm run typecheck`
 - [ ] Linting passes: `npm run lint`
 - [ ] Build succeeds: `npm run build`
 
 ##### Manual Verification:
+
 - [ ] Feature works as expected when tested
 - [ ] No regressions in related features
 - [ ] Edge cases handled correctly
@@ -116,6 +147,7 @@ Create TWO files at `{{item_path}}`:
 ---
 
 ### Phase 2: [Descriptive Name]
+
 [Similar structure...]
 
 ---
@@ -123,22 +155,28 @@ Create TWO files at `{{item_path}}`:
 ## Testing Strategy
 
 ### Unit Tests:
+
 - [What to test]
 - [Key edge cases]
 
 ### Integration Tests:
+
 - [End-to-end scenarios]
 
 ### Manual Testing Steps:
+
 1. [Specific step to verify feature]
 2. [Another verification step]
 
 ## Migration Notes
+
 [If applicable, how to handle existing data/systems]
 
 ## References
+
 - Research: `{{item_path}}/research.md`
 - [Other relevant files with line references]
+
 ```
 
 ### 2. PRD - Structured User Stories
@@ -216,3 +254,4 @@ When you have:
 
 Output the following signal:
 {{completion_signal}}
+```

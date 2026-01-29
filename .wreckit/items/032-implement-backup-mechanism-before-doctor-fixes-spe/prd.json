@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "id": "032-implement-backup-mechanism-before-doctor-fixes-spe",
+  "branch_name": "wreckit/032-implement-backup-mechanism-before-doctor-fixes-spe",
+  "user_stories": [
+    {
+      "id": "US-001",
+      "title": "Update spec 010 to mark Gap 3 as fixed",
+      "acceptance_criteria": [
+        "Gap 3 section in specs/010-doctor.md shows 'FIXED' status with checkmark emoji",
+        "Original text struck through with ~~ markdown",
+        "Implementation details describe backup storage location (.wreckit/backups/<timestamp>/)",
+        "Retention policy documented (keeps last 10 sessions)",
+        "References to source files included (src/fs/backup.ts, src/doctor.ts:588-760)",
+        "Format is consistent with Gap 1 which is already marked as fixed"
+      ],
+      "priority": 1,
+      "status": "pending",
+      "notes": "The backup mechanism is fully implemented. Only spec documentation needs updating. See src/fs/backup.ts (190 lines), src/doctor.ts:588-760, src/__tests__/backup.test.ts (467 lines), src/__tests__/doctor.test.ts:676-929."
+    }
+  ]
+}

@@ -47,19 +47,19 @@ async function wreckitExists(cwd: string): Promise<boolean> {
 
 export async function initCommand(
   options: InitOptions,
-  logger: Logger
+  logger: Logger,
 ): Promise<void> {
   const cwd = options.cwd ?? process.cwd();
   if (!(await isGitRepo(cwd))) {
     throw new NotGitRepoError(
-      "Not a git repository. Run 'git init' first or navigate to a git repository."
+      "Not a git repository. Run 'git init' first or navigate to a git repository.",
     );
   }
 
   if (await wreckitExists(cwd)) {
     if (!options.force) {
       throw new WreckitExistsError(
-        ".wreckit/ already exists. Use --force to overwrite."
+        ".wreckit/ already exists. Use --force to overwrite.",
       );
     }
     logger.warn("Overwriting existing .wreckit/ directory");
@@ -93,9 +93,10 @@ export async function initCommand(
       // .gitignore doesn't exist yet
     }
     if (!gitignoreContent.includes(localConfigPattern)) {
-      const addition = gitignoreContent.endsWith("\n") || gitignoreContent === ""
-        ? `\n# Wreckit local config (may contain secrets)\n${localConfigPattern}\n`
-        : `\n\n# Wreckit local config (may contain secrets)\n${localConfigPattern}\n`;
+      const addition =
+        gitignoreContent.endsWith("\n") || gitignoreContent === ""
+          ? `\n# Wreckit local config (may contain secrets)\n${localConfigPattern}\n`
+          : `\n\n# Wreckit local config (may contain secrets)\n${localConfigPattern}\n`;
       await fs.appendFile(gitignorePath, addition);
       logger.info("Added .wreckit/config.local.json to .gitignore");
     }
@@ -109,5 +110,7 @@ export async function initCommand(
   console.log("  Created prompts/plan.md");
   console.log("  Created prompts/implement.md");
   console.log("");
-  console.log("Tip: Create .wreckit/config.local.json for project-specific env overrides (gitignored)");
+  console.log(
+    "Tip: Create .wreckit/config.local.json for project-specific env overrides (gitignored)",
+  );
 }

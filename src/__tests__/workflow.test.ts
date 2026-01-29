@@ -1,4 +1,13 @@
-import { describe, it, expect, beforeEach, afterEach, mock, spyOn, vi } from "bun:test";
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  mock,
+  spyOn,
+  vi,
+} from "bun:test";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import * as os from "node:os";
@@ -9,11 +18,18 @@ import type { AgentResult } from "../agent/runner";
 // Import real git module for passthrough in mock
 import * as gitModule from "../git";
 
+const mockedRunAgentUnion = vi.fn();
+const mockedGetAgentConfigUnion = vi.fn(
+  (config: ConfigResolved) => config.agent,
+);
+
+// Legacy mocks for any remaining legacy code
 const mockedRunAgent = vi.fn();
 const mockedGetAgentConfig = vi.fn((config: ConfigResolved) => ({
-  command: config.agent.command,
-  args: config.agent.args,
-  completion_signal: config.agent.completion_signal,
+  mode: "sdk",
+  command: "claude",
+  args: [],
+  completion_signal: "<promise>COMPLETE</promise>",
   timeout_seconds: config.timeout_seconds,
   max_iterations: config.max_iterations,
 }));
@@ -21,10 +37,12 @@ const mockedGetAgentConfig = vi.fn((config: ConfigResolved) => ({
 mock.module("../agent/runner", () => ({
   runAgent: mockedRunAgent,
   getAgentConfig: mockedGetAgentConfig,
+  runAgentUnion: mockedRunAgentUnion,
+  getAgentConfigUnion: mockedGetAgentConfigUnion,
 }));
 
 const mockedEnsureBranch = vi.fn(() =>
-  Promise.resolve({ branchName: "wreckit/001-test-feature", created: true })
+  Promise.resolve({ branchName: "wreckit/001-test-feature", created: true }),
 );
 const mockedHasUncommittedChanges = vi.fn(() => Promise.resolve(false));
 const mockedCommitAll = vi.fn(() => Promise.resolve());
@@ -34,7 +52,7 @@ const mockedCreateOrUpdatePr = vi.fn(() =>
     url: "https://github.com/example/repo/pull/42",
     number: 42,
     created: true,
-  })
+  }),
 );
 const mockedIsPrMerged = vi.fn(() => Promise.resolve(true));
 
@@ -49,30 +67,48 @@ const realCheckPrMergeability = gitModule.checkPrMergeability;
 // Default mocks delegate to real implementations - workflow tests override in beforeEach
 // This allows git/index.test.ts to spy on these and have them work correctly
 const mockedGetPrDetails = vi.fn().mockImplementation(realGetPrDetails);
-const mockedCheckMergeConflicts = vi.fn().mockImplementation(realCheckMergeConflicts);
-const mockedCheckPrMergeability = vi.fn().mockImplementation(realCheckPrMergeability);
+const mockedCheckMergeConflicts = vi
+  .fn()
+  .mockImplementation(realCheckMergeConflicts);
+const mockedCheckPrMergeability = vi
+  .fn()
+  .mockImplementation(realCheckPrMergeability);
 const mockedCheckGitPreflight = vi.fn(() =>
-  Promise.resolve({ valid: true, errors: [] })
+  Promise.resolve({ valid: true, errors: [] }),
 );
 const mockedIsGitRepo = vi.fn(() => Promise.resolve(true));
-const mockedGetCurrentBranch = vi.fn(() => Promise.resolve("wreckit/001-test-feature"));
+const mockedGetCurrentBranch = vi.fn(() =>
+  Promise.resolve("wreckit/001-test-feature"),
+);
 const mockedGetBranchSha = vi.fn(() => Promise.resolve("abc123"));
 const mockedMergeAndPushToBase = vi.fn(() => Promise.resolve());
-const mockedValidateRemoteUrl = vi.fn(() => Promise.resolve({ valid: true, actualUrl: "https://github.com/example/repo", errors: [] }));
-const mockedCleanupBranch = vi.fn(() => Promise.resolve({ localDeleted: true, remoteDeleted: true }));
+const mockedValidateRemoteUrl = vi.fn(() =>
+  Promise.resolve({
+    valid: true,
+    actualUrl: "https://github.com/example/repo",
+    errors: [],
+  }),
+);
+const mockedCleanupBranch = vi.fn(() =>
+  Promise.resolve({ localDeleted: true, remoteDeleted: true }),
+);
 // Default to real implementation, workflow tests override in beforeEach
 const realRunPrePushQualityGates = gitModule.runPrePushQualityGates;
-const mockedRunPrePushQualityGates = vi.fn().mockImplementation(realRunPrePushQualityGates);
+const mockedRunPrePushQualityGates = vi
+  .fn()
+  .mockImplementation(realRunPrePushQualityGates);
 // Mock runGitCommand - delegates to real implementation for git status (needed for write containment tests)
 // but returns mock values for other commands (needed for direct mode verification)
-const mockedRunGitCommand = vi.fn().mockImplementation((args: string[], options: any) => {
-  // For git status, use real implementation (needed by compareGitStatus for write containment)
-  if (args[0] === "status" && args[1] === "--porcelain") {
-    return realRunGitCommand(args, options);
-  }
-  // For other commands, return mock success
-  return Promise.resolve({ stdout: "abc123def456", exitCode: 0 });
-});
+const mockedRunGitCommand = vi
+  .fn()
+  .mockImplementation((args: string[], options: any) => {
+    // For git status, use real implementation (needed by compareGitStatus for write containment)
+    if (args[0] === "status" && args[1] === "--porcelain") {
+      return realRunGitCommand(args, options);
+    }
+    // For other commands, return mock success
+    return Promise.resolve({ stdout: "abc123def456", exitCode: 0 });
+  });
 
 mock.module("../git", () => ({
   ensureBranch: mockedEnsureBranch,
@@ -138,10 +174,9 @@ function createTestConfig(): ConfigResolved {
     base_branch: "main",
     branch_prefix: "wreckit/",
     agent: {
-      command: "test-agent",
-      args: [],
-      completion_signal: "<promise>COMPLETE</promise>",
-      mode: "sdk",
+      kind: "claude_sdk",
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 4096,
     },
     max_iterations: 10,
     timeout_seconds: 60,
@@ -237,7 +272,7 @@ interface MockAgentBehavior {
 
 function createMockAgentResult(
   behavior: MockAgentBehavior,
-  itemDir: string
+  itemDir: string,
 ): () => Promise<AgentResult> {
   return async () => {
     if (behavior.createFiles) {
@@ -257,7 +292,7 @@ function createMockAgentResult(
         await fs.writeFile(
           prdPath,
           JSON.stringify(updatedPrd, null, 2),
-          "utf-8"
+          "utf-8",
         );
       } catch {
         // prd doesn't exist yet, ignore
@@ -280,11 +315,13 @@ describe("workflow", () => {
   let config: ConfigResolved;
 
   beforeEach(async () => {
-    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "wreckit-workflow-test-"));
+    tempDir = await fs.mkdtemp(
+      path.join(os.tmpdir(), "wreckit-workflow-test-"),
+    );
     mockLogger = createMockLogger();
     config = createTestConfig();
     vi.clearAllMocks();
-    
+
     // Reset mocks to workflow test defaults (overrides the real implementation passthrough)
     mockedGetPrDetails.mockResolvedValue({
       merged: true,
@@ -296,13 +333,20 @@ describe("workflow", () => {
       checksPassed: true,
     });
     mockedCheckMergeConflicts.mockResolvedValue({ hasConflicts: false });
-    mockedCheckPrMergeability.mockResolvedValue({ mergeable: true, determined: true });
-    mockedRunPrePushQualityGates.mockResolvedValue({ success: true, errors: [], skipped: [] });
+    mockedCheckPrMergeability.mockResolvedValue({
+      mergeable: true,
+      determined: true,
+    });
+    mockedRunPrePushQualityGates.mockResolvedValue({
+      success: true,
+      errors: [],
+      skipped: [],
+    });
   });
 
   afterEach(async () => {
     await fs.rm(tempDir, { recursive: true, force: true });
-    
+
     // Reset mocks to passthrough to real implementations for other test files
     mockedGetPrDetails.mockImplementation(realGetPrDetails);
     mockedCheckMergeConflicts.mockImplementation(realCheckMergeConflicts);
@@ -317,7 +361,7 @@ describe("workflow", () => {
     await fs.writeFile(
       path.join(itemDir, "item.json"),
       JSON.stringify(item, null, 2),
-      "utf-8"
+      "utf-8",
     );
     return itemDir;
   }
@@ -349,7 +393,7 @@ describe("workflow", () => {
       await fs.writeFile(
         path.join(itemDir, "research.md"),
         "# Research",
-        "utf-8"
+        "utf-8",
       );
 
       const ctx = await buildValidationContext(tempDir, item);
@@ -364,7 +408,7 @@ describe("workflow", () => {
       await fs.writeFile(
         path.join(itemDir, "prd.json"),
         JSON.stringify(createTestPrd(), null, 2),
-        "utf-8"
+        "utf-8",
       );
 
       const ctx = await buildValidationContext(tempDir, item);
@@ -458,11 +502,11 @@ The project uses:
 - Should we add tests for the new service immediately?
 `;
 
-      mockedRunAgent.mockImplementation(
+      mockedRunAgentUnion.mockImplementation(
         createMockAgentResult(
           { createFiles: { "research.md": validResearchContent } },
-          itemDir
-        )
+          itemDir,
+        ),
       );
 
       const result = await runPhaseResearch(item.id, {
@@ -493,8 +537,8 @@ The project uses:
       const item = createTestItem({ state: "idea" });
       const itemDir = await setupItem(item);
 
-      mockedRunAgent.mockImplementation(
-        createMockAgentResult({ createFiles: {} }, itemDir)
+      mockedRunAgentUnion.mockImplementation(
+        createMockAgentResult({ createFiles: {} }, itemDir),
       );
 
       const result = await runPhaseResearch(item.id, {
@@ -540,11 +584,11 @@ Write code.
 None.
 `;
 
-      mockedRunAgent.mockImplementation(
+      mockedRunAgentUnion.mockImplementation(
         createMockAgentResult(
           { createFiles: { "research.md": poorResearchContent } },
-          itemDir
-        )
+          itemDir,
+        ),
       );
 
       const result = await runPhaseResearch(item.id, {
@@ -567,11 +611,11 @@ None.
       await fs.writeFile(
         path.join(itemDir, "research.md"),
         "# Research",
-        "utf-8"
+        "utf-8",
       );
 
       const prd = createTestPrd();
-      mockedRunAgent.mockImplementation(
+      mockedRunAgentUnion.mockImplementation(
         createMockAgentResult(
           {
             createFiles: {
@@ -579,8 +623,8 @@ None.
               "prd.json": JSON.stringify(prd, null, 2),
             },
           },
-          itemDir
-        )
+          itemDir,
+        ),
       );
 
       const result = await runPhasePlan(item.id, {
@@ -613,11 +657,11 @@ None.
       await fs.writeFile(
         path.join(itemDir, "research.md"),
         "# Research",
-        "utf-8"
+        "utf-8",
       );
 
-      mockedRunAgent.mockImplementation(
-        createMockAgentResult({ createFiles: {} }, itemDir)
+      mockedRunAgentUnion.mockImplementation(
+        createMockAgentResult({ createFiles: {} }, itemDir),
       );
 
       const result = await runPhasePlan(item.id, {
@@ -636,11 +680,14 @@ None.
       await fs.writeFile(
         path.join(itemDir, "research.md"),
         "# Research",
-        "utf-8"
+        "utf-8",
       );
 
-      mockedRunAgent.mockImplementation(
-        createMockAgentResult({ createFiles: { "plan.md": createTestPlanContent() } }, itemDir)
+      mockedRunAgentUnion.mockImplementation(
+        createMockAgentResult(
+          { createFiles: { "plan.md": createTestPlanContent() } },
+          itemDir,
+        ),
       );
 
       const result = await runPhasePlan(item.id, {
@@ -660,28 +707,49 @@ None.
         await fs.writeFile(
           path.join(itemDir, "research.md"),
           "# Research",
-          "utf-8"
+          "utf-8",
         );
 
         // Initialize git repo for status comparison
         const { spawnSync } = require("node:child_process");
         spawnSync("git", ["init"], { cwd: tempDir, stdio: "ignore" });
-        spawnSync("git", ["config", "user.name", "Test"], { cwd: tempDir, stdio: "ignore" });
-        spawnSync("git", ["config", "user.email", "test@test.com"], { cwd: tempDir, stdio: "ignore" });
+        spawnSync("git", ["config", "user.name", "Test"], {
+          cwd: tempDir,
+          stdio: "ignore",
+        });
+        spawnSync("git", ["config", "user.email", "test@test.com"], {
+          cwd: tempDir,
+          stdio: "ignore",
+        });
         spawnSync("git", ["add", "."], { cwd: tempDir, stdio: "ignore" });
-        spawnSync("git", ["commit", "-m", "initial"], { cwd: tempDir, stdio: "ignore" });
+        spawnSync("git", ["commit", "-m", "initial"], {
+          cwd: tempDir,
+          stdio: "ignore",
+        });
 
         const prd = createTestPrd();
         const wreckitPath = `.wreckit/items/${item.id}`;
 
-        mockedRunAgent.mockImplementation(async () => {
+        mockedRunAgentUnion.mockImplementation(async () => {
           // Create allowed files in item directory
           await fs.mkdir(path.join(tempDir, wreckitPath), { recursive: true });
-          await fs.writeFile(path.join(tempDir, wreckitPath, "plan.md"), createTestPlanContent(), "utf-8");
-          await fs.writeFile(path.join(tempDir, wreckitPath, "prd.json"), JSON.stringify(prd, null, 2), "utf-8");
+          await fs.writeFile(
+            path.join(tempDir, wreckitPath, "plan.md"),
+            createTestPlanContent(),
+            "utf-8",
+          );
+          await fs.writeFile(
+            path.join(tempDir, wreckitPath, "prd.json"),
+            JSON.stringify(prd, null, 2),
+            "utf-8",
+          );
           // Create unauthorized file outside item directory
           await fs.mkdir(path.join(tempDir, "src"), { recursive: true });
-          await fs.writeFile(path.join(tempDir, "src", "unauthorized.ts"), "console.log('unauthorized');", "utf-8");
+          await fs.writeFile(
+            path.join(tempDir, "src", "unauthorized.ts"),
+            "console.log('unauthorized');",
+            "utf-8",
+          );
           return {
             success: true,
             output: "test output",
@@ -709,27 +777,48 @@ None.
         await fs.writeFile(
           path.join(itemDir, "research.md"),
           "# Research",
-          "utf-8"
+          "utf-8",
         );
 
         // Initialize git repo for status comparison
         const { spawnSync } = require("node:child_process");
         spawnSync("git", ["init"], { cwd: tempDir, stdio: "ignore" });
-        spawnSync("git", ["config", "user.name", "Test"], { cwd: tempDir, stdio: "ignore" });
-        spawnSync("git", ["config", "user.email", "test@test.com"], { cwd: tempDir, stdio: "ignore" });
+        spawnSync("git", ["config", "user.name", "Test"], {
+          cwd: tempDir,
+          stdio: "ignore",
+        });
+        spawnSync("git", ["config", "user.email", "test@test.com"], {
+          cwd: tempDir,
+          stdio: "ignore",
+        });
         spawnSync("git", ["add", "."], { cwd: tempDir, stdio: "ignore" });
-        spawnSync("git", ["commit", "-m", "initial"], { cwd: tempDir, stdio: "ignore" });
+        spawnSync("git", ["commit", "-m", "initial"], {
+          cwd: tempDir,
+          stdio: "ignore",
+        });
 
         const prd = createTestPrd();
         const wreckitPath = `.wreckit/items/${item.id}`;
 
-        mockedRunAgent.mockImplementation(async () => {
+        mockedRunAgentUnion.mockImplementation(async () => {
           // Create allowed files in item directory
           await fs.mkdir(path.join(tempDir, wreckitPath), { recursive: true });
-          await fs.writeFile(path.join(tempDir, wreckitPath, "plan.md"), createTestPlanContent(), "utf-8");
-          await fs.writeFile(path.join(tempDir, wreckitPath, "prd.json"), JSON.stringify(prd, null, 2), "utf-8");
+          await fs.writeFile(
+            path.join(tempDir, wreckitPath, "plan.md"),
+            createTestPlanContent(),
+            "utf-8",
+          );
+          await fs.writeFile(
+            path.join(tempDir, wreckitPath, "prd.json"),
+            JSON.stringify(prd, null, 2),
+            "utf-8",
+          );
           // Create unauthorized config file at repo root
-          await fs.writeFile(path.join(tempDir, "config.json"), '{ "setting": "value" }', "utf-8");
+          await fs.writeFile(
+            path.join(tempDir, "config.json"),
+            '{ "setting": "value" }',
+            "utf-8",
+          );
           return {
             success: true,
             output: "test output",
@@ -757,19 +846,28 @@ None.
         await fs.writeFile(
           path.join(itemDir, "research.md"),
           "# Research",
-          "utf-8"
+          "utf-8",
         );
 
         // Initialize git repo for status comparison
         const { spawnSync } = require("node:child_process");
         spawnSync("git", ["init"], { cwd: tempDir, stdio: "ignore" });
-        spawnSync("git", ["config", "user.name", "Test"], { cwd: tempDir, stdio: "ignore" });
-        spawnSync("git", ["config", "user.email", "test@test.com"], { cwd: tempDir, stdio: "ignore" });
+        spawnSync("git", ["config", "user.name", "Test"], {
+          cwd: tempDir,
+          stdio: "ignore",
+        });
+        spawnSync("git", ["config", "user.email", "test@test.com"], {
+          cwd: tempDir,
+          stdio: "ignore",
+        });
         spawnSync("git", ["add", "."], { cwd: tempDir, stdio: "ignore" });
-        spawnSync("git", ["commit", "-m", "initial"], { cwd: tempDir, stdio: "ignore" });
+        spawnSync("git", ["commit", "-m", "initial"], {
+          cwd: tempDir,
+          stdio: "ignore",
+        });
 
         const prd = createTestPrd();
-        mockedRunAgent.mockImplementation(
+        mockedRunAgentUnion.mockImplementation(
           createMockAgentResult(
             {
               createFiles: {
@@ -777,8 +875,8 @@ None.
                 "prd.json": JSON.stringify(prd, null, 2),
               },
             },
-            itemDir
-          )
+            itemDir,
+          ),
         );
 
         const result = await runPhasePlan(item.id, {
@@ -797,7 +895,7 @@ None.
         await fs.writeFile(
           path.join(itemDir, "research.md"),
           "# Research",
-          "utf-8"
+          "utf-8",
         );
 
         // dryRun returns early without running any checks, so agent doesn't need to create files
@@ -817,7 +915,7 @@ None.
         await fs.writeFile(
           path.join(itemDir, "research.md"),
           "# Research",
-          "utf-8"
+          "utf-8",
         );
 
         const result = await runPhasePlan(item.id, {
@@ -841,19 +939,19 @@ None.
       await fs.writeFile(
         path.join(itemDir, "prd.json"),
         JSON.stringify(prd, null, 2),
-        "utf-8"
+        "utf-8",
       );
 
-      mockedRunAgent.mockImplementation(async () => {
+      mockedRunAgentUnion.mockImplementation(async () => {
         const prdPath = path.join(itemDir, "prd.json");
         const currentPrd = JSON.parse(
-          await fs.readFile(prdPath, "utf-8")
+          await fs.readFile(prdPath, "utf-8"),
         ) as Prd;
         currentPrd.user_stories[0].status = "done";
         await fs.writeFile(
           prdPath,
           JSON.stringify(currentPrd, null, 2),
-          "utf-8"
+          "utf-8",
         );
         return {
           success: true,
@@ -871,7 +969,7 @@ None.
       });
 
       expect(result.success).toBe(true);
-      expect(result.item.state).toBe("implementing");
+      expect(result.item.state).toBe("critique");
     });
 
     it("fails when not in planned or implementing state", async () => {
@@ -885,7 +983,7 @@ None.
       });
 
       expect(result.success).toBe(false);
-      expect(result.error?.toLowerCase()).toContain("planned");
+      expect(String(result.error).toLowerCase()).toContain("planned");
     });
 
     it("fails when prd.json missing", async () => {
@@ -899,7 +997,7 @@ None.
       });
 
       expect(result.success).toBe(false);
-      expect(result.error?.toLowerCase()).toContain("prd");
+      expect(String(result.error).toLowerCase()).toContain("prd");
     });
 
     it("updates story status after agent run", async () => {
@@ -909,19 +1007,19 @@ None.
       await fs.writeFile(
         path.join(itemDir, "prd.json"),
         JSON.stringify(prd, null, 2),
-        "utf-8"
+        "utf-8",
       );
 
-      mockedRunAgent.mockImplementation(async () => {
+      mockedRunAgentUnion.mockImplementation(async () => {
         const prdPath = path.join(itemDir, "prd.json");
         const currentPrd = JSON.parse(
-          await fs.readFile(prdPath, "utf-8")
+          await fs.readFile(prdPath, "utf-8"),
         ) as Prd;
         currentPrd.user_stories[0].status = "done";
         await fs.writeFile(
           prdPath,
           JSON.stringify(currentPrd, null, 2),
-          "utf-8"
+          "utf-8",
         );
         return {
           success: true,
@@ -939,9 +1037,7 @@ None.
       });
 
       const prdPath = path.join(itemDir, "prd.json");
-      const updatedPrd = JSON.parse(
-        await fs.readFile(prdPath, "utf-8")
-      ) as Prd;
+      const updatedPrd = JSON.parse(await fs.readFile(prdPath, "utf-8")) as Prd;
       expect(updatedPrd.user_stories[0].status).toBe("done");
     });
 
@@ -952,19 +1048,19 @@ None.
       await fs.writeFile(
         path.join(itemDir, "prd.json"),
         JSON.stringify(prd, null, 2),
-        "utf-8"
+        "utf-8",
       );
 
-      mockedRunAgent.mockImplementation(async () => {
+      mockedRunAgentUnion.mockImplementation(async () => {
         const prdPath = path.join(itemDir, "prd.json");
         const currentPrd = JSON.parse(
-          await fs.readFile(prdPath, "utf-8")
+          await fs.readFile(prdPath, "utf-8"),
         ) as Prd;
         currentPrd.user_stories[0].status = "done";
         await fs.writeFile(
           prdPath,
           JSON.stringify(currentPrd, null, 2),
-          "utf-8"
+          "utf-8",
         );
         return {
           success: true,
@@ -1002,13 +1098,13 @@ None.
       await fs.writeFile(
         path.join(itemDir, "prd.json"),
         JSON.stringify(prd, null, 2),
-        "utf-8"
+        "utf-8",
       );
 
       const limitedConfig = { ...config, max_iterations: 3 };
       let callCount = 0;
 
-      mockedRunAgent.mockImplementation(async () => {
+      mockedRunAgentUnion.mockImplementation(async () => {
         callCount++;
         return {
           success: true,
@@ -1037,10 +1133,10 @@ None.
       await fs.writeFile(
         path.join(itemDir, "prd.json"),
         JSON.stringify(prd, null, 2),
-        "utf-8"
+        "utf-8",
       );
 
-      mockedRunAgent.mockResolvedValue({
+      mockedRunAgentUnion.mockResolvedValue({
         success: false,
         output: "",
         timedOut: true,
@@ -1066,26 +1162,45 @@ None.
         await fs.writeFile(
           path.join(itemDir, "prd.json"),
           JSON.stringify(prd, null, 2),
-          "utf-8"
+          "utf-8",
         );
 
         // Initialize git repo for status comparison
         const { spawnSync } = require("node:child_process");
         spawnSync("git", ["init"], { cwd: tempDir, stdio: "ignore" });
-        spawnSync("git", ["config", "user.name", "Test"], { cwd: tempDir, stdio: "ignore" });
-        spawnSync("git", ["config", "user.email", "test@test.com"], { cwd: tempDir, stdio: "ignore" });
+        spawnSync("git", ["config", "user.name", "Test"], {
+          cwd: tempDir,
+          stdio: "ignore",
+        });
+        spawnSync("git", ["config", "user.email", "test@test.com"], {
+          cwd: tempDir,
+          stdio: "ignore",
+        });
         spawnSync("git", ["add", "."], { cwd: tempDir, stdio: "ignore" });
-        spawnSync("git", ["commit", "-m", "initial"], { cwd: tempDir, stdio: "ignore" });
+        spawnSync("git", ["commit", "-m", "initial"], {
+          cwd: tempDir,
+          stdio: "ignore",
+        });
 
-        mockedRunAgent.mockImplementation(async () => {
+        mockedRunAgentUnion.mockImplementation(async () => {
           // Create source file changes
           await fs.mkdir(path.join(tempDir, "src"), { recursive: true });
-          await fs.writeFile(path.join(tempDir, "src", "feature.ts"), "export const feature = true;", "utf-8");
+          await fs.writeFile(
+            path.join(tempDir, "src", "feature.ts"),
+            "export const feature = true;",
+            "utf-8",
+          );
           // Update PRD to mark story as done
           const prdPath = path.join(itemDir, "prd.json");
-          const currentPrd = JSON.parse(await fs.readFile(prdPath, "utf-8")) as Prd;
+          const currentPrd = JSON.parse(
+            await fs.readFile(prdPath, "utf-8"),
+          ) as Prd;
           currentPrd.user_stories[0].status = "done";
-          await fs.writeFile(prdPath, JSON.stringify(currentPrd, null, 2), "utf-8");
+          await fs.writeFile(
+            prdPath,
+            JSON.stringify(currentPrd, null, 2),
+            "utf-8",
+          );
           return {
             success: true,
             output: "test output",
@@ -1104,7 +1219,10 @@ None.
         expect(result.success).toBe(true);
         // Verify that file changes were logged
         const infoCalls = mockLogger.info.mock.calls;
-        const logEntry = infoCalls.find((call: string[]) => call[0]?.includes("changed") && call[0]?.includes("file"));
+        const logEntry = infoCalls.find(
+          (call: string[]) =>
+            call[0]?.includes("changed") && call[0]?.includes("file"),
+        );
         expect(logEntry).toBeDefined();
         expect(logEntry![0]).toContain("US-001");
         expect(logEntry![0]).toContain("changed");
@@ -1117,25 +1235,44 @@ None.
         await fs.writeFile(
           path.join(itemDir, "prd.json"),
           JSON.stringify(prd, null, 2),
-          "utf-8"
+          "utf-8",
         );
 
         // Initialize git repo for status comparison
         const { spawnSync } = require("node:child_process");
         spawnSync("git", ["init"], { cwd: tempDir, stdio: "ignore" });
-        spawnSync("git", ["config", "user.name", "Test"], { cwd: tempDir, stdio: "ignore" });
-        spawnSync("git", ["config", "user.email", "test@test.com"], { cwd: tempDir, stdio: "ignore" });
+        spawnSync("git", ["config", "user.name", "Test"], {
+          cwd: tempDir,
+          stdio: "ignore",
+        });
+        spawnSync("git", ["config", "user.email", "test@test.com"], {
+          cwd: tempDir,
+          stdio: "ignore",
+        });
         spawnSync("git", ["add", "."], { cwd: tempDir, stdio: "ignore" });
-        spawnSync("git", ["commit", "-m", "initial"], { cwd: tempDir, stdio: "ignore" });
+        spawnSync("git", ["commit", "-m", "initial"], {
+          cwd: tempDir,
+          stdio: "ignore",
+        });
 
-        mockedRunAgent.mockImplementation(async () => {
+        mockedRunAgentUnion.mockImplementation(async () => {
           // Modify wreckit system file (config.json at root level)
-          await fs.writeFile(path.join(tempDir, ".wreckit", "config.json"), '{ "modified": true }', "utf-8");
+          await fs.writeFile(
+            path.join(tempDir, ".wreckit", "config.json"),
+            '{ "modified": true }',
+            "utf-8",
+          );
           // Update PRD to mark story as done
           const prdPath = path.join(itemDir, "prd.json");
-          const currentPrd = JSON.parse(await fs.readFile(prdPath, "utf-8")) as Prd;
+          const currentPrd = JSON.parse(
+            await fs.readFile(prdPath, "utf-8"),
+          ) as Prd;
           currentPrd.user_stories[0].status = "done";
-          await fs.writeFile(prdPath, JSON.stringify(currentPrd, null, 2), "utf-8");
+          await fs.writeFile(
+            prdPath,
+            JSON.stringify(currentPrd, null, 2),
+            "utf-8",
+          );
           return {
             success: true,
             output: "test output",
@@ -1154,7 +1291,9 @@ None.
         expect(result.success).toBe(true);
         // Verify that warning was logged for wreckit system file modification
         const warnCalls = mockLogger.warn.mock.calls;
-        const warnEntry = warnCalls.find((call: string[]) => call[0]?.includes("wreckit system files"));
+        const warnEntry = warnCalls.find((call: string[]) =>
+          call[0]?.includes("wreckit system files"),
+        );
         expect(warnEntry).toBeDefined();
         expect(warnEntry![0]).toContain("US-001");
         expect(warnEntry![0]).toContain("wreckit system files");
@@ -1167,25 +1306,44 @@ None.
         await fs.writeFile(
           path.join(itemDir, "prd.json"),
           JSON.stringify(prd, null, 2),
-          "utf-8"
+          "utf-8",
         );
 
         // Initialize git repo for status comparison
         const { spawnSync } = require("node:child_process");
         spawnSync("git", ["init"], { cwd: tempDir, stdio: "ignore" });
-        spawnSync("git", ["config", "user.name", "Test"], { cwd: tempDir, stdio: "ignore" });
-        spawnSync("git", ["config", "user.email", "test@test.com"], { cwd: tempDir, stdio: "ignore" });
+        spawnSync("git", ["config", "user.name", "Test"], {
+          cwd: tempDir,
+          stdio: "ignore",
+        });
+        spawnSync("git", ["config", "user.email", "test@test.com"], {
+          cwd: tempDir,
+          stdio: "ignore",
+        });
         spawnSync("git", ["add", "."], { cwd: tempDir, stdio: "ignore" });
-        spawnSync("git", ["commit", "-m", "initial"], { cwd: tempDir, stdio: "ignore" });
+        spawnSync("git", ["commit", "-m", "initial"], {
+          cwd: tempDir,
+          stdio: "ignore",
+        });
 
-        mockedRunAgent.mockImplementation(async () => {
+        mockedRunAgentUnion.mockImplementation(async () => {
           // Create file within item directory (allowed)
-          await fs.writeFile(path.join(itemDir, "notes.md"), "# Story notes", "utf-8");
+          await fs.writeFile(
+            path.join(itemDir, "notes.md"),
+            "# Story notes",
+            "utf-8",
+          );
           // Update PRD to mark story as done
           const prdPath = path.join(itemDir, "prd.json");
-          const currentPrd = JSON.parse(await fs.readFile(prdPath, "utf-8")) as Prd;
+          const currentPrd = JSON.parse(
+            await fs.readFile(prdPath, "utf-8"),
+          ) as Prd;
           currentPrd.user_stories[0].status = "done";
-          await fs.writeFile(prdPath, JSON.stringify(currentPrd, null, 2), "utf-8");
+          await fs.writeFile(
+            prdPath,
+            JSON.stringify(currentPrd, null, 2),
+            "utf-8",
+          );
           return {
             success: true,
             output: "test output",
@@ -1204,7 +1362,9 @@ None.
         expect(result.success).toBe(true);
         // Verify no warning for wreckit system files (changes are within item directory)
         const warnCalls = mockLogger.warn.mock.calls;
-        const warnEntry = warnCalls.find((call: string[]) => call[0]?.includes("wreckit system files"));
+        const warnEntry = warnCalls.find((call: string[]) =>
+          call[0]?.includes("wreckit system files"),
+        );
         expect(warnEntry).toBeUndefined();
       });
 
@@ -1215,19 +1375,28 @@ None.
         await fs.writeFile(
           path.join(itemDir, "prd.json"),
           JSON.stringify(prd, null, 2),
-          "utf-8"
+          "utf-8",
         );
 
         // Initialize git repo
         const { spawnSync } = require("node:child_process");
         spawnSync("git", ["init"], { cwd: tempDir, stdio: "ignore" });
-        spawnSync("git", ["config", "user.name", "Test"], { cwd: tempDir, stdio: "ignore" });
-        spawnSync("git", ["config", "user.email", "test@test.com"], { cwd: tempDir, stdio: "ignore" });
+        spawnSync("git", ["config", "user.name", "Test"], {
+          cwd: tempDir,
+          stdio: "ignore",
+        });
+        spawnSync("git", ["config", "user.email", "test@test.com"], {
+          cwd: tempDir,
+          stdio: "ignore",
+        });
         spawnSync("git", ["add", "."], { cwd: tempDir, stdio: "ignore" });
-        spawnSync("git", ["commit", "-m", "initial"], { cwd: tempDir, stdio: "ignore" });
+        spawnSync("git", ["commit", "-m", "initial"], {
+          cwd: tempDir,
+          stdio: "ignore",
+        });
 
         // Mock agent to do nothing (simulating mockAgent mode behavior)
-        mockedRunAgent.mockResolvedValue({
+        mockedRunAgentUnion.mockResolvedValue({
           success: true,
           output: "test output",
           timedOut: false,
@@ -1245,7 +1414,10 @@ None.
         expect(result.success).toBe(true);
         // In mockAgent mode, git status tracking should be skipped (no "changed" logs)
         const infoCalls = mockLogger.info.mock.calls;
-        const logEntry = infoCalls.find((call: string[]) => call[0]?.includes("changed") && call[0]?.includes("file"));
+        const logEntry = infoCalls.find(
+          (call: string[]) =>
+            call[0]?.includes("changed") && call[0]?.includes("file"),
+        );
         expect(logEntry).toBeUndefined();
       });
 
@@ -1256,19 +1428,28 @@ None.
         await fs.writeFile(
           path.join(itemDir, "prd.json"),
           JSON.stringify(prd, null, 2),
-          "utf-8"
+          "utf-8",
         );
 
         // Initialize git repo
         const { spawnSync } = require("node:child_process");
         spawnSync("git", ["init"], { cwd: tempDir, stdio: "ignore" });
-        spawnSync("git", ["config", "user.name", "Test"], { cwd: tempDir, stdio: "ignore" });
-        spawnSync("git", ["config", "user.email", "test@test.com"], { cwd: tempDir, stdio: "ignore" });
+        spawnSync("git", ["config", "user.name", "Test"], {
+          cwd: tempDir,
+          stdio: "ignore",
+        });
+        spawnSync("git", ["config", "user.email", "test@test.com"], {
+          cwd: tempDir,
+          stdio: "ignore",
+        });
         spawnSync("git", ["add", "."], { cwd: tempDir, stdio: "ignore" });
-        spawnSync("git", ["commit", "-m", "initial"], { cwd: tempDir, stdio: "ignore" });
+        spawnSync("git", ["commit", "-m", "initial"], {
+          cwd: tempDir,
+          stdio: "ignore",
+        });
 
         // Mock agent to do nothing
-        mockedRunAgent.mockResolvedValue({
+        mockedRunAgentUnion.mockResolvedValue({
           success: true,
           output: "test output",
           timedOut: false,
@@ -1286,7 +1467,10 @@ None.
         expect(result.success).toBe(true);
         // In dryRun mode, git status tracking should be skipped (no "changed" logs)
         const infoCalls = mockLogger.info.mock.calls;
-        const logEntry = infoCalls.find((call: string[]) => call[0]?.includes("changed") && call[0]?.includes("file"));
+        const logEntry = infoCalls.find(
+          (call: string[]) =>
+            call[0]?.includes("changed") && call[0]?.includes("file"),
+        );
         expect(logEntry).toBeUndefined();
       });
     });
@@ -1295,12 +1479,12 @@ None.
   describe("runPhasePr", () => {
     it("fails when not all stories done", async () => {
       const prd = createTestPrd();
-      const item = createTestItem({ state: "implementing" });
+      const item = createTestItem({ state: "critique" });
       const itemDir = await setupItem(item);
       await fs.writeFile(
         path.join(itemDir, "prd.json"),
         JSON.stringify(prd, null, 2),
-        "utf-8"
+        "utf-8",
       );
 
       const result = await runPhasePr(item.id, {
@@ -1310,7 +1494,7 @@ None.
       });
 
       expect(result.success).toBe(false);
-      expect(result.error?.toLowerCase()).toContain("not all stories");
+      expect(String(result.error).toLowerCase()).toContain("not all stories");
     });
 
     it("succeeds when all stories done (stubbed)", async () => {
@@ -1326,12 +1510,12 @@ None.
           },
         ],
       });
-      const item = createTestItem({ state: "implementing" });
+      const item = createTestItem({ state: "critique" });
       const itemDir = await setupItem(item);
       await fs.writeFile(
         path.join(itemDir, "prd.json"),
         JSON.stringify(prd, null, 2),
-        "utf-8"
+        "utf-8",
       );
 
       const result = await runPhasePr(item.id, {
@@ -1359,12 +1543,12 @@ None.
             },
           ],
         });
-        const item = createTestItem({ state: "implementing" });
+        const item = createTestItem({ state: "critique" });
         const itemDir = await setupItem(item);
         await fs.writeFile(
           path.join(itemDir, "prd.json"),
           JSON.stringify(prd, null, 2),
-          "utf-8"
+          "utf-8",
         );
 
         // Track the call count to simulate behavior changes after commit
@@ -1377,7 +1561,9 @@ None.
         });
 
         // Preflight passes because it runs AFTER commit now
-        mockedCheckGitPreflight.mockReturnValue(Promise.resolve({ valid: true, errors: [] }));
+        mockedCheckGitPreflight.mockReturnValue(
+          Promise.resolve({ valid: true, errors: [] }),
+        );
 
         const result = await runPhasePr(item.id, {
           root: tempDir,
@@ -1392,7 +1578,7 @@ None.
         // Verify that commit was called (auto-commit happened)
         expect(mockedCommitAll).toHaveBeenCalledWith(
           `feat(001-test-feature): implement ${item.title}`,
-          expect.any(Object)
+          expect.any(Object),
         );
       });
 
@@ -1409,12 +1595,12 @@ None.
             },
           ],
         });
-        const item = createTestItem({ state: "implementing" });
+        const item = createTestItem({ state: "critique" });
         const itemDir = await setupItem(item);
         await fs.writeFile(
           path.join(itemDir, "prd.json"),
           JSON.stringify(prd, null, 2),
-          "utf-8"
+          "utf-8",
         );
 
         // No uncommitted changes
@@ -1446,12 +1632,12 @@ None.
             },
           ],
         });
-        const item = createTestItem({ state: "implementing" });
+        const item = createTestItem({ state: "critique" });
         const itemDir = await setupItem(item);
         await fs.writeFile(
           path.join(itemDir, "prd.json"),
           JSON.stringify(prd, null, 2),
-          "utf-8"
+          "utf-8",
         );
 
         // Simulate uncommitted changes
@@ -1459,7 +1645,9 @@ None.
 
         // Preflight should be called AFTER auto-commit, so it should pass
         // (since after commit there are no uncommitted changes)
-        mockedCheckGitPreflight.mockReturnValue(Promise.resolve({ valid: true, errors: [] }));
+        mockedCheckGitPreflight.mockReturnValue(
+          Promise.resolve({ valid: true, errors: [] }),
+        );
 
         const result = await runPhasePr(item.id, {
           root: tempDir,
@@ -1618,7 +1806,9 @@ None.
 
       expect(result.success).toBe(true);
       expect(mockLogger.warn).toHaveBeenCalledWith(
-        expect.stringContaining("PR head branch some-other-branch differs from expected")
+        expect.stringContaining(
+          "PR head branch some-other-branch differs from expected",
+        ),
       );
     });
 
@@ -1650,7 +1840,7 @@ None.
       expect(result.success).toBe(true); // Still succeeds
       expect(result.item.checks_passed).toBe(false);
       expect(mockLogger.warn).toHaveBeenCalledWith(
-        expect.stringContaining("CI checks did not pass")
+        expect.stringContaining("CI checks did not pass"),
       );
     });
   });
@@ -1671,8 +1861,13 @@ None.
       expect(getNextPhase(item)).toBe("implement");
     });
 
-    it("implementing -> 'pr'", () => {
+    it("implementing -> 'critique'", () => {
       const item = createTestItem({ state: "implementing" });
+      expect(getNextPhase(item)).toBe("critique");
+    });
+
+    it("critique -> 'pr'", () => {
+      const item = createTestItem({ state: "critique" });
       expect(getNextPhase(item)).toBe("pr");
     });
 
@@ -1701,16 +1896,20 @@ None.
           },
         ],
       });
-      const item = createTestItem({ state: "implementing" });
+      const item = createTestItem({ state: "critique" });
       const itemDir = await setupItem(item);
       await fs.writeFile(
         path.join(itemDir, "prd.json"),
         JSON.stringify(prd, null, 2),
-        "utf-8"
+        "utf-8",
       );
 
       // Config with direct mode but WITHOUT allow_unsafe_direct_merge
-      const directConfig = { ...config, merge_mode: "direct" as const, pr_checks: { ...config.pr_checks, allow_unsafe_direct_merge: false } };
+      const directConfig = {
+        ...config,
+        merge_mode: "direct" as const,
+        pr_checks: { ...config.pr_checks, allow_unsafe_direct_merge: false },
+      };
 
       const result = await runPhasePr(item.id, {
         root: tempDir,
@@ -1737,16 +1936,20 @@ None.
           },
         ],
       });
-      const item = createTestItem({ state: "implementing" });
+      const item = createTestItem({ state: "critique" });
       const itemDir = await setupItem(item);
       await fs.writeFile(
         path.join(itemDir, "prd.json"),
         JSON.stringify(prd, null, 2),
-        "utf-8"
+        "utf-8",
       );
 
       // Config with direct mode AND allow_unsafe_direct_merge
-      const directConfig = { ...config, merge_mode: "direct" as const, pr_checks: { ...config.pr_checks, allow_unsafe_direct_merge: true } };
+      const directConfig = {
+        ...config,
+        merge_mode: "direct" as const,
+        pr_checks: { ...config.pr_checks, allow_unsafe_direct_merge: true },
+      };
 
       const result = await runPhasePr(item.id, {
         root: tempDir,
@@ -1773,16 +1976,20 @@ None.
           },
         ],
       });
-      const item = createTestItem({ state: "implementing" });
+      const item = createTestItem({ state: "critique" });
       const itemDir = await setupItem(item);
       await fs.writeFile(
         path.join(itemDir, "prd.json"),
         JSON.stringify(prd, null, 2),
-        "utf-8"
+        "utf-8",
       );
 
       // Config with direct mode AND allow_unsafe_direct_merge
-      const directConfig = { ...config, merge_mode: "direct" as const, pr_checks: { ...config.pr_checks, allow_unsafe_direct_merge: true } };
+      const directConfig = {
+        ...config,
+        merge_mode: "direct" as const,
+        pr_checks: { ...config.pr_checks, allow_unsafe_direct_merge: true },
+      };
 
       await runPhasePr(item.id, {
         root: tempDir,
@@ -1792,7 +1999,9 @@ None.
 
       // Should log a warning about direct mode risks
       const warnCalls = mockLogger.warn.mock.calls;
-      const warnEntry = warnCalls.find((call: string[]) => call[0]?.includes("DIRECT MERGE MODE"));
+      const warnEntry = warnCalls.find((call: string[]) =>
+        call[0]?.includes("DIRECT MERGE MODE"),
+      );
       expect(warnEntry).toBeDefined();
       expect(warnEntry![0]).toContain("bypasses PR review");
     });
@@ -1810,16 +2019,20 @@ None.
           },
         ],
       });
-      const item = createTestItem({ state: "implementing" });
+      const item = createTestItem({ state: "critique" });
       const itemDir = await setupItem(item);
       await fs.writeFile(
         path.join(itemDir, "prd.json"),
         JSON.stringify(prd, null, 2),
-        "utf-8"
+        "utf-8",
       );
 
       // Config with direct mode AND allow_unsafe_direct_merge
-      const directConfig = { ...config, merge_mode: "direct" as const, pr_checks: { ...config.pr_checks, allow_unsafe_direct_merge: true } };
+      const directConfig = {
+        ...config,
+        merge_mode: "direct" as const,
+        pr_checks: { ...config.pr_checks, allow_unsafe_direct_merge: true },
+      };
 
       await runPhasePr(item.id, {
         root: tempDir,
@@ -1828,7 +2041,10 @@ None.
       });
 
       // Verify that getBranchSha was called to capture rollback anchor
-      expect(mockedGetBranchSha).toHaveBeenCalledWith("main", expect.any(Object));
+      expect(mockedGetBranchSha).toHaveBeenCalledWith(
+        "main",
+        expect.any(Object),
+      );
 
       // Verify rollback SHA is saved to item
       const updatedItem = await readItemState(item.id);
@@ -1848,12 +2064,12 @@ None.
           },
         ],
       });
-      const item = createTestItem({ state: "implementing" });
+      const item = createTestItem({ state: "critique" });
       const itemDir = await setupItem(item);
       await fs.writeFile(
         path.join(itemDir, "prd.json"),
         JSON.stringify(prd, null, 2),
-        "utf-8"
+        "utf-8",
       );
 
       const directConfig = {
@@ -1874,7 +2090,7 @@ None.
       expect(mockedCleanupBranch).toHaveBeenCalledWith(
         "wreckit/001-test-feature",
         "main",
-        expect.objectContaining({ deleteRemote: true })
+        expect.objectContaining({ deleteRemote: true }),
       );
     });
 
@@ -1891,12 +2107,12 @@ None.
           },
         ],
       });
-      const item = createTestItem({ state: "implementing" });
+      const item = createTestItem({ state: "critique" });
       const itemDir = await setupItem(item);
       await fs.writeFile(
         path.join(itemDir, "prd.json"),
         JSON.stringify(prd, null, 2),
-        "utf-8"
+        "utf-8",
       );
 
       const directConfig = {
@@ -1954,7 +2170,7 @@ None.
       expect(mockedCleanupBranch).toHaveBeenCalledWith(
         "wreckit/001-test-feature",
         "main",
-        expect.objectContaining({ deleteRemote: true })
+        expect.objectContaining({ deleteRemote: true }),
       );
     });
 
@@ -2028,7 +2244,7 @@ None.
       expect(mockedCleanupBranch).toHaveBeenCalledWith(
         "wreckit/001-test-feature",
         "main",
-        expect.objectContaining({ deleteRemote: false })
+        expect.objectContaining({ deleteRemote: false }),
       );
     });
   });

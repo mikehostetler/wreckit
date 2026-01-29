@@ -25,7 +25,7 @@ function extractTitle(rawTitle: string): string {
 
 export async function listCommand(
   options: ListOptions,
-  _logger: Logger
+  _logger: Logger,
 ): Promise<void> {
   const root = findRootFromOptions(options);
   const allItems = await buildIdMap(root);
@@ -51,19 +51,20 @@ export async function listCommand(
   }
 
   const stateWidth = Math.max(5, ...items.map((i) => i.state.length));
-  
+
   const cleanItems = items.map((i) => ({
     ...i,
     cleanTitle: extractTitle(i.title),
   }));
-  
+
   const header = `${"#".padStart(3)}  ${"STATE".padEnd(stateWidth)}  TITLE`;
   console.log(header);
 
   for (const item of cleanItems) {
-    const displayTitle = item.cleanTitle.length > 60 
-      ? item.cleanTitle.substring(0, 57) + "..."
-      : item.cleanTitle;
+    const displayTitle =
+      item.cleanTitle.length > 60
+        ? item.cleanTitle.substring(0, 57) + "..."
+        : item.cleanTitle;
     const line = `${String(item.shortId).padStart(3)}  ${item.state.padEnd(stateWidth)}  ${displayTitle}`;
     console.log(line);
   }

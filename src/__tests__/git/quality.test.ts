@@ -46,6 +46,8 @@ describe("git/quality", () => {
           commands: [],
           secret_scan: false,
           require_all_stories_done: true,
+          allow_unsafe_direct_merge: false,
+          allowed_remote_patterns: [],
         },
       });
 
@@ -63,6 +65,8 @@ describe("git/quality", () => {
           commands: [],
           secret_scan: false,
           require_all_stories_done: true,
+          allow_unsafe_direct_merge: false,
+          allowed_remote_patterns: [],
         },
       });
 
@@ -79,6 +83,8 @@ describe("git/quality", () => {
           commands: ["echo test"],
           secret_scan: false,
           require_all_stories_done: true,
+          allow_unsafe_direct_merge: false,
+          allowed_remote_patterns: [],
         },
       });
 
@@ -98,7 +104,9 @@ describe("git/quality", () => {
       const result = gitModule.scanForSecrets(diff);
 
       expect(result.found).toBe(true);
-      expect(result.secrets.some(s => s.pattern === "Private key")).toBe(true);
+      expect(result.secrets.some((s) => s.pattern === "Private key")).toBe(
+        true,
+      );
     });
 
     it("detects AWS access keys", () => {
@@ -108,7 +116,9 @@ describe("git/quality", () => {
       const result = gitModule.scanForSecrets(diff);
 
       expect(result.found).toBe(true);
-      expect(result.secrets.some(s => s.pattern === "AWS access key")).toBe(true);
+      expect(result.secrets.some((s) => s.pattern === "AWS access key")).toBe(
+        true,
+      );
     });
 
     it("detects GitHub personal access tokens", () => {
@@ -118,7 +128,11 @@ describe("git/quality", () => {
       const result = gitModule.scanForSecrets(diff);
 
       expect(result.found).toBe(true);
-      expect(result.secrets.some(s => s.pattern === "GitHub personal access token")).toBe(true);
+      expect(
+        result.secrets.some(
+          (s) => s.pattern === "GitHub personal access token",
+        ),
+      ).toBe(true);
     });
 
     it("detects GitHub PAT new format", () => {
@@ -128,7 +142,11 @@ describe("git/quality", () => {
       const result = gitModule.scanForSecrets(diff);
 
       expect(result.found).toBe(true);
-      expect(result.secrets.some(s => s.pattern === "GitHub personal access token")).toBe(true);
+      expect(
+        result.secrets.some(
+          (s) => s.pattern === "GitHub personal access token",
+        ),
+      ).toBe(true);
     });
 
     it("detects Slack tokens", () => {
@@ -138,7 +156,9 @@ describe("git/quality", () => {
       const result = gitModule.scanForSecrets(diff);
 
       expect(result.found).toBe(true);
-      expect(result.secrets.some(s => s.pattern === "Slack token")).toBe(true);
+      expect(result.secrets.some((s) => s.pattern === "Slack token")).toBe(
+        true,
+      );
     });
 
     it("detects passwords in assignments", () => {
@@ -148,7 +168,9 @@ describe("git/quality", () => {
       const result = gitModule.scanForSecrets(diff);
 
       expect(result.found).toBe(true);
-      expect(result.secrets.some(s => s.pattern === "Password in assignment")).toBe(true);
+      expect(
+        result.secrets.some((s) => s.pattern === "Password in assignment"),
+      ).toBe(true);
     });
 
     it("detects API keys in assignments", () => {
@@ -158,7 +180,9 @@ describe("git/quality", () => {
       const result = gitModule.scanForSecrets(diff);
 
       expect(result.found).toBe(true);
-      expect(result.secrets.some(s => s.pattern === "API key in assignment")).toBe(true);
+      expect(
+        result.secrets.some((s) => s.pattern === "API key in assignment"),
+      ).toBe(true);
     });
 
     it("does not flag removed lines", () => {
@@ -182,7 +206,9 @@ describe("git/quality", () => {
 
       expect(result.found).toBe(true);
       // Should flag the actual added line, not the +++ metadata
-      const flaggedLines = result.secrets.filter(s => s.line?.startsWith("+++"));
+      const flaggedLines = result.secrets.filter((s) =>
+        s.line?.startsWith("+++"),
+      );
       expect(flaggedLines).toHaveLength(0);
     });
 
@@ -213,7 +239,9 @@ describe("git/quality", () => {
       const result = gitModule.scanForSecrets(diff);
 
       expect(result.found).toBe(true);
-      expect(result.secrets.some(s => s.pattern === "Bearer token")).toBe(true);
+      expect(result.secrets.some((s) => s.pattern === "Bearer token")).toBe(
+        true,
+      );
     });
 
     it("includes line numbers in results", () => {
@@ -228,7 +256,7 @@ line 3`;
     });
 
     it("truncates long lines", () => {
-      const longLine = "+const password = \"" + "x".repeat(200) + "\";";
+      const longLine = '+const password = "' + "x".repeat(200) + '";';
       const diff = longLine;
 
       const result = gitModule.scanForSecrets(diff);

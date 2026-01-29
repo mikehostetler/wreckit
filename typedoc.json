@@ -1,0 +1,13 @@
+{
+  "entryPoints": [
+    "src/index.ts",
+    "src/doctor.ts",
+    "src/commands/geneticist.ts",
+    "src/commands/dream.ts",
+    "src/agent/runner.ts"
+  ],
+  "out": "docs/api",
+  "plugin": ["typedoc-plugin-markdown"],
+  "cleanOutputDir": true,
+  "readme": "none"
+}

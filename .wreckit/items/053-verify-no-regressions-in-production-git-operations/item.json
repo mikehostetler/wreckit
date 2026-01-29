@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "id": "053-verify-no-regressions-in-production-git-operations",
+  "title": "Verify no regressions in production git operations",
+  "section": "roadmap",
+  "state": "idea",
+  "overview": "From milestone [M1] Complete Git Integration Test Fix\n\n**Motivation:** Strategic milestone: Complete Git Integration Test Fix",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-26T19:51:07.550Z",
+  "updated_at": "2026-01-26T19:51:07.550Z",
+  "motivation": "Strategic milestone: Complete Git Integration Test Fix",
+  "depends_on": [
+    "052-document-git-behavior-in-nested-repository-environ"
+  ],
+  "campaign": "M1"
+}

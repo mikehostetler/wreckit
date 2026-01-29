@@ -25,13 +25,13 @@ Agent capabilities must be scoped to the current phase. The ideas phase requires
 
 ### Guardrails Required
 
-| Guardrail | Purpose |
-|-----------|---------|
-| **Tool Allowlisting** | Restrict available tools per phase |
-| **Working Directory** | Agent runs in item directory, not repo root |
-| **Timeout Enforcement** | Prevent runaway agents |
-| **Completion Detection** | Verify agent finished successfully |
-| **MCP Tool Validation** | Schema-validate all tool call payloads |
+| Guardrail                | Purpose                                     |
+| ------------------------ | ------------------------------------------- |
+| **Tool Allowlisting**    | Restrict available tools per phase          |
+| **Working Directory**    | Agent runs in item directory, not repo root |
+| **Timeout Enforcement**  | Prevent runaway agents                      |
+| **Completion Detection** | Verify agent finished successfully          |
+| **MCP Tool Validation**  | Schema-validate all tool call payloads      |
 
 ### Current Gap
 
@@ -45,19 +45,20 @@ Wreckit supports multiple agent backends via a discriminated union config.
 
 ### Agent Kinds
 
-| Kind | Description | Status |
-|------|-------------|--------|
-| `process` | Spawn external CLI (amp, claude) | Stable |
-| `claude_sdk` | Claude Agent SDK direct | Stable |
-| `amp_sdk` | Amp SDK | Experimental |
-| `codex_sdk` | OpenAI Codex SDK | Experimental |
-| `opencode_sdk` | OpenCode SDK | Experimental |
+| Kind           | Description                      | Status       |
+| -------------- | -------------------------------- | ------------ |
+| `process`      | Spawn external CLI (amp, claude) | Stable       |
+| `claude_sdk`   | Claude Agent SDK direct          | Stable       |
+| `amp_sdk`      | Amp SDK                          | Experimental |
+| `codex_sdk`    | OpenAI Codex SDK                 | Experimental |
+| `opencode_sdk` | OpenCode SDK                     | Experimental |
 
 ### Process Mode
 
 Spawns an external agent CLI as a subprocess.
 
 **Configuration:**
+
 ```json
 {
   "agent": {
@@ -70,6 +71,7 @@ Spawns an external agent CLI as a subprocess.
 ```
 
 **Behavior:**
+
 1. Spawn process with `stdio: ["pipe", "pipe", "pipe"]`
 2. Write prompt to stdin, close stdin
 3. Stream stdout/stderr
@@ -81,6 +83,7 @@ Spawns an external agent CLI as a subprocess.
 Uses Claude Agent SDK directly for better integration.
 
 **Configuration:**
+
 ```json
 {
   "agent": {
@@ -92,6 +95,7 @@ Uses Claude Agent SDK directly for better integration.
 ```
 
 **Behavior:**
+
 1. Create SDK client with environment credentials
 2. Execute query with prompt and MCP servers
 3. Stream events to TUI
@@ -110,34 +114,36 @@ Custom MCP tools provide structured data capture from agents.
 
 ### Available Tools
 
-| Tool | Phase | Purpose |
-|------|-------|---------|
+| Tool                   | Phase             | Purpose                                    |
+| ---------------------- | ----------------- | ------------------------------------------ |
 | `save_interview_ideas` | Ideas (interview) | Capture structured ideas from conversation |
-| `save_parsed_ideas` | Ideas (document) | Parse ideas from piped input |
-| `save_prd` | Plan | Save PRD with user stories |
-| `update_story_status` | Implement | Mark a story as done |
+| `save_parsed_ideas`    | Ideas (document)  | Parse ideas from piped input               |
+| `save_prd`             | Plan              | Save PRD with user stories                 |
+| `update_story_status`  | Implement         | Mark a story as done                       |
 
 ### Tool Schemas
 
 **save_interview_ideas / save_parsed_ideas:**
+
 ```typescript
 {
   ideas: Array<{
-    title: string,              // Required, <60 chars
-    description: string,        // Required
-    problemStatement?: string,
-    motivation?: string,
-    successCriteria?: string[],
-    technicalConstraints?: string[],
-    scope?: { inScope?: string[], outOfScope?: string[] },
-    priorityHint?: "low" | "medium" | "high" | "critical",
-    urgencyHint?: string,
-    suggestedSection?: string
-  }>
+    title: string; // Required, <60 chars
+    description: string; // Required
+    problemStatement?: string;
+    motivation?: string;
+    successCriteria?: string[];
+    technicalConstraints?: string[];
+    scope?: { inScope?: string[]; outOfScope?: string[] };
+    priorityHint?: "low" | "medium" | "high" | "critical";
+    urgencyHint?: string;
+    suggestedSection?: string;
+  }>;
 }
 ```
 
 **save_prd:**
+
 ```typescript
 {
   prd: {
@@ -157,6 +163,7 @@ Custom MCP tools provide structured data capture from agents.
 ```
 
 **update_story_status:**
+
 ```typescript
 {
   story_id: string,             // e.g., "US-001"
@@ -170,11 +177,19 @@ The MCP server is created with callback handlers:
 
 ```typescript
 createWreckitMcpServer({
-  onInterviewIdeas: (ideas) => { /* capture ideas */ },
-  onParsedIdeas: (ideas) => { /* capture ideas */ },
-  onSavePrd: (prd) => { /* save prd.json */ },
-  onUpdateStoryStatus: (storyId, status) => { /* update prd.json */ },
-})
+  onInterviewIdeas: (ideas) => {
+    /* capture ideas */
+  },
+  onParsedIdeas: (ideas) => {
+    /* capture ideas */
+  },
+  onSavePrd: (prd) => {
+    /* save prd.json */
+  },
+  onUpdateStoryStatus: (storyId, status) => {
+    /* update prd.json */
+  },
+});
 ```
 
 ---
@@ -185,12 +200,12 @@ createWreckitMcpServer({
 
 The ideas phase uses strict tool restrictions:
 
-| Allowed | Blocked |
-|---------|---------|
-| `save_interview_ideas` | Read, Write, Edit |
-| `save_parsed_ideas` | Bash, Shell |
-| | Grep, Glob, Search |
-| | All other filesystem tools |
+| Allowed                | Blocked                    |
+| ---------------------- | -------------------------- |
+| `save_interview_ideas` | Read, Write, Edit          |
+| `save_parsed_ideas`    | Bash, Shell                |
+|                        | Grep, Glob, Search         |
+|                        | All other filesystem tools |
 
 **Enforcement:** The `allowedTools` option restricts which tools the agent can call. Tool calls outside the allowlist are blocked.
 
@@ -211,27 +226,29 @@ Research, Plan, Implement, and PR phases allow full tool access. The agent is tr
 
 ### Template Variables
 
-| Variable | Description |
-|----------|-------------|
-| `{{id}}` | Item ID |
-| `{{title}}` | Item title |
-| `{{section}}` | Item section/category |
-| `{{overview}}` | Item description |
-| `{{item_path}}` | Absolute path to item directory |
-| `{{branch_name}}` | Git branch name |
-| `{{base_branch}}` | Base branch (e.g., `main`) |
-| `{{completion_signal}}` | Agent completion signal |
-| `{{research}}` | Contents of research.md |
-| `{{plan}}` | Contents of plan.md |
-| `{{prd}}` | Contents of prd.json |
-| `{{progress}}` | Contents of progress.log |
-| `{{sdk_mode}}` | Whether running in SDK mode |
+| Variable                | Description                     |
+| ----------------------- | ------------------------------- |
+| `{{id}}`                | Item ID                         |
+| `{{title}}`             | Item title                      |
+| `{{section}}`           | Item section/category           |
+| `{{overview}}`          | Item description                |
+| `{{item_path}}`         | Absolute path to item directory |
+| `{{branch_name}}`       | Git branch name                 |
+| `{{base_branch}}`       | Base branch (e.g., `main`)      |
+| `{{completion_signal}}` | Agent completion signal         |
+| `{{research}}`          | Contents of research.md         |
+| `{{plan}}`              | Contents of plan.md             |
+| `{{prd}}`               | Contents of prd.json            |
+| `{{progress}}`          | Contents of progress.log        |
+| `{{sdk_mode}}`          | Whether running in SDK mode     |
 
 ### Conditionals
 
 ```markdown
 {{#if research}}
+
 ## Research Findings
+
 {{research}}
 {{/if}}
 ```
@@ -258,21 +275,21 @@ Completion is determined by SDK event stream ending without error.
 
 ### Failure Modes
 
-| Condition | Behavior |
-|-----------|----------|
-| Signal not detected | Phase fails |
-| Agent times out | Phase fails with timeout error |
-| Agent exits non-zero | Phase fails |
-| SDK error | Falls back to process mode |
+| Condition            | Behavior                       |
+| -------------------- | ------------------------------ |
+| Signal not detected  | Phase fails                    |
+| Agent times out      | Phase fails with timeout error |
+| Agent exits non-zero | Phase fails                    |
+| SDK error            | Falls back to process mode     |
 
 ---
 
 ## Timeout and Limits
 
-| Setting | Default | Description |
-|---------|---------|-------------|
-| `timeout_seconds` | 3600 | Per-phase agent timeout |
-| `max_iterations` | 100 | Max story iterations (implement phase) |
+| Setting           | Default | Description                            |
+| ----------------- | ------- | -------------------------------------- |
+| `timeout_seconds` | 3600    | Per-phase agent timeout                |
+| `max_iterations`  | 100     | Max story iterations (implement phase) |
 
 ### Timeout Behavior
 
@@ -285,13 +302,13 @@ Completion is determined by SDK event stream ending without error.
 
 ## Error Handling
 
-| Error Condition | Behavior | Recovery |
-|-----------------|----------|----------|
-| Agent spawn fails | Phase fails immediately | Check command path |
-| Agent timeout | Phase fails, process killed | Increase timeout or simplify task |
-| Tool call rejected | Error surfaced to agent | Agent may retry |
-| MCP schema validation fails | Tool call fails | Agent may retry with valid payload |
-| SDK auth failure | Falls back to process mode | Check ANTHROPIC_API_KEY |
+| Error Condition             | Behavior                    | Recovery                           |
+| --------------------------- | --------------------------- | ---------------------------------- |
+| Agent spawn fails           | Phase fails immediately     | Check command path                 |
+| Agent timeout               | Phase fails, process killed | Increase timeout or simplify task  |
+| Tool call rejected          | Error surfaced to agent     | Agent may retry                    |
+| MCP schema validation fails | Tool call fails             | Agent may retry with valid payload |
+| SDK auth failure            | Falls back to process mode  | Check ANTHROPIC_API_KEY            |
 
 ---
 
@@ -299,11 +316,11 @@ Completion is determined by SDK event stream ending without error.
 
 ### SDK Mode
 
-| Variable | Purpose |
-|----------|---------|
-| `ANTHROPIC_API_KEY` | API authentication |
-| `ANTHROPIC_BASE_URL` | Custom API endpoint (e.g., Zai) |
-| `ANTHROPIC_AUTH_TOKEN` | Alternative auth for proxy |
+| Variable               | Purpose                         |
+| ---------------------- | ------------------------------- |
+| `ANTHROPIC_API_KEY`    | API authentication              |
+| `ANTHROPIC_BASE_URL`   | Custom API endpoint (e.g., Zai) |
+| `ANTHROPIC_AUTH_TOKEN` | Alternative auth for proxy      |
 
 ### Resolution Order
 
@@ -326,27 +343,27 @@ For testing, `--mock-agent` simulates agent responses:
 
 ## Implementation Status
 
-| Feature | Status | Notes |
-|---------|--------|-------|
-| **Process mode** | ✅ Implemented | See `src/agent/runner.ts` |
-| **Claude SDK mode** | ✅ Implemented | See `src/agent/claude-sdk-runner.ts` |
-| **Amp SDK mode** | ✅ Implemented | See `src/agent/amp-sdk-runner.ts` |
-| **Codex SDK mode** | 🔶 Experimental | See `src/agent/codex-sdk-runner.ts` |
-| **OpenCode SDK mode** | 🔶 Experimental | See `src/agent/opencode-sdk-runner.ts` |
-| **MCP server** | ✅ Implemented | See `src/agent/mcp/wreckitMcpServer.ts` |
-| **Tool: save_interview_ideas** | ✅ Implemented | Ideas phase |
-| **Tool: save_parsed_ideas** | ✅ Implemented | Ideas phase |
-| **Tool: save_prd** | ✅ Implemented | Plan phase |
-| **Tool: update_story_status** | ✅ Implemented | Implement phase |
-| **Tool allowlisting** | ✅ Implemented | See `src/agent/toolAllowlist.ts` |
-| **Per-phase tool restrictions** | ✅ Implemented | All phases have allowlists |
-| **Prompt rendering** | ✅ Implemented | See `src/prompts.ts` |
-| **Template variables** | ✅ Implemented | All variables in spec |
-| **Conditionals** | ✅ Implemented | `{{#if var}}...{{/if}}` syntax |
-| **Completion detection** | ✅ Implemented | Signal-based for process, event-based for SDK |
-| **Timeout enforcement** | ✅ Implemented | Configurable `timeout_seconds` |
-| **Environment variable resolution** | ✅ Implemented | See `src/agent/env.ts` |
-| **Mock agent** | ✅ Implemented | `--mock-agent` flag |
+| Feature                             | Status          | Notes                                         |
+| ----------------------------------- | --------------- | --------------------------------------------- |
+| **Process mode**                    | ✅ Implemented  | See `src/agent/runner.ts`                     |
+| **Claude SDK mode**                 | ✅ Implemented  | See `src/agent/claude-sdk-runner.ts`          |
+| **Amp SDK mode**                    | ✅ Implemented  | See `src/agent/amp-sdk-runner.ts`             |
+| **Codex SDK mode**                  | 🔶 Experimental | See `src/agent/codex-sdk-runner.ts`           |
+| **OpenCode SDK mode**               | 🔶 Experimental | See `src/agent/opencode-sdk-runner.ts`        |
+| **MCP server**                      | ✅ Implemented  | See `src/agent/mcp/wreckitMcpServer.ts`       |
+| **Tool: save_interview_ideas**      | ✅ Implemented  | Ideas phase                                   |
+| **Tool: save_parsed_ideas**         | ✅ Implemented  | Ideas phase                                   |
+| **Tool: save_prd**                  | ✅ Implemented  | Plan phase                                    |
+| **Tool: update_story_status**       | ✅ Implemented  | Implement phase                               |
+| **Tool allowlisting**               | ✅ Implemented  | See `src/agent/toolAllowlist.ts`              |
+| **Per-phase tool restrictions**     | ✅ Implemented  | All phases have allowlists                    |
+| **Prompt rendering**                | ✅ Implemented  | See `src/prompts.ts`                          |
+| **Template variables**              | ✅ Implemented  | All variables in spec                         |
+| **Conditionals**                    | ✅ Implemented  | `{{#if var}}...{{/if}}` syntax                |
+| **Completion detection**            | ✅ Implemented  | Signal-based for process, event-based for SDK |
+| **Timeout enforcement**             | ✅ Implemented  | Configurable `timeout_seconds`                |
+| **Environment variable resolution** | ✅ Implemented  | See `src/agent/env.ts`                        |
+| **Mock agent**                      | ✅ Implemented  | `--mock-agent` flag                           |
 
 ---
 
@@ -357,6 +374,7 @@ For testing, `--mock-agent` simulates agent responses:
 ~~Tool allowlisting is only enforced for the ideas phase.~~
 
 **Status:** Fixed - All phases now have tool allowlists. See `src/agent/toolAllowlist.ts`:
+
 - `idea`: MCP tools only
 - `research`: Read, Glob, Grep (read-only)
 - `plan`: Read, Write, Edit, Glob, Grep, save_prd

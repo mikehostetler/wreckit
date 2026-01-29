@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "id": "087-dreamer-standardize-error-handling-in-rlm-tools-fi",
+  "title": "[DREAMER] Standardize error handling in RLM tools file operations",
+  "state": "idea",
+  "overview": "The RLM tools contain extensive comments (lines 102-174) discussing the trade-offs between local and remote file operations. The code has a TODO comment and shows evidence of multiple refactoring attempts. The current strategy uses local FS with bi-directional sync, but the comments suggest this may not be ideal.\n\n**Motivation:** Clear, consistent file operation strategy is critical for RLM reliability. The extensive comments and TODO indicate this is a source of confusion or technical debt. A clean, well-documented implementation would reduce maintenance burden and prevent bugs.\n\n**Success criteria:**\n- Resolve TODO comment at line 102\n- Remove or consolidate extensive comment discussion\n- Document the chosen strategy (local vs remote) clearly\n- Ensure Read/Write tools are consistent in their approach\n- Add error handling for sync failures\n\n**Technical constraints:**\n- Depends on the Sprite VM sync mechanism\n- Must maintain compatibility with existing RLM workflows\n- Changes must not break remote execution\n\n**In scope:**\n- src/agent/rlm-tools.ts:102 TODO comment\n- src/agent/rlm-tools.ts:137-167 Write tool implementation\n- src/agent/rlm-tools.ts:172-174 Read tool override\n- Documentation of the chosen file operation strategy\n**Out of scope:**\n- Refactoring the entire RLM architecture\n- Changes to the Sprite sync mechanism\n\n**Signals:** priority: medium, urgency: Technical debt - confusing implementation with TODO",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-28T15:35:06.947Z",
+  "updated_at": "2026-01-28T15:35:06.947Z",
+  "problem_statement": "The RLM tools contain extensive comments (lines 102-174) discussing the trade-offs between local and remote file operations. The code has a TODO comment and shows evidence of multiple refactoring attempts. The current strategy uses local FS with bi-directional sync, but the comments suggest this may not be ideal.",
+  "motivation": "Clear, consistent file operation strategy is critical for RLM reliability. The extensive comments and TODO indicate this is a source of confusion or technical debt. A clean, well-documented implementation would reduce maintenance burden and prevent bugs.",
+  "success_criteria": [
+    "Resolve TODO comment at line 102",
+    "Remove or consolidate extensive comment discussion",
+    "Document the chosen strategy (local vs remote) clearly",
+    "Ensure Read/Write tools are consistent in their approach",
+    "Add error handling for sync failures"
+  ],
+  "technical_constraints": [
+    "Depends on the Sprite VM sync mechanism",
+    "Must maintain compatibility with existing RLM workflows",
+    "Changes must not break remote execution"
+  ],
+  "scope_in_scope": [
+    "src/agent/rlm-tools.ts:102 TODO comment",
+    "src/agent/rlm-tools.ts:137-167 Write tool implementation",
+    "src/agent/rlm-tools.ts:172-174 Read tool override",
+    "Documentation of the chosen file operation strategy"
+  ],
+  "scope_out_of_scope": [
+    "Refactoring the entire RLM architecture",
+    "Changes to the Sprite sync mechanism"
+  ],
+  "priority_hint": "medium",
+  "urgency_hint": "Technical debt - confusing implementation with TODO"
+}

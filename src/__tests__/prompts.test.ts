@@ -41,7 +41,13 @@ describe("loadPromptTemplate", () => {
   });
 
   it("works for all template names", async () => {
-    const names: PromptName[] = ["research", "plan", "implement", "ideas", "pr"];
+    const names: PromptName[] = [
+      "research",
+      "plan",
+      "implement",
+      "ideas",
+      "pr",
+    ];
 
     for (const name of names) {
       const result = await loadPromptTemplate(tempDir, name);
@@ -74,7 +80,9 @@ describe("renderPrompt", () => {
     const template = "{{title}} in {{section}} on branch {{branch_name}}";
     const result = renderPrompt(template, baseVariables);
 
-    expect(result).toBe("Dark Mode Support in features on branch wreckit/001-dark-mode");
+    expect(result).toBe(
+      "Dark Mode Support in features on branch wreckit/001-dark-mode",
+    );
   });
 
   it("replaces same variable multiple times", () => {
@@ -82,7 +90,7 @@ describe("renderPrompt", () => {
     const result = renderPrompt(template, baseVariables);
 
     expect(result).toBe(
-      "ID: features/001-dark-mode, again: features/001-dark-mode, once more: features/001-dark-mode"
+      "ID: features/001-dark-mode, again: features/001-dark-mode, once more: features/001-dark-mode",
     );
   });
 
@@ -103,7 +111,7 @@ describe("renderPrompt", () => {
     const result = renderPrompt(template, variables);
 
     expect(result).toBe(
-      "Research:\n# Research findings\nSome content\n\nPlan:\n# Implementation plan\nStep 1..."
+      "Research:\n# Research findings\nSome content\n\nPlan:\n# Implementation plan\nStep 1...",
     );
   });
 
@@ -117,7 +125,7 @@ describe("renderPrompt", () => {
     const result = renderPrompt(template, variables);
 
     expect(result).toBe(
-      "Title: Fix $100 bug & <html> issues\nOverview: Handle regex patterns like /\\w+/ and {brackets}"
+      "Title: Fix $100 bug & <html> issues\nOverview: Handle regex patterns like /\\w+/ and {brackets}",
     );
   });
 
@@ -125,7 +133,9 @@ describe("renderPrompt", () => {
     const template = "Known: {{id}}, Unknown: {{unknown_var}}";
     const result = renderPrompt(template, baseVariables);
 
-    expect(result).toBe("Known: features/001-dark-mode, Unknown: {{unknown_var}}");
+    expect(result).toBe(
+      "Known: features/001-dark-mode, Unknown: {{unknown_var}}",
+    );
   });
 });
 
@@ -133,7 +143,9 @@ describe("initPromptTemplates", () => {
   let tempDir: string;
 
   beforeEach(async () => {
-    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "wreckit-init-prompts-test-"));
+    tempDir = await fs.mkdtemp(
+      path.join(os.tmpdir(), "wreckit-init-prompts-test-"),
+    );
   });
 
   afterEach(async () => {
@@ -160,23 +172,38 @@ describe("initPromptTemplates", () => {
     expect(files).toContain("ideas.md");
     expect(files).toContain("pr.md");
 
-    const researchContent = await fs.readFile(path.join(promptsDir, "research.md"), "utf-8");
+    const researchContent = await fs.readFile(
+      path.join(promptsDir, "research.md"),
+      "utf-8",
+    );
     const defaultResearch = await getDefaultTemplate("research");
     expect(researchContent).toBe(defaultResearch);
 
-    const planContent = await fs.readFile(path.join(promptsDir, "plan.md"), "utf-8");
+    const planContent = await fs.readFile(
+      path.join(promptsDir, "plan.md"),
+      "utf-8",
+    );
     const defaultPlan = await getDefaultTemplate("plan");
     expect(planContent).toBe(defaultPlan);
 
-    const implementContent = await fs.readFile(path.join(promptsDir, "implement.md"), "utf-8");
+    const implementContent = await fs.readFile(
+      path.join(promptsDir, "implement.md"),
+      "utf-8",
+    );
     const defaultImplement = await getDefaultTemplate("implement");
     expect(implementContent).toBe(defaultImplement);
 
-    const ideasContent = await fs.readFile(path.join(promptsDir, "ideas.md"), "utf-8");
+    const ideasContent = await fs.readFile(
+      path.join(promptsDir, "ideas.md"),
+      "utf-8",
+    );
     const defaultIdeas = await getDefaultTemplate("ideas");
     expect(ideasContent).toBe(defaultIdeas);
 
-    const prContent = await fs.readFile(path.join(promptsDir, "pr.md"), "utf-8");
+    const prContent = await fs.readFile(
+      path.join(promptsDir, "pr.md"),
+      "utf-8",
+    );
     const defaultPr = await getDefaultTemplate("pr");
     expect(prContent).toBe(defaultPr);
   });
@@ -189,10 +216,16 @@ describe("initPromptTemplates", () => {
 
     await initPromptTemplates(tempDir);
 
-    const researchContent = await fs.readFile(path.join(promptsDir, "research.md"), "utf-8");
+    const researchContent = await fs.readFile(
+      path.join(promptsDir, "research.md"),
+      "utf-8",
+    );
     expect(researchContent).toBe(customContent);
 
-    const planContent = await fs.readFile(path.join(promptsDir, "plan.md"), "utf-8");
+    const planContent = await fs.readFile(
+      path.join(promptsDir, "plan.md"),
+      "utf-8",
+    );
     const defaultPlan = await getDefaultTemplate("plan");
     expect(planContent).toBe(defaultPlan);
   });

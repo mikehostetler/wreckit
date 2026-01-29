@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "id": "021-implement-progress-persistence-for-batch-operation",
+  "title": "Implement progress persistence for batch operations (spec 009 Gap 2)",
+  "section": "roadmap",
+  "state": "done",
+  "overview": "From milestone [M3] Robust Error Handling and Recovery\n\n**Motivation:** Strategic milestone: Robust Error Handling and Recovery",
+  "branch": null,
+  "pr_url": "https://github.com/jmanhype/wreckit/pull/4",
+  "pr_number": 4,
+  "last_error": null,
+  "created_at": "2026-01-24T14:10:12.332Z",
+  "updated_at": "2026-01-24T15:55:00.000Z",
+  "motivation": "Strategic milestone: Robust Error Handling and Recovery",
+  "campaign": "M3"
+}

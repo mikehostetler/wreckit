@@ -1,0 +1,169 @@
+{
+  "schema_version": 1,
+  "id": "080-sandbox-diagnostics-cleanup",
+  "branch_name": "wreckit/080-sandbox-diagnostics-cleanup",
+  "user_stories": [
+    {
+      "id": "US-080-001",
+      "title": "Add Sprite CLI availability diagnostic check",
+      "acceptance_criteria": [
+        "When Sprite agent is configured in config.json, doctor checks if wispPath exists and is executable",
+        "If CLI is not found, returns SPRITE_CLI_MISSING error diagnostic with fixable=false",
+        "If CLI exists but is not executable, returns SPRITE_CLI_NOT_EXECUTABLE error diagnostic with fixable=false",
+        "If Sprite is not configured, returns SPRITE_NOT_CONFIGURED info diagnostic",
+        "Diagnostic messages include helpful instructions (installation URL, config file location)",
+        "Check uses fs.access() with X_OK flag to verify executable permission"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Non-fixable diagnostic - user must install Sprite CLI manually. Implement diagnoseSpriteCLI() in src/doctor.ts following existing diagnostic function pattern."
+    },
+    {
+      "id": "US-080-002",
+      "title": "Add Sprite authentication diagnostic check",
+      "acceptance_criteria": [
+        "When Sprite agent is configured, doctor checks if SPRITES_TOKEN is available",
+        "Token resolution follows precedence: config.token → SPRITES_TOKEN env var → ~/.claude/settings.json",
+        "If token is not found, returns SPRITE_TOKEN_MISSING warning diagnostic with fixable=false",
+        "Diagnostic message explains all three token configuration options",
+        "If Sprite is not configured, skip this diagnostic (already handled by SPRITE_NOT_CONFIGURED)",
+        "Uses buildSpriteEnv() from src/agent/env.ts to check token presence"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Non-fixable diagnostic - user must configure token manually. MVP checks token presence only, not validity (validation requires API call). Implement diagnoseSpriteAuth() in src/doctor.ts."
+    },
+    {
+      "id": "US-080-003",
+      "title": "Integrate Sprite diagnostics into doctor workflow",
+      "acceptance_criteria": [
+        "diagnose() function loads config to check if Sprite agent is configured",
+        "If agent.kind === 'sprite', runs all Sprite diagnostic checks in order: CLI, auth, VMs",
+        "If Sprite not configured, only runs SPRITE_NOT_CONFIGURED check, skips others",
+        "Sprite diagnostics run after existing diagnostics (config, prompts) but before item checks",
+        "Passes Sprite config to all diagnostic functions (avoid reloading config multiple times)",
+        "Creates simple logger for VM detection (suppresses debug logs, shows errors)"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Integration point in src/doctor.ts:610 (diagnose function). Load config once using loadConfig() from src/config.ts, then pass to Sprite diagnostic functions."
+    },
+    {
+      "id": "US-080-004",
+      "title": "Add orphaned VM detection diagnostic check",
+      "acceptance_criteria": [
+        "Queries Sprite CLI using listSprites() to get all running VMs",
+        "Filters for VMs matching pattern /^wreckit-sandbox-\\d{3}-\\d+$/ (Wreckit ephemeral VMs)",
+        "Checks VM age using created_at timestamp (or assumes orphan if timestamp missing)",
+        "Only flags VMs older than 1 hour (60 minutes) as orphaned to avoid race conditions",
+        "Returns ORPHANED_VM_DETECTED warning diagnostic for each orphaned VM with fixable=true",
+        "Diagnostic message includes VM name and human-readable age (e.g., '2 hours old')",
+        "If no orphans found but Wreckit VMs exist, returns SPRITE_VMS_HEALTHY info diagnostic",
+        "Handles Sprite CLI failures gracefully (returns warning diagnostic instead of error)"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Fixable diagnostic - automated cleanup in US-080-006. Age threshold prevents killing recently started VMs. VM naming convention from src/agent/sprite-runner.ts:142-147. Implement diagnoseOrphanedVMs() in src/doctor.ts."
+    },
+    {
+      "id": "US-080-005",
+      "title": "Verify WispSpriteInfo interface includes created_at field",
+      "acceptance_criteria": [
+        "WispSpriteInfo interface in src/agent/sprite-core.ts includes created_at?: string field",
+        "Field is optional (some Sprite CLI versions may not return it)",
+        "Field contains ISO timestamp string of VM creation time",
+        "Field is used by diagnoseOrphanedVMs() for age calculation",
+        "If field is missing from actual Sprite CLI output, VMs are skipped gracefully"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Check if created_at field already exists in WispSpriteInfo interface (src/agent/sprite-core.ts:48-55). If not, add it as optional field. Run Sprite CLI manually to verify actual output structure: 'sprite list --json'. This is a prerequisite for US-080-004."
+    },
+    {
+      "id": "US-080-006",
+      "title": "Implement automated orphaned VM cleanup in applyFixes",
+      "acceptance_criteria": [
+        "applyFixes() handles ORPHANED_VM_DETECTED diagnostic code",
+        "Parses VM name from diagnostic message using regex: /Orphaned VM '([^']+)'/",
+        "Calls killSprite() with parsed VM name and loaded config",
+        "Returns fix result with fixed=true on success, message includes VM name",
+        "Returns fix result with fixed=false on failure, message includes error",
+        "No backup session created (VMs are ephemeral, no state to preserve)",
+        "Loads config using loadConfig() to get Sprite agent configuration",
+        "Handles killSprite() errors gracefully (catch block, return fixed=false)"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "No backup needed - VMs are ephemeral by design. Add case handler in applyFixes() switch statement (src/doctor.ts:655-843). Requires importing killSprite from sprite-core. Pattern follows existing fix handlers (INDEX_STALE, STATE_FILE_MISMATCH)."
+    },
+    {
+      "id": "US-080-007",
+      "title": "Add unit tests for Sprite CLI diagnostics",
+      "acceptance_criteria": [
+        "Test suite covers diagnoseSpriteCLI() function",
+        "Test returns info diagnostic when Sprite not configured",
+        "Test returns SPRITE_CLI_MISSING when wispPath not found (ENOENT)",
+        "Test returns SPRITE_CLI_NOT_EXECUTABLE when file exists but not executable",
+        "Test returns empty diagnostics when CLI is accessible",
+        "Uses mocking for fs.access() to control test conditions",
+        "All tests pass with npm test"
+      ],
+      "priority": 4,
+      "status": "done",
+      "notes": "Add describe('diagnoseSpriteCLI') suite in src/__tests__/doctor.test.ts. Mock fs module using test framework mocking capabilities. Follow existing test patterns in the file (create tempDir, write config files, test edge cases)."
+    },
+    {
+      "id": "US-080-008",
+      "title": "Add unit tests for Sprite authentication diagnostics",
+      "acceptance_criteria": [
+        "Test suite covers diagnoseSpriteAuth() function",
+        "Test returns empty diagnostics when Sprite not configured",
+        "Test returns SPRITE_TOKEN_MISSING when token not configured",
+        "Test returns empty diagnostics when token is in config.json",
+        "Test returns empty diagnostics when SPRITES_TOKEN env var is set",
+        "Test token resolution priority (config > env > settings)",
+        "All tests pass with npm test"
+      ],
+      "priority": 4,
+      "status": "done",
+      "notes": "Add describe('diagnoseSpriteAuth') suite in src/__tests__/doctor.test.ts. Mock buildSpriteEnv or control environment variables using process.env manipulation. Clean up env vars in afterEach."
+    },
+    {
+      "id": "US-080-009",
+      "title": "Add unit tests for orphaned VM detection",
+      "acceptance_criteria": [
+        "Test suite covers diagnoseOrphanedVMs() function",
+        "Test returns empty diagnostics when Sprite not configured",
+        "Test returns empty diagnostics when Sprite CLI fails (graceful degradation)",
+        "Test detects orphaned VMs older than 1 hour threshold",
+        "Test does NOT flag VMs younger than 1 hour (safety check)",
+        "Test does NOT flag non-wreckit VMs (pattern matching)",
+        "Test does NOT flag stopped VMs (only running VMs)",
+        "Test handles VMs without created_at timestamp (skip gracefully)",
+        "Test handles multiple orphaned VMs (each gets separate diagnostic)",
+        "Uses mocking for listSprites() to return controlled test data",
+        "All tests pass with npm test"
+      ],
+      "priority": 4,
+      "status": "done",
+      "notes": "Add describe('diagnoseOrphanedVMs') suite in src/__tests__/doctor.test.ts. Mock listSprites from sprite-core using test framework. Test data should include: old wreckit VM (flag), recent wreckit VM (skip), non-wreckit VM (skip), stopped VM (skip), VM without timestamp (skip)."
+    },
+    {
+      "id": "US-080-010",
+      "title": "Add unit tests for orphaned VM cleanup in applyFixes",
+      "acceptance_criteria": [
+        "Test suite covers ORPHANED_VM_DETECTED case in applyFixes()",
+        "Test successfully terminates orphaned VM when killSprite() succeeds",
+        "Test returns fixed=true with success message including VM name",
+        "Test handles failure when killSprite() throws error",
+        "Test returns fixed=false with error message on failure",
+        "Test calls killSprite() with correct VM name from diagnostic",
+        "Uses mocking for killSprite() to verify calls",
+        "All tests pass with npm test"
+      ],
+      "priority": 4,
+      "status": "done",
+      "notes": "Add tests inside existing describe('applyFixes') suite in src/__tests__/doctor.test.ts. Mock killSprite using test framework. Create test diagnostic with proper message format. Verify both success and failure paths."
+    }
+  ]
+}

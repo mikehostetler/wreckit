@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "session_id": "2026-01-28T08-49-39-282Z",
+  "created_at": "2026-01-28T08:49:40.201Z",
+  "reason": "doctor-fix",
+  "files": [
+    {
+      "original_path": ".wreckit/items/048-dreamer-replace-direct-console-calls-with-structur/prd.json",
+      "backup_path": "items/048-dreamer-replace-direct-console-calls-with-structur/prd.json",
+      "operation": "modified",
+      "diagnostic_code": "PRD_MISSING_BRANCH_NAME",
+      "item_id": "048-dreamer-replace-direct-console-calls-with-structur"
+    },
+    {
+      "original_path": ".wreckit/items/048-dreamer-replace-direct-console-calls-with-structur/prd.json",
+      "backup_path": "items/048-dreamer-replace-direct-console-calls-with-structur/prd.json",
+      "operation": "modified",
+      "diagnostic_code": "PRD_INVALID_PRIORITY",
+      "item_id": "048-dreamer-replace-direct-console-calls-with-structur"
+    },
+    {
+      "original_path": ".wreckit/items/086-fix-axai-glm-47-prompt-compatibility/prd.json",
+      "backup_path": "items/086-fix-axai-glm-47-prompt-compatibility/prd.json",
+      "operation": "modified",
+      "diagnostic_code": "PRD_INVALID_PRIORITY",
+      "item_id": "086-fix-axai-glm-47-prompt-compatibility"
+    }
+  ]
+}

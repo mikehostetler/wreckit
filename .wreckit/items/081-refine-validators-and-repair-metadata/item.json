@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "id": "081-refine-validators-and-repair-metadata",
+  "title": "Refine Validators & Implement Metadata Auto-Repair",
+  "section": "infrastructure",
+  "state": "done",
+  "overview": "Refine strict validation logic to accept valid ID patterns and implement automated repair for PRD schema violations. This ensures `wreckit doctor` reports accurate health status and can self-heal corrupted metadata.",
+  "problem_statement": "Currently, `wreckit doctor` reports numerous warnings for valid data (e.g., scoped Story IDs) and errors for missing fields in legacy items. Manual repair is tedious, and false positives reduce trust in the doctor tool.",
+  "motivation": "To achieve a 'Green' doctor state, enabling reliable self-diagnosis and paving the way for advanced features that rely on structured metadata.",
+  "success_criteria": [
+    "Validator accepts `US-{item}-{seq}` style IDs (e.g., US-073-001)",
+    "`wreckit doctor --fix` automatically populates missing `id`, `branch_name` in PRDs",
+    "`wreckit doctor --fix` clamps invalid priorities to [1, 4]",
+    "`wreckit doctor` reports 0 warnings/errors for the current codebase"
+  ],
+  "technical_constraints": [
+    "Must be backward compatible with existing simple IDs",
+    "Must safely infer missing data (e.g., branch name from item ID)"
+  ],
+  "scope_in_scope": [
+    "src/domain/validation.ts",
+    "src/doctor.ts",
+    "src/schemas.ts"
+  ],
+  "scope_out_of_scope": [
+    "Complex schema migration (v1 -> v2)"
+  ],
+  "priority_hint": "medium",
+  "urgency_hint": "Technical debt cleanup",
+  "branch": "wreckit/081-refine-validators-and-repair-metadata",
+  "pr_url": "https://github.com/jmanhype/wreckit/pull/37",
+  "pr_number": 37,
+  "last_error": null,
+  "created_at": "2026-01-28T07:00:00.000Z",
+  "updated_at": "2026-01-28T08:00:00.000Z"
+}

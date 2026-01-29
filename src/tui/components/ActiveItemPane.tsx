@@ -8,8 +8,12 @@ interface ActiveItemPaneProps {
   width: number;
 }
 
-export function ActiveItemPane({ state, width }: ActiveItemPaneProps): React.ReactElement {
-  const { currentItem, currentPhase, currentIteration, maxIterations, items } = state;
+export function ActiveItemPane({
+  state,
+  width,
+}: ActiveItemPaneProps): React.ReactElement {
+  const { currentItem, currentPhase, currentIteration, maxIterations, items } =
+    state;
 
   if (!currentItem) {
     return (
@@ -24,7 +28,7 @@ export function ActiveItemPane({ state, width }: ActiveItemPaneProps): React.Rea
   const activeState = currentPhase ?? item?.state ?? "unknown";
 
   const workflowLine = WORKFLOW_STATES.map((s) =>
-    s === activeState ? `[${s}]` : s
+    s === activeState ? `[${s}]` : s,
   ).join(" → ");
 
   return (

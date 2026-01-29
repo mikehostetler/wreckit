@@ -29,7 +29,9 @@ describe("git status comparison (Gap 1: Read-Only Enforcement)", () => {
   let gitOptions: StatusCompareOptions;
 
   beforeEach(async () => {
-    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "wreckit-git-status-test-"));
+    tempDir = await fs.mkdtemp(
+      path.join(os.tmpdir(), "wreckit-git-status-test-"),
+    );
     mockLogger = createMockLogger();
     gitOptions = {
       cwd: tempDir,
@@ -57,33 +59,25 @@ describe("git status comparison (Gap 1: Read-Only Enforcement)", () => {
     it("parses modified file", () => {
       const output = "M src/index.ts";
       const result = parseGitStatusPorcelain(output, tempDir);
-      expect(result).toEqual([
-        { path: "src/index.ts", statusCode: "M" },
-      ]);
+      expect(result).toEqual([{ path: "src/index.ts", statusCode: "M" }]);
     });
 
     it("parses added file", () => {
       const output = "A src/new-file.ts";
       const result = parseGitStatusPorcelain(output, tempDir);
-      expect(result).toEqual([
-        { path: "src/new-file.ts", statusCode: "A" },
-      ]);
+      expect(result).toEqual([{ path: "src/new-file.ts", statusCode: "A" }]);
     });
 
     it("parses deleted file", () => {
       const output = "D src/old-file.ts";
       const result = parseGitStatusPorcelain(output, tempDir);
-      expect(result).toEqual([
-        { path: "src/old-file.ts", statusCode: "D" },
-      ]);
+      expect(result).toEqual([{ path: "src/old-file.ts", statusCode: "D" }]);
     });
 
     it("parses untracked file", () => {
       const output = "?? src/untracked.ts";
       const result = parseGitStatusPorcelain(output, tempDir);
-      expect(result).toEqual([
-        { path: "src/untracked.ts", statusCode: "??" },
-      ]);
+      expect(result).toEqual([{ path: "src/untracked.ts", statusCode: "??" }]);
     });
 
     it("parses multiple files", () => {
@@ -108,18 +102,14 @@ describe("git status comparison (Gap 1: Read-Only Enforcement)", () => {
       // MM = modified in both staging and working tree
       const output = "MM src/index.ts";
       const result = parseGitStatusPorcelain(output, tempDir);
-      expect(result).toEqual([
-        { path: "src/index.ts", statusCode: "MM" },
-      ]);
+      expect(result).toEqual([{ path: "src/index.ts", statusCode: "MM" }]);
     });
 
     it("handles spaces in status code", () => {
       // M  = modified in working tree only
       const output = "M  src/index.ts";
       const result = parseGitStatusPorcelain(output, tempDir);
-      expect(result).toEqual([
-        { path: "src/index.ts", statusCode: "M" },
-      ]);
+      expect(result).toEqual([{ path: "src/index.ts", statusCode: "M" }]);
     });
   });
 
@@ -140,7 +130,13 @@ describe("git status comparison (Gap 1: Read-Only Enforcement)", () => {
       gitOptions.allowedPaths = [".wreckit/items/001-test/research.md"];
 
       // Create the allowed file
-      const researchPath = path.join(tempDir, ".wreckit", "items", "001-test", "research.md");
+      const researchPath = path.join(
+        tempDir,
+        ".wreckit",
+        "items",
+        "001-test",
+        "research.md",
+      );
       await fs.mkdir(path.dirname(researchPath), { recursive: true });
       await fs.writeFile(researchPath, "# Research");
 
@@ -219,8 +215,20 @@ describe("git status comparison (Gap 1: Read-Only Enforcement)", () => {
       ];
 
       // Create both allowed files
-      const researchPath = path.join(tempDir, ".wreckit", "items", "001-test", "research.md");
-      const notesPath = path.join(tempDir, ".wreckit", "items", "001-test", "notes.md");
+      const researchPath = path.join(
+        tempDir,
+        ".wreckit",
+        "items",
+        "001-test",
+        "research.md",
+      );
+      const notesPath = path.join(
+        tempDir,
+        ".wreckit",
+        "items",
+        "001-test",
+        "notes.md",
+      );
       await fs.mkdir(path.dirname(researchPath), { recursive: true });
       await fs.writeFile(researchPath, "# Research");
       await fs.writeFile(notesPath, "# Notes");
@@ -256,8 +264,21 @@ describe("git status comparison (Gap 1: Read-Only Enforcement)", () => {
       gitOptions.allowedPaths = [".wreckit/items/001-test"];
 
       // Create files in nested structure
-      const researchPath = path.join(tempDir, ".wreckit", "items", "001-test", "research.md");
-      const notesPath = path.join(tempDir, ".wreckit", "items", "001-test", "subdir", "notes.md");
+      const researchPath = path.join(
+        tempDir,
+        ".wreckit",
+        "items",
+        "001-test",
+        "research.md",
+      );
+      const notesPath = path.join(
+        tempDir,
+        ".wreckit",
+        "items",
+        "001-test",
+        "subdir",
+        "notes.md",
+      );
       await fs.mkdir(path.dirname(researchPath), { recursive: true });
       await fs.mkdir(path.dirname(notesPath), { recursive: true });
       await fs.writeFile(researchPath, "# Research");
@@ -276,7 +297,13 @@ describe("git status comparison (Gap 1: Read-Only Enforcement)", () => {
       gitOptions.allowedPaths = [".wreckit/items/001-test/research.md"];
 
       // Create file in sibling directory (not allowed)
-      const siblingPath = path.join(tempDir, ".wreckit", "items", "002-test", "research.md");
+      const siblingPath = path.join(
+        tempDir,
+        ".wreckit",
+        "items",
+        "002-test",
+        "research.md",
+      );
       await fs.mkdir(path.dirname(siblingPath), { recursive: true });
       await fs.writeFile(siblingPath, "# Other Research");
 
@@ -304,12 +331,8 @@ describe("git status comparison (Gap 1: Read-Only Enforcement)", () => {
     it("formats single violation", () => {
       const result: GitStatusComparisonResult = {
         valid: false,
-        violations: [
-          { path: "src/index.ts", statusCode: "M" },
-        ],
-        allChanges: [
-          { path: "src/index.ts", statusCode: "M" },
-        ],
+        violations: [{ path: "src/index.ts", statusCode: "M" }],
+        allChanges: [{ path: "src/index.ts", statusCode: "M" }],
       };
 
       const formatted = formatViolations(result);
@@ -346,12 +369,8 @@ describe("git status comparison (Gap 1: Read-Only Enforcement)", () => {
     it("includes status descriptions", () => {
       const result: GitStatusComparisonResult = {
         valid: false,
-        violations: [
-          { path: "file.txt", statusCode: "??" },
-        ],
-        allChanges: [
-          { path: "file.txt", statusCode: "??" },
-        ],
+        violations: [{ path: "file.txt", statusCode: "??" }],
+        allChanges: [{ path: "file.txt", statusCode: "??" }],
       };
 
       const formatted = formatViolations(result);

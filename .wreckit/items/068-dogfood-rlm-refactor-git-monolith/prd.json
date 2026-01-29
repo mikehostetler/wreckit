@@ -1,0 +1,134 @@
+{
+  "schema_version": 1,
+  "id": "068-dogfood-rlm-refactor-git-monolith",
+  "branch_name": "wreckit/068-dogfood-rlm-refactor-git-monolith",
+  "user_stories": [
+    {
+      "id": "US-001",
+      "title": "Create status.ts module with git status tracking functions",
+      "acceptance_criteria": [
+        "Create src/git/status.ts with parseGitStatusPorcelain, getGitStatus, compareGitStatus, formatViolations functions",
+        "Export GitFileChange, GitStatusComparisonResult, and StatusCompareOptions types from status.ts",
+        "Move getStatusDescription as internal helper (not exported) in status.ts",
+        "Import runGitCommand from index.ts in status.ts",
+        "Remove status-related functions and types from index.ts (lines 1169-1426)",
+        "Add barrel exports to index.ts for all status functions and types",
+        "All existing tests pass without modification (git-status-comparison.test.ts)",
+        "Type checking passes with no import errors",
+        "Status functions accessible via import from '../git'",
+        "status.ts is approximately 300 lines"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Start with status.ts as it has the fewest dependencies and is self-contained. Follow the pattern demonstrated by quality.ts."
+    },
+    {
+      "id": "US-002",
+      "title": "Create pr.ts module with pull request operations",
+      "acceptance_criteria": [
+        "Create src/git/pr.ts with getPrByBranch, createOrUpdatePr, checkMergeConflicts functions",
+        "Include getPrDetails, isPrMerged, and checkPrMergeability functions in pr.ts",
+        "Export PrResult, PrDetails, PrMergeabilityResult, and MergeConflictCheckResult types from pr.ts",
+        "Import runGhCommand from index.ts and PrCreationError from errors in pr.ts",
+        "Remove PR-related functions and types from index.ts (lines 708-793, 798-894, 954-1167)",
+        "Keep mergeAndPushToBase in index.ts temporarily (will move to branch.ts in US-003)",
+        "Add barrel exports to index.ts for all PR functions and types",
+        "All existing PR tests pass without modification (git/index.test.ts)",
+        "Type checking passes with no import errors",
+        "PR functions accessible via import from '../git'",
+        "pr.ts is approximately 350 lines"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "PR operations use runGhCommand and have clear boundaries. This module is well-isolated from other concerns."
+    },
+    {
+      "id": "US-003",
+      "title": "Create branch.ts module with branch lifecycle operations",
+      "acceptance_criteria": [
+        "Create src/git/branch.ts with getCurrentBranch, getBranchSha, branchExists, cleanupBranch, ensureBranch functions",
+        "Include commitAll, pushBranch, mergeAndPushToBase, and getBranchSyncStatus functions in branch.ts",
+        "Export BranchResult and BranchCleanupResult types from branch.ts",
+        "Import runGitCommand from index.ts and all error types (BranchError, PushError, MergeConflictError, GitError) in branch.ts",
+        "Remove branch-related functions and types from index.ts (lines 30-33, 365-479, 481-535, 557-596, 668-706, 896-952)",
+        "Add barrel exports to index.ts for all branch functions and types",
+        "All existing tests pass without modification",
+        "Type checking passes with no import errors",
+        "Branch functions accessible via import from '../git'",
+        "branch.ts is approximately 400 lines"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "This is the largest module. Includes mergeAndPushToBase which was in the PR section of index.ts. Must import all error types used by branch operations."
+    },
+    {
+      "id": "US-004",
+      "title": "Create validation.ts module with preflight and validation functions",
+      "acceptance_criteria": [
+        "Create src/git/validation.ts with getRemoteUrl, validateRemoteUrl, isGitRepo, checkGitPreflight functions",
+        "Include hasUncommittedChanges, isDetachedHead, and hasRemote functions in validation.ts",
+        "Export GitPreflightErrorCode, GitPreflightError, GitPreflightResult, CheckPreflightOptions, and RemoteValidationResult types from validation.ts",
+        "Import runGitCommand from index.ts in validation.ts",
+        "Import node:child_process and node:path for isGitRepo function in validation.ts",
+        "Move normalizeUrlForMatching as internal helper (not exported) in validation.ts",
+        "Remove validation-related functions and types from index.ts (lines 41-62, 175-319, 321-363, 537-555, 598-666)",
+        "Add barrel exports to index.ts for all validation functions and types",
+        "All existing tests pass without modification",
+        "Type checking passes with no import errors",
+        "Validation functions accessible via import from '../git'",
+        "validation.ts is approximately 325 lines"
+      ],
+      "priority": 4,
+      "status": "done",
+      "notes": "Includes isGitRepo which uses node:child_process and node:path directly. These imports must be added to validation.ts. hasUncommittedChanges, isDetachedHead, and hasRemote are placed here as they're primarily used for validation."
+    },
+    {
+      "id": "US-005",
+      "title": "Clean up index.ts to contain only infrastructure and barrel exports",
+      "acceptance_criteria": [
+        "Remove all business logic functions from index.ts (should all be moved to modules by now)",
+        "Keep only infrastructure: Mutex class, gitMutex instance, runGitCommand, runGhCommand, runCommand",
+        "Keep only shared types: GitOptions, CommandResult",
+        "Keep quality module exports (runPrePushQualityGates, runQualityChecks, runSecretScan, scanForSecrets)",
+        "Add complete barrel exports for branch, pr, status, and validation modules at bottom of index.ts",
+        "Remove any unused imports (check if path and error imports are still needed)",
+        "Verify no duplicate type definitions across modules",
+        "Verify no circular dependencies (modules import from index, index imports from modules)",
+        "index.ts is approximately 250 lines (infrastructure + barrel exports)",
+        "All exports accessible via import from '../git' or '../git/index'",
+        "Full test suite passes: bun test (100% pass rate)",
+        "Type checking passes: bun run typecheck (0 errors)",
+        "Linting passes: bun run lint (0 warnings)",
+        "Build succeeds: bun run build"
+      ],
+      "priority": 4,
+      "status": "done",
+      "notes": "Final cleanup phase. Index.ts becomes the 'hub' that exports infrastructure and re-exports all modules. This is the completion point for the refactoring. Verify line counts: index.ts ~250, branch.ts ~400, pr.ts ~350, status.ts ~300, validation.ts ~325, quality.ts ~313 (unchanged)."
+    },
+    {
+      "id": "US-006",
+      "title": "Verify backward compatibility and run integration tests",
+      "acceptance_criteria": [
+        "Verify all 14 consuming files can still import from '../git' without changes",
+        "Verify all 37 exported functions accessible via barrel exports",
+        "Verify all 24 exported types accessible via barrel exports",
+        "Run smoke tests: wreckit list, wreckit show 001",
+        "Create and complete a test item through research phase",
+        "Verify status comparison works in plan phase",
+        "Verify branch operations work in implementation phase",
+        "Verify PR operations work in PR phase",
+        "Verify merge operations work in complete phase",
+        "No behavior changes detected (only code movement)",
+        "No regressions in normal usage",
+        "Code review confirms no code smells or issues",
+        "All modules follow single responsibility principle",
+        "No internal functions accidentally exported",
+        "Consistent error handling across all modules",
+        "Consistent logging patterns across all modules"
+      ],
+      "priority": 4,
+      "status": "done",
+      "notes": "Final verification phase. Ensures the refactoring maintains complete backward compatibility and no regressions. This is the gate before considering the refactoring complete. The barrel export pattern should make all of this work seamlessly."
+    }
+  ]
+}

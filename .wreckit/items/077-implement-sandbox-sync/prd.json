@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "id": "077-implement-sandbox-sync",
+  "branch_name": "wreckit/077-implement-sandbox-sync",
+  "user_stories": [
+    {
+      "id": "US-077-001",
+      "title": "Create Sync Module",
+      "acceptance_criteria": [
+        "Create `src/fs/sync.ts`",
+        "Implement `createProjectArchive` using `spawn('tar')`",
+        "Implement `uploadToSpriteVM` using `execSprite` and base64",
+        "Add `SpriteSyncError` class"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Core logic."
+    },
+    {
+      "id": "US-077-002",
+      "title": "Refactor Sprite Primitives",
+      "acceptance_criteria": [
+        "Extract `runWispCommand`, `execSprite`, etc. to `src/agent/sprite-core.ts`",
+        "Update `sprite-runner.ts` to re-export them",
+        "Ensure no circular dependencies"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Necessary to avoid circular deps."
+    },
+    {
+      "id": "US-077-003",
+      "title": "Integrate Sync into Agent Runner",
+      "acceptance_criteria": [
+        "Update `runSpriteAgent` in `src/agent/sprite-runner.ts`",
+        "Call `syncProjectToVM` after VM init",
+        "Handle sync errors (fail fast)",
+        "Update agent description to mention synced directory"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Makes the feature active."
+    },
+    {
+      "id": "US-077-004",
+      "title": "Update Schema",
+      "acceptance_criteria": [
+        "Add `syncEnabled` and `syncExcludePatterns` to `SpriteAgentSchema`"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "Configuration."
+    },
+    {
+      "id": "US-077-005",
+      "title": "Unit Tests",
+      "acceptance_criteria": [
+        "Create `src/__tests__/fs/sync.test.ts`",
+        "Mock `spawn('tar')` and `execSprite`",
+        "Verify archive creation and upload flow"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "Quality assurance."
+    }
+  ]
+}

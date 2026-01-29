@@ -11,19 +11,21 @@ import {
   ItemSchema,
   PrdSchema,
   IndexSchema,
+  BatchProgressSchema,
   type Config,
   type Item,
   type Prd,
   type Index,
+  type BatchProgress,
 } from "../schemas";
-import { getConfigPath, getIndexPath } from "./paths";
+import { getConfigPath, getIndexPath, getBatchProgressPath } from "./paths";
 import { safeWriteJson } from "./atomic";
 import { FileLock, withRetry } from "./lock";
 
 export async function readJsonWithSchema<T>(
   filePath: string,
   schema: z.ZodType<T>,
-  options?: { useLock?: boolean }
+  options?: { useLock?: boolean },
 ): Promise<T> {
   const readImpl = async (): Promise<T> => {
     let content: string;
@@ -46,7 +48,7 @@ export async function readJsonWithSchema<T>(
     const result = schema.safeParse(data);
     if (!result.success) {
       throw new SchemaValidationError(
-        `Schema validation failed for ${filePath}: ${result.error.message}`
+        `Schema validation failed for ${filePath}: ${result.error.message}`,
       );
     }
 
@@ -64,7 +66,7 @@ export async function readJsonWithSchema<T>(
 export async function writeJsonPretty(
   filePath: string,
   data: unknown,
-  options?: { useLock?: boolean }
+  options?: { useLock?: boolean },
 ): Promise<void> {
   const writeImpl = async (): Promise<void> => {
     await safeWriteJson(filePath, data);
@@ -115,4 +117,54 @@ export async function readIndex(root: string): Promise<Index | null> {
 
 export async function writeIndex(root: string, index: Index): Promise<void> {
   await writeJsonPretty(getIndexPath(root), index, { useLock: true });
+}
+
+export async function readBatchProgress(
+  root: string,
+): Promise<BatchProgress | null> {
+  const progressPath = getBatchProgressPath(root);
+  try {
+    return await readJsonWithSchema(progressPath, BatchProgressSchema, {
+      useLock: true,
+    });
+  } catch (err) {
+    if (err instanceof FileNotFoundError) {
+      return null;
+    }
+    // Schema validation errors are expected (corrupt progress file)
+    // These are detected and fixed by doctor, so return null to allow continue
+    if (
+      err instanceof SchemaValidationError ||
+      err instanceof InvalidJsonError
+    ) {
+      return null;
+    }
+    // Permission errors and I/O errors should propagate (Spec 002 Gap 3)
+    throw err;
+  }
+}
+
+export async function writeBatchProgress(
+  root: string,
+  progress: BatchProgress,
+): Promise<void> {
+  const progressPath = getBatchProgressPath(root);
+  await writeJsonPretty(progressPath, progress, { useLock: true });
+}
+
+export async function clearBatchProgress(root: string): Promise<void> {
+  const progressPath = getBatchProgressPath(root);
+  try {
+    await fs.unlink(progressPath);
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code !== "ENOENT") {
+      throw err;
+    }
+  }
+  // Also clean up any orphaned lock file
+  try {
+    await fs.unlink(`${progressPath}.lock`);
+  } catch {
+    // Ignore lock cleanup errors
+  }
 }

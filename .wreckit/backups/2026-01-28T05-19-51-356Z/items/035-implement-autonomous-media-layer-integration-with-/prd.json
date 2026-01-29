@@ -1,0 +1,217 @@
+{
+  "schema_version": 1,
+  "id": "035-implement-autonomous-media-layer-integration-with-",
+  "branch_name": "wreckit/035-implement-autonomous-media-layer-integration-with-",
+  "user_stories": [
+    {
+      "id": "US-035-001",
+      "title": "Add media phase to tool allowlist system",
+      "acceptance_criteria": [
+        "Media phase added to PHASE_TOOL_ALLOWLISTS in src/agent/toolAllowlist.ts",
+        "Media phase allows: Read, Write, Glob, Grep, Bash tools",
+        "Media phase does NOT allow: Edit tool",
+        "Type checking passes with no errors",
+        "getAllowedToolsForPhase('media') returns expected tool array",
+        "Other phases (research, plan, implement, pr, complete, strategy, learn) remain unchanged"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "This is the foundational infrastructure for all media generation. Must be completed first before defining skills."
+    },
+    {
+      "id": "US-035-002",
+      "title": "Define manim-generation skill in skills.json",
+      "acceptance_criteria": [
+        "manim-generation skill added to .wreckit/skills.json skills array",
+        "Skill has valid id, name, description, tools, and required_context fields",
+        "Skill tools are: Bash, Write, Read, Glob (all in media phase allowlist)",
+        "Skill required_context includes git_status to check for existing Manim files",
+        "Skill validates against SkillConfigSchema (no validation errors)",
+        "manim-generation mapped to media phase in phase_skills object"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Manim is for mathematical animations. Description should mention prerequisites (Python 3.8+, FFmpeg, LaTeX) and CLI usage."
+    },
+    {
+      "id": "US-035-003",
+      "title": "Create example Manim scene template",
+      "acceptance_criteria": [
+        "Example Manim scene created at .wreckit/examples/manim-scene.py",
+        "Template is valid Python syntax (can be parsed)",
+        "Template demonstrates basic Manim API: Scene class, animations (Write, Create, Transform)",
+        "Template includes comments explaining each animation",
+        "Template is short (~20 lines) and easy to understand",
+        "Template can be rendered with Manim if Manim is installed"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Template provides a starting point for agents to create animations. Test rendering with 'manim render .wreckit/examples/manim-scene.py ExampleScene -pql' if Manim is installed."
+    },
+    {
+      "id": "US-035-004",
+      "title": "Define remotion-generation skill in skills.json",
+      "acceptance_criteria": [
+        "remotion-generation skill added to .wreckit/skills.json skills array",
+        "Skill has valid id, name, description, tools, and required_context fields",
+        "Skill tools are: Bash, Write, Read, Glob (all in media phase allowlist)",
+        "Skill required_context includes file (package.json) and git_status",
+        "Skill validates against SkillConfigSchema (no validation errors)",
+        "remotion-generation mapped to media phase in phase_skills object"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "Remotion is for React-based videos. Description should mention prerequisites (Node.js 16+, FFmpeg) and CLI usage."
+    },
+    {
+      "id": "US-035-005",
+      "title": "Create example Remotion composition template",
+      "acceptance_criteria": [
+        "Example Remotion composition created at .wreckit/examples/remotion-composition.tsx",
+        "Template is valid TypeScript/TSX syntax (can be parsed)",
+        "Template demonstrates basic Remotion API: composition component, hooks (useCurrentFrame, useVideoConfig)",
+        "Template demonstrates interpolation for animation",
+        "Template includes comments explaining each concept",
+        "Template is short (~25 lines) and easy to understand",
+        "Template can be rendered with Remotion if Remotion is installed"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "Template provides a starting point for agents to create videos. Also need remotion-root.tsx to show how to register compositions."
+    },
+    {
+      "id": "US-035-006",
+      "title": "Create Remotion root configuration template",
+      "acceptance_criteria": [
+        "Example Remotion root created at .wreckit/examples/remotion-root.tsx",
+        "Template is valid TypeScript/TSX syntax (can be parsed)",
+        "Template demonstrates how to register compositions using <Composition> component",
+        "Template shows configuration parameters: durationInFrames, fps, width, height",
+        "Template imports the WreckitExampleComposition",
+        "Template includes comments explaining the root structure"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "Root file is required for Remotion to discover and render compositions. Must register all example compositions."
+    },
+    {
+      "id": "US-035-007",
+      "title": "Add media phase to prompt system",
+      "acceptance_criteria": [
+        "'media' added to PromptName type in src/prompts.ts",
+        "Media phase prompt template created at src/prompts/media.md",
+        "Media prompt includes variable placeholders: {{id}}, {{title}}, {{section}}, {{overview}}",
+        "Media prompt includes {{#if skill_context}} conditional for skill context injection",
+        "Media prompt includes Manim usage guidelines (CLI, output location)",
+        "Media prompt includes Remotion usage guidelines (CLI, root file)",
+        "Media prompt includes best practices (start with templates, test low quality, keep short)",
+        "Media prompt includes completion signal (DONE)",
+        "loadPromptTemplate(root, 'media') successfully loads the template"
+      ],
+      "priority": 4,
+      "status": "done",
+      "notes": "Prompt guides agents in media generation tasks. Should be clear and concise, with links to external documentation."
+    },
+    {
+      "id": "US-035-008",
+      "title": "Create comprehensive media skills documentation",
+      "acceptance_criteria": [
+        "Documentation created at docs/media-skills.md",
+        "Documentation covers overview of media skills (Manim and Remotion)",
+        "Documentation includes installation prerequisites for Manim (Python, FFmpeg, LaTeX)",
+        "Documentation includes installation prerequisites for Remotion (Node.js, FFmpeg)",
+        "Documentation shows how to enable media skills in .wreckit/skills.json",
+        "Documentation lists media phase tool permissions",
+        "Documentation includes usage examples for both Manim and Remotion",
+        "Documentation includes integration guidance for Item 036 (summarize command)",
+        "Documentation includes troubleshooting section for common issues",
+        "Documentation includes best practices for media generation",
+        "Documentation includes references to external docs and related items",
+        "Documentation is valid Markdown and can be read"
+      ],
+      "priority": 4,
+      "status": "done",
+      "notes": "Documentation is critical for users to set up and use media skills. Should be comprehensive but easy to follow."
+    },
+    {
+      "id": "US-035-009",
+      "title": "Validate media skills integration with skill loading infrastructure",
+      "acceptance_criteria": [
+        "loadSkillsForPhase('media', skillConfig) returns both manim-generation and remotion-generation",
+        "loadedSkillIds includes 'manim-generation' and 'remotion-generation'",
+        "allowedTools is intersection of skill tools and media phase tools",
+        "No tool in allowedTools is outside media phase allowlist",
+        "contextRequirements includes git_status and file requirements from both skills",
+        "buildJitContext() successfully resolves context requirements",
+        "Skills validate against SkillConfigSchema with no errors"
+      ],
+      "priority": 5,
+      "status": "done",
+      "notes": "Critical validation that media skills work correctly with Item 033's infrastructure. Use loadSkillsForPhase and buildJitContext to verify."
+    },
+    {
+      "id": "US-035-010",
+      "title": "Validate example templates render correctly",
+      "acceptance_criteria": [
+        "Manim template (.wreckit/examples/manim-scene.py) is valid Python syntax",
+        "Manim template can be parsed without syntax errors",
+        "Manim template renders successfully if Manim is installed (optional)",
+        "Remotion template (.wreckit/examples/remotion-composition.tsx) is valid TypeScript/TSX syntax",
+        "Remotion template can be parsed without syntax errors",
+        "Remotion root template (.wreckit/examples/remotion-root.tsx) is valid TypeScript/TSX syntax",
+        "Remotion templates render successfully if Remotion is installed (optional)"
+      ],
+      "priority": 5,
+      "status": "done",
+      "notes": "Templates must be valid even if tools aren't installed. Optional to actually render if dependencies are available."
+    },
+    {
+      "id": "US-035-011",
+      "title": "Create integration test suite for media skills",
+      "acceptance_criteria": [
+        "Integration test file created at src/__tests__/integration/media-skills.test.ts (optional)",
+        "Test validates loadSkillsForPhase loads both media skills",
+        "Test validates allowedTools is subset of phase tools",
+        "Test validates contextRequirements are populated",
+        "Tests pass with 'bun test' command",
+        "Tests are isolated and don't require Manim/Remotion installation"
+      ],
+      "priority": 6,
+      "status": "done",
+      "notes": "Optional but recommended. Provides automated validation that media skills integrate correctly. Tests should be fast and not require external dependencies."
+    },
+    {
+      "id": "US-035-012",
+      "title": "Create validation checklist for manual testing",
+      "acceptance_criteria": [
+        "Validation checklist created at .wreckit/items/035-implement-autonomous-media-layer-integration-with-/validation.md",
+        "Checklist includes infrastructure validation items",
+        "Checklist includes skill definition validation items",
+        "Checklist includes template validation items",
+        "Checklist includes integration validation items",
+        "Checklist includes documentation validation items",
+        "Checklist includes dependency chain validation (Item 033, 034, 036)",
+        "Checklist includes end-to-end validation items (optional, requires tool installation)",
+        "Checklist is formatted as markdown checkboxes for easy tracking"
+      ],
+      "priority": 6,
+      "status": "done",
+      "notes": "Validation checklist provides a clear path for manual verification. Useful for final acceptance testing."
+    },
+    {
+      "id": "US-035-013",
+      "title": "Verify M4 dependency chain readiness",
+      "acceptance_criteria": [
+        "Item 033 infrastructure (skill loading) is confirmed complete and working",
+        "Media skills are compatible with Item 034's wreckit learn command pattern extraction",
+        "Media skills documentation includes Item 036 integration guidance",
+        "Item 036 dependencies are documented (even if Item 036 is not implemented)",
+        "No circular dependencies in M4 chain (033 → 034 → 035 → 036)",
+        "Media layer is ready for Item 036 to use for video generation"
+      ],
+      "priority": 7,
+      "status": "done",
+      "notes": "This item is part of the M4 campaign dependency chain. Must ensure it enables downstream items (034, 036) to work correctly."
+    }
+  ]
+}

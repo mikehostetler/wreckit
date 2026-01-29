@@ -9,6 +9,7 @@ Git integration tests in `src/__tests__/z-git.test.ts` pass locally but fail in 
 ### Why Tests Pass Locally
 
 Local tests run in a user's home directory or project root, where temp directories created via `fs.mkdtemp(os.tmpdir(), ...)` are NOT nested inside a git repository. When git commands run in these temp directories, they correctly report:
+
 - `isGitRepo(nonRepoDir)` → `false` (no git repo found)
 - `getCurrentBranch()` → works correctly within the temp repo
 - `branchExists("nonexistent")` → `false` (branch doesn't exist in temp repo)
@@ -65,7 +66,7 @@ export async function isGitRepo(cwd: string): Promise<boolean> {
       proc = spawn("git", ["rev-parse", "--git-dir"], {
         cwd,
         stdio: ["pipe", "pipe", "pipe"],
-        env,  // Pass custom environment
+        env, // Pass custom environment
       });
     } catch {
       resolve(false);
@@ -77,11 +78,13 @@ export async function isGitRepo(cwd: string): Promise<boolean> {
 ```
 
 **Pros:**
+
 - Minimal change to implementation
 - Preserves intended behavior of `isGitRepo`
 - Works in all environments
 
 **Cons:**
+
 - Need to ensure `path` module is imported
 - Must apply to other git commands if they have similar issues
 
@@ -92,7 +95,7 @@ Skip the problematic tests when running in CI:
 ```typescript
 // In src/__tests__/z-git.test.ts
 describe("git functions", () => {
-  const isCI = process.env.CI === 'true';
+  const isCI = process.env.CI === "true";
 
   describe("isGitRepo", () => {
     it("returns false outside git repo", async () => {
@@ -107,10 +110,12 @@ describe("git functions", () => {
 ```
 
 **Pros:**
+
 - Quick fix
 - No production code changes
 
 **Cons:**
+
 - Reduces test coverage in CI
 - Doesn't actually fix the underlying issue
 - Tests should verify behavior in CI too
@@ -130,10 +135,12 @@ export async function isGitRepo(cwd: string): Promise<boolean> {
 ```
 
 **Pros:**
+
 - Simple implementation
 - No parent directory search
 
 **Cons:**
+
 - Doesn't work for git worktrees (`.git` is a file, not directory)
 - Less robust than git's own detection
 - May miss edge cases
@@ -148,16 +155,18 @@ const nonRepoDir = path.join(
   await fs.mkdtemp(path.join(os.tmpdir(), "wreckit-")),
   "deeply",
   "nested",
-  "non-repo"
+  "non-repo",
 );
 await fs.mkdir(nonRepoDir, { recursive: true });
 ```
 
 **Pros:**
+
 - Tests remain meaningful
 - No production code changes
 
 **Cons:**
+
 - Hacky solution
 - Doesn't fix root cause
 - May still fail if `/tmp` itself is in a git repo

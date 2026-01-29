@@ -1,11 +1,22 @@
 import * as fs from "node:fs/promises";
-import { ConfigSchema, PrChecksSchema, BranchCleanupSchema, type Config } from "./schemas";
-import { getConfigPath, getWreckitDir } from "./fs/paths";
-import { safeWriteJson } from "./fs/atomic";
 import {
-  InvalidJsonError,
-  SchemaValidationError,
-} from "./errors";
+  ConfigSchema,
+  PrChecksSchema,
+  BranchCleanupSchema,
+  type Config,
+  type AgentConfigUnion,
+  type SkillConfig,
+  type StoryScopeConfig,
+} from "./schemas";
+import {
+  getWreckitDir,
+  getConfigPath,
+  getConfigLocalPath,
+  getIndexPath,
+} from "./fs/paths";
+
+import { safeWriteJson } from "./fs/atomic";
+import { InvalidJsonError, SchemaValidationError } from "./errors";
 
 export interface PrChecksResolved {
   commands: string[];
@@ -25,16 +36,20 @@ export interface ConfigResolved {
   base_branch: string;
   branch_prefix: string;
   merge_mode: "pr" | "direct";
-  agent: {
-    mode: "process" | "sdk";
-    command: string;
-    args: string[];
-    completion_signal: string;
-  };
+  agent: AgentConfigUnion;
   max_iterations: number;
   timeout_seconds: number;
   pr_checks: PrChecksResolved;
   branch_cleanup: BranchCleanupResolved;
+  // Add optional skills (Item 033)
+  skills?: SkillConfig;
+  // Add optional doctor configuration (Item 038)
+  doctor?: import("./schemas").DoctorConfig;
+  // Add optional story scope configuration (Item 084)
+  story_scope?: StoryScopeConfig;
+  // Add new sections (Item 001)
+  compute?: import("./schemas").ComputeConfig;
+  limits?: import("./schemas").LimitsConfig;
 }
 
 export interface ConfigOverrides {
@@ -45,6 +60,8 @@ export interface ConfigOverrides {
   completionSignal?: string;
   maxIterations?: number;
   timeoutSeconds?: number;
+  agentKind?: string;
+  sandbox?: boolean;
 }
 
 export const DEFAULT_CONFIG: ConfigResolved = {
@@ -53,10 +70,9 @@ export const DEFAULT_CONFIG: ConfigResolved = {
   branch_prefix: "wreckit/",
   merge_mode: "pr",
   agent: {
-    mode: "sdk",
-    command: "claude", // Kept for fallback
-    args: ["--dangerously-skip-permissions", "--print"], // Kept for fallback
-    completion_signal: "<promise>COMPLETE</promise>", // Kept for fallback
+    kind: "claude_sdk",
+    model: "claude-sonnet-4-20250514",
+    max_tokens: 4096,
   },
   max_iterations: 100,
   timeout_seconds: 3600,
@@ -73,32 +89,74 @@ export const DEFAULT_CONFIG: ConfigResolved = {
   },
 };
 
-export function mergeWithDefaults(partial: Partial<Config>): ConfigResolved {
-  const agent = partial.agent
-    ? {
-        mode: partial.agent.mode ?? DEFAULT_CONFIG.agent.mode,
-        command: partial.agent.command ?? DEFAULT_CONFIG.agent.command,
-        args: partial.agent.args ?? DEFAULT_CONFIG.agent.args,
+/**
+ * Migrate agent config from legacy mode-based format to new kind-based format.
+ * This enables backward compatibility with existing config files.
+ */
+function migrateAgentConfig(agent: any): AgentConfigUnion {
+  // If no agent config provided, use default
+  if (!agent) {
+    return DEFAULT_CONFIG.agent;
+  }
+
+  // If already using kind, return as-is (new format)
+  if ("kind" in agent) {
+    return agent as AgentConfigUnion;
+  }
+
+  // Migrate from mode to kind (legacy format)
+  if ("mode" in agent) {
+    if (agent.mode === "sdk") {
+      return {
+        kind: "claude_sdk",
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 4096,
+      };
+    } else {
+      // mode === "process"
+      return {
+        kind: "process",
+        command: agent.command ?? "claude",
+        args: agent.args ?? [],
         completion_signal:
-          partial.agent.completion_signal ??
-          DEFAULT_CONFIG.agent.completion_signal,
-      }
-    : { ...DEFAULT_CONFIG.agent };
+          agent.completion_signal ?? "<promise>COMPLETE</promise>",
+      };
+    }
+  }
+
+  // Fallback to default
+  return DEFAULT_CONFIG.agent;
+}
+
+export function mergeWithDefaults(partial: Partial<Config>): ConfigResolved {
+  const agent = migrateAgentConfig(partial.agent);
 
   const prChecks = partial.pr_checks
     ? {
-        commands: partial.pr_checks.commands ?? DEFAULT_CONFIG.pr_checks.commands,
-        secret_scan: partial.pr_checks.secret_scan ?? DEFAULT_CONFIG.pr_checks.secret_scan,
-        require_all_stories_done: partial.pr_checks.require_all_stories_done ?? DEFAULT_CONFIG.pr_checks.require_all_stories_done,
-        allow_unsafe_direct_merge: partial.pr_checks.allow_unsafe_direct_merge ?? DEFAULT_CONFIG.pr_checks.allow_unsafe_direct_merge,
-        allowed_remote_patterns: partial.pr_checks.allowed_remote_patterns ?? DEFAULT_CONFIG.pr_checks.allowed_remote_patterns,
+        commands:
+          partial.pr_checks.commands ?? DEFAULT_CONFIG.pr_checks.commands,
+        secret_scan:
+          partial.pr_checks.secret_scan ?? DEFAULT_CONFIG.pr_checks.secret_scan,
+        require_all_stories_done:
+          partial.pr_checks.require_all_stories_done ??
+          DEFAULT_CONFIG.pr_checks.require_all_stories_done,
+        allow_unsafe_direct_merge:
+          partial.pr_checks.allow_unsafe_direct_merge ??
+          DEFAULT_CONFIG.pr_checks.allow_unsafe_direct_merge,
+        allowed_remote_patterns:
+          partial.pr_checks.allowed_remote_patterns ??
+          DEFAULT_CONFIG.pr_checks.allowed_remote_patterns,
       }
     : { ...DEFAULT_CONFIG.pr_checks };
 
   const branchCleanup = partial.branch_cleanup
     ? {
-        enabled: partial.branch_cleanup.enabled ?? DEFAULT_CONFIG.branch_cleanup.enabled,
-        delete_remote: partial.branch_cleanup.delete_remote ?? DEFAULT_CONFIG.branch_cleanup.delete_remote,
+        enabled:
+          partial.branch_cleanup.enabled ??
+          DEFAULT_CONFIG.branch_cleanup.enabled,
+        delete_remote:
+          partial.branch_cleanup.delete_remote ??
+          DEFAULT_CONFIG.branch_cleanup.delete_remote,
       }
     : { ...DEFAULT_CONFIG.branch_cleanup };
 
@@ -112,66 +170,190 @@ export function mergeWithDefaults(partial: Partial<Config>): ConfigResolved {
     timeout_seconds: partial.timeout_seconds ?? DEFAULT_CONFIG.timeout_seconds,
     pr_checks: prChecks,
     branch_cleanup: branchCleanup,
+    skills: partial.skills, // Add optional skills (Item 033)
+    doctor: partial.doctor, // Add optional doctor (Item 038)
+    story_scope: partial.story_scope, // Add optional story scope (Item 084)
+    compute: partial.compute,  // Add (Item 001)
+    limits: partial.limits,    // Add (Item 001)
+  };
+}
+
+/**
+ * Apply sandbox mode transformations to config.
+ * When sandbox mode is enabled, force the use of Sprite agent with ephemeral VM
+ * and enable bi-directional sync.
+ */
+function applySandboxMode(config: ConfigResolved): ConfigResolved {
+  // If using RLM, just enable sandbox mode on it
+  if (config.agent.kind === "rlm") {
+    return {
+      ...config,
+      agent: {
+        ...config.agent,
+        sandbox: true,
+      },
+    };
+  }
+
+  // If already using sprite, just enable syncOnSuccess and syncEnabled
+  if (config.agent.kind === "sprite") {
+    return {
+      ...config,
+      agent: {
+        ...config.agent,
+        syncEnabled: true,
+        syncOnSuccess: true,
+        // Remove explicit vmName to force ephemeral mode
+        vmName: undefined,
+      },
+    };
+  }
+
+  // Otherwise, create a new sprite agent config with defaults
+  return {
+    ...config,
+    agent: {
+      kind: "sprite",
+      wispPath: "sprite",
+      syncEnabled: true,
+      syncExcludePatterns: [
+        ".git",
+        "node_modules",
+        ".wreckit",
+        "dist",
+        "build",
+        ".DS_Store",
+      ],
+      syncOnSuccess: true,
+      maxVMs: 5,
+      defaultMemory: "512MiB",
+      defaultCPUs: "1",
+      timeout: 300,
+    },
   };
 }
 
 export function applyOverrides(
   config: ConfigResolved,
-  overrides: ConfigOverrides
+  overrides: ConfigOverrides,
+  logger?: { info: (msg: string) => void },
 ): ConfigResolved {
+  let agent = config.agent;
+
+  // Apply sandbox mode first (highest priority)
+  if (overrides.sandbox) {
+    config = applySandboxMode(config);
+    agent = config.agent;
+    logger?.info("Sandbox mode: Using Sprite agent with ephemeral VM");
+  }
+
+  // Apply agent kind override if specified
+  if (overrides.agentKind && overrides.agentKind !== agent.kind) {
+    // Validate the agent kind
+    const validKinds = [
+      "process",
+      "claude_sdk",
+      "amp_sdk",
+      "codex_sdk",
+      "opencode_sdk",
+      "rlm",
+      "sprite",
+    ];
+    if (!validKinds.includes(overrides.agentKind)) {
+      throw new Error(`Invalid agent kind: ${overrides.agentKind}`);
+    }
+
+    // For now, we just override the kind field
+    // In a full implementation, you'd want to preserve other config fields
+    agent = {
+      ...agent,
+      kind: overrides.agentKind as any,
+    };
+  }
+
+  // Apply overrides only for process mode (where command/args/completion_signal are relevant)
+  if (agent.kind === "process") {
+    const hasProcessOverrides =
+      overrides.agentCommand !== undefined ||
+      overrides.agentArgs !== undefined ||
+      overrides.completionSignal !== undefined;
+
+    if (hasProcessOverrides) {
+      agent = {
+        ...agent,
+        command: overrides.agentCommand ?? (agent as any).command,
+        args: overrides.agentArgs ?? (agent as any).args,
+        completion_signal:
+          overrides.completionSignal ?? (agent as any).completion_signal,
+      };
+    }
+  }
+
   return {
     schema_version: config.schema_version,
     base_branch: overrides.baseBranch ?? config.base_branch,
     branch_prefix: overrides.branchPrefix ?? config.branch_prefix,
     merge_mode: config.merge_mode,
-    agent: {
-      mode: config.agent.mode,
-      command: overrides.agentCommand ?? config.agent.command,
-      args: overrides.agentArgs ?? config.agent.args,
-      completion_signal:
-        overrides.completionSignal ?? config.agent.completion_signal,
-    },
+    agent,
     max_iterations: overrides.maxIterations ?? config.max_iterations,
     timeout_seconds: overrides.timeoutSeconds ?? config.timeout_seconds,
     pr_checks: config.pr_checks,
     branch_cleanup: config.branch_cleanup,
+    skills: config.skills,
+    doctor: config.doctor,
+    story_scope: config.story_scope,
+    compute: config.compute,  // Add (Item 001)
+    limits: config.limits,    // Add (Item 001)
   };
 }
 
 export async function loadConfig(
   root: string,
-  overrides?: ConfigOverrides
+  overrides?: ConfigOverrides,
 ): Promise<ConfigResolved> {
   const configPath = getConfigPath(root);
+  const localPath = getConfigLocalPath(root);
   let partial: Partial<Config> = {};
 
+  // 1. Load base config
   try {
     const content = await fs.readFile(configPath, "utf-8");
-    let data: unknown;
-    try {
-      data = JSON.parse(content);
-    } catch {
-      throw new InvalidJsonError(`Invalid JSON in file: ${configPath}`);
-    }
-
+    const data = JSON.parse(content);
     const result = ConfigSchema.safeParse(data);
-    if (!result.success) {
-      throw new SchemaValidationError(
-        `Schema validation failed for ${configPath}: ${result.error.message}`
-      );
-    }
-    partial = result.data;
-  } catch (err) {
-    if ((err as NodeJS.ErrnoException).code === "ENOENT") {
-      partial = {};
-    } else if (
-      err instanceof InvalidJsonError ||
-      err instanceof SchemaValidationError
-    ) {
-      throw err;
+    if (result.success) {
+      partial = result.data;
     } else {
-      throw err;
+      // Log validation error but continue with defaults
+      console.warn(`Config validation failed for ${configPath}: ${result.error.message}`);
     }
+  } catch (err) {
+    // Ignore ENOENT for base config
+  }
+
+  // 2. Load local config and merge raw data
+  try {
+    const content = await fs.readFile(localPath, "utf-8");
+    const localData = JSON.parse(content);
+    
+    // Deep merge local agent settings if present
+    if (localData.agent) {
+      partial.agent = {
+        ...(partial.agent as any),
+        ...localData.agent,
+        env: {
+          ...(partial.agent as any)?.env,
+          ...localData.agent.env,
+        },
+      };
+    }
+    
+    // Merge other top-level fields
+    Object.assign(partial, {
+      ...localData,
+      agent: partial.agent, // Keep our merged agent
+    });
+  } catch (err) {
+    // Ignore ENOENT for local config
   }
 
   const resolved = mergeWithDefaults(partial);

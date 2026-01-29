@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "id": "019-improve-ambiguous-id-resolution-to-warnerror-on-mu",
+  "branch_name": "wreckit/019-improve-ambiguous-id-resolution-to-warnerror-on-mu",
+  "user_stories": [
+    {
+      "id": "US-001",
+      "title": "Define AmbiguousIdError type",
+      "acceptance_criteria": [
+        "AmbiguousIdError class exists in src/errors.ts",
+        "AmbiguousIdError extends WreckitError",
+        "AmbiguousIdError takes input string and matches array",
+        "Error message lists all matching IDs",
+        "Error code is 'AMBIGUOUS_ID'"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Foundation for error reporting"
+    },
+    {
+      "id": "US-002",
+      "title": "Implement three-tier ID resolution logic",
+      "acceptance_criteria": [
+        "resolveId supports exact full ID match",
+        "resolveId supports numeric prefix match (e.g. '1' matches '001-...')",
+        "resolveId supports slug suffix match",
+        "Resolution follows priority: Exact > Numeric > Slug",
+        "numeric match handles zero-padding correctly"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Core logic replacement"
+    },
+    {
+      "id": "US-003",
+      "title": "Implement ambiguity detection and error reporting",
+      "acceptance_criteria": [
+        "resolveId detects multiple matches at the numeric prefix tier",
+        "resolveId detects multiple matches at the slug suffix tier",
+        "Ambiguous matches throw AmbiguousIdError",
+        "AmbiguousIdError contains list of all candidates",
+        "Single match returns the full ID string"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Safety mechanism"
+    },
+    {
+      "id": "US-004",
+      "title": "Update and expand ID resolution tests",
+      "acceptance_criteria": [
+        "Tests cover exact match success",
+        "Tests cover unique numeric prefix success",
+        "Tests cover unique slug suffix success",
+        "Tests verify AmbiguousIdError for duplicate numeric prefixes",
+        "Tests verify AmbiguousIdError for duplicate slug suffixes",
+        "Tests verify resolution priority order"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Verification"
+    }
+  ]
+}

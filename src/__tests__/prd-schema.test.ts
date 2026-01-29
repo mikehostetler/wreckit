@@ -58,8 +58,11 @@ describe("PRD Schema Validation (Gap 4: Schema Version Inconsistency)", () => {
     });
 
     it("rejects PRD with missing schema_version", () => {
-      // @ts-expect-error - intentionally omitting schema_version
-      const prd = { id: "001-test", branch_name: "wreckit/001-test", user_stories: [] };
+      const prd = {
+        id: "001-test",
+        branch_name: "wreckit/001-test",
+        user_stories: [],
+      };
       const result = PrdSchema.safeParse(prd);
       expect(result.success).toBe(false);
     });
@@ -99,10 +102,7 @@ describe("PRD Schema Validation (Gap 4: Schema Version Inconsistency)", () => {
           {
             id: "US-002",
             title: "Edge cases",
-            acceptance_criteria: [
-              "Handles empty input",
-              "Handles null values",
-            ],
+            acceptance_criteria: ["Handles empty input", "Handles null values"],
             priority: 2,
             status: "pending" as const,
             notes: "",

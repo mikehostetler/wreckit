@@ -1,0 +1,182 @@
+{
+  "schema_version": 1,
+  "id": "038-implement-agent-doctor-self-healing-runtime",
+  "branch_name": "wreckit/038-implement-agent-doctor-self-healing-runtime",
+  "user_stories": [
+    {
+      "id": "US-038-001",
+      "title": "Error Detection Engine",
+      "acceptance_criteria": [
+        "ErrorDetector analyzes AgentResult output, exitCode, and stderr for recoverable error patterns",
+        "Git lock errors (.git/index.lock, 'unable to create', 'another git process') are detected with confidence > 0.8",
+        "npm failure errors (npm ERR!, missing module, ENOTFOUND) are detected with confidence > 0.7",
+        "JSON corruption errors (unexpected token, JSON.parse, syntaxerror) are detected with confidence > 0.7",
+        "Non-recoverable errors return null diagnosis",
+        "ErrorDiagnosis includes recoverable, errorType, confidence, suggestedRepair, and detectedPattern",
+        "Unit tests cover all error patterns with real-world error messages",
+        "Edge cases handled: empty output, mixed error types, case-insensitive matching"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Foundation for all healing capabilities. Must use specific error patterns to avoid false positives."
+    },
+    {
+      "id": "US-038-002",
+      "title": "Healing Procedures Module",
+      "acceptance_criteria": [
+        "removeGitLock() checks if .git/index.lock exists and is stale (process dead or lock > 60s old)",
+        "Git lock removal follows FileLock stale detection pattern from src/fs/lock.ts:156-196",
+        "runNpmInstall() executes npm install with configurable timeout (default 5 minutes)",
+        "runNpmInstall() returns success/failure with duration and message",
+        "validateAndRepairJson() validates critical JSON files (config.json, index.json, batch-progress.json)",
+        "JSON restoration uses existing backup system from src/doctor.ts:655-838",
+        "All healing procedures follow backup-before-modify pattern",
+        "HealingResult includes success, errorType, repairAttempted, message, and durationMs",
+        "applyHealing() respects auto_repair config (true | false | 'safe-only')"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Safe repairs (git lock, npm install) allowed in 'safe-only' mode. JSON repair requires full auto_repair=true."
+    },
+    {
+      "id": "US-038-003",
+      "title": "Self-Healing Agent Runner Wrapper",
+      "acceptance_criteria": [
+        "runAgentWithHealing() wraps runAgentUnion() with retry loop (max 3 attempts by default)",
+        "Failed agent execution is analyzed by ErrorDetector for recoverable patterns",
+        "Recoverable errors trigger applyHealing() with appropriate repair procedure",
+        "Retry attempts use exponential backoff (1s, 2s, 4s) between attempts",
+        "Healing attempts are tracked in HealingAttempt array with attemptNumber, errorType, repairAttempted, success, message, durationMs",
+        "HealingLogEntry includes itemId, timestamp, initialError, attempts, finalOutcome, totalDurationMs",
+        "Successful healing returns AgentResult with healingLog attached",
+        "Non-recoverable errors return failure immediately without healing",
+        "Max retries exceeded returns failure with healingLog showing all attempts",
+        "writeHealingLog() appends entries to .wreckit/healing-log.jsonl"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Core wrapper that enables automatic healing. Healing log is critical for debugging and metrics."
+    },
+    {
+      "id": "US-038-004",
+      "title": "Config Schema Extensions",
+      "acceptance_criteria": [
+        "DoctorConfigSchema defines enabled (boolean, default true), auto_repair (enum: 'true' | 'false' | 'safe-only', default 'safe-only'), max_retries (number, default 3), timeout_ms (number, default 300000)",
+        "ConfigSchema includes optional 'doctor' field of type DoctorConfigSchema",
+        "BatchProgressSchema includes healing_attempts (number, default 0) and last_healing_at (string | null)",
+        "Existing config.json files without doctor section use default values",
+        "Schema validation rejects invalid auto_repair values",
+        "TypeScript types exported for use in other modules"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Enables user control over healing behavior. 'safe-only' mode limits repairs to git lock removal."
+    },
+    {
+      "id": "US-038-005",
+      "title": "Orchestrator Integration",
+      "acceptance_criteria": [
+        "OrchestratorOptions interface includes noHealing flag (boolean)",
+        "orchestrateAll() loads doctor config from ConfigSchema",
+        "runCommand() calls are replaced with runAgentWithHealing() in both sequential and parallel modes",
+        "HealingRunner receives doctor config (enabled, auto_repair, max_retries, timeout_ms)",
+        "When healing occurs, batchProgress.healing_attempts is incremented and last_healing_at is updated",
+        "Healing log entries are written via writeHealingLog() after each healing event",
+        "noHealing flag disables healing by setting enabled=false and auto_repair=false",
+        "Healing events are logged to console (info level for success, error level for failure)",
+        "Parallel mode disables healing initially (Phase 1) to avoid race conditions"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Critical integration point. Healing must not crash orchestrator - all errors caught and logged."
+    },
+    {
+      "id": "US-038-006",
+      "title": "CLI Flag for Healing Control",
+      "acceptance_criteria": [
+        "'wreckit run --all' command accepts --no-healing flag",
+        "Flag is passed through OrchestratorOptions to orchestrateAll()",
+        "Flag is documented in CLI help text",
+        "Flag works in conjunction with config doctor settings (config can enable, flag can disable)"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Allows users to disable healing for specific runs without modifying config."
+    },
+    {
+      "id": "US-038-007",
+      "title": "runCommand Healing Support",
+      "acceptance_criteria": [
+        "RunCommandOptions interface includes healingConfig (Partial<HealingConfig>)",
+        "runCommand() loads doctor config from ConfigSchema if healingConfig not provided",
+        "DoctorConfig is converted to HealingConfig format (auto_repair enum to boolean)",
+        "Agent execution in phase loop uses runAgentWithHealing() instead of runAgentUnion()",
+        "If healing occurs, healing log is written and info message is logged",
+        "If healing fails but agent succeeds, command completes successfully",
+        "If both healing and agent fail, error is thrown with healing details"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Enables single-item execution to benefit from healing."
+    },
+    {
+      "id": "US-038-008",
+      "title": "JSON Corruption Recovery",
+      "acceptance_criteria": [
+        "validateAndRepairJson() checks config.json, index.json, and batch-progress.json for JSON syntax errors",
+        "Corrupt files are identified (JSON.parse throws, file exists)",
+        "Corrupt files are restored from most recent backup using restoreFromBackup()",
+        "restoreFromBackup() lists backups, finds most recent for the file, and restores it",
+        "If no backup exists, restoration fails gracefully with appropriate error message",
+        "Restored files are validated again to confirm repair",
+        "HealingResult indicates success/failure and number of files restored"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "Leverages existing backup system from src/doctor.ts. Critical files only - user item files not included."
+    },
+    {
+      "id": "US-038-009",
+      "title": "Healing Statistics CLI",
+      "acceptance_criteria": [
+        "'wreckit doctor' command accepts --healing-stats flag",
+        "Flag displays healing statistics from .wreckit/healing-log.jsonl",
+        "Statistics include: total events, healed count/percentage, failed count/percentage, not recoverable count/percentage",
+        "Error type distribution shows count per error type (git_lock, npm_failure, json_corruption)",
+        "Recent events (last 10) displayed with timestamp, item ID, outcome, and attempt count",
+        "No healing history shows appropriate message ('No healing history found')",
+        "Statistics are calculated from JSONL log file parsing"
+      ],
+      "priority": 4,
+      "status": "done",
+      "notes": "Provides visibility into healing effectiveness. Helps identify recurring issues."
+    },
+    {
+      "id": "US-038-010",
+      "title": "Repeated Failure Alerting",
+      "acceptance_criteria": [
+        "HealingRunner checks recent healing logs after final failure",
+        "If same error type failed 3+ times in last 24 hours, alert is logged at ERROR level",
+        "Alert message includes error type, failure count, and suggestion for manual intervention",
+        "Alert check does not slow down normal execution (async, non-blocking)",
+        "Alert check handles missing or malformed healing log gracefully"
+      ],
+      "priority": 4,
+      "status": "done",
+      "notes": "Helps identify deeper issues that require manual attention rather than endless retry loops."
+    },
+    {
+      "id": "US-038-011",
+      "title": "Status Command Healing Metrics",
+      "acceptance_criteria": [
+        "'wreckit status' output includes 'Self-Healing' section if healing events exist",
+        "Section displays total events and success rate percentage",
+        "Metrics are calculated from healing-log.jsonl",
+        "If no healing events, section is not displayed"
+      ],
+      "priority": 4,
+      "status": "done",
+      "notes": "Provides quick visibility into healing activity during normal workflow."
+    }
+  ]
+}

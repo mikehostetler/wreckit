@@ -1,0 +1,311 @@
+{
+  "schema_version": 1,
+  "id": "064-rlm-mode-implementation-with-ax-mcporter",
+  "branch_name": "wreckit/064-rlm-mode-implementation-with-ax-mcporter",
+  "user_stories": [
+    {
+      "id": "US-001",
+      "title": "Add RLM agent kind to schema and configuration system",
+      "acceptance_criteria": [
+        "RlmSdkAgentSchema is defined in src/schemas.ts with fields: kind (literal 'rlm'), model (string, default 'claude-sonnet-4-20250514'), maxIterations (number, default 100), aiProvider (enum 'anthropic'|'openai'|'google', default 'anthropic')",
+        "AgentConfigUnionSchema includes RlmSdkAgentSchema in its discriminated union array",
+        "Type export 'RlmSdkAgentConfig' is added to src/schemas.ts",
+        "Config with { kind: 'rlm', model: 'claude-sonnet-4-20250514', maxIterations: 100, aiProvider: 'anthropic' } validates successfully with ConfigSchema",
+        "TypeScript compilation passes with no errors related to schema types",
+        "Existing configs with other agent kinds (claude_sdk, amp_sdk, codex_sdk, opencode_sdk, process) continue to validate successfully"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "This is the foundation for RLM mode. All other stories depend on this schema being correctly defined. Follow the exact pattern of existing schemas like ClaudeSdkAgentSchema (src/schemas.ts:44-49)."
+    },
+    {
+      "id": "US-002",
+      "title": "Add @ax-llm/ax and mcporter dependencies",
+      "acceptance_criteria": [
+        "@ax-llm/ax is added to package.json dependencies",
+        "mcporter is added to package.json dependencies",
+        "Running 'bun install' completes successfully with no peer dependency conflicts",
+        "Both packages are present in node_modules/@ax-llm/ax and node_modules/mcporter",
+        "TypeScript can import from both packages without 'Cannot find module' errors",
+        "Package-lock.json or bun.lockb is updated with the new dependencies"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Version pinning: Use specific versions (e.g., '^0.1.0') rather than wildcards to ensure stability. Check if these packages have any specific Node.js or Bun runtime requirements before adding."
+    },
+    {
+      "id": "US-003",
+      "title": "Create minimal RlmRunner with mock agent",
+      "acceptance_criteria": [
+        "File src/agent/rlm-runner.ts exists with runRlmAgent() function",
+        "runRlmAgent() accepts RlmRunAgentOptions interface matching other SDK runners (config, cwd, prompt, logger, dryRun, onStdoutChunk, onStderrChunk, onAgentEvent, mcpServers, allowedTools)",
+        "Function registers AbortController at start and unregisters in finally block (following pattern from claude-sdk-runner.ts:13-16, 110)",
+        "dryRun mode returns success with '[dry-run] RLM agent not executed' message",
+        "Non-dry-run mode returns mock output with config values (model, provider, maxIterations)",
+        "Function returns AgentResult type with all required fields (success, output, timedOut, exitCode, completionDetected)",
+        "Error handling catches exceptions and returns AgentResult with success: false",
+        "TypeScript compilation passes with no type errors"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "This is a skeleton implementation that validates the integration flow. The actual ReAct loop will be implemented in US-006. Follow the exact structure of claude-sdk-runner.ts but use mock output instead of calling @ax-llm/ax."
+    },
+    {
+      "id": "US-004",
+      "title": "Wire RlmRunner into agent dispatcher",
+      "acceptance_criteria": [
+        "runAgentUnion() in src/agent/runner.ts has a case 'rlm:' in its switch statement (after line 489)",
+        "The case dynamically imports runRlmAgent from './rlm-runner.js'",
+        "The case calls runRlmAgent() with all required options from UnionRunAgentOptions",
+        "All options are passed correctly: config, cwd, prompt, logger, dryRun, onStdoutChunk, onStderrChunk, onAgentEvent, mcpServers, allowedTools",
+        "exhaustiveCheck() function is NOT triggered (meaning all agent kinds are handled)",
+        "Running wreckit with config.agent.kind='rlm' calls runRlmAgent (verify with mock output)",
+        "TypeScript compilation passes with no type errors in the switch statement"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Follow the exact pattern of the existing cases (e.g., case 'amp_sdk': at line 443-457). Ensure dynamic import uses './rlm-runner.js' with .js extension for ESM compatibility."
+    },
+    {
+      "id": "US-005",
+      "title": "Add CLI flags for agent selection",
+      "acceptance_criteria": [
+        "src/index.ts has --agent <kind> global option (after line 50)",
+        "--agent option accepts 'claude_sdk', 'amp_sdk', 'codex_sdk', 'opencode_sdk', 'rlm' values",
+        "src/index.ts has --rlm shorthand option (sets agent kind to 'rlm')",
+        "Running 'wreckit --help' shows both --agent and --rlm options in help text",
+        "Running 'wreckit --agent rlm run 001' uses RlmRunner (verified by mock output)",
+        "Running 'wreckit --rlm run 001' uses RlmRunner (verified by mock output)",
+        "Default behavior (no --agent flag) continues to use claude_sdk (DEFAULT_CONFIG.agent.kind)",
+        "The agent kind option is passed through orchestrateAll to runAgentUnion"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "May need to modify orchestrateAll() signature to accept agentKind parameter, or pass it through config overrides. Check how other CLI options flow through the system. The --rlm flag should override --agent if both are provided."
+    },
+    {
+      "id": "US-006",
+      "title": "Implement ReAct loop using @ax-llm/ax",
+      "acceptance_criteria": [
+        "runRlmAgent() imports createAgent from '@ax-llm/ax'",
+        "Agent is created with provider, model, tools, and maxIterations from config",
+        "ReAct loop iterates through agent.run(prompt) async iterator",
+        "Loop handles event.type === 'thought' by emitting to onStdoutChunk with 'Thought:' prefix",
+        "Loop handles event.type === 'action' by emitting to onStdoutChunk with 'Action:' prefix and calling onAgentEvent for tool_started",
+        "Loop handles event.type === 'observation' by emitting to onStdoutChunk with 'Observation:' prefix and calling onAgentEvent for tool_result",
+        "Loop handles event.type === 'complete' by returning AgentResult with success: true and completionDetected: true",
+        "Loop handles event.type === 'error' by returning AgentResult with success: false",
+        "Loop checks abortController.signal.aborted on each iteration and breaks if true",
+        "Loop stops after maxIterations if not completed earlier",
+        "Output contains Thought/Action/Observation pattern visible to user",
+        "TypeScript compilation passes with correct type inference for event types"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "The exact API for @ax-llm/ax may differ from this sketch. Verify the actual API by reading package documentation or examples. Key patterns: async iterator for streaming, event types for different stages, tool execution integration. May need to adjust event type names (thought/action/observation/complete/error) based on actual @ax-llm/ax API."
+    },
+    {
+      "id": "US-007",
+      "title": "Create tool registry mapping built-in tools to AxFunctions",
+      "acceptance_criteria": [
+        "File src/agent/rlm-tools.ts exists with buildToolRegistry() function",
+        "Function accepts optional allowedTools string array parameter",
+        "Function defines ToolRegistry interface with tool names as keys",
+        "Read tool is implemented as AxFunction with 'Read' name, description, parameters schema (path: string), and handler that calls fs.readFile()",
+        "Write tool is implemented as AxFunction with 'Write' name, description, parameters schema (path: string, content: string), and handler that calls fs.writeFile() with mkdir for parent directories",
+        "Edit tool is implemented as AxFunction with 'Edit' name, description, parameters schema (path: string, oldText: string, newText: string), and handler that reads file, replaces oldText with newText, and writes back",
+        "Glob tool is implemented as AxFunction with 'Glob' name, description, parameters schema (pattern: string, path?: string), and handler that calls glob() function",
+        "Grep tool is implemented as AxFunction with 'Grep' name, description, parameters schema (pattern: string, path?: string), and handler that calls grep() function",
+        "Bash tool is implemented as AxFunction with 'Bash' name, description, parameters schema (command: string), and handler that calls execSync() with error handling",
+        "When allowedTools is undefined, all tools are returned",
+        "When allowedTools is provided, only tools in the array are returned",
+        "Empty allowedTools array returns empty tool registry",
+        "Invalid tool names in allowedTools are ignored (no error thrown)",
+        "TypeScript compilation passes with correct zod schema validation"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "The exact API for creating AxFunctions (createFunction vs createAxFunction vs other) depends on @ax-llm/ax. Verify the actual API. Tools should use the same implementations as Claude SDK where possible (e.g., file reading/writing). Ensure all handlers are async and return consistent error handling."
+    },
+    {
+      "id": "US-008",
+      "title": "Integrate tool registry with allowlist filtering",
+      "acceptance_criteria": [
+        "runRlmAgent() calls buildToolRegistry(options.allowedTools) to get filtered tools",
+        "When allowedTools is undefined, all built-in tools are available to agent",
+        "When allowedTools is provided (e.g., from phase allowlist), only those tools are available",
+        "Agent cannot invoke tools not in the allowlist (verified by attempting to call restricted tool)",
+        "Tool restrictions match PHASE_TOOL_ALLOWLISTS from src/agent/toolAllowlist.ts (e.g., research phase allows Read, Write, Glob, Grep but not Bash)",
+        "MCP tools are also filtered by allowedTools (if tool name starts with 'mcp__' and is not in allowlist, it's not available)",
+        "Logging shows which tools are available when agent starts (e.g., 'Available tools: Read, Write, Glob, Grep')",
+        "Attempting to use restricted tool results in clear error message (e.g., 'Tool Bash is not allowed in current phase')"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Tool allowlisting is a security boundary. Ensure filtering is enforced at the tool registry level, not just as a suggestion. The agent should receive only the allowed tools, not all tools with a check at invocation time. This matches how Claude SDK handles the 'tools' parameter."
+    },
+    {
+      "id": "US-009",
+      "title": "Create mcporter adapter for Claude SDK MCP servers",
+      "acceptance_criteria": [
+        "File src/agent/mcp/mcporterAdapter.ts exists with adaptMcpServersToMcporter() function",
+        "Function accepts Record<string, ClaudeSdkMcpServer> parameter and optional Logger",
+        "Function returns McporterServerConfig[] array",
+        "Function iterates through each MCP server and converts to mcporter format",
+        "Each converted server has name, transport.type='stdio', transport.command, transport.args fields",
+        "Adapter handles Claude SDK MCP server format (from createSdkMcpServer in @anthropic-ai/claude-agent-sdk)",
+        "Function logs each server adaptation with logger.debug()",
+        "Empty mcpServers object returns empty array",
+        "TypeScript compilation passes with correct type definitions for ClaudeSdkMcpServer and McporterServerConfig"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "Implemented via direct tool adaptation to preserve in-process callbacks, which is critical for Wreckit's functionality."
+    },
+    {
+      "id": "US-010",
+      "title": "Load MCP servers via mcporter in RlmRunner",
+      "acceptance_criteria": [
+        "runRlmAgent() imports adaptMcpServersToMcporter from './mcp/mcporterAdapter.js'",
+        "When options.mcpServers is provided and non-empty, adapter is called to convert servers",
+        "Converted servers are loaded via mcporter to extract tool definitions",
+        "MCP tools are extracted and added to a separate mcpTools registry",
+        "MCP tools are filtered by allowedTools array (if provided)",
+        "MCP tool names follow the convention 'mcp__<server_name>__<tool_name>' (e.g., 'mcp__wreckit__save_prd')",
+        "Built-in tools and MCP tools are merged into single allTools object",
+        "Agent is created with allTools (both built-in and MCP)",
+        "Agent can successfully invoke MCP tools (e.g., save_prd during planning phase)",
+        "When no mcpServers are provided, agent works with just built-in tools",
+        "MCP server errors are caught and logged without crashing the agent",
+        "TypeScript compilation passes with correct type handling for merged tool registries"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "Implemented via direct tool adaptation to AxFunctions."
+    },
+    {
+      "id": "US-011",
+      "title": "Extend environment resolution for AxAI providers",
+      "acceptance_criteria": [
+        "src/agent/env.ts has OPENAI_ and GOOGLE_ added to ALLOWED_PREFIXES array (line 16)",
+        "buildAxAIEnv() function is defined after buildSdkEnv() (after line 109)",
+        "buildAxAIEnv() accepts BuildAxAIEnvOptions with cwd, logger, and provider ('anthropic'|'openai'|'google')",
+        "Function calls buildSdkEnv() to get base environment with correct precedence",
+        "For provider='anthropic': maps ANTHROPIC_AUTH_TOKEN or ANTHROPIC_API_KEY to ANTHROPIC_API_KEY, maps ANTHROPIC_BASE_URL",
+        "For provider='openai': maps OPENAI_API_KEY, maps OPENAI_BASE_URL if present",
+        "For provider='google': maps GOOGLE_API_KEY",
+        "Function returns merged environment with baseEnv for other variables",
+        "Environment resolution follows precedence: config.local.json > config.json > process.env > ~/.claude/settings.json",
+        "TypeScript compilation passes with correct type exports",
+        "buildAxAIEnv is exported from src/agent/env.ts for use in rlm-runner"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "AxAI may have specific environment variable names or formats. Verify the actual AxAI API for environment configuration. The mapping logic here assumes AxAI uses standard provider-specific names (ANTHROPIC_API_KEY, OPENAI_API_KEY, GOOGLE_API_KEY). May need adjustment based on actual AxAI documentation."
+    },
+    {
+      "id": "US-012",
+      "title": "Pass AxAI environment to agent creation",
+      "acceptance_criteria": [
+        "runRlmAgent() imports buildAxAIEnv from './env.js'",
+        "runRlmAgent() calls buildAxAIEnv() with cwd, logger, and config.aiProvider before creating agent",
+        "Returned axaiEnv is passed to createAgent() as env parameter (or equivalent parameter name in @ax-llm/ax API)",
+        "Agent uses environment variables to authenticate with configured AI provider",
+        "Setting ANTHROPIC_AUTH_TOKEN in .wreckit/config.local.json agent.env allows agent to authenticate with Anthropic",
+        "Setting OPENAI_API_KEY in shell environment allows agent to authenticate with OpenAI when aiProvider='openai'",
+        "Setting GOOGLE_API_KEY in ~/.claude/settings.json env allows agent to authenticate with Google when aiProvider='google'",
+        "Missing API key results in authentication error (handled in US-013)",
+        "Custom base URLs (e.g., ANTHROPIC_BASE_URL) are correctly passed to agent",
+        "TypeScript compilation passes with correct type handling for env object"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "The parameter name for environment in createAgent() may be 'env', 'environment', 'config', or other. Verify @ax-llm/ax API. Environment variables must be passed before agent starts, not changed mid-execution. Ensure environment is built once and reused, not rebuilt on each iteration."
+    },
+    {
+      "id": "US-013",
+      "title": "Add comprehensive error handling for AxAI errors",
+      "acceptance_criteria": [
+        "handleAxAIError() function is defined in src/agent/rlm-runner.ts",
+        "Function detects authentication errors (API key, 401, authentication, Unauthorized) and returns detailed help message",
+        "Authentication error help message explains where to set credentials (config.local.json, shell env, ~/.claude/settings.json) with examples for each provider (anthropic, openai, google)",
+        "Function detects rate limit errors (rate limit, 429, too many requests) and returns helpful message to try again later",
+        "Function detects context window errors (context, tokens, too large) and returns message to break down task",
+        "Function detects network errors (ECONNREFUSED, ENOTFOUND, connection) and returns message to check internet",
+        "Generic errors are caught and returned with error message",
+        "All error paths are logged via logger.error() or logger.warn()",
+        "runRlmAgent() catch block calls handleAxAIError() and returns AgentResult with correct success/exitCode",
+        "AbortController is unregistered in catch block before returning",
+        "Error messages are user-friendly and actionable (not just raw exception text)",
+        "TypeScript compilation passes with correct error type narrowing"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "Error handling is critical for user experience. Reference handleSdkError() in claude-sdk-runner.ts:114-222 for the pattern to follow. Ensure all error types are covered, not just the common ones. Consider adding a 'unknown error' catchall with debugging advice."
+    },
+    {
+      "id": "US-014",
+      "title": "Add unit tests for RLM mode",
+      "acceptance_criteria": [
+        "File src/agent/__tests__/rlm-runner.test.ts exists with describe('runRlmAgent') test suite",
+        "Test suite includes test for dry-run mode returning success with dry-run message",
+        "Test suite includes test for mock agent mode returning output with config values",
+        "Test suite includes test for max iterations being respected (agent stops at maxIterations)",
+        "Test suite includes test for AbortController being registered and unregistered",
+        "Test suite includes test for error handling returning AgentResult with success: false",
+        "File src/agent/__tests__/rlm-tools.test.ts exists with describe('buildToolRegistry') test suite",
+        "Test suite includes test for all tools returned when no allowlist provided",
+        "Test suite includes test for tools filtered by allowlist",
+        "Test suite includes test for empty allowlist returning empty registry",
+        "File src/agent/__tests__/mcporterAdapter.test.ts exists with describe('adaptMcpServersToMcporter') test suite",
+        "Test suite includes test for converting Claude SDK MCP server to mcporter format",
+        "Test suite includes test for empty mcpServers returning empty array",
+        "All tests pass when run with 'bun test'",
+        "Test coverage is >80% for new files (rlm-runner.ts, rlm-tools.ts, mcporterAdapter.ts)"
+      ],
+      "priority": 4,
+      "status": "done",
+      "notes": "Unit tests should use Bun's built-in test runner (bun:test). Mock @ax-llm/ax and mcporter to test logic without actual API calls. Use mock() from bun:test for mocking functions. Test files should follow the naming convention *.test.ts to be picked up by the test runner."
+    },
+    {
+      "id": "US-015",
+      "title": "Add integration tests for RLM mode",
+      "acceptance_criteria": [
+        "File src/agent/__tests__/rlm-integration.test.ts exists with describe('RLM Agent Integration') test suite",
+        "Test suite includes test for completing simple file reading task using ReAct loop",
+        "Test suite includes test for tool allowlist filtering (Read allowed, Bash denied)",
+        "Test suite includes test for MCP tool usage (save_prd during planning)",
+        "Test suite includes test for multi-provider support (anthropic, openai, google)",
+        "Test suite includes test for error handling (missing API key, rate limit)",
+        "Test suite includes test for abort on timeout (agent stops when timeoutSeconds reached)",
+        "Tests are marked as integration tests (not run by default unit test suite)",
+        "Tests can be run with specific command (e.g., 'bun test src/agent/__tests__/rlm-integration.test.ts')",
+        "Tests use real @ax-llm/ax API (not mocked) but with test API keys",
+        "All integration tests pass when run with valid API credentials",
+        "Test cleanup removes any temporary files/directories created during tests"
+      ],
+      "priority": 4,
+      "status": "done",
+      "notes": "Integration tests require actual API credentials. Use environment variables for test credentials (e.g., TEST_ANTHROPIC_API_KEY). Mark tests as skipif if credentials not available. Tests should be idempotent (can run multiple times without side effects). Use temporary directories for file operations."
+    },
+    {
+      "id": "US-016",
+      "title": "Update documentation with RLM mode information",
+      "acceptance_criteria": [
+        "AGENTS.md has new '## RLM Mode (ReAct Loop Mode)' section with subsections: Configuration, Provider Support, CLI Usage, Tool Availability, ReAct Loop, When to Use RLM Mode, When to Use Direct Execution",
+        "Documentation includes example config.json for RLM mode with all fields explained",
+        "Documentation lists supported AI providers (anthropic, openai, google) with API key names for each",
+        "Documentation shows CLI usage examples (--agent rlm, --rlm)",
+        "Documentation explains ReAct loop pattern (Thought -> Action -> Observation -> repeat)",
+        "Documentation includes guidance on when to use RLM vs direct execution",
+        "Documentation links to @ax-llm/ax and mcporter packages",
+        "README.md (if it exists) mentions RLM mode as an available agent kind",
+        "Code examples in documentation are accurate and tested",
+        "Documentation is spell-checked and formatted consistently with existing sections"
+      ],
+      "priority": 4,
+      "status": "done",
+      "notes": "Documentation should be written for users who may not be familiar with ReAct pattern. Explain the benefits clearly (multi-step reasoning, complex task handling). Include a simple example task that works better with RLM than direct execution (e.g., 'debug failing test by reading files, running tests, and fixing issues')."
+    }
+  ]
+}

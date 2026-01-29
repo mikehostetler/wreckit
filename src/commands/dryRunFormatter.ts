@@ -57,9 +57,13 @@ export function formatDryRunItem(info: DryRunItemInfo, logger: Logger): void {
   logger.info(`    plan.md:     ${hasPlan ? "✓ exists" : "✗ missing"}`);
   logger.info(`    prd.json:    ${prd ? "✓ exists" : "✗ missing"}`);
   if (prd) {
-    const pending = prd.user_stories.filter((s) => s.status === "pending").length;
+    const pending = prd.user_stories.filter(
+      (s) => s.status === "pending",
+    ).length;
     const done = prd.user_stories.filter((s) => s.status === "done").length;
-    logger.info(`    Stories:     ${done}/${prd.user_stories.length} done, ${pending} pending`);
+    logger.info(
+      `    Stories:     ${done}/${prd.user_stories.length} done, ${pending} pending`,
+    );
   }
 
   logger.info("");
@@ -84,7 +88,7 @@ export function formatDryRunItem(info: DryRunItemInfo, logger: Logger): void {
 
 export function formatDryRunSummary(
   items: DryRunItemInfo[],
-  logger: Logger
+  logger: Logger,
 ): void {
   logger.info("");
   logger.info("═══════════════════════════════════════════════════════════");
@@ -119,7 +123,7 @@ export function formatDryRunPhase(
   item: Item,
   targetState: string,
   config: ConfigResolved,
-  logger: Logger
+  logger: Logger,
 ): void {
   const branchName = formatBranchName(config, item.id);
   const desc = PHASE_DESCRIPTIONS[phase] || phase;
@@ -150,7 +154,7 @@ export function formatDryRunRun(
   item: Item,
   nextPhase: string,
   config: ConfigResolved,
-  logger: Logger
+  logger: Logger,
 ): void {
   const branchName = formatBranchName(config, item.id);
   const phases = getPhaseSequence(item.state);

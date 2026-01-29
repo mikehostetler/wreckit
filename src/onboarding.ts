@@ -1,14 +1,7 @@
 import * as fs from "node:fs/promises";
 import * as fsSync from "node:fs";
 import * as path from "node:path";
-import {
-  intro,
-  outro,
-  confirm,
-  isCancel,
-  cancel,
-  note,
-} from "@clack/prompts";
+import { intro, outro, confirm, isCancel, cancel, note } from "@clack/prompts";
 import type { Logger } from "./logging";
 import { dirExists } from "./fs/util";
 import { initCommand, NotGitRepoError } from "./commands/init";
@@ -51,7 +44,7 @@ async function promptInit(wreckitDir: string): Promise<boolean> {
 
   note(
     `This will create a .wreckit/ folder to track your ideas and their progress.\n\nLocation: ${wreckitDir}`,
-    "First-time setup"
+    "First-time setup",
   );
 
   const ok = await confirm({
@@ -67,20 +60,20 @@ async function promptInit(wreckitDir: string): Promise<boolean> {
   return true;
 }
 
-async function promptFirstIdea(
-  logger: Logger,
-  root: string
-): Promise<boolean> {
+async function promptFirstIdea(logger: Logger, root: string): Promise<boolean> {
   note(
     "You don't have any ideas yet. Let's add your first one.",
-    "Getting started"
+    "Getting started",
   );
 
   // Use the agent-powered interview flow (with simple fallback)
   let ideas: Awaited<ReturnType<typeof runIdeaInterview>> = [];
-  
+
   try {
-    ideas = await runIdeaInterview(root, { verbose: false });
+    ideas = await runIdeaInterview(root, {
+      verbose: false,
+      logger,
+    });
   } catch (error) {
     // Fall back to simple interview if SDK fails
     logger.debug?.(`SDK interview failed: ${error}`);
@@ -94,9 +87,11 @@ async function promptFirstIdea(
 
   // Persist the ideas
   const result = await persistItems(root, ideas);
-  
+
   if (result.created.length > 0) {
-    outro(`First idea added! Created ${result.created.length} item(s). Now running wreckit…`);
+    outro(
+      `First idea added! Created ${result.created.length} item(s). Now running wreckit…`,
+    );
     return true;
   }
 
@@ -106,7 +101,7 @@ async function promptFirstIdea(
 
 export async function runOnboardingIfNeeded(
   logger: Logger,
-  options: OnboardingOptions = {}
+  options: OnboardingOptions = {},
 ): Promise<OnboardingResult> {
   const {
     cwd = process.cwd(),
@@ -147,7 +142,7 @@ export async function runOnboardingIfNeeded(
     }
 
     try {
-      await initCommand({ force: false }, logger, gitRoot);
+      await initCommand({ force: false, cwd: gitRoot }, logger);
     } catch (err) {
       if (err instanceof NotGitRepoError) {
         cancel("Not a git repository. Run `git init` first.");
@@ -157,7 +152,7 @@ export async function runOnboardingIfNeeded(
     }
   }
 
-  const items = await scanItems(gitRoot);
+  const items = await scanItems(gitRoot, { logger });
   const hasIdeas = items.length > 0;
 
   if (!hasIdeas) {

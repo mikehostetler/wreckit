@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "id": "077-implement-sandbox-sync",
+  "title": "Implement Sandbox Project Synchronization",
+  "section": "infrastructure",
+  "state": "done",
+  "overview": "Automatically synchronize the current project's code into the Sprite VM when starting a Sprite Agent session. This solves the 'Empty Box Problem' by ensuring the agent has access to the codebase it is meant to work on.",
+  "problem_statement": "Currently, Sprite VMs start empty. An agent running inside cannot access or modify the user's project files, making it useless for refactoring or testing tasks.",
+  "motivation": "To enable 'Clean Room' development where agents can build, test, and refactor the actual project in a safe, isolated environment.",
+  "success_criteria": [
+    "Project files are compressed (tar.gz) respecting .gitignore",
+    "Bundle is uploaded and extracted into the Sprite VM at startup",
+    "Agent starts in the synced directory",
+    "node_modules and .git are excluded to speed up transfer",
+    "Sync happens automatically in `runSpriteAgent`"
+  ],
+  "technical_constraints": [
+    "Must be performant (avoid transferring GBs of dependencies)",
+    "Must use existing `execSprite` primitive (no new binaries)",
+    "Must handle binary data correctly during upload"
+  ],
+  "scope_in_scope": [
+    "src/agent/sprite-runner.ts",
+    "src/fs/sync.ts"
+  ],
+  "scope_out_of_scope": [
+    "Two-way sync (pulling changes back is a future item)",
+    "Real-time file watching/syncing"
+  ],
+  "priority_hint": "high",
+  "urgency_hint": "Required for practical usage",
+  "branch": "wreckit/077-implement-sandbox-sync",
+  "pr_url": "https://github.com/jmanhype/wreckit/pull/33",
+  "pr_number": 33,
+  "last_error": null,
+  "created_at": "2026-01-28T02:30:00.000Z",
+  "updated_at": "2026-01-28T03:30:00.000Z"
+}

@@ -1,17 +1,95 @@
 import * as fs from "node:fs/promises";
+import { randomUUID } from "node:crypto";
 import type { Logger } from "../logging";
-import type { Prd } from "../schemas";
-import { findRepoRoot, findRootFromOptions, getItemDir, getResearchPath, getPlanPath, getPrdPath } from "../fs/paths";
+import type { Prd, IndexItem, BatchProgress } from "../schemas";
+import {
+  findRepoRoot,
+  findRootFromOptions,
+  getItemDir,
+  getResearchPath,
+  getPlanPath,
+  getPrdPath,
+} from "../fs/paths";
 import { pathExists } from "../fs/util";
 import { loadConfig } from "../config";
-import { readItem, readPrd, writeItem } from "../fs/json";
+import {
+  readItem,
+  readPrd,
+  writeItem,
+  readBatchProgress,
+  writeBatchProgress,
+  clearBatchProgress,
+} from "../fs/json";
 import { scanItems } from "./status";
 import { runCommand } from "./run";
+import { writeHealingLog, type HealingLogEntry } from "../agent/healingRunner";
+import type { DoctorConfig } from "../schemas";
 import { TuiViewAdapter } from "../views";
 import type { AgentEvent } from "../tui/agentEvents";
 import { createSimpleProgress } from "../tui";
-import { formatDryRunSummary, formatDryRunRun, type DryRunItemInfo } from "./dryRunFormatter";
+import {
+  formatDryRunSummary,
+  formatDryRunRun,
+  type DryRunItemInfo,
+} from "./dryRunFormatter";
 import { terminateAllAgents } from "../agent/runner";
+
+const STALE_THRESHOLD_MS = 24 * 60 * 60 * 1000; // 24 hours
+
+/**
+ * Create a new batch progress record.
+ */
+function createBatchProgress(
+  queuedItems: string[],
+  skippedItems: string[],
+  parallel: number,
+): BatchProgress {
+  const now = new Date().toISOString();
+  return {
+    schema_version: 1,
+    session_id: randomUUID(),
+    pid: process.pid,
+    started_at: now,
+    updated_at: now,
+    parallel,
+    queued_items: queuedItems,
+    current_item: null,
+    completed: [],
+    failed: [],
+    skipped: skippedItems,
+  };
+}
+
+/**
+ * Check if existing progress is stale (> 24 hours old or owning process not running).
+ */
+function isProgressStale(progress: BatchProgress): boolean {
+  const updatedAt = new Date(progress.updated_at).getTime();
+  if (Date.now() - updatedAt > STALE_THRESHOLD_MS) {
+    return true;
+  }
+
+  // Check if owning process is still running
+  try {
+    process.kill(progress.pid, 0);
+    return false; // Process still running
+  } catch {
+    return true; // Process not running
+  }
+}
+
+/**
+ * Check if all dependencies of an item are satisfied (all deps are "done").
+ */
+function areDependenciesSatisfied(
+  item: IndexItem,
+  doneItemIds: Set<string>,
+): boolean {
+  if (!item.depends_on || item.depends_on.length === 0) {
+    return true;
+  }
+  return item.depends_on.every((depId) => doneItemIds.has(depId));
+}
 
 export interface OrchestratorOptions {
   force?: boolean;
@@ -22,6 +100,16 @@ export interface OrchestratorOptions {
   mockAgent?: boolean;
   /** Maximum number of items to process concurrently (default: 1 for sequential) */
   parallel?: number;
+  /** If true, ignore any existing batch progress and start fresh */
+  noResume?: boolean;
+  /** If true, include previously failed items when resuming */
+  retryFailed?: boolean;
+  /** If true, disable automatic self-healing (Item 038) */
+  noHealing?: boolean;
+  /** Override agent kind (e.g., 'rlm', 'claude_sdk') */
+  agentKind?: string;
+  /** If true, run in sandbox mode with ephemeral Sprite VM */
+  sandbox?: boolean;
 }
 
 export interface OrchestratorResult {
@@ -40,12 +128,30 @@ function shouldUseTui(noTui?: boolean): boolean {
 
 export async function orchestrateAll(
   options: OrchestratorOptions,
-  logger: Logger
+  logger: Logger,
 ): Promise<OrchestratorResult> {
-  const { force = false, dryRun = false, noTui = false, tuiDebug = false, cwd, mockAgent = false, parallel = 1 } = options;
+  const {
+    force = false,
+    dryRun = false,
+    noTui = false,
+    tuiDebug = false,
+    cwd,
+    mockAgent = false,
+    parallel = 1,
+    noHealing = false,
+    agentKind,
+    sandbox,
+  } = options;
 
   const root = findRootFromOptions(options);
-  const config = await loadConfig(root);
+  const config = await loadConfig(
+    root,
+    {
+      ...(agentKind ? { agentKind } : undefined),
+      ...(sandbox ? { sandbox } : undefined),
+    },
+    logger,
+  );
 
   const items = await scanItems(root);
 
@@ -58,8 +164,87 @@ export async function orchestrateAll(
 
   const nonDoneItems = items.filter((item) => item.state !== "done");
   const doneItems = items.filter((item) => item.state === "done");
+  const allDoneIds = new Set(doneItems.map((item) => item.id));
 
   result.skipped = doneItems.map((item) => item.id);
+
+  // Check for existing batch progress (resume support)
+  const { noResume = false, retryFailed = false } = options;
+  let batchProgress: BatchProgress | null = null;
+  let workingNonDoneItems = [...nonDoneItems];
+
+  if (!dryRun) {
+    if (!noResume) {
+      const existingProgress = await readBatchProgress(root);
+
+      if (existingProgress) {
+        if (isProgressStale(existingProgress)) {
+          logger.warn("Found stale batch progress, starting fresh");
+          await clearBatchProgress(root);
+        } else {
+          logger.info(
+            `Resuming batch run (session ${existingProgress.session_id})`,
+          );
+          logger.info(
+            `  Progress: ${existingProgress.completed.length} completed, ${existingProgress.failed.length} failed`,
+          );
+          batchProgress = existingProgress;
+
+          // Merge existing progress into result
+          result.completed = [...batchProgress.completed];
+          result.failed = [...batchProgress.failed];
+
+          // Add completed items to done set for dependency checking
+          for (const id of batchProgress.completed) {
+            allDoneIds.add(id);
+          }
+
+          // Filter out already-completed items
+          const completedSet = new Set(batchProgress.completed);
+          workingNonDoneItems = workingNonDoneItems.filter(
+            (item) => !completedSet.has(item.id),
+          );
+
+          // Handle retry-failed: re-add failed items to queue
+          if (retryFailed && batchProgress.failed.length > 0) {
+            logger.info(
+              `  Re-queuing ${batchProgress.failed.length} failed item(s)`,
+            );
+            const failedSet = new Set(batchProgress.failed);
+            const failedItems = items.filter((item) => failedSet.has(item.id));
+            workingNonDoneItems.push(...failedItems);
+            result.failed = [];
+            batchProgress.failed = [];
+          } else {
+            // Filter out failed items (don't re-process unless --retry-failed)
+            const failedSet = new Set(batchProgress.failed);
+            workingNonDoneItems = workingNonDoneItems.filter(
+              (item) => !failedSet.has(item.id),
+            );
+          }
+
+          // Clear current_item (will be re-set when processing starts)
+          if (batchProgress.current_item) {
+            logger.info(
+              `  Re-queuing interrupted item: ${batchProgress.current_item}`,
+            );
+            batchProgress.current_item = null;
+          }
+        }
+      }
+    }
+
+    // Create new session if not resuming
+    if (!batchProgress) {
+      batchProgress = createBatchProgress(
+        workingNonDoneItems.map((i) => i.id),
+        doneItems.map((i) => i.id),
+        parallel,
+      );
+      await writeBatchProgress(root, batchProgress);
+      logger.info(`Starting batch run (session ${batchProgress.session_id})`);
+    }
+  }
 
   if (dryRun) {
     const dryRunInfos: DryRunItemInfo[] = [];
@@ -74,6 +259,15 @@ export async function orchestrateAll(
       }
       const hasResearch = await pathExists(getResearchPath(root, item.id));
       const hasPlan = await pathExists(getPlanPath(root, item.id));
+
+      // Check for blocked dependencies in dry-run
+      const deps = fullItem.depends_on || [];
+      const blockedBy = deps.filter((id) => !allDoneIds.has(id));
+
+      if (blockedBy.length > 0) {
+        logger.info(`Item ${item.id} is blocked by: ${blockedBy.join(", ")}`);
+      }
+
       dryRunInfos.push({ item: fullItem, prd, hasResearch, hasPlan, config });
     }
     formatDryRunSummary(dryRunInfos, logger);
@@ -119,18 +313,43 @@ export async function orchestrateAll(
 
   // Process items either sequentially or in parallel
   if (parallel <= 1) {
-    // Sequential processing (original behavior)
-    for (let i = 0; i < nonDoneItems.length; i++) {
-      const item = nonDoneItems[i];
+    // Sequential processing with dependency checking
+    let remainingItems = [...workingNonDoneItems];
+
+    while (remainingItems.length > 0) {
+      // Find next runnable item (dependencies satisfied)
+      const runnableItems = remainingItems.filter((item) =>
+        areDependenciesSatisfied(item, allDoneIds),
+      );
+
+      if (runnableItems.length === 0) {
+        // No runnable items but items remain - likely circular dependency or missing deps
+        logger.warn(
+          `${remainingItems.length} items blocked by unsatisfied dependencies`,
+        );
+        result.remaining = remainingItems.map((item) => item.id);
+        break;
+      }
+
+      const item = runnableItems[0];
+
+      // Update batch progress: mark item as current
+      if (batchProgress) {
+        batchProgress.current_item = item.id;
+        batchProgress.updated_at = new Date().toISOString();
+        await writeBatchProgress(root, batchProgress);
+      }
 
       if (useTui && view) {
         view.onActiveItemChanged(item.id);
         view.onPhaseChanged(item.state);
-        view.onItemsChanged(items.map((it) => ({
-          id: it.id,
-          state: it.id === item.id ? "implementing" : it.state,
-          title: it.title,
-        })));
+        view.onItemsChanged(
+          items.map((it) => ({
+            id: it.id,
+            state: it.id === item.id ? "implementing" : it.state,
+            title: it.title,
+          })),
+        );
       } else {
         simpleProgress?.update(item.id, "starting");
       }
@@ -142,40 +361,89 @@ export async function orchestrateAll(
             force,
             dryRun: false,
             mockAgent,
-            onAgentOutput: view ? (chunk) => view.onAgentEvent(item.id, { type: "assistant_text", text: chunk }) : undefined,
-            onAgentEvent: view ? (event: AgentEvent) => view.onAgentEvent(item.id, event) : undefined,
-            onIterationChanged: view ? (iteration, maxIterations) => view.onIterationChanged(iteration, maxIterations) : undefined,
-            onStoryChanged: view ? (story) => view.onStoryChanged(story) : undefined,
-            onPhaseChanged: view ? (phase) => view.onPhaseChanged(phase as any) : undefined,
+            noHealing, // Pass through healing flag (Item 038)
+            onAgentOutput: view
+              ? (chunk) =>
+                  view.onAgentEvent(item.id, {
+                    type: "assistant_text",
+                    text: chunk,
+                  })
+              : undefined,
+            onAgentEvent: view
+              ? (event: AgentEvent) => view.onAgentEvent(item.id, event)
+              : undefined,
+            onIterationChanged: view
+              ? (iteration, maxIterations) =>
+                  view.onIterationChanged(iteration, maxIterations)
+              : undefined,
+            onStoryChanged: view
+              ? (story) => view.onStoryChanged(story)
+              : undefined,
+            onPhaseChanged: view
+              ? (phase) => view.onPhaseChanged(phase as any)
+              : undefined,
           },
-          logger
+          logger,
         );
         result.completed.push(item.id);
+        allDoneIds.add(item.id);
+        remainingItems = remainingItems.filter((i) => i.id !== item.id);
+
+        // Checkpoint: item completed
+        if (batchProgress) {
+          batchProgress.completed.push(item.id);
+          batchProgress.current_item = null;
+          batchProgress.updated_at = new Date().toISOString();
+          await writeBatchProgress(root, batchProgress);
+        }
 
         if (useTui && view) {
-          view.onItemsChanged(items.map((it) => ({
-            id: it.id,
-            state: it.id === item.id ? "done" : result.completed.includes(it.id) ? "done" : it.state,
-            title: it.title,
-          })));
+          view.onItemsChanged(
+            items.map((it) => ({
+              id: it.id,
+              state:
+                it.id === item.id
+                  ? "done"
+                  : result.completed.includes(it.id)
+                    ? "done"
+                    : it.state,
+              title: it.title,
+            })),
+          );
         } else {
           simpleProgress?.complete(item.id);
         }
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
         result.failed.push(item.id);
+        remainingItems = remainingItems.filter((i) => i.id !== item.id);
+
+        // Checkpoint: item failed
+        if (batchProgress) {
+          batchProgress.failed.push(item.id);
+          batchProgress.current_item = null;
+          batchProgress.updated_at = new Date().toISOString();
+          await writeBatchProgress(root, batchProgress);
+        }
 
         // Persist error to item.json
         try {
           const itemDir = getItemDir(root, item.id);
           const currentItem = await readItem(itemDir);
-          await writeItem(itemDir, { ...currentItem, last_error: errorMessage });
+          await writeItem(itemDir, {
+            ...currentItem,
+            last_error: errorMessage,
+          });
         } catch {
-          // Best effort - don't fail if we can't persist the error
+          // Best effort
         }
 
         if (useTui && view) {
-          view.onAgentEvent(item.id, { type: "error", message: `Failed ${item.id}: ${errorMessage}` });
+          view.onAgentEvent(item.id, {
+            type: "error",
+            message: `Failed ${item.id}: ${errorMessage}`,
+          });
         } else {
           simpleProgress?.fail(item.id, errorMessage);
         }
@@ -183,12 +451,26 @@ export async function orchestrateAll(
     }
   } else {
     // Parallel processing using worker pool
-    const effectiveParallel = Math.max(1, Math.min(parallel, nonDoneItems.length));
-    logger.info(`Processing ${nonDoneItems.length} items with ${effectiveParallel} parallel workers`);
+    const effectiveParallel = Math.max(
+      1,
+      Math.min(parallel, workingNonDoneItems.length),
+    );
+    logger.info(
+      `Processing ${workingNonDoneItems.length} items with ${effectiveParallel} parallel workers`,
+    );
     await processItemsParallel(
-      nonDoneItems,
-      { force, mockAgent, logger, root, simpleProgress, parallel: effectiveParallel },
-      result
+      workingNonDoneItems,
+      {
+        force,
+        mockAgent,
+        logger,
+        root,
+        simpleProgress,
+        parallel: effectiveParallel,
+        allDoneIds,
+        batchProgress,
+      },
+      result,
     );
   }
 
@@ -197,18 +479,19 @@ export async function orchestrateAll(
   }
   terminateAllAgents(logger);
 
+  // Clean up batch progress on successful completion (all items processed)
+  if (!dryRun && batchProgress && result.remaining.length === 0) {
+    await clearBatchProgress(root);
+  }
+
   return result;
 }
 
 /**
  * Process multiple items in parallel using a worker pool pattern.
- *
- * @param items - Items to process
- * @param context - Processing context
- * @param result - Result object to update
  */
 async function processItemsParallel(
-  items: Array<{ id: string; state: string; title: string }>,
+  items: IndexItem[],
   context: {
     force: boolean;
     mockAgent: boolean;
@@ -216,80 +499,140 @@ async function processItemsParallel(
     root: string;
     simpleProgress: ReturnType<typeof createSimpleProgress> | null;
     parallel: number;
+    allDoneIds: Set<string>;
+    batchProgress: BatchProgress | null;
   },
-  result: OrchestratorResult
+  result: OrchestratorResult,
 ): Promise<void> {
-  const { force, mockAgent, logger, root, simpleProgress, parallel } = context;
+  const {
+    force,
+    mockAgent,
+    logger,
+    root,
+    simpleProgress,
+    parallel,
+    allDoneIds,
+    batchProgress,
+  } = context;
 
-  // Create a queue of items to process
-  const queue = [...items];
+  // Use a local copy of items still to process
+  let queue = [...items];
 
-  // Process items with concurrency control
+  // Process items with concurrency control and dependency checking
   const processNextItem = async (): Promise<void> => {
-    if (queue.length === 0) return;
-
-    const item = queue.shift();
-    if (!item) return;
-
-    simpleProgress?.update(item.id, "starting");
-
-    try {
-      await runCommand(
-        item.id,
-        {
-          force,
-          dryRun: false,
-          mockAgent,
-          cwd: root,
-        },
-        logger
-      );
-      result.completed.push(item.id);
-      simpleProgress?.complete(item.id);
-      logger.info(`✓ Completed ${item.id}`);
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      result.failed.push(item.id);
-
-      // Persist error to item.json
+    while (true) {
       try {
-        const itemDir = getItemDir(root, item.id);
-        const currentItem = await readItem(itemDir);
-        await writeItem(itemDir, { ...currentItem, last_error: errorMessage });
-      } catch {
-        // Best effort - don't fail if we can't persist the error
+        let item: IndexItem | undefined;
+        let itemIndex = -1;
+
+        // Find next runnable item (thread-safe queue management via single worker)
+        for (let i = 0; i < queue.length; i++) {
+          if (areDependenciesSatisfied(queue[i], allDoneIds)) {
+            item = queue[i];
+            itemIndex = i;
+            break;
+          }
+        }
+
+        if (!item) {
+          // No runnable items available right now
+          if (queue.length === 0) return;
+
+          // Wait a bit and try again
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+          continue;
+        }
+
+        // Remove from queue
+        queue.splice(itemIndex, 1);
+
+        simpleProgress?.update(item.id, "starting");
+
+        try {
+          await runCommand(
+            item.id,
+            { force, dryRun: false, mockAgent, cwd: root },
+            logger,
+          );
+          result.completed.push(item.id);
+          allDoneIds.add(item.id);
+          simpleProgress?.complete(item.id);
+          logger.info(`✓ Completed ${item.id}`);
+
+          // Checkpoint: item completed (parallel mode)
+          if (batchProgress) {
+            batchProgress.completed.push(item.id);
+            batchProgress.updated_at = new Date().toISOString();
+            await writeBatchProgress(root, batchProgress);
+          }
+        } catch (error) {
+          const errorMessage =
+            error instanceof Error ? error.message : String(error);
+          result.failed.push(item.id);
+
+          // Checkpoint: item failed (parallel mode)
+          if (batchProgress) {
+            batchProgress.failed.push(item.id);
+            batchProgress.updated_at = new Date().toISOString();
+            await writeBatchProgress(root, batchProgress);
+          }
+
+          // Persist error to item.json
+          try {
+            const itemDir = getItemDir(root, item.id);
+            const currentItem = await readItem(itemDir);
+            await writeItem(itemDir, {
+              ...currentItem,
+              last_error: errorMessage,
+            });
+          } catch {
+            /* ignore */
+          }
+
+          simpleProgress?.fail(item.id, errorMessage);
+          logger.error(`✗ Failed ${item.id}: ${errorMessage}`);
+        }
+      } catch (fatalError) {
+        const msg =
+          fatalError instanceof Error ? fatalError.message : String(fatalError);
+        logger.error(`FATAL Worker Error: ${msg}`);
+        // If we hit a truly fatal error in the worker logic, we should probably stop this worker
+        return;
       }
-
-      simpleProgress?.fail(item.id, errorMessage);
-      logger.error(`✗ Failed ${item.id}: ${errorMessage}`);
-    }
-  };
-
-  // Worker function that keeps processing until queue is empty
-  const worker = async (): Promise<void> => {
-    while (queue.length > 0) {
-      await processNextItem();
     }
   };
 
   // Create workers
   const workers: Promise<void>[] = [];
   for (let i = 0; i < parallel; i++) {
-    workers.push(worker());
+    workers.push(processNextItem());
   }
 
-  // Wait for all workers to complete
   await Promise.all(workers);
 }
 
 export async function orchestrateNext(
   options: OrchestratorOptions,
-  logger: Logger
+  logger: Logger,
 ): Promise<{ itemId: string | null; success: boolean }> {
-  const { force = false, dryRun = false, cwd, mockAgent = false } = options;
+  const {
+    force = false,
+    dryRun = false,
+    cwd,
+    mockAgent = false,
+    agentKind,
+    sandbox,
+  } = options;
 
   const root = findRootFromOptions(options);
-  const config = await loadConfig(root);
+  const config = await loadConfig(
+    root,
+    {
+      ...(agentKind ? { agentKind } : undefined),
+      ...(sandbox ? { sandbox } : undefined),
+    },
+    logger,
+  );
 
   const nextItemId = await getNextIncompleteItem(root);
 
@@ -314,22 +657,32 @@ export async function orchestrateNext(
     const errorMessage = error instanceof Error ? error.message : String(error);
     logger.error(`Failed ${nextItemId}: ${errorMessage}`);
 
-    // Persist error to item.json
+    // Persist error
     try {
       const itemDir = getItemDir(root, nextItemId);
       const currentItem = await readItem(itemDir);
       await writeItem(itemDir, { ...currentItem, last_error: errorMessage });
     } catch {
-      // Best effort - don't fail if we can't persist the error
+      /* ignore */
     }
 
     return { itemId: nextItemId, success: false };
   }
 }
 
-export async function getNextIncompleteItem(root: string): Promise<string | null> {
+export async function getNextIncompleteItem(
+  root: string,
+): Promise<string | null> {
   const items = await scanItems(root);
+  const doneIds = new Set(
+    items.filter((i) => i.state === "done").map((i) => i.id),
+  );
 
-  const nextItem = items.find((item) => item.state !== "done");
+  // Find first non-done item with satisfied dependencies
+  const nextItem = items.find((item) => {
+    if (item.state === "done") return false;
+    return areDependenciesSatisfied(item, doneIds);
+  });
+
   return nextItem?.id ?? null;
 }

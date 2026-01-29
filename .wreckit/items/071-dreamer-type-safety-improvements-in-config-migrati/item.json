@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "id": "071-dreamer-type-safety-improvements-in-config-migrati",
+  "title": "[DREAMER] Type-safety improvements in config migration",
+  "state": "idea",
+  "overview": "Using 'any' types in config migration bypasses TypeScript's type checking, potentially allowing invalid configs to pass through silently. This could lead to runtime errors when invalid configs are used.\n\n**Motivation:** Strong typing in config loading ensures early detection of configuration errors. The migration layer is a critical security boundary that should validate, not bypass, type checks.\n\n**Success criteria:**\n- Replace 'any' type in migrateAgentConfig parameter with proper union type\n- Remove 'as any' type assertion in applyOverrides\n- Add proper type guards for legacy config format\n- Ensure all config branches are type-safe\n\n**Technical constraints:**\n- Must support both legacy (mode) and modern (kind) config formats\n- Cannot break existing user configs\n- Migration should be backward compatible\n\n**In scope:**\n- src/config.ts migrateAgentConfig function\n- src/config.ts applyOverrides function type safety\n**Out of scope:**\n- Changing the ConfigResolved type\n- Modifying the default configuration structure\n\n**Signals:** priority: medium, urgency: Type safety and validation improvement",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-27T21:19:06.146Z",
+  "updated_at": "2026-01-27T21:19:06.146Z",
+  "problem_statement": "Using 'any' types in config migration bypasses TypeScript's type checking, potentially allowing invalid configs to pass through silently. This could lead to runtime errors when invalid configs are used.",
+  "motivation": "Strong typing in config loading ensures early detection of configuration errors. The migration layer is a critical security boundary that should validate, not bypass, type checks.",
+  "success_criteria": [
+    "Replace 'any' type in migrateAgentConfig parameter with proper union type",
+    "Remove 'as any' type assertion in applyOverrides",
+    "Add proper type guards for legacy config format",
+    "Ensure all config branches are type-safe"
+  ],
+  "technical_constraints": [
+    "Must support both legacy (mode) and modern (kind) config formats",
+    "Cannot break existing user configs",
+    "Migration should be backward compatible"
+  ],
+  "scope_in_scope": [
+    "src/config.ts migrateAgentConfig function",
+    "src/config.ts applyOverrides function type safety"
+  ],
+  "scope_out_of_scope": [
+    "Changing the ConfigResolved type",
+    "Modifying the default configuration structure"
+  ],
+  "priority_hint": "medium",
+  "urgency_hint": "Type safety and validation improvement"
+}

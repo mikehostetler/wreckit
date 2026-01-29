@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "id": "044-create-industry-standard-documentation-site",
+  "title": "Create Industry Standard Documentation Site",
+  "state": "researched",
+  "overview": "Implement a polished, industry-standard documentation site for Wreckit using a modern static site generator (e.g., VitePress or Docusaurus) compatible with GitHub Pages.",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": "prd.json became invalid during implementation",
+  "created_at": "2026-01-26T12:00:00.000Z",
+  "updated_at": "2026-01-26T05:20:04.476Z"
+}

@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "id": "089-dreamer-fix-skip-in-git-index-tests-due-to-mock-po",
+  "title": "[DREAMER] Fix skip in git index tests due to mock pollution",
+  "state": "idea",
+  "overview": "Lines 381-385 in src/__tests__/git/index.test.ts contain a describe.skip for 'isGitRepo' tests. The comment explains these tests pass in isolation but fail due to mock pollution from ideas.test.ts. This reduces test coverage and masks potential bugs.\n\n**Motivation:** Skipped tests provide no value and reduce confidence in code changes. The mock pollution issue suggests a broader problem with test isolation that could affect other tests. Fixing this would improve test reliability.\n\n**Success criteria:**\n- Remove describe.skip from git/index.test.ts\n- Fix mock module pollution between test files\n- Ensure all tests pass in full suite\n- Add test isolation validation\n\n**Technical constraints:**\n- Must identify the mock pollution source in ideas.test.ts\n- Should not break existing test functionality\n- May require refactoring mock setup/teardown\n\n**In scope:**\n- src/__tests__/git/index.test.ts:381 skipped tests\n- src/__tests__/ideas.test.ts mock pollution\n- Test isolation fixes\n**Out of scope:**\n- Refactoring entire test suite architecture\n- Changes to test framework\n\n**Signals:** priority: medium, urgency: Test reliability - skipped tests hiding potential bugs",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-28T15:35:06.948Z",
+  "updated_at": "2026-01-28T15:35:06.948Z",
+  "problem_statement": "Lines 381-385 in src/__tests__/git/index.test.ts contain a describe.skip for 'isGitRepo' tests. The comment explains these tests pass in isolation but fail due to mock pollution from ideas.test.ts. This reduces test coverage and masks potential bugs.",
+  "motivation": "Skipped tests provide no value and reduce confidence in code changes. The mock pollution issue suggests a broader problem with test isolation that could affect other tests. Fixing this would improve test reliability.",
+  "success_criteria": [
+    "Remove describe.skip from git/index.test.ts",
+    "Fix mock module pollution between test files",
+    "Ensure all tests pass in full suite",
+    "Add test isolation validation"
+  ],
+  "technical_constraints": [
+    "Must identify the mock pollution source in ideas.test.ts",
+    "Should not break existing test functionality",
+    "May require refactoring mock setup/teardown"
+  ],
+  "scope_in_scope": [
+    "src/__tests__/git/index.test.ts:381 skipped tests",
+    "src/__tests__/ideas.test.ts mock pollution",
+    "Test isolation fixes"
+  ],
+  "scope_out_of_scope": [
+    "Refactoring entire test suite architecture",
+    "Changes to test framework"
+  ],
+  "priority_hint": "medium",
+  "urgency_hint": "Test reliability - skipped tests hiding potential bugs"
+}

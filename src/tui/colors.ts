@@ -100,7 +100,8 @@ export function formatToolInput(input: Record<string, unknown>): string {
 
   if (anyInput.pattern) return `🔍 ${String(anyInput.pattern)}`;
   if (anyInput.prompt) return `💬 ${truncate(String(anyInput.prompt), 40)}`;
-  if (anyInput.description) return `📋 ${truncate(String(anyInput.description), 40)}`;
+  if (anyInput.description)
+    return `📋 ${truncate(String(anyInput.description), 40)}`;
   if (anyInput.url) return `🌐 ${truncate(String(anyInput.url), 40)}`;
   if (anyInput.filePattern) return `📁 ${String(anyInput.filePattern)}`;
 
@@ -113,7 +114,7 @@ export function formatToolInput(input: Record<string, unknown>): string {
 export function formatToolResult(
   toolName: string,
   result: unknown,
-  maxLength = 100
+  maxLength = 100,
 ): string {
   if (result == null) return "";
 

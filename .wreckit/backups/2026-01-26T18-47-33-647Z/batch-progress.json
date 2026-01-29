@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "session_id": "7e6e3dab-f73a-48cd-8f11-8b038187222e",
+  "pid": 74412,
+  "started_at": "2026-01-26T18:45:44.705Z",
+  "updated_at": "2026-01-26T18:46:11.465Z",
+  "parallel": 1,
+  "queued_items": [
+    "043-add-comprehensive-test-coverage-for-tui-components",
+    "044-create-industry-standard-documentation-site",
+    "046-dreamer-add-proper-typing-for-sdk-options-in-claud",
+    "047-dreamer-remove-empty-catch-blocks-in-critiquets-js",
+    "048-dreamer-replace-direct-console-calls-with-structur"
+  ],
+  "current_item": "044-create-industry-standard-documentation-site",
+  "completed": [],
+  "failed": [
+    "043-add-comprehensive-test-coverage-for-tui-components"
+  ],
+  "skipped": [
+    "004-fix-plan-template-to-match-validator-requirements",
+    "005-benchmarking-suite-for-resumability-and-concurrenc",
+    "019-improve-ambiguous-id-resolution-to-warnerror-on-mu",
+    "020-add-distinct-error-types-for-different-failure-mod",
+    "021-implement-progress-persistence-for-batch-operation",
+    "022-implement-item-dependencies-and-campaign-grouping",
+    "023-create-migrationmd-with-step-by-step-guide-from-pr",
+    "024-document-environment-variable-configuration-for-sd",
+    "025-add-troubleshooting-section-for-common-migration-i",
+    "026-implement-tool-allowlist-enforcement-in-srcagentam",
+    "027-implement-tool-allowlist-enforcement-in-srcagentco",
+    "028-implement-tool-allowlist-enforcement-in-srcagentop",
+    "029-add-integration-tests-for-each-experimental-sdk",
+    "030-update-documentation-with-supported-sdk-options",
+    "031-fix-silent-read-errors-in-artifact-detection-specs",
+    "032-implement-backup-mechanism-before-doctor-fixes-spe",
+    "033-implement-phase-specific-skill-loading-jit-context",
+    "034-create-wreckit-learn-command-to-compile-codebase-p",
+    "035-implement-autonomous-media-layer-integration-with-",
+    "036-create-wreckit-summarize-to-generate-30-second-fea",
+    "037-generate-launchpad-marketing-video",
+    "038-implement-agent-doctor-self-healing-runtime",
+    "040-implement-wreckit-dreamer-autonomous-ideation",
+    "041-replace-interactive-ask-merge-strategy-in-learn-co",
+    "042-standardize-consolelog-usage-with-logger-throughou"
+  ]
+}

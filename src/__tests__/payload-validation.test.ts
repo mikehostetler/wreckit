@@ -40,10 +40,13 @@ describe("validatePayloadLimits", () => {
     });
 
     it("accepts max ideas (50)", () => {
-      const ideas: ParsedIdea[] = Array.from({ length: PAYLOAD_LIMITS.MAX_IDEAS }, (_, i) => ({
-        title: `Idea ${i}`,
-        description: "Short description",
-      }));
+      const ideas: ParsedIdea[] = Array.from(
+        { length: PAYLOAD_LIMITS.MAX_IDEAS },
+        (_, i) => ({
+          title: `Idea ${i}`,
+          description: "Short description",
+        }),
+      );
       const result = validatePayloadLimits(ideas);
       expect(result.valid).toBe(true);
       expect(result.errors).toHaveLength(0);
@@ -78,7 +81,10 @@ describe("validatePayloadLimits", () => {
         {
           title: "Test",
           description: "Description",
-          successCriteria: Array.from({ length: PAYLOAD_LIMITS.MAX_SUCCESS_CRITERIA_ITEMS }, (_, i) => `Criteria ${i}`),
+          successCriteria: Array.from(
+            { length: PAYLOAD_LIMITS.MAX_SUCCESS_CRITERIA_ITEMS },
+            (_, i) => `Criteria ${i}`,
+          ),
         },
       ];
       const result = validatePayloadLimits(ideas);
@@ -90,11 +96,13 @@ describe("validatePayloadLimits", () => {
       // Create ideas that are close to but under the limit
       const ideas: ParsedIdea[] = [];
       const ideaSize = 2000; // Approx size of one idea in bytes
-      const numIdeas = Math.floor((PAYLOAD_LIMITS.MAX_TOTAL_PAYLOAD_SIZE_BYTES - 1000) / ideaSize);
+      const numIdeas = Math.floor(
+        (PAYLOAD_LIMITS.MAX_TOTAL_PAYLOAD_SIZE_BYTES - 1000) / ideaSize,
+      );
 
       for (let i = 0; i < numIdeas; i++) {
         ideas.push({
-          title: `Idea ${i}`.padEnd(100, 'x'), // Add padding to increase size
+          title: `Idea ${i}`.padEnd(100, "x"), // Add padding to increase size
           description: "x".repeat(500),
           successCriteria: ["Test"],
         });
@@ -108,10 +116,13 @@ describe("validatePayloadLimits", () => {
 
   describe("idea count violations", () => {
     it("rejects more than max ideas (50)", () => {
-      const ideas: ParsedIdea[] = Array.from({ length: PAYLOAD_LIMITS.MAX_IDEAS + 1 }, (_, i) => ({
-        title: `Idea ${i}`,
-        description: "Short",
-      }));
+      const ideas: ParsedIdea[] = Array.from(
+        { length: PAYLOAD_LIMITS.MAX_IDEAS + 1 },
+        (_, i) => ({
+          title: `Idea ${i}`,
+          description: "Short",
+        }),
+      );
       const result = validatePayloadLimits(ideas);
       expect(result.valid).toBe(false);
       expect(result.errors).toHaveLength(1);
@@ -193,7 +204,10 @@ describe("validatePayloadLimits", () => {
         {
           title: "Test",
           description: "Description",
-          successCriteria: Array.from({ length: PAYLOAD_LIMITS.MAX_SUCCESS_CRITERIA_ITEMS + 1 }, (_, i) => `Criteria ${i}`),
+          successCriteria: Array.from(
+            { length: PAYLOAD_LIMITS.MAX_SUCCESS_CRITERIA_ITEMS + 1 },
+            (_, i) => `Criteria ${i}`,
+          ),
         },
       ];
       const result = validatePayloadLimits(ideas);
@@ -206,8 +220,16 @@ describe("validatePayloadLimits", () => {
 
     it("reports multiple success criteria violations", () => {
       const ideas: ParsedIdea[] = [
-        { title: "First", description: "Desc", successCriteria: Array.from({ length: 25 }, () => "x") },
-        { title: "Second", description: "Desc", successCriteria: Array.from({ length: 30 }, () => "y") },
+        {
+          title: "First",
+          description: "Desc",
+          successCriteria: Array.from({ length: 25 }, () => "x"),
+        },
+        {
+          title: "Second",
+          description: "Desc",
+          successCriteria: Array.from({ length: 30 }, () => "y"),
+        },
       ];
       const result = validatePayloadLimits(ideas);
       expect(result.valid).toBe(false);
@@ -236,7 +258,9 @@ describe("validatePayloadLimits", () => {
 
       const result = validatePayloadLimits(ideas);
       expect(result.valid).toBe(false);
-      expect(result.errors.some((e) => e.includes("Total payload size exceeds"))).toBe(true);
+      expect(
+        result.errors.some((e) => e.includes("Total payload size exceeds")),
+      ).toBe(true);
       expect(result.errors.some((e) => e.includes("100 KB"))).toBe(true);
     });
 
@@ -252,7 +276,9 @@ describe("validatePayloadLimits", () => {
       }
 
       const result = validatePayloadLimits(ideas);
-      const sizeError = result.errors.find((e) => e.includes("Total payload size"));
+      const sizeError = result.errors.find((e) =>
+        e.includes("Total payload size"),
+      );
       expect(sizeError).toBeDefined();
       expect(sizeError).toMatch(/\d+\.\d+ KB/); // e.g., "123.45 KB"
       expect(sizeError).toMatch(/\d+ bytes/); // e.g., "123456 bytes"
@@ -273,23 +299,37 @@ describe("validatePayloadLimits", () => {
       expect(result.valid).toBe(false);
       expect(result.errors.length).toBeGreaterThanOrEqual(3);
       expect(result.errors.some((e) => e.includes("Title exceeds"))).toBe(true);
-      expect(result.errors.some((e) => e.includes("Description exceeds"))).toBe(true);
-      expect(result.errors.some((e) => e.includes("Success criteria exceeds"))).toBe(true);
+      expect(result.errors.some((e) => e.includes("Description exceeds"))).toBe(
+        true,
+      );
+      expect(
+        result.errors.some((e) => e.includes("Success criteria exceeds")),
+      ).toBe(true);
     });
 
     it("reports violations across multiple ideas", () => {
       const ideas: ParsedIdea[] = [
         { title: "a".repeat(150), description: "First" }, // Title too long
         { title: "Second", description: "b".repeat(2500) }, // Description too long
-        { title: "Third", description: "c".repeat(150), successCriteria: Array.from({ length: 25 }, () => "x") }, // Success criteria too many
+        {
+          title: "Third",
+          description: "c".repeat(150),
+          successCriteria: Array.from({ length: 25 }, () => "x"),
+        }, // Success criteria too many
       ];
 
       const result = validatePayloadLimits(ideas);
       expect(result.valid).toBe(false);
       expect(result.errors.length).toBeGreaterThanOrEqual(3);
-      expect(result.errors.filter((e) => e.includes("Idea #1")).length).toBeGreaterThanOrEqual(1);
-      expect(result.errors.filter((e) => e.includes("Idea #2")).length).toBeGreaterThanOrEqual(1);
-      expect(result.errors.filter((e) => e.includes("Idea #3")).length).toBeGreaterThanOrEqual(1);
+      expect(
+        result.errors.filter((e) => e.includes("Idea #1")).length,
+      ).toBeGreaterThanOrEqual(1);
+      expect(
+        result.errors.filter((e) => e.includes("Idea #2")).length,
+      ).toBeGreaterThanOrEqual(1);
+      expect(
+        result.errors.filter((e) => e.includes("Idea #3")).length,
+      ).toBeGreaterThanOrEqual(1);
     });
   });
 
@@ -354,10 +394,13 @@ describe("assertPayloadLimits", () => {
   });
 
   it("throws PayloadValidationError for invalid payloads", () => {
-    const ideas: ParsedIdea[] = Array.from({ length: PAYLOAD_LIMITS.MAX_IDEAS + 1 }, (_, i) => ({
-      title: `Idea ${i}`,
-      description: "Short",
-    }));
+    const ideas: ParsedIdea[] = Array.from(
+      { length: PAYLOAD_LIMITS.MAX_IDEAS + 1 },
+      (_, i) => ({
+        title: `Idea ${i}`,
+        description: "Short",
+      }),
+    );
     expect(() => assertPayloadLimits(ideas)).toThrow(PayloadValidationError);
   });
 

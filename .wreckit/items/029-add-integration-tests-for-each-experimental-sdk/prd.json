@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "id": "029-add-integration-tests-for-each-experimental-sdk",
+  "branch_name": "wreckit/029-add-integration-tests-for-each-experimental-sdk",
+  "user_stories": [
+    {
+      "id": "US-001",
+      "title": "Create Amp SDK integration tests with mocked SDK",
+      "acceptance_criteria": [
+        "Test file exists at src/__tests__/sdk-integration/amp-sdk.integration.test.ts",
+        "Tests mock @anthropic-ai/claude-agent-sdk module using mock.module()",
+        "formatSdkMessage tested for all message types: assistant/text, assistant/tool_use, tool_result, result, error",
+        "emitAgentEventsFromSdkMessage tested for all AgentEvent types: assistant_text, tool_started, tool_result, run_result, error",
+        "handleSdkError tested for all error categories: auth (401), rate-limit (429), context, network, generic",
+        "Tests verify stdout/stderr callback routing based on message type",
+        "Tests pass without API credentials (all SDK calls mocked)",
+        "Tests pass: bun test src/__tests__/sdk-integration/amp-sdk.integration.test.ts"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Establishes the testing pattern for other SDKs. Mock the query function to return async generators of controlled messages."
+    },
+    {
+      "id": "US-002",
+      "title": "Create Codex SDK integration tests",
+      "acceptance_criteria": [
+        "Test file exists at src/__tests__/sdk-integration/codex-sdk.integration.test.ts",
+        "Tests follow same structure as Amp SDK tests",
+        "Uses CodexSdkAgentConfig with kind: codex_sdk",
+        "Error messages reference 'Codex SDK' not 'Amp SDK'",
+        "All message types and error categories tested",
+        "Tests pass: bun test src/__tests__/sdk-integration/codex-sdk.integration.test.ts"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Mirror Amp SDK test structure. Codex SDK runner is nearly identical but may diverge in future."
+    },
+    {
+      "id": "US-003",
+      "title": "Create OpenCode SDK integration tests",
+      "acceptance_criteria": [
+        "Test file exists at src/__tests__/sdk-integration/opencode-sdk.integration.test.ts",
+        "Tests follow same structure as other SDK tests",
+        "Uses OpenCodeSdkAgentConfig with kind: opencode_sdk",
+        "Error messages reference 'OpenCode SDK'",
+        "All message types and error categories tested",
+        "Tests pass: bun test src/__tests__/sdk-integration/opencode-sdk.integration.test.ts"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Complete the integration test coverage for all experimental SDKs."
+    },
+    {
+      "id": "US-004",
+      "title": "Add SDK integration tests to package.json test script",
+      "acceptance_criteria": [
+        "package.json test script includes SDK integration tests",
+        "SDK integration tests run as part of full test suite",
+        "Full test suite passes: bun test",
+        "No existing tests broken by addition"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "Add to the end of the test script chain. Use pattern: && bun test src/__tests__/sdk-integration/*.integration.test.ts"
+    },
+    {
+      "id": "US-005",
+      "title": "Update ROADMAP.md to mark integration tests objective complete",
+      "acceptance_criteria": [
+        "ROADMAP.md line 25 shows [x] Add integration tests for each experimental SDK",
+        "Git diff shows only the checkbox change from [ ] to [x]",
+        "Milestone [M2] objectives list is accurate"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Simple documentation update to mark the objective as complete."
+    },
+    {
+      "id": "US-006",
+      "title": "Update integration README with SDK test documentation",
+      "acceptance_criteria": [
+        "src/__tests__/integration/README.md documents SDK integration tests",
+        "Includes path to test files: src/__tests__/sdk-integration/*.integration.test.ts",
+        "Describes what the tests cover: message formatting, event emission, error handling, SDK options",
+        "Includes run command: bun test ./src/__tests__/sdk-integration/*.integration.test.ts"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Add a new section to the existing integration test README."
+    }
+  ]
+}
