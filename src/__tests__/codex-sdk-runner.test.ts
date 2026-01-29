@@ -57,7 +57,7 @@ describe("runCodexSdkAgent", () => {
       expect(result.success).toBe(true);
       const debugCalls = (mockLogger.debug as any).mock.calls;
       const hasToolRestrictions = debugCalls.some((call: any[]) =>
-        call[0]?.includes?.("Tool restrictions")
+        call[0]?.includes?.("Tool restrictions"),
       );
       expect(hasToolRestrictions).toBe(true);
     });
@@ -79,7 +79,7 @@ describe("runCodexSdkAgent", () => {
       expect(result.success).toBe(true);
       const debugCalls = (mockLogger.debug as any).mock.calls;
       const toolRestrictionCall = debugCalls.find((call: any[]) =>
-        call[0]?.includes?.("Tool restrictions")
+        call[0]?.includes?.("Tool restrictions"),
       );
       expect(toolRestrictionCall).toBeDefined();
       expect(toolRestrictionCall[0]).toContain("Read");
@@ -100,7 +100,7 @@ describe("runCodexSdkAgent", () => {
       expect(result.success).toBe(true);
       const debugCalls = (mockLogger.debug as any).mock.calls;
       const toolRestrictionCall = debugCalls.find((call: any[]) =>
-        call[0]?.includes?.("Tool restrictions")
+        call[0]?.includes?.("Tool restrictions"),
       );
       expect(toolRestrictionCall).toBeDefined();
       expect(toolRestrictionCall[0]).toContain("Glob");
@@ -120,7 +120,7 @@ describe("runCodexSdkAgent", () => {
       expect(result.success).toBe(true);
       const debugCalls = (mockLogger.debug as any).mock.calls;
       const hasToolRestrictions = debugCalls.some((call: any[]) =>
-        call[0]?.includes?.("Tool restrictions")
+        call[0]?.includes?.("Tool restrictions"),
       );
       expect(hasToolRestrictions).toBe(false);
     });

@@ -14,7 +14,7 @@ interface FileOpsOptions {
  * Measures atomic write performance and lock acquisition latency.
  */
 export async function runFileOpsSuite(
-  options: FileOpsOptions = {}
+  options: FileOpsOptions = {},
 ): Promise<SuiteResult> {
   const { iterations = 10 } = options;
   const metrics: Metric[] = [];
@@ -31,7 +31,7 @@ export async function runFileOpsSuite(
       async () => {
         await safeWriteJson(filePath, payload);
       },
-      { iterations }
+      { iterations },
     );
 
     const stats = calculateStats(samples);
@@ -57,7 +57,7 @@ export async function runFileOpsSuite(
       state: "implementing",
       overview:
         "A moderately sized overview that contains some description text ".repeat(
-          10
+          10,
         ),
       branch: "wreckit/test-001-benchmark",
       pr_url: null,
@@ -71,7 +71,7 @@ export async function runFileOpsSuite(
       async () => {
         await safeWriteJson(filePath, payload);
       },
-      { iterations }
+      { iterations },
     );
 
     const stats = calculateStats(samples);
@@ -112,7 +112,7 @@ export async function runFileOpsSuite(
       async () => {
         await safeWriteJson(filePath, payload);
       },
-      { iterations }
+      { iterations },
     );
 
     const stats = calculateStats(samples);
@@ -138,7 +138,7 @@ export async function runFileOpsSuite(
         });
         await lock.release();
       },
-      { iterations }
+      { iterations },
     );
 
     const stats = calculateStats(samples);
@@ -164,7 +164,7 @@ export async function runFileOpsSuite(
           return;
         });
       },
-      { iterations }
+      { iterations },
     );
 
     const stats = calculateStats(samples);

@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "id": "072-dreamer-standardize-error-handling-in-rlm-runner",
+  "title": "[DREAMER] Standardize error handling in RLM runner",
+  "state": "idea",
+  "overview": "Error handling functions with 'any' parameters reduce TypeScript's ability to catch error handling bugs. The function should be more specific about what types of errors it handles.\n\n**Motivation:** Proper error typing ensures all error cases are handled correctly and makes the code more maintainable. Error handling is a critical part of agent reliability.\n\n**Success criteria:**\n- Replace 'any' type in handleAxAIError with proper error union type\n- Add type guards for specific error types (AxAI errors, network errors, etc.)\n- Ensure all error paths are properly typed\n\n**Technical constraints:**\n- Depends on @ax-llm/ax error types\n- Must handle both Error instances and non-Error values gracefully\n- Cannot break existing error handling behavior\n\n**In scope:**\n- src/agent/rlm-runner.ts handleAxAIError function\n- Type definitions for AxAI errors\n**Out of scope:**\n- Changing the actual error messages\n- Modifying how errors are displayed to users\n\n**Signals:** priority: low, urgency: Code quality - type safety in error paths",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-27T21:19:06.146Z",
+  "updated_at": "2026-01-27T21:19:06.146Z",
+  "problem_statement": "Error handling functions with 'any' parameters reduce TypeScript's ability to catch error handling bugs. The function should be more specific about what types of errors it handles.",
+  "motivation": "Proper error typing ensures all error cases are handled correctly and makes the code more maintainable. Error handling is a critical part of agent reliability.",
+  "success_criteria": [
+    "Replace 'any' type in handleAxAIError with proper error union type",
+    "Add type guards for specific error types (AxAI errors, network errors, etc.)",
+    "Ensure all error paths are properly typed"
+  ],
+  "technical_constraints": [
+    "Depends on @ax-llm/ax error types",
+    "Must handle both Error instances and non-Error values gracefully",
+    "Cannot break existing error handling behavior"
+  ],
+  "scope_in_scope": [
+    "src/agent/rlm-runner.ts handleAxAIError function",
+    "Type definitions for AxAI errors"
+  ],
+  "scope_out_of_scope": [
+    "Changing the actual error messages",
+    "Modifying how errors are displayed to users"
+  ],
+  "priority_hint": "low",
+  "urgency_hint": "Code quality - type safety in error paths"
+}

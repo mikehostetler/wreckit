@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "id": "085-dreamer-implement-interactive-merge-logic-in-learn",
+  "title": "[DREAMER] Implement interactive merge logic in learn command",
+  "state": "idea",
+  "overview": "The `wreckit learn` command currently falls back to 'append' merge strategy when not in TTY, but throws an error in TTY mode stating 'Interactive merge logic not yet implemented.' This is a half-implemented feature that creates poor UX.\n\n**Motivation:** Interactive merging would allow users to intelligently merge new skills with existing ones, avoiding the current 'all or nothing' append approach. This would make the learn command more practical for real-world skill management.\n\n**Success criteria:**\n- Implement interactive diff display for skill conflicts\n- Allow user to choose between keep/replace/merge for each conflict\n- Fall back to append strategy gracefully if not in TTY\n- Add tests for interactive merge flow\n\n**Technical constraints:**\n- Must maintain backward compatibility with append strategy\n- Requires readline or similar TTY interaction library\n- Should handle multiple skill conflicts gracefully\n\n**In scope:**\n- src/commands/learn.ts:169 error throw\n- Interactive merge UI implementation\n- Conflict resolution logic for skill definitions\n**Out of scope:**\n- Refactoring the entire skills.json schema\n- Changes to skill loading or execution\n\n**Signals:** priority: medium, urgency: Feature gap - incomplete implementation blocking users",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-28T15:35:06.945Z",
+  "updated_at": "2026-01-28T15:35:06.945Z",
+  "problem_statement": "The `wreckit learn` command currently falls back to 'append' merge strategy when not in TTY, but throws an error in TTY mode stating 'Interactive merge logic not yet implemented.' This is a half-implemented feature that creates poor UX.",
+  "motivation": "Interactive merging would allow users to intelligently merge new skills with existing ones, avoiding the current 'all or nothing' append approach. This would make the learn command more practical for real-world skill management.",
+  "success_criteria": [
+    "Implement interactive diff display for skill conflicts",
+    "Allow user to choose between keep/replace/merge for each conflict",
+    "Fall back to append strategy gracefully if not in TTY",
+    "Add tests for interactive merge flow"
+  ],
+  "technical_constraints": [
+    "Must maintain backward compatibility with append strategy",
+    "Requires readline or similar TTY interaction library",
+    "Should handle multiple skill conflicts gracefully"
+  ],
+  "scope_in_scope": [
+    "src/commands/learn.ts:169 error throw",
+    "Interactive merge UI implementation",
+    "Conflict resolution logic for skill definitions"
+  ],
+  "scope_out_of_scope": [
+    "Refactoring the entire skills.json schema",
+    "Changes to skill loading or execution"
+  ],
+  "priority_hint": "medium",
+  "urgency_hint": "Feature gap - incomplete implementation blocking users"
+}

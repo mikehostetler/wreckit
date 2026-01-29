@@ -28,7 +28,9 @@ describe("runOpenCodeSdkAgent", () => {
 
   describe("dry-run mode", () => {
     it("returns success without calling SDK", async () => {
-      const { runOpenCodeSdkAgent } = await import("../agent/opencode-sdk-runner");
+      const { runOpenCodeSdkAgent } = await import(
+        "../agent/opencode-sdk-runner"
+      );
       const result = await runOpenCodeSdkAgent({
         config: createDefaultConfig(),
         cwd: "/tmp/test",
@@ -43,7 +45,9 @@ describe("runOpenCodeSdkAgent", () => {
     });
 
     it("logs tool restrictions when allowedTools provided", async () => {
-      const { runOpenCodeSdkAgent } = await import("../agent/opencode-sdk-runner");
+      const { runOpenCodeSdkAgent } = await import(
+        "../agent/opencode-sdk-runner"
+      );
       const result = await runOpenCodeSdkAgent({
         config: createDefaultConfig(),
         cwd: "/tmp/test",
@@ -56,7 +60,7 @@ describe("runOpenCodeSdkAgent", () => {
       expect(result.success).toBe(true);
       const debugCalls = (mockLogger.debug as any).mock.calls;
       const hasToolRestrictions = debugCalls.some((call: any[]) =>
-        call[0]?.includes?.("Tool restrictions")
+        call[0]?.includes?.("Tool restrictions"),
       );
       expect(hasToolRestrictions).toBe(true);
     });
@@ -64,7 +68,9 @@ describe("runOpenCodeSdkAgent", () => {
 
   describe("getEffectiveToolAllowlist resolution", () => {
     it("prefers explicit allowedTools over phase", async () => {
-      const { runOpenCodeSdkAgent } = await import("../agent/opencode-sdk-runner");
+      const { runOpenCodeSdkAgent } = await import(
+        "../agent/opencode-sdk-runner"
+      );
       const result = await runOpenCodeSdkAgent({
         config: createDefaultConfig(),
         cwd: "/tmp/test",
@@ -78,7 +84,7 @@ describe("runOpenCodeSdkAgent", () => {
       expect(result.success).toBe(true);
       const debugCalls = (mockLogger.debug as any).mock.calls;
       const toolRestrictionCall = debugCalls.find((call: any[]) =>
-        call[0]?.includes?.("Tool restrictions")
+        call[0]?.includes?.("Tool restrictions"),
       );
       expect(toolRestrictionCall).toBeDefined();
       expect(toolRestrictionCall[0]).toContain("Read");
@@ -86,7 +92,9 @@ describe("runOpenCodeSdkAgent", () => {
     });
 
     it("falls back to phase-based allowlist when no explicit tools", async () => {
-      const { runOpenCodeSdkAgent } = await import("../agent/opencode-sdk-runner");
+      const { runOpenCodeSdkAgent } = await import(
+        "../agent/opencode-sdk-runner"
+      );
       const result = await runOpenCodeSdkAgent({
         config: createDefaultConfig(),
         cwd: "/tmp/test",
@@ -99,7 +107,7 @@ describe("runOpenCodeSdkAgent", () => {
       expect(result.success).toBe(true);
       const debugCalls = (mockLogger.debug as any).mock.calls;
       const toolRestrictionCall = debugCalls.find((call: any[]) =>
-        call[0]?.includes?.("Tool restrictions")
+        call[0]?.includes?.("Tool restrictions"),
       );
       expect(toolRestrictionCall).toBeDefined();
       expect(toolRestrictionCall[0]).toContain("Glob");
@@ -107,7 +115,9 @@ describe("runOpenCodeSdkAgent", () => {
     });
 
     it("has no restrictions when neither allowedTools nor phase specified", async () => {
-      const { runOpenCodeSdkAgent } = await import("../agent/opencode-sdk-runner");
+      const { runOpenCodeSdkAgent } = await import(
+        "../agent/opencode-sdk-runner"
+      );
       const result = await runOpenCodeSdkAgent({
         config: createDefaultConfig(),
         cwd: "/tmp/test",
@@ -119,7 +129,7 @@ describe("runOpenCodeSdkAgent", () => {
       expect(result.success).toBe(true);
       const debugCalls = (mockLogger.debug as any).mock.calls;
       const hasToolRestrictions = debugCalls.some((call: any[]) =>
-        call[0]?.includes?.("Tool restrictions")
+        call[0]?.includes?.("Tool restrictions"),
       );
       expect(hasToolRestrictions).toBe(false);
     });

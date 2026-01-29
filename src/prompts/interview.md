@@ -36,7 +36,7 @@ Jump straight into 1-2 clarifying questions based on what's missing from their i
 Ask follow-up questions based on what's missing (1-2 at a time). Examples:
 
 - "What problem does this solve?" (if motivation unclear)
-- "Who would use this?" (if audience unclear)  
+- "Who would use this?" (if audience unclear)
 - "How would you know this is working?" (if success criteria unclear)
 - "Any constraints I should know about?" (if technical limits unclear)
 - "What should this NOT do?" (if scope unclear)

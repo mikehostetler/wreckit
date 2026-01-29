@@ -24,8 +24,8 @@ Once you have API access, you can set up Claude Code to use the Zai API:
 
 # Wreck it Ralph Wiggum 🔨
 
-> *"I'm gonna wreck it!"* — Wreck-It Ralph  
-> *"I'm in danger."* — Ralph Wiggum, also your codebase
+> _"I'm gonna wreck it!"_ — Wreck-It Ralph  
+> _"I'm in danger."_ — Ralph Wiggum, also your codebase
 
 **Your AI agent, unsupervised, wrecking through your backlog while you sleep.**
 
@@ -84,14 +84,14 @@ Each item progresses through states:
 raw → researched → planned → implementing → in_pr → done
 ```
 
-| State | What Happened |
-|-------|---------------|
-| `raw` | Ingested, waiting for attention |
-| `researched` | Agent analyzed codebase, wrote `research.md` |
-| `planned` | Agent created `plan.md` + `prd.json` with user stories |
-| `implementing` | Agent coding through stories, committing as it goes |
-| `in_pr` | PR opened, awaiting your review |
-| `done` | Merged. Ralph did it. |
+| State          | What Happened                                          |
+| -------------- | ------------------------------------------------------ |
+| `raw`          | Ingested, waiting for attention                        |
+| `researched`   | Agent analyzed codebase, wrote `research.md`           |
+| `planned`      | Agent created `plan.md` + `prd.json` with user stories |
+| `implementing` | Agent coding through stories, committing as it goes    |
+| `in_pr`        | PR opened, awaiting your review                        |
+| `done`         | Merged. Ralph did it.                                  |
 
 ### The Workflow
 
@@ -109,35 +109,182 @@ raw → researched → planned → implementing → in_pr → done
 
 ### The Essentials
 
-| Command | What It Does |
-|---------|--------------|
-| `wreckit` | Run everything. TUI shows progress. |
-| `wreckit init` | Initialize `.wreckit/` in repo |
-| `wreckit ideas < FILE` | Ingest ideas from stdin |
-| `wreckit status` | List all items with state |
-| `wreckit run <id>` | Run single item through all phases |
-| `wreckit next` | Run the next incomplete item |
-| `wreckit doctor` | Validate items, find issues |
+| Command                | What It Does                        |
+| ---------------------- | ----------------------------------- |
+| `wreckit`              | Run everything. TUI shows progress. |
+| `wreckit init`         | Initialize `.wreckit/` in repo      |
+| `wreckit ideas < FILE` | Ingest ideas from stdin             |
+| `wreckit status`       | List all items with state           |
+| `wreckit run <id>`     | Run single item through all phases  |
+| `wreckit next`         | Run the next incomplete item        |
+| `wreckit doctor`       | Validate items, find issues         |
 
 ### Phase Commands (for debugging)
 
-| Command | Transition |
-|---------|------------|
-| `wreckit research <id>` | raw → researched |
-| `wreckit plan <id>` | researched → planned |
+| Command                  | Transition             |
+| ------------------------ | ---------------------- |
+| `wreckit research <id>`  | raw → researched       |
+| `wreckit plan <id>`      | researched → planned   |
 | `wreckit implement <id>` | planned → implementing |
-| `wreckit pr <id>` | implementing → in_pr |
-| `wreckit complete <id>` | in_pr → done |
+| `wreckit pr <id>`        | implementing → in_pr   |
+| `wreckit complete <id>`  | in_pr → done           |
 
 ### Flags
 
-| Flag | What |
-|------|------|
-| `--verbose` | More logs |
-| `--quiet` | Errors only |
-| `--no-tui` | Disable TUI (CI mode) |
-| `--dry-run` | Preview, don't execute |
-| `--force` | Regenerate artifacts |
+| Flag        | What                                      |
+| ----------- | ----------------------------------------- |
+| `--sandbox` | Run in isolated Firecracker VM            |
+| `--verbose` | More logs                                 |
+| `--quiet`   | Errors only                               |
+| `--no-tui`  | Disable TUI (CI mode)                     |
+| `--dry-run` | Preview, don't execute                    |
+| `--force`   | Regenerate artifacts                      |
+
+---
+
+## Sandbox Mode
+
+**Sandbox mode** runs your agent in an isolated Firecracker microVM, automatically syncing files back and forth. This is the safest way to run untrusted code or risky operations.
+
+### Quick Start
+
+```bash
+# Run a single item in sandbox mode
+wreckit run 079-sandbox-usability-layer --sandbox
+
+# Run all phases in sandbox mode
+wreckit research 079-sandbox-usability-layer --sandbox
+wreckit plan 079-sandbox-usability-layer --sandbox
+wreckit implement 079-sandbox-usability-layer --sandbox
+
+# Run everything in sandbox mode
+wreckit --sandbox
+```
+
+### What Sandbox Mode Does
+
+When you use `--sandbox`, Wreckit:
+
+1. **Spawns a Firecracker VM** — Creates an isolated microVM via Sprite
+2. **Syncs your project** — Pushes your code to the VM before execution
+3. **Runs the agent** — Executes in complete isolation
+4. **Pulls back changes** — Syncs modified files back to your machine on success
+5. **Cleans up** — Automatically destroys the VM when done
+
+### Why Use Sandbox Mode?
+
+- **Safety**: Run risky code (file operations, network requests, system commands) in isolation
+- **Clean environments**: Each sandbox starts fresh, no leftover state
+- **Parallel execution**: Run multiple sandboxes simultaneously without conflicts
+- **Reproducibility**: Same VM config every time
+
+### Requirements
+
+- **Sprite CLI** — Install from [sprites.dev](https://sprites.dev/)
+- **Sprites.dev account** — Free tier available for testing
+- **Sufficient resources** — Each VM uses ~512MiB RAM by default
+
+### How It Works
+
+**VM Lifecycle:**
+```
+1. Auto-generate VM name: wreckit-sandbox-<item-id>-<timestamp>
+2. Start VM with Sprite CLI
+3. Push project files to VM (excludes: .git, node_modules, .wreckit, dist, build)
+4. Run agent in VM
+5. On success: Pull modified files back from VM
+6. Destroy VM (ephemeral cleanup)
+```
+
+**Interrupt Safety:**
+- Press `Ctrl+C` once → Graceful shutdown with VM cleanup
+- Press `Ctrl+C` twice → Force exit (if cleanup hangs)
+
+**Bi-directional Sync:**
+- Files modified in the VM are pulled back automatically on success
+- Excludes: `.git`, `node_modules`, `.wreckit`, `dist`, `build`, `.DS_Store`
+
+### Advanced: Manual VM Management
+
+For power users who want persistent VMs or manual control:
+
+```bash
+# List running VMs
+wreckit sprite list
+
+# Start a VM manually
+wreckit sprite start my-vm
+
+# Execute commands in a VM
+wreckit sprite exec my-vm -- npm test
+
+# Pull files from VM
+wreckit sprite pull my-vm
+
+# Kill a VM
+wreckit sprite kill my-vm
+
+# Attach to a VM (interactive shell)
+wreckit sprite attach my-vm
+```
+
+**When to use manual VM management:**
+- You want a persistent VM for multiple runs
+- You need to debug inside the VM
+- You want to run custom commands before/after agent execution
+- You're running many operations and don't want to restart the VM each time
+
+### Configuration
+
+You can also configure sandbox mode in `.wreckit/config.json`:
+
+```json
+{
+  "agent": {
+    "kind": "sprite",
+    "wispPath": "sprite",
+    "syncEnabled": true,
+    "syncOnSuccess": true,
+    "maxVMs": 5,
+    "defaultMemory": "512MiB",
+    "defaultCPUs": "1"
+  }
+}
+```
+
+**However, using `--sandbox` is recommended** because it:
+- Automatically sets sensible defaults
+- Enables ephemeral mode (auto-cleanup)
+- Enables bi-directional sync
+- Works with any agent configuration
+
+### Troubleshooting
+
+**VM fails to start:**
+```bash
+# Check Sprite CLI is installed
+sprite --version
+
+# Verify authentication
+sprite auth status
+
+# Check available VMs
+wreckit sprite list
+```
+
+**Files not syncing back:**
+- Ensure `syncOnSuccess: true` in config (automatic with `--sandbox`)
+- Check that files aren't in exclude patterns
+- Run with `--verbose` to see sync logs
+
+**Orphaned VMs:**
+```bash
+# List all VMs
+wreckit sprite list
+
+# Kill orphaned VMs
+wreckit sprite kill <vm-name>
+```
 
 ---
 
@@ -164,13 +311,13 @@ Lives in `.wreckit/config.json`:
 
 Wreckit supports multiple agent execution backends:
 
-| Kind | Description | Configuration |
-|------|-------------|---------------|
-| `claude_sdk` | Claude Agent SDK (recommended) | model, max_tokens, tools |
-| `amp_sdk` | Amp SDK (experimental) | model (optional) |
-| `codex_sdk` | Codex SDK (experimental) | model (default: codex-1) |
-| `opencode_sdk` | OpenCode SDK (experimental) | none |
-| `process` | External CLI process | command, args, completion_signal |
+| Kind           | Description                    | Configuration                    |
+| -------------- | ------------------------------ | -------------------------------- |
+| `claude_sdk`   | Claude Agent SDK (recommended) | model, max_tokens, tools         |
+| `amp_sdk`      | Amp SDK (experimental)         | model (optional)                 |
+| `codex_sdk`    | Codex SDK (experimental)       | model (default: codex-1)         |
+| `opencode_sdk` | OpenCode SDK (experimental)    | none                             |
+| `process`      | External CLI process           | command, args, completion_signal |
 
 #### Claude SDK Mode (Recommended)
 
@@ -193,6 +340,7 @@ Wreckit also supports experimental SDK integrations. These use the same underlyi
 > **Note:** Experimental SDKs may have API changes in future releases.
 
 **Amp SDK:**
+
 ```json
 {
   "agent": {
@@ -203,6 +351,7 @@ Wreckit also supports experimental SDK integrations. These use the same underlyi
 ```
 
 **Codex SDK:**
+
 ```json
 {
   "agent": {
@@ -213,6 +362,7 @@ Wreckit also supports experimental SDK integrations. These use the same underlyi
 ```
 
 **OpenCode SDK:**
+
 ```json
 {
   "agent": {
@@ -226,6 +376,7 @@ Wreckit also supports experimental SDK integrations. These use the same underlyi
 Spawns an external CLI process (for backward compatibility or custom agents):
 
 **Amp CLI:**
+
 ```json
 {
   "agent": {
@@ -238,6 +389,7 @@ Spawns an external CLI process (for backward compatibility or custom agents):
 ```
 
 **Claude CLI:**
+
 ```json
 {
   "agent": {
@@ -289,20 +441,20 @@ Edit files in `.wreckit/prompts/` to customize agent behavior:
 
 ### Template Variables
 
-| Variable | Description |
-|----------|-------------|
-| `{{id}}` | Item ID (e.g., `features/001-dark-mode`) |
-| `{{title}}` | Item title |
-| `{{section}}` | Section name |
-| `{{overview}}` | Item description |
-| `{{item_path}}` | Path to item folder |
-| `{{branch_name}}` | Git branch name |
-| `{{base_branch}}` | Base branch |
-| `{{completion_signal}}` | Agent completion signal |
-| `{{research}}` | Contents of research.md |
-| `{{plan}}` | Contents of plan.md |
-| `{{prd}}` | Contents of prd.json |
-| `{{progress}}` | Contents of progress.log |
+| Variable                | Description                              |
+| ----------------------- | ---------------------------------------- |
+| `{{id}}`                | Item ID (e.g., `features/001-dark-mode`) |
+| `{{title}}`             | Item title                               |
+| `{{section}}`           | Section name                             |
+| `{{overview}}`          | Item description                         |
+| `{{item_path}}`         | Path to item folder                      |
+| `{{branch_name}}`       | Git branch name                          |
+| `{{base_branch}}`       | Base branch                              |
+| `{{completion_signal}}` | Agent completion signal                  |
+| `{{research}}`          | Contents of research.md                  |
+| `{{plan}}`              | Contents of plan.md                      |
+| `{{prd}}`               | Contents of prd.json                     |
+| `{{progress}}`          | Contents of progress.log                 |
 
 ---
 
@@ -392,11 +544,11 @@ bun run test
 
 ## Exit Codes
 
-| Code | Meaning |
-|------|---------|
-| 0 | Success |
-| 1 | Error |
-| 130 | Interrupted (Ctrl-C) |
+| Code | Meaning              |
+| ---- | -------------------- |
+| 0    | Success              |
+| 1    | Error                |
+| 130  | Interrupted (Ctrl-C) |
 
 ---
 
@@ -417,4 +569,4 @@ MIT
 
 ---
 
-*"My code is in danger!"* — your codebase, nervously
+_"My code is in danger!"_ — your codebase, nervously

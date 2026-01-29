@@ -19,13 +19,19 @@ export function LogsPane({
   if (logs.length === 0) {
     return (
       <Box flexDirection="column" width={width} height={height}>
-        <Text dimColor>{"─".repeat(Math.min(innerWidth, 20))} Agent Output {"─".repeat(Math.min(innerWidth - 34, 20))}</Text>
-        <Text dimColor>  (no output yet)</Text>
+        <Text dimColor>
+          {"─".repeat(Math.min(innerWidth, 20))} Agent Output{" "}
+          {"─".repeat(Math.min(innerWidth - 34, 20))}
+        </Text>
+        <Text dimColor> (no output yet)</Text>
       </Box>
     );
   }
 
-  const effectiveOffset = Math.min(scrollOffset, Math.max(0, logs.length - height + 1));
+  const effectiveOffset = Math.min(
+    scrollOffset,
+    Math.max(0, logs.length - height + 1),
+  );
   const startIdx = Math.max(0, logs.length - height + 1 - effectiveOffset);
   const endIdx = startIdx + height - 1;
   const visibleLogs = logs.slice(startIdx, endIdx);

@@ -3,7 +3,17 @@ import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import { getPromptsDir, getWreckitDir } from "./fs/paths";
 
-export type PromptName = "research" | "plan" | "implement" | "ideas" | "pr" | "strategy" | "learn" | "media";
+export type PromptName =
+  | "research"
+  | "plan"
+  | "implement"
+  | "ideas"
+  | "pr"
+  | "strategy"
+  | "learn"
+  | "media"
+  | "interview"
+  | "critique";
 
 export interface PromptVariables {
   id: string;
@@ -21,6 +31,8 @@ export interface PromptVariables {
   progress?: string;
   // Add skill context for JIT loading (Item 033)
   skill_context?: string;
+  // Add scope limits context (Item 084)
+  scope_limits?: string;
 }
 
 function getPromptTemplatePath(root: string, name: PromptName): string {
@@ -39,7 +51,7 @@ export async function getDefaultTemplate(name: PromptName): Promise<string> {
 
 export async function loadPromptTemplate(
   root: string,
-  name: PromptName
+  name: PromptName,
 ): Promise<string> {
   const promptPath = getPromptTemplatePath(root, name);
 
@@ -56,21 +68,27 @@ export async function loadPromptTemplate(
 
 export function renderPrompt(
   template: string,
-  variables: PromptVariables
+  variables: PromptVariables,
 ): string {
   let result = template;
 
   // Handle simple {{#if}} conditionals
-  result = result.replace(/\{\{#if (\w+)\}\}([\s\S]*?)\{\{\/if\}\}/g, (_, varName, content) => {
-    const value = (variables as any)[varName];
-    return value ? content : "";
-  });
+  result = result.replace(
+    /\{\{#if (\w+)\}\}([\s\S]*?)\{\{\/if\}\}/g,
+    (_, varName, content) => {
+      const value = (variables as any)[varName];
+      return value ? content : "";
+    },
+  );
 
   // Handle simple {{#ifnot}} conditionals (inverse)
-  result = result.replace(/\{\{#ifnot (\w+)\}\}([\s\S]*?)\{\{\/ifnot\}\}/g, (_, varName, content) => {
-    const value = (variables as any)[varName];
-    return !value ? content : "";
-  });
+  result = result.replace(
+    /\{\{#ifnot (\w+)\}\}([\s\S]*?)\{\{\/ifnot\}\}/g,
+    (_, varName, content) => {
+      const value = (variables as any)[varName];
+      return !value ? content : "";
+    },
+  );
 
   const varMap: Record<string, string | undefined> = {
     id: variables.id,
@@ -87,6 +105,7 @@ export function renderPrompt(
     prd: variables.prd,
     progress: variables.progress,
     skill_context: variables.skill_context, // Add skill context
+    scope_limits: variables.scope_limits, // Add scope limits
   };
 
   for (const [key, value] of Object.entries(varMap)) {
@@ -101,7 +120,13 @@ export async function initPromptTemplates(root: string): Promise<void> {
   const promptsDir = getPromptsDir(root);
   await fs.mkdir(promptsDir, { recursive: true });
 
-  const promptNames: PromptName[] = ["research", "plan", "implement", "ideas", "pr"];
+  const promptNames: PromptName[] = [
+    "research",
+    "plan",
+    "implement",
+    "ideas",
+    "pr",
+  ];
 
   for (const name of promptNames) {
     const filePath = getPromptTemplatePath(root, name);

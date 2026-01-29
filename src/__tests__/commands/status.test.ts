@@ -1,4 +1,14 @@
-import { describe, expect, it, beforeEach, afterEach, mock, spyOn, vi, setSystemTime } from "bun:test";
+import {
+  describe,
+  expect,
+  it,
+  beforeEach,
+  afterEach,
+  mock,
+  spyOn,
+  vi,
+  setSystemTime,
+} from "bun:test";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import * as os from "node:os";
@@ -16,7 +26,11 @@ function createMockLogger() {
   } satisfies Logger;
 }
 
-async function createItem(root: string, slug: string, state: string = "idea"): Promise<Item> {
+async function createItem(
+  root: string,
+  slug: string,
+  state: string = "idea",
+): Promise<Item> {
   const itemDir = path.join(root, ".wreckit", "items", slug);
   await fs.mkdir(itemDir, { recursive: true });
 
@@ -34,7 +48,10 @@ async function createItem(root: string, slug: string, state: string = "idea"): P
     updated_at: new Date().toISOString(),
   };
 
-  await fs.writeFile(path.join(itemDir, "item.json"), JSON.stringify(item, null, 2));
+  await fs.writeFile(
+    path.join(itemDir, "item.json"),
+    JSON.stringify(item, null, 2),
+  );
   return item;
 }
 
@@ -43,7 +60,9 @@ describe("scanItems", () => {
 
   beforeEach(async () => {
     tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "wreckit-test-"));
-    await fs.mkdir(path.join(tempDir, ".wreckit", "items"), { recursive: true });
+    await fs.mkdir(path.join(tempDir, ".wreckit", "items"), {
+      recursive: true,
+    });
   });
 
   afterEach(async () => {
@@ -78,7 +97,9 @@ describe("scanItems", () => {
   });
 
   it("skips directories not matching item pattern", async () => {
-    await fs.mkdir(path.join(tempDir, ".wreckit", "items", "not-an-item"), { recursive: true });
+    await fs.mkdir(path.join(tempDir, ".wreckit", "items", "not-an-item"), {
+      recursive: true,
+    });
     await createItem(tempDir, "001-valid");
 
     const items = await scanItems(tempDir);
@@ -93,7 +114,9 @@ describe("statusCommand", () => {
 
   beforeEach(async () => {
     tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "wreckit-test-"));
-    await fs.mkdir(path.join(tempDir, ".wreckit", "items"), { recursive: true });
+    await fs.mkdir(path.join(tempDir, ".wreckit", "items"), {
+      recursive: true,
+    });
     await fs.mkdir(path.join(tempDir, ".git"), { recursive: true });
     originalCwd = process.cwd();
     process.chdir(tempDir);
@@ -107,7 +130,7 @@ describe("statusCommand", () => {
   it("shows 'No items found' for empty items dir", async () => {
     const logger = createMockLogger();
     const consoleSpy = spyOn(console, "log");
-    
+
     await statusCommand({}, logger);
 
     expect(consoleSpy).toHaveBeenCalledWith("No items found");
@@ -121,14 +144,14 @@ describe("statusCommand", () => {
 
     const logger = createMockLogger();
     const consoleSpy = spyOn(console, "log");
-    
+
     await statusCommand({}, logger);
 
     const calls = consoleSpy.mock.calls.map((c) => String(c[0]));
     expect(calls.some((c) => c.includes("idea"))).toBe(true);
     expect(calls.some((c) => c.includes("researched"))).toBe(true);
     expect(calls.some((c) => c.includes("planned"))).toBe(true);
-    
+
     consoleSpy.mockRestore();
   });
 
@@ -140,7 +163,11 @@ describe("statusCommand", () => {
     await statusCommand({ json: true }, logger);
 
     expect(logger.json).toHaveBeenCalledTimes(1);
-    const output = logger.json.mock.calls[0][0] as { schema_version: number; items: { id: number; fullId: string }[]; generated_at: string };
+    const output = logger.json.mock.calls[0][0] as {
+      schema_version: number;
+      items: { id: number; fullId: string }[];
+      generated_at: string;
+    };
 
     expect(output.schema_version).toBe(1);
     expect(output.items).toHaveLength(2);
@@ -159,7 +186,9 @@ describe("statusCommand", () => {
     const logger = createMockLogger();
     await statusCommand({ json: true }, logger);
 
-    const output = logger.json.mock.calls[0][0] as { items: { id: number; fullId: string }[] };
+    const output = logger.json.mock.calls[0][0] as {
+      items: { id: number; fullId: string }[];
+    };
     expect(output.items[0].fullId).toBe("001-first");
     expect(output.items[1].fullId).toBe("002-second");
     expect(output.items[2].fullId).toBe("003-third");

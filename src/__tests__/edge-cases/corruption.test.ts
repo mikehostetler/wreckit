@@ -46,11 +46,11 @@ describe("corruption detection", () => {
       await fs.writeFile(
         itemPath,
         '{"schema_version": 1, "id": "test"',
-        "utf-8"
+        "utf-8",
       );
 
       await expect(readJsonWithSchema(itemPath, ItemSchema)).rejects.toThrow(
-        InvalidJsonError
+        InvalidJsonError,
       );
     });
   });
@@ -61,7 +61,7 @@ describe("corruption detection", () => {
       await fs.writeFile(itemPath, "not valid json at all", "utf-8");
 
       await expect(readJsonWithSchema(itemPath, ItemSchema)).rejects.toThrow(
-        InvalidJsonError
+        InvalidJsonError,
       );
     });
 
@@ -70,7 +70,7 @@ describe("corruption detection", () => {
       await fs.writeFile(itemPath, '{"foo": "bar"}', "utf-8");
 
       await expect(readJsonWithSchema(itemPath, ItemSchema)).rejects.toThrow(
-        SchemaValidationError
+        SchemaValidationError,
       );
     });
   });
@@ -80,7 +80,7 @@ describe("corruption detection", () => {
       const itemPath = path.join(tempDir, "nonexistent.json");
 
       await expect(readJsonWithSchema(itemPath, ItemSchema)).rejects.toThrow(
-        FileNotFoundError
+        FileNotFoundError,
       );
     });
   });
@@ -156,12 +156,12 @@ describe("orphaned temp file cleanup", () => {
     await fs.writeFile(
       path.join(tempDir, "item.json.abc123.tmp"),
       "{}",
-      "utf-8"
+      "utf-8",
     );
     await fs.writeFile(
       path.join(tempDir, "prd.json.def456.tmp"),
       "{}",
-      "utf-8"
+      "utf-8",
     );
     // Create a real file that should NOT be deleted
     await fs.writeFile(path.join(tempDir, "real.json"), "{}", "utf-8");

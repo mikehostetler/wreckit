@@ -1,6 +1,6 @@
 import { runAgentUnion, getAgentConfigUnion } from "../agent/runner";
 import { loadConfig } from "../config";
-import { logger } from "../logging";
+import { logger, type Logger } from "../logging";
 import { loadPromptTemplate } from "../prompts";
 import type { AgentEvent } from "../tui/agentEvents";
 import type { ParsedIdea } from "./ideas";
@@ -11,6 +11,7 @@ import { McpToolNotCalledError } from "../errors";
 export interface ParseIdeasOptions {
   verbose?: boolean;
   mockAgent?: boolean;
+  logger?: Logger;
 }
 
 function formatAgentEvent(event: AgentEvent): string {
@@ -20,9 +21,10 @@ function formatAgentEvent(event: AgentEvent): string {
     case "tool_started":
       return `🔧 Tool: ${event.toolName}`;
     case "tool_result":
-      const preview = typeof event.result === "string" 
-        ? event.result.slice(0, 100) 
-        : JSON.stringify(event.result).slice(0, 100);
+      const preview =
+        typeof event.result === "string"
+          ? event.result.slice(0, 100)
+          : JSON.stringify(event.result).slice(0, 100);
       return `   └─ Result: ${preview}${preview.length >= 100 ? "..." : ""}`;
     case "run_result":
       return `✅ ${event.subtype || "Complete"}`;
@@ -36,13 +38,14 @@ function formatAgentEvent(event: AgentEvent): string {
 export async function parseIdeasWithAgent(
   text: string,
   root: string,
-  options: ParseIdeasOptions = {}
+  options: ParseIdeasOptions = {},
 ): Promise<ParsedIdea[]> {
   const template = await loadPromptTemplate(root, "ideas");
   const prompt = template.replace("{{input}}", text);
 
   const resolvedConfig = await loadConfig(root);
   const config = getAgentConfigUnion(resolvedConfig);
+  const internalLogger = options.logger ?? logger;
 
   // Capture ideas via MCP tool call
   // Use ideas-only MCP server to reduce blast radius (Gap 2 mitigation)
@@ -61,7 +64,7 @@ export async function parseIdeasWithAgent(
     config,
     cwd: root,
     prompt,
-    logger,
+    logger: internalLogger,
     timeoutSeconds: resolvedConfig.timeout_seconds,
     mcpServers: { wreckit: ideasServer },
     allowedTools: ["mcp__wreckit__save_parsed_ideas"],
@@ -80,7 +83,7 @@ export async function parseIdeasWithAgent(
       if (options.verbose) {
         const formatted = formatAgentEvent(event);
         if (formatted) {
-          console.log(formatted);
+          internalLogger.info(formatted);
         }
       }
     },
@@ -97,7 +100,7 @@ export async function parseIdeasWithAgent(
     throw new McpToolNotCalledError(
       "Agent did not call the required MCP tool (save_parsed_ideas). " +
         "The agent must use the structured tool call to save ideas. " +
-        "JSON fallback has been removed for security reasons."
+        "JSON fallback has been removed for security reasons.",
     );
   }
 

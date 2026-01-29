@@ -31,7 +31,7 @@ function formatDiagnostic(d: Diagnostic): string {
 
 export async function doctorCommand(
   options: DoctorOptions,
-  logger: Logger
+  logger: Logger,
 ): Promise<void> {
   const root = findRootFromOptions(options);
   const result = await runDoctor(root, { fix: options.fix }, logger);
@@ -91,10 +91,7 @@ export async function doctorCommand(
       console.log("");
       console.log(`Backup created: .wreckit/backups/${backupSessionId}/`);
     }
-  } else if (
-    diagnostics.some((d) => d.fixable) &&
-    !options.fix
-  ) {
+  } else if (diagnostics.some((d) => d.fixable) && !options.fix) {
     console.log("");
     console.log("Run with --fix to auto-fix recoverable issues");
   }
@@ -103,7 +100,7 @@ export async function doctorCommand(
     ? diagnostics.filter(
         (d) =>
           d.severity === "error" &&
-          !fixes?.some((f) => f.diagnostic === d && f.fixed)
+          !fixes?.some((f) => f.diagnostic === d && f.fixed),
       )
     : grouped.error;
 

@@ -1,7 +1,7 @@
 import { createOpencodeClient } from "@opencode-ai/sdk";
 import type { Logger } from "../logging";
 import type { AgentResult } from "./runner";
-import { registerSdkController, unregisterSdkController } from "./runner.js";
+import { registerSdkController, unregisterSdkController } from "./lifecycle.js";
 import type { OpenCodeSdkAgentConfig } from "../schemas";
 import type { AgentEvent } from "../tui/agentEvents";
 import { getAllowedToolsForPhase } from "./toolAllowlist";
@@ -21,7 +21,9 @@ export interface OpenCodeRunAgentOptions {
   phase?: string;
 }
 
-function getEffectiveToolAllowlist(options: OpenCodeRunAgentOptions): string[] | undefined {
+function getEffectiveToolAllowlist(
+  options: OpenCodeRunAgentOptions,
+): string[] | undefined {
   if (options.allowedTools !== undefined) {
     return options.allowedTools;
   }
@@ -32,11 +34,15 @@ function getEffectiveToolAllowlist(options: OpenCodeRunAgentOptions): string[] |
 }
 
 export async function runOpenCodeSdkAgent(
-  options: OpenCodeRunAgentOptions
+  options: OpenCodeRunAgentOptions,
 ): Promise<AgentResult> {
   const { cwd, prompt, logger, dryRun, onStdoutChunk } = options;
 
   if (dryRun) {
+    const effectiveTools = getEffectiveToolAllowlist(options);
+    if (effectiveTools && effectiveTools.length > 0) {
+      logger.debug(`Tool restrictions: ${effectiveTools.join(", ")}`);
+    }
     logger.info("[dry-run] Would run OpenCode SDK agent");
     return {
       success: true,
@@ -65,14 +71,16 @@ export async function runOpenCodeSdkAgent(
     });
 
     const sessionResult = await client.session.create();
-    
+
     if (sessionResult.error) {
-       throw new Error(`Failed to create OpenCode session: ${String(sessionResult.error)}`);
+      throw new Error(
+        `Failed to create OpenCode session: ${String(sessionResult.error)}`,
+      );
     }
-    
+
     const session = sessionResult.data;
     if (!session) {
-       throw new Error("OpenCode session creation returned no data");
+      throw new Error("OpenCode session creation returned no data");
     }
 
     // Cast to any because TS definitions seem to be missing 'prompt' despite runtime existence
@@ -82,7 +90,10 @@ export async function runOpenCodeSdkAgent(
     });
 
     // Handle response
-    const text = typeof response === 'string' ? response : (response as any).content || JSON.stringify(response);
+    const text =
+      typeof response === "string"
+        ? response
+        : (response as any).content || JSON.stringify(response);
     output = text;
     if (onStdoutChunk) onStdoutChunk(text);
 

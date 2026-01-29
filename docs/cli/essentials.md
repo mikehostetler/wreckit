@@ -155,18 +155,62 @@ wreckit next
 ```
 
 **What it does:**
-- Finds first item in `raw`, `researched`, or `planned` state
-- Runs it through all phases
-- Useful for iterative workflow
+- Finds the first item in `raw`, `researched`, or `planned` state.
+- Runs it through all phases.
+- Useful for iterative workflow.
 
-**Use case:**
+---
+
+## wreckit joke
+
+**The "Proof of Life" Command.**
+
 ```bash
-# Run one item at a time, review between each
-wreckit next  # Runs first item
-# Review and merge PR
-wreckit next  # Runs next item
-# Review and merge PR
+wreckit joke
 ```
+
+**What it does:**
+- Displays a random programming joke from a curated internal list.
+- This command was autonomously researched, planned, and implemented by Wreckit itself (Item 045) to prove its sovereignty.
+
+---
+
+## wreckit dream
+
+**Autonomous Ideation.**
+
+```bash
+wreckit dream [options]
+```
+
+**What it does:**
+- Scans your codebase for `TODO` comments, technical debt, and architectural gaps.
+- Autonomously generates new roadmap items based on its findings.
+- This is the "Soul" of Wreckit—allowing it to plan its own future.
+
+**Options:**
+- `--max-items <n>` - Limit the number of items generated.
+- `--source <type>` - Filter by source (e.g., `todo`, `gap`).
+
+---
+
+## wreckit geneticist
+
+**Recursive Prompt Optimization.**
+
+```bash
+wreckit geneticist [options]
+```
+
+**What it does:**
+- Analyzes the `.wreckit/healing-log.jsonl` file to identify recurring failure patterns.
+- Autonomously submits PRs to update the system prompts in `src/prompts/*.md`.
+- This is the "Brain" of Wreckit—allowing it to learn from its own mistakes and improve its instructions over time.
+
+**Options:**
+- `--dry-run` - Preview the optimization without creating PRs.
+- `--auto-merge` - Automatically merge the optimization PRs if checks pass.
+- `--min-error-count <n>` - Minimum number of errors required to trigger an optimization.
 
 ---
 

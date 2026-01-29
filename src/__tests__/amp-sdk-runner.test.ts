@@ -56,7 +56,7 @@ describe("runAmpSdkAgent", () => {
       expect(result.success).toBe(true);
       const debugCalls = (mockLogger.debug as any).mock.calls;
       const hasToolRestrictions = debugCalls.some((call: any[]) =>
-        call[0]?.includes?.("Tool restrictions")
+        call[0]?.includes?.("Tool restrictions"),
       );
       expect(hasToolRestrictions).toBe(true);
     });
@@ -79,7 +79,7 @@ describe("runAmpSdkAgent", () => {
       // Debug should show only "Read", not the implement phase tools
       const debugCalls = (mockLogger.debug as any).mock.calls;
       const toolRestrictionCall = debugCalls.find((call: any[]) =>
-        call[0]?.includes?.("Tool restrictions")
+        call[0]?.includes?.("Tool restrictions"),
       );
       expect(toolRestrictionCall).toBeDefined();
       expect(toolRestrictionCall[0]).toContain("Read");
@@ -102,7 +102,7 @@ describe("runAmpSdkAgent", () => {
       // Research phase allows Read, Write, Glob, Grep
       const debugCalls = (mockLogger.debug as any).mock.calls;
       const toolRestrictionCall = debugCalls.find((call: any[]) =>
-        call[0]?.includes?.("Tool restrictions")
+        call[0]?.includes?.("Tool restrictions"),
       );
       expect(toolRestrictionCall).toBeDefined();
       expect(toolRestrictionCall[0]).toContain("Glob");
@@ -123,7 +123,7 @@ describe("runAmpSdkAgent", () => {
       // Should not log tool restrictions
       const debugCalls = (mockLogger.debug as any).mock.calls;
       const hasToolRestrictions = debugCalls.some((call: any[]) =>
-        call[0]?.includes?.("Tool restrictions")
+        call[0]?.includes?.("Tool restrictions"),
       );
       expect(hasToolRestrictions).toBe(false);
     });

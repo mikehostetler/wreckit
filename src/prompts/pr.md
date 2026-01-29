@@ -3,6 +3,7 @@
 You are tasked with generating a well-structured pull request description for this completed work item.
 
 ## Item Details
+
 - **ID:** {{id}}
 - **Title:** {{title}}
 - **Section:** {{section}}
@@ -11,15 +12,19 @@ You are tasked with generating a well-structured pull request description for th
 - **Base Branch:** {{base_branch}}
 
 ## Research Summary
+
 {{research}}
 
 ## Implementation Plan
+
 {{plan}}
 
 ## User Stories (PRD)
+
 {{prd}}
 
 ## Progress Log
+
 {{progress}}
 
 ## Instructions

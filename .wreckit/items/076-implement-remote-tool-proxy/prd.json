@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "id": "076-implement-remote-tool-proxy",
+  "branch_name": "wreckit/076-implement-remote-tool-proxy",
+  "user_stories": [
+    {
+      "id": "US-076-001",
+      "title": "Implement Remote Tools Module",
+      "acceptance_criteria": [
+        "Create `src/agent/remote-tools.ts`",
+        "Implement `RemoteReadTool` using `execSprite` and base64",
+        "Implement `RemoteWriteTool` using `execSprite` and base64",
+        "Implement `RemoteBashTool`",
+        "Implement `RemoteGlobTool` and `RemoteGrepTool`",
+        "Export `buildRemoteToolRegistry`"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Ensure robust base64 handling for binary safety."
+    },
+    {
+      "id": "US-076-002",
+      "title": "Update Sprite Config Schema",
+      "acceptance_criteria": [
+        "Add `vmName` optional field to `SpriteAgentSchema` in `src/schemas.ts`"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Allows users to specify a persistent VM name."
+    },
+    {
+      "id": "US-076-003",
+      "title": "Update runSpriteAgent Runner",
+      "acceptance_criteria": [
+        "Rewrite `runSpriteAgent` in `src/agent/sprite-runner.ts`",
+        "Initialize `AxAgent` with remote tools",
+        "Implement `ensureSpriteRunning` logic",
+        "Handle agent execution loop and output"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Replace the connectivity check with actual agent execution."
+    },
+    {
+      "id": "US-076-004",
+      "title": "Add Unit Tests for Remote Tools",
+      "acceptance_criteria": [
+        "Create `src/__tests__/agent/remote-tools.test.ts`",
+        "Test each remote tool with mocked `execSprite`",
+        "Verify command construction and output parsing"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "Verify proxy logic without needing a real VM."
+    }
+  ]
+}

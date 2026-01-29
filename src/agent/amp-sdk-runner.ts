@@ -1,7 +1,7 @@
 import { execute } from "@sourcegraph/amp-sdk";
 import type { Logger } from "../logging";
 import type { AgentResult } from "./runner";
-import { registerSdkController, unregisterSdkController } from "./runner.js";
+import { registerSdkController, unregisterSdkController } from "./lifecycle.js";
 import type { AmpSdkAgentConfig } from "../schemas";
 import type { AgentEvent } from "../tui/agentEvents";
 import { getAllowedToolsForPhase } from "./toolAllowlist";
@@ -21,7 +21,9 @@ export interface AmpRunAgentOptions {
   phase?: string;
 }
 
-function getEffectiveToolAllowlist(options: AmpRunAgentOptions): string[] | undefined {
+function getEffectiveToolAllowlist(
+  options: AmpRunAgentOptions,
+): string[] | undefined {
   if (options.allowedTools !== undefined) {
     return options.allowedTools;
   }
@@ -32,11 +34,15 @@ function getEffectiveToolAllowlist(options: AmpRunAgentOptions): string[] | unde
 }
 
 export async function runAmpSdkAgent(
-  options: AmpRunAgentOptions
+  options: AmpRunAgentOptions,
 ): Promise<AgentResult> {
   const { cwd, prompt, logger, dryRun, onStdoutChunk } = options;
 
   if (dryRun) {
+    const effectiveTools = getEffectiveToolAllowlist(options);
+    if (effectiveTools && effectiveTools.length > 0) {
+      logger.debug(`Tool restrictions: ${effectiveTools.join(", ")}`);
+    }
     logger.info("[dry-run] Would run Amp SDK agent");
     return {
       success: true,
@@ -60,10 +66,10 @@ export async function runAmpSdkAgent(
     // Execute Amp Agent
     const result = await execute({
       prompt,
-      signal: abortController.signal
+      signal: abortController.signal,
     });
 
-    output = typeof result === 'string' ? result : JSON.stringify(result);
+    output = typeof result === "string" ? result : JSON.stringify(result);
     if (onStdoutChunk) onStdoutChunk(output);
 
     return {

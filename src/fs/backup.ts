@@ -36,9 +36,7 @@ export async function createBackupSession(root: string): Promise<string> {
  * Returns exists=false if file doesn't exist.
  * Throws if file exists but is not readable (permission error).
  */
-async function checkFileAccess(
-  filePath: string
-): Promise<{ exists: boolean }> {
+async function checkFileAccess(filePath: string): Promise<{ exists: boolean }> {
   try {
     await fs.access(filePath, fs.constants.R_OK);
     return { exists: true };
@@ -63,7 +61,7 @@ export async function backupFile(
   sessionId: string,
   filePath: string,
   diagnostic: Diagnostic,
-  operation: "modified" | "deleted"
+  operation: "modified" | "deleted",
 ): Promise<BackupFileEntry | null> {
   // Check if file exists and is accessible
   const accessCheck = await checkFileAccess(filePath);
@@ -104,7 +102,7 @@ export async function backupFile(
 export async function finalizeBackupSession(
   root: string,
   sessionId: string,
-  entries: BackupFileEntry[]
+  entries: BackupFileEntry[],
 ): Promise<void> {
   const manifest: BackupManifest = {
     schema_version: 1,
@@ -146,7 +144,7 @@ export async function listBackupSessions(root: string): Promise<string[]> {
  */
 export async function cleanupOldBackups(
   root: string,
-  keepCount: number = 10
+  keepCount: number = 10,
 ): Promise<string[]> {
   const sessions = await listBackupSessions(root);
   const deleted: string[] = [];
@@ -178,7 +176,7 @@ export async function cleanupOldBackups(
  */
 export async function removeEmptyBackupSession(
   root: string,
-  sessionId: string
+  sessionId: string,
 ): Promise<void> {
   const sessionDir = getBackupSessionDir(root, sessionId);
   try {

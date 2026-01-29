@@ -17,6 +17,14 @@ export {
   getPromptPath,
   getRoadmapPath,
   getSkillsPath,
+  getBuildMetadataPath,
+  getWatchdogLogPath,
+  getBuildLockPath,
+  getBackupsDir,
+  getBackupSessionDir,
+  getBackupManifestPath,
+  getMediaDir,
+  getMediaOutputPath,
 } from "./paths";
 
 export {
@@ -43,12 +51,6 @@ export {
   type PathAccessResult,
 } from "./util";
 
-export {
-  safeWriteJson,
-  cleanupOrphanedTmpFiles,
-} from "./atomic";
+export { safeWriteJson, cleanupOrphanedTmpFiles } from "./atomic";
 
-export {
-  FileLock,
-  withRetry,
-} from "./lock";
+export { FileLock, withRetry } from "./lock";

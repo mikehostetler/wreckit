@@ -20,12 +20,12 @@ Planning is about **designing**, not **doing**. The agent produces a blueprint f
 
 ### Guardrails Required
 
-| Guardrail | Purpose |
-|-----------|---------|
-| **Write Containment** | Agent should only write `plan.md` and `prd.json` within item directory |
-| **No Code Changes** | Source files, tests, configs must not be modified |
-| **No New Files** | Agent should not create files in the repository (outside `.wreckit/`) |
-| **Git State Preservation** | Working tree unchanged after planning (except allowed artifacts) |
+| Guardrail                  | Purpose                                                                |
+| -------------------------- | ---------------------------------------------------------------------- |
+| **Write Containment**      | Agent should only write `plan.md` and `prd.json` within item directory |
+| **No Code Changes**        | Source files, tests, configs must not be modified                      |
+| **No New Files**           | Agent should not create files in the repository (outside `.wreckit/`)  |
+| **Git State Preservation** | Working tree unchanged after planning (except allowed artifacts)       |
 
 ### Enforcement (Recommended)
 
@@ -43,13 +43,16 @@ To enforce design-only behavior:
 ## Triggers
 
 ### Automatic Trigger
+
 - Via `wreckit` (runs all phases) when item state is `researched`
 - Via `wreckit run <id>` when item state is `researched`
 
 ### Manual Trigger
+
 - Via `wreckit plan <id>` - explicitly runs plan phase for a specific item
 
 ### State Prerequisites
+
 - Item must be in `researched` state (unless `--force` is used)
 - `research.md` must exist in the item directory
 
@@ -65,17 +68,17 @@ The agent is expected to:
 
 ## Template Variables
 
-| Variable | Description |
-|----------|-------------|
-| `{{id}}` | Item ID (e.g., `001-feature-name`) |
-| `{{title}}` | Item title |
-| `{{section}}` | Item section/category |
-| `{{overview}}` | Item description |
-| `{{branch_name}}` | Git branch name |
-| `{{base_branch}}` | Base branch (e.g., `main`) |
-| `{{item_path}}` | Absolute path to item directory |
-| `{{research}}` | Contents of `research.md` |
-| `{{completion_signal}}` | Agent completion signal string |
+| Variable                | Description                        |
+| ----------------------- | ---------------------------------- |
+| `{{id}}`                | Item ID (e.g., `001-feature-name`) |
+| `{{title}}`             | Item title                         |
+| `{{section}}`           | Item section/category              |
+| `{{overview}}`          | Item description                   |
+| `{{branch_name}}`       | Git branch name                    |
+| `{{base_branch}}`       | Base branch (e.g., `main`)         |
+| `{{item_path}}`         | Absolute path to item directory    |
+| `{{research}}`          | Contents of `research.md`          |
+| `{{completion_signal}}` | Agent completion signal string     |
 
 ## Artifacts Produced
 
@@ -84,6 +87,7 @@ The agent is expected to:
 **Location**: `.wreckit/items/<id>/plan.md`
 
 A detailed implementation plan containing:
+
 - Implementation plan title and overview
 - Current state analysis
 - Desired end state specification
@@ -99,12 +103,14 @@ A detailed implementation plan containing:
 **Location**: `.wreckit/items/<id>/prd.json`
 
 A structured PRD containing:
+
 - **schema_version**: Always 1
 - **id**: Item ID
 - **branch_name**: Git branch name
 - **user_stories**: Array of user stories
 
 Each **user story** contains:
+
 - **id**: Story ID (e.g., "US-001")
 - **title**: Short descriptive title
 - **acceptance_criteria**: Array of specific, testable criteria
@@ -114,12 +120,12 @@ Each **user story** contains:
 
 ### Story Prioritization
 
-| Priority | Description |
-|----------|-------------|
-| 1 | Core functionality, must be done first |
-| 2 | Important features that depend on Priority 1 |
-| 3 | Nice-to-have, can be deferred |
-| 4 | Optional enhancements |
+| Priority | Description                                  |
+| -------- | -------------------------------------------- |
+| 1        | Core functionality, must be done first       |
+| 2        | Important features that depend on Priority 1 |
+| 3        | Nice-to-have, can be deferred                |
+| 4        | Optional enhancements                        |
 
 ---
 
@@ -129,40 +135,40 @@ Each **user story** contains:
 
 A well-structured user story is implementable, testable, and right-sized:
 
-| Quality Signal | Description |
-|----------------|-------------|
-| **Single outcome** | One cohesive slice of work, not multiple bundled goals |
-| **Clear acceptance criteria** | Observable, testable conditions (3-7 specific criteria) |
-| **Minimal coupling** | Can be implemented and verified largely independently |
-| **Right abstraction** | Describes *what* and *why*, not pure implementation steps |
-| **Logical priority** | P1 enables P2, dependencies respected |
-| **Explicit scope** | States what's out-of-scope if commonly confused |
+| Quality Signal                | Description                                               |
+| ----------------------------- | --------------------------------------------------------- |
+| **Single outcome**            | One cohesive slice of work, not multiple bundled goals    |
+| **Clear acceptance criteria** | Observable, testable conditions (3-7 specific criteria)   |
+| **Minimal coupling**          | Can be implemented and verified largely independently     |
+| **Right abstraction**         | Describes _what_ and _why_, not pure implementation steps |
+| **Logical priority**          | P1 enables P2, dependencies respected                     |
+| **Explicit scope**            | States what's out-of-scope if commonly confused           |
 
 ### What Makes a Poor User Story
 
 Stories that will cause implementation problems:
 
-| Anti-Pattern | Example |
-|--------------|---------|
-| **Vague goals** | "Improve performance" without measurable outcomes |
-| **Bundled concerns** | "Refactor X and add feature Y and update UI" |
-| **Untestable criteria** | "Works well", "No bugs", "User-friendly" |
-| **Too large** | Cannot be estimated or verified as a single unit |
-| **Implementation checklist** | Steps to code, not user-visible outcomes |
-| **Missing verification** | No mention of how to test or validate |
+| Anti-Pattern                 | Example                                           |
+| ---------------------------- | ------------------------------------------------- |
+| **Vague goals**              | "Improve performance" without measurable outcomes |
+| **Bundled concerns**         | "Refactor X and add feature Y and update UI"      |
+| **Untestable criteria**      | "Works well", "No bugs", "User-friendly"          |
+| **Too large**                | Cannot be estimated or verified as a single unit  |
+| **Implementation checklist** | Steps to code, not user-visible outcomes          |
+| **Missing verification**     | No mention of how to test or validate             |
 
 ### Plan Quality Signals
 
 A high-quality plan demonstrates thorough analysis:
 
-| Quality Signal | Description |
-|----------------|-------------|
-| **File references** | Specific `path/to/file:line` citations |
-| **Current vs. desired state** | Clear gap analysis |
-| **Explicit exclusions** | "What We're NOT Doing" section |
-| **Phased approach** | Logical ordering with dependencies |
-| **Testable phases** | Each phase independently verifiable |
-| **Risk awareness** | Identifies challenges with mitigations |
+| Quality Signal                | Description                            |
+| ----------------------------- | -------------------------------------- |
+| **File references**           | Specific `path/to/file:line` citations |
+| **Current vs. desired state** | Clear gap analysis                     |
+| **Explicit exclusions**       | "What We're NOT Doing" section         |
+| **Phased approach**           | Logical ordering with dependencies     |
+| **Testable phases**           | Each phase independently verifiable    |
+| **Risk awareness**            | Identifies challenges with mitigations |
 
 ### Validation (Recommended)
 
@@ -183,18 +189,21 @@ To ensure plan quality, validate:
 ### Validation Rules
 
 To transition from `researched` to `planned`, the following must be true:
+
 - `plan.md` exists in the item directory
 - `prd.json` exists and passes schema validation
 
 ### Successful Transition
 
 When all validations pass:
+
 - Item state is updated to `planned`
 - Any previous `last_error` is cleared
 
 ## Skip Behavior
 
 The phase is skipped (no agent run) when ALL of:
+
 1. `--force` flag is NOT set
 2. `plan.md` already exists
 3. `prd.json` already exists
@@ -203,12 +212,12 @@ When skipped, if the item is still in `researched` state and the PRD is valid, t
 
 ## Error Scenarios
 
-| Error Condition | Behavior |
-|-----------------|----------|
-| Agent fails or times out | `last_error` set, state unchanged |
-| `plan.md` not created | Error logged, state unchanged |
-| `prd.json` not created | Error logged, state unchanged |
-| `prd.json` fails schema validation | Error logged, state unchanged |
+| Error Condition                    | Behavior                          |
+| ---------------------------------- | --------------------------------- |
+| Agent fails or times out           | `last_error` set, state unchanged |
+| `plan.md` not created              | Error logged, state unchanged     |
+| `prd.json` not created             | Error logged, state unchanged     |
+| `prd.json` fails schema validation | Error logged, state unchanged     |
 
 ---
 
@@ -218,40 +227,41 @@ When skipped, if the item is still in `researched` state and the PRD is valid, t
 
 If the agent modifies repository files during planning:
 
-| Scenario | Current Behavior | Recommended Behavior |
-|----------|------------------|----------------------|
-| Agent edits source file | Phase succeeds if artifacts exist | Should fail and revert |
-| Agent creates new file in repo | Phase succeeds | Should fail |
-| Agent modifies config files | Phase succeeds | Should fail |
+| Scenario                       | Current Behavior                  | Recommended Behavior   |
+| ------------------------------ | --------------------------------- | ---------------------- |
+| Agent edits source file        | Phase succeeds if artifacts exist | Should fail and revert |
+| Agent creates new file in repo | Phase succeeds                    | Should fail            |
+| Agent modifies config files    | Phase succeeds                    | Should fail            |
 
 **Risk:** Unintended changes leak into the PR phase. The PR phase auto-commits uncommitted changes, meaning planning-time code edits get included in the implementation PR without explicit review.
 
 ### Write Containment Violations
 
 The agent should only write to:
+
 - `.wreckit/items/<id>/plan.md`
 - `.wreckit/items/<id>/prd.json`
 
 Any other writes should be treated as violations:
 
-| Violation | Impact |
-|-----------|--------|
-| Write to source files | Code changes without review |
-| Write to research.md | Overwrites prior phase work |
-| Write to other item directories | Cross-item contamination |
-| Write outside repository | System file access |
+| Violation                       | Impact                      |
+| ------------------------------- | --------------------------- |
+| Write to source files           | Code changes without review |
+| Write to research.md            | Overwrites prior phase work |
+| Write to other item directories | Cross-item contamination    |
+| Write outside repository        | System file access          |
 
 ### PRD Schema Validation
 
 The PRD is validated against a schema. Common validation failures:
 
-| Validation Error | Cause |
-|------------------|-------|
-| Invalid JSON | Malformed JSON syntax |
-| Missing required field | `user_stories`, `id`, or `branch_name` absent |
+| Validation Error        | Cause                                                                       |
+| ----------------------- | --------------------------------------------------------------------------- |
+| Invalid JSON            | Malformed JSON syntax                                                       |
+| Missing required field  | `user_stories`, `id`, or `branch_name` absent                               |
 | Invalid story structure | Story missing `id`, `title`, `acceptance_criteria`, `priority`, or `status` |
-| Wrong status value | Status not "pending" or "done" |
-| Wrong schema version | schema_version not matching expected value |
+| Wrong status value      | Status not "pending" or "done"                                              |
+| Wrong schema version    | schema_version not matching expected value                                  |
 
 **Note:** MCP tool submissions enforce `schema_version: 1` strictly. Direct file writes are more lenient (any number). Consider tightening file validation to match.
 
@@ -262,6 +272,7 @@ The PRD is validated against a schema. Common validation failures:
 ### Re-run Commands
 
 To resume a failed plan phase:
+
 - `wreckit plan <id>` - Re-run just the plan phase
 - `wreckit run <id>` - Re-run the item through all phases
 
@@ -273,6 +284,7 @@ To resume a failed plan phase:
 ### Force Regeneration
 
 Use `wreckit plan <id> --force` to:
+
 - Ignore existing artifacts
 - Run agent unconditionally
 - Overwrite `plan.md` and/or `prd.json`
@@ -280,6 +292,7 @@ Use `wreckit plan <id> --force` to:
 ### Doctor Repair
 
 `wreckit doctor --fix` can detect and report state mismatches:
+
 - State is `planned` but `plan.md` missing
 - State is `planned` but `prd.json` missing
 - `prd.json` exists but fails schema validation
@@ -288,22 +301,22 @@ Use `wreckit plan <id> --force` to:
 
 ## Implementation Status
 
-| Feature | Status | Notes |
-|---------|--------|-------|
-| **Core plan phase** | ✅ Implemented | See `src/workflow/itemWorkflow.ts:runPhasePlan` |
-| **Prompt template loading** | ✅ Implemented | Project overrides in `.wreckit/prompts/plan.md` |
-| **Template variable substitution** | ✅ Implemented | All variables including `{{research}}` |
-| **Artifact validation (exists)** | ✅ Implemented | Checks `plan.md` and `prd.json` exist |
-| **PRD schema validation** | ✅ Implemented | Zod schema in `src/schemas.ts` |
-| **Skip if artifacts exist** | ✅ Implemented | `--force` flag to regenerate |
-| **Tool allowlist (read + write)** | ✅ Implemented | See `src/agent/toolAllowlist.ts` |
-| **Git status comparison (write containment)** | ✅ Implemented | Before/after status comparison blocks violations |
-| **Plan quality validation** | ✅ Implemented | See `src/domain/validation.ts:validatePlanQuality` |
-| **Story quality validation** | ✅ Implemented | See `src/domain/validation.ts:validateStoryQuality` |
-| **MCP tool: save_prd** | ✅ Implemented | See `src/agent/mcp/wreckitMcpServer.ts` |
-| **State transitions** | ✅ Implemented | `researched` → `planned` on success |
-| **Error handling** | ✅ Implemented | `last_error` set on failure |
-| **Dry-run mode** | ✅ Implemented | `--dry-run` flag works |
+| Feature                                       | Status         | Notes                                               |
+| --------------------------------------------- | -------------- | --------------------------------------------------- |
+| **Core plan phase**                           | ✅ Implemented | See `src/workflow/itemWorkflow.ts:runPhasePlan`     |
+| **Prompt template loading**                   | ✅ Implemented | Project overrides in `.wreckit/prompts/plan.md`     |
+| **Template variable substitution**            | ✅ Implemented | All variables including `{{research}}`              |
+| **Artifact validation (exists)**              | ✅ Implemented | Checks `plan.md` and `prd.json` exist               |
+| **PRD schema validation**                     | ✅ Implemented | Zod schema in `src/schemas.ts`                      |
+| **Skip if artifacts exist**                   | ✅ Implemented | `--force` flag to regenerate                        |
+| **Tool allowlist (read + write)**             | ✅ Implemented | See `src/agent/toolAllowlist.ts`                    |
+| **Git status comparison (write containment)** | ✅ Implemented | Before/after status comparison blocks violations    |
+| **Plan quality validation**                   | ✅ Implemented | See `src/domain/validation.ts:validatePlanQuality`  |
+| **Story quality validation**                  | ✅ Implemented | See `src/domain/validation.ts:validateStoryQuality` |
+| **MCP tool: save_prd**                        | ✅ Implemented | See `src/agent/mcp/wreckitMcpServer.ts`             |
+| **State transitions**                         | ✅ Implemented | `researched` → `planned` on success                 |
+| **Error handling**                            | ✅ Implemented | `last_error` set on failure                         |
+| **Dry-run mode**                              | ✅ Implemented | `--dry-run` flag works                              |
 
 ---
 

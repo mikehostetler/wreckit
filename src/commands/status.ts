@@ -52,7 +52,7 @@ export async function scanItems(root: string): Promise<IndexItem[]> {
       if (err instanceof SchemaValidationError) continue;
       // Unexpected errors (permissions): log warning
       console.warn(
-        `Warning: Cannot read item at ${itemPath}: ${err instanceof Error ? err.message : String(err)}`
+        `Warning: Cannot read item at ${itemPath}: ${err instanceof Error ? err.message : String(err)}`,
       );
     }
   }
@@ -63,7 +63,7 @@ export async function scanItems(root: string): Promise<IndexItem[]> {
 
 export async function statusCommand(
   options: StatusOptions,
-  logger: Logger
+  logger: Logger,
 ): Promise<void> {
   const root = findRootFromOptions(options);
   const items = await buildIdMap(root);
@@ -75,7 +75,11 @@ export async function statusCommand(
       state: i.state,
       title: i.title,
     }));
-    logger.json({ schema_version: 1, items: jsonItems, generated_at: new Date().toISOString() });
+    logger.json({
+      schema_version: 1,
+      items: jsonItems,
+      generated_at: new Date().toISOString(),
+    });
     return;
   }
 

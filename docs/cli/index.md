@@ -4,11 +4,9 @@ Complete reference for all Wreckit CLI commands.
 
 ## Quick Reference
 
-### Essential Commands
-
-| Command | Description |
-|---------|-------------|
-| `wreckit` | Run all incomplete items (research → plan → implement → PR) |
+| Command | Purpose |
+|---------|---------|
+| `wreckit` | Run everything. TUI shows progress. |
 | `wreckit init` | Initialize `.wreckit/` in repo |
 | `wreckit ideas < FILE` | Ingest ideas (create idea items) |
 | `wreckit status` | List all items + state |
@@ -16,24 +14,15 @@ Complete reference for all Wreckit CLI commands.
 | `wreckit next` | Run next incomplete item |
 | `wreckit doctor` | Validate items, fix broken state |
 
-### Additional Commands
+### Autonomous Runtime
 
-| Command | Description |
-|---------|-------------|
-| `wreckit list` | List items (with optional `--state` filtering) |
-| `wreckit show <id>` | Show item details |
-| `wreckit learn` | Extract patterns and compile into reusable skills |
-| `wreckit rollback <id>` | Rollback a direct-merge item to pre-merge state |
+For fully autonomous, self-healing, and self-improving operation, use the Watchdog script.
 
-### Phase Commands (Debugging)
+| Script | Purpose |
+|--------|---------|
+| `./watchdog.sh` | **The Sovereign Entry Point.** Runs Wreckit in a persistent, self-compiling loop. |
 
-| Command | Transition |
-|---------|------------|
-| `wreckit research <id>` | raw → researched |
-| `wreckit plan <id>` | researched → planned |
-| `wreckit implement <id>` | planned → implementing |
-| `wreckit pr <id>` | implementing → in_pr |
-| `wreckit complete <id>` | in_pr → done |
+---
 
 ## Sections
 

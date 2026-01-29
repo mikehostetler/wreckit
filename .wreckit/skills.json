@@ -1,18 +1,77 @@
 {
   "phase_skills": {
-    "research": ["code-exploration", "context-awareness"],
-    "plan": ["documentation-writer"],
-    "implement": ["full-capability"],
-    "pr": ["git-integration"],
-    "complete": ["verification"],
-    "media": ["manim-generation", "remotion-generation"]
+    "research": [
+      "code-exploration",
+      "context-awareness",
+      "dependency-analysis",
+      "documentation-analysis",
+      "pattern-detection",
+      "error-pattern-detection",
+      "source-item-analysis",
+      "codebase-analysis"
+    ],
+    "plan": [
+      "documentation-writer",
+      "architecture-design",
+      "user-story-breakdown",
+      "estimation",
+      "test-strategy",
+      "interactive-merge"
+    ],
+    "implement": [
+      "full-capability",
+      "test-driven-development",
+      "test-coverage-analysis",
+      "error-handling",
+      "code-organization",
+      "media-generation",
+      "doctor",
+      "refactoring",
+      "schema-validation",
+      "logging-standardization",
+      "backup-restore",
+      "interactive-cli",
+      "state-management",
+      "error-detection-healing",
+      "remote-tool-proxying",
+      "binary-data-encoding",
+      "command-injection-prevention",
+      "mcp-server-integration",
+      "file-operations"
+    ],
+    "pr": [
+      "git-integration",
+      "verification",
+      "documentation-update"
+    ],
+    "complete": [
+      "verification",
+      "documentation-update"
+    ],
+    "media": [
+      "manim-generation",
+      "remotion-generation"
+    ],
+    "learn": [
+      "pattern-extraction",
+      "skill-compilation",
+      "agent-based-analysis"
+    ],
+    "strategy": [
+      "codebase-analysis",
+      "roadmap-planning"
+    ]
   },
   "skills": [
     {
       "id": "code-exploration",
       "name": "Code Exploration",
       "description": "Read-only codebase analysis with grep and glob tools",
-      "tools": ["Read", "Glob", "Grep"],
+      "tools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ],
       "required_context": [
         {
           "type": "git_status",
@@ -41,7 +100,13 @@
       "id": "documentation-writer",
       "name": "Documentation Writer",
       "description": "Read and write tools for creating plan and PRD documents",
-      "tools": ["Read", "Write", "Edit", "Glob", "Grep"],
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Glob",
+        "Grep"
+      ],
       "required_context": [
         {
           "type": "phase_artifact",
@@ -54,7 +119,15 @@
       "id": "full-capability",
       "name": "Full Implementation Capability",
       "description": "All tools available for implementation phase",
-      "tools": ["Read", "Write", "Edit", "Glob", "Grep", "Bash", "mcp__wreckit__update_story_status"],
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Glob",
+        "Grep",
+        "Bash",
+        "mcp__wreckit__update_story_status"
+      ],
       "required_context": [
         {
           "type": "phase_artifact",
@@ -72,7 +145,12 @@
       "id": "git-integration",
       "name": "Git Integration",
       "description": "Read tools for verification and bash for git operations",
-      "tools": ["Read", "Glob", "Grep", "Bash"],
+      "tools": [
+        "Read",
+        "Glob",
+        "Grep",
+        "Bash"
+      ],
       "required_context": [
         {
           "type": "git_status",
@@ -84,7 +162,11 @@
       "id": "verification",
       "name": "Verification",
       "description": "Read-only tools for final verification",
-      "tools": ["Read", "Glob", "Grep"],
+      "tools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ],
       "required_context": [
         {
           "type": "git_status",
@@ -96,20 +178,31 @@
       "id": "manim-generation",
       "name": "Manim Animation Generation",
       "description": "Generate mathematical animations using Manim engine (Python-based). Requires: Python 3.8+, FFmpeg, LaTeX. CLI: manim render scene.py SceneName -pqh. Output: MP4 files in media/videos/",
-      "tools": ["Bash", "Write", "Read", "Glob"],
+      "tools": [
+        "Bash",
+        "Write",
+        "Read",
+        "Glob"
+      ],
+      "mcp_servers": {},
       "required_context": [
         {
           "type": "git_status",
           "description": "Check for existing Manim project files"
         }
-      ],
-      "mcp_servers": {}
+      ]
     },
     {
       "id": "remotion-generation",
       "name": "Remotion Video Generation",
       "description": "Generate React-based videos using Remotion framework. Requires: Node.js 16+, FFmpeg. CLI: npx remotion render HelloWorld out/video.mp4. Output: MP4 files.",
-      "tools": ["Bash", "Write", "Read", "Glob"],
+      "tools": [
+        "Bash",
+        "Write",
+        "Read",
+        "Glob"
+      ],
+      "mcp_servers": {},
       "required_context": [
         {
           "type": "file",
@@ -120,8 +213,758 @@
           "type": "git_status",
           "description": "Check for existing Remotion project structure"
         }
+      ]
+    },
+    {
+      "id": "dependency-analysis",
+      "name": "Dependency Analysis",
+      "description": "Analyzes item dependencies and execution order. Uses Read and Grep to understand depends_on fields, campaign groupings, and dependency chains between items. Critical for orchestrator-safe planning.",
+      "tools": [
+        "Read",
+        "Grep",
+        "Glob"
       ],
-      "mcp_servers": {}
+      "required_context": [
+        {
+          "type": "file",
+          "path": ".wreckit/index.json",
+          "description": "Item index for dependency analysis"
+        }
+      ]
+    },
+    {
+      "id": "documentation-analysis",
+      "name": "Documentation Analysis",
+      "description": "Reads and analyzes existing documentation (README.md, docs/, inline comments) to understand system behavior and design decisions. Essential for research phase to avoid duplicating work.",
+      "tools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": "README.md",
+          "description": "Project README for overview"
+        },
+        {
+          "type": "file",
+          "path": "docs/",
+          "description": "Documentation directory"
+        }
+      ]
+    },
+    {
+      "id": "architecture-design",
+      "name": "Architecture Design",
+      "description": "Analyzes and designs system architecture. Understands existing patterns, module boundaries, and design principles. Uses Read and Grep to study code organization and architectural decisions.",
+      "tools": [
+        "Read",
+        "Grep",
+        "Glob"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": "docs/architecture/",
+          "description": "Architecture documentation"
+        }
+      ]
+    },
+    {
+      "id": "user-story-breakdown",
+      "name": "User Story Breakdown",
+      "description": "Breaks down features into implementable user stories with acceptance criteria. Creates structured PRD with stories that include title, description, acceptance criteria, and priority.",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit"
+      ],
+      "mcp_servers": {
+        "wreckit": {
+          "tools": [
+            "save_prd"
+          ]
+        }
+      },
+      "required_context": [
+        {
+          "type": "phase_artifact",
+          "path": "research.md",
+          "description": "Research for story breakdown"
+        }
+      ]
+    },
+    {
+      "id": "estimation",
+      "name": "Effort Estimation",
+      "description": "Estimates implementation effort based on codebase complexity, file counts, dependency depth, and historical patterns. Uses Read and Glob to analyze scope and provide realistic effort estimates.",
+      "tools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ]
+    },
+    {
+      "id": "test-driven-development",
+      "name": "Test-Driven Development",
+      "description": "Follows TDD practices: write tests first, implement code to pass tests, refactor. Uses Write for test files, Bash for running tests (bun test, npm test), and Read for understanding test patterns in the codebase.",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": "src/__tests__/",
+          "description": "Existing test directory for patterns"
+        }
+      ]
+    },
+    {
+      "id": "test-coverage-analysis",
+      "name": "Test Coverage Analysis",
+      "description": "Analyzes test coverage and writes comprehensive tests for uncovered code. Uses Bun test coverage reports, Grep to find untested code paths, and Write to create new tests. Based on patterns from item 043 (TUI test coverage).",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Grep",
+        "Bash"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": "src/__tests__/",
+          "description": "Test directory for coverage analysis"
+        }
+      ]
+    },
+    {
+      "id": "error-handling",
+      "name": "Error Handling",
+      "description": "Implements proper error handling using WreckitError classes, error codes, and recovery patterns. Uses Read to understand error types, Grep to find unhandled errors, and Edit to add try-catch blocks and error propagation.",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Grep"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": "src/errors.ts",
+          "description": "Error type definitions"
+        }
+      ]
+    },
+    {
+      "id": "code-organization",
+      "name": "Code Organization",
+      "description": "Organizes code into logical modules, follows existing patterns, and maintains file structure conventions. Uses Glob to understand project layout, Read to study patterns, and Edit to refactor organization.",
+      "tools": [
+        "Read",
+        "Edit",
+        "Glob",
+        "Grep"
+      ]
+    },
+    {
+      "id": "media-generation",
+      "name": "Media Generation",
+      "description": "Generates video content using Manim (Python animations) and Remotion (React videos). Uses Bash to run manim/npx commands, Write to create scene files, and Read to understand media layer patterns.",
+      "tools": [
+        "Bash",
+        "Write",
+        "Read",
+        "Glob"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": ".wreckit/media/",
+          "description": "Media directory for generated content"
+        }
+      ]
+    },
+    {
+      "id": "doctor",
+      "name": "Agent Doctor",
+      "description": "Emergency environment repair and self-healing capability. Detects and fixes git locks, npm failures, JSON corruption, and state mismatches. Uses Bash for repair commands (rm, npm install, git), Read for diagnosis, and Write for fixes. Based on item 038 patterns.",
+      "tools": [
+        "Bash",
+        "Read",
+        "Write",
+        "Grep"
+      ],
+      "required_context": [
+        {
+          "type": "git_status",
+          "description": "Git state for lock detection"
+        },
+        {
+          "type": "file",
+          "path": ".git/index.lock",
+          "description": "Check for git lock files"
+        },
+        {
+          "type": "file",
+          "path": "package.json",
+          "description": "Check for npm dependencies"
+        }
+      ]
+    },
+    {
+      "id": "documentation-update",
+      "name": "Documentation Update",
+      "description": "Updates documentation (README.md, docs/, code comments) to reflect implemented changes. Uses Read to understand existing docs, Write to update documentation, and Grep to find outdated references.",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Grep"
+      ],
+      "required_context": [
+        {
+          "type": "phase_artifact",
+          "path": "plan.md",
+          "description": "Implementation plan for documentation updates"
+        }
+      ]
+    },
+    {
+      "id": "pattern-detection",
+      "name": "Pattern Detection",
+      "description": "Identifies recurring code patterns, architectural conventions, and implementation strategies across the codebase",
+      "tools": [
+        "Read",
+        "Grep",
+        "Glob"
+      ]
+    },
+    {
+      "id": "test-strategy",
+      "name": "Test Strategy",
+      "description": "Develops comprehensive testing strategies including unit tests, integration tests, and test coverage goals",
+      "tools": [
+        "Read",
+        "Grep",
+        "Glob"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": "src/__tests__/",
+          "description": "Existing test directory for patterns"
+        }
+      ]
+    },
+    {
+      "id": "refactoring",
+      "name": "Refactoring",
+      "description": "Refactors existing code while preserving behavior, improving structure, and reducing complexity",
+      "tools": [
+        "Read",
+        "Edit",
+        "Grep",
+        "Bash"
+      ],
+      "required_context": [
+        {
+          "type": "git_status",
+          "description": "Current state to understand what to refactor"
+        }
+      ]
+    },
+    {
+      "id": "schema-validation",
+      "name": "Schema Validation",
+      "description": "Implements and uses Zod schemas for runtime validation of configuration and data structures",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Grep"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": "src/schemas.ts",
+          "description": "Existing schema definitions"
+        }
+      ]
+    },
+    {
+      "id": "pattern-extraction",
+      "name": "Pattern Extraction",
+      "description": "Analyzes completed work to extract reusable patterns that can be compiled into Skill artifacts. Used by the wreckit learn command",
+      "tools": [
+        "Read",
+        "Write",
+        "Glob",
+        "Grep"
+      ],
+      "required_context": [
+        {
+          "type": "git_status",
+          "description": "Current repository state"
+        }
+      ]
+    },
+    {
+      "id": "skill-compilation",
+      "name": "Skill Compilation",
+      "description": "Compiles extracted patterns into skill definitions following the SkillConfigSchema format",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Grep"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": ".wreckit/skills.json",
+          "description": "Existing skills for merging"
+        }
+      ]
+    },
+    {
+      "id": "codebase-analysis",
+      "name": "Codebase Analysis",
+      "description": "Comprehensive codebase analysis for strategy and roadmap planning, identifying patterns and improvement opportunities",
+      "tools": [
+        "Read",
+        "Write",
+        "Glob",
+        "Grep"
+      ],
+      "required_context": [
+        {
+          "type": "git_status",
+          "description": "Current repository state"
+        },
+        {
+          "type": "file",
+          "path": "ROADMAP.md",
+          "description": "Existing roadmap for reference"
+        }
+      ]
+    },
+    {
+      "id": "roadmap-planning",
+      "name": "Roadmap Planning",
+      "description": "Creates and updates ROADMAP.md with strategic direction, milestones, and item prioritization",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Grep"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": ".wreckit/index.json",
+          "description": "Item index for roadmap planning"
+        },
+        {
+          "type": "file",
+          "path": "ROADMAP.md",
+          "description": "Existing roadmap for updates"
+        }
+      ]
+    },
+    {
+      "id": "logging-standardization",
+      "name": "Logging Standardization",
+      "description": "Standardizes logging throughout the codebase by replacing direct console.log/error/warn with the Logger interface. Ensures consistent log levels, output formatting, and testability. Based on patterns from item 042.",
+      "tools": [
+        "Read",
+        "Edit",
+        "Grep"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": "src/logging/index.ts",
+          "description": "Logger interface definition"
+        }
+      ]
+    },
+    {
+      "id": "backup-restore",
+      "name": "Backup and Restore",
+      "description": "Creates backups before destructive operations and provides restore capability for rollback. Uses file system operations to backup modified files, tracks backup sessions, and can restore from backups on failure. Based on patterns from item 032 and doctor.ts backup system.",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": ".wreckit/backups/",
+          "description": "Backup directory for existing backup sessions"
+        }
+      ]
+    },
+    {
+      "id": "interactive-cli",
+      "name": "Interactive CLI",
+      "description": "Creates interactive command-line experiences using readline for user input, TTY detection for environment awareness, and formatted console output. Handles user prompts, confirmations, and selections. Based on patterns from items 041 (interactive merge) and 042 (ideas-interview).",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit"
+      ],
+      "required_context": [
+        {
+          "type": "git_status",
+          "description": "Check for TTY environment availability"
+        }
+      ]
+    },
+    {
+      "id": "state-management",
+      "name": "State Management",
+      "description": "Manages application state for UI components and workflows. Creates state factories, update functions, and subscription mechanisms. Based on patterns from TUI dashboard.ts and React state management.",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Grep"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": "src/tui/dashboard.ts",
+          "description": "Existing state management patterns"
+        }
+      ]
+    },
+    {
+      "id": "error-pattern-detection",
+      "name": "Error Pattern Detection",
+      "description": "Detects and classifies error patterns from agent execution output. Identifies recoverable errors (git locks, npm failures, JSON corruption) vs non-recoverable errors. Uses pattern matching on stderr/stdout to determine error type and suggest recovery actions. Based on item 038 research.",
+      "tools": [
+        "Read",
+        "Grep"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": "src/errors.ts",
+          "description": "Error type definitions for pattern matching"
+        }
+      ]
+    },
+    {
+      "id": "error-detection-healing",
+      "name": "Error Detection and Healing",
+      "description": "Implements automatic error recovery by detecting recoverable errors (git locks, npm failures, JSON corruption) and applying fixes. Wraps agent execution with error monitoring, detects error patterns, invokes doctor procedures, and retries with exponential backoff. Based on item 038 (Agent Doctor).",
+      "tools": [
+        "Bash",
+        "Read",
+        "Write",
+        "Grep"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": "src/doctor.ts",
+          "description": "Doctor module for repair procedures"
+        },
+        {
+          "type": "file",
+          "path": "src/errors.ts",
+          "description": "Error type definitions"
+        },
+        {
+          "type": "git_status",
+          "description": "Git state for lock detection"
+        }
+      ]
+    },
+    {
+      "id": "remote-tool-proxying",
+      "name": "Remote Tool Proxying",
+      "description": "Proxies standard agent tools (Read, Write, Bash, Glob, Grep) to execute inside remote environments (e.g., Sprite VMs). Intercepts tool calls and redirects them through remote execution primitives while maintaining transparent tool interfaces. Based on item 076 patterns.",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": "src/agent/sprite-runner.ts",
+          "description": "Sprite execution primitives"
+        },
+        {
+          "type": "file",
+          "path": "src/agent/rlm-tools.ts",
+          "description": "Standard tool implementations"
+        }
+      ]
+    },
+    {
+      "id": "binary-data-encoding",
+      "name": "Binary Data Encoding",
+      "description": "Handles binary file operations safely using base64 encoding to prevent corruption and shell injection. Used for reading/writing files that may contain binary data, special characters, or be too large for shell string handling. Based on item 076 (Sprite remote tool proxying).",
+      "tools": [
+        "Read",
+        "Write",
+        "Bash"
+      ],
+      "required_context": []
+    },
+    {
+      "id": "command-injection-prevention",
+      "name": "Command Injection Prevention",
+      "description": "Prevents command injection vulnerabilities by using array-form subprocess execution, proper argument escaping, and avoiding shell string interpolation. Critical for security when executing user-provided commands or file paths. Based on security patterns from items 075-076.",
+      "tools": [
+        "Read",
+        "Edit",
+        "Grep"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": "src/agent/sprite-runner.ts",
+          "description": "Safe subprocess execution patterns"
+        }
+      ]
+    },
+    {
+      "id": "sprite-vm-operations",
+      "name": "Sprite VM Operations",
+      "description": "Manages Sprite VM lifecycle including start, attach, list, kill, and exec operations. Uses the Sprite CLI to create and control disposable microVMs for sandboxed agent execution. Based on items 073-076.",
+      "tools": [
+        "Bash",
+        "Read",
+        "Write",
+        "Grep"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": "src/agent/sprite-runner.ts",
+          "description": "Sprite runner implementation"
+        },
+        {
+          "type": "file",
+          "path": "src/commands/sprite.ts",
+          "description": "Sprite CLI commands"
+        }
+      ]
+    },
+    {
+      "id": "sandboxed-execution",
+      "name": "Sandboxed Execution",
+      "description": "Executes agent work in isolated sandboxed environments (e.g., Sprite VMs) to prevent dangerous operations from affecting the host system. Combines VM lifecycle management with remote tool proxying for complete isolation. Based on items 073-076.",
+      "tools": [
+        "Bash",
+        "Read",
+        "Write",
+        "Edit",
+        "Grep"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": "src/agent/sprite-runner.ts",
+          "description": "Sprite VM management"
+        },
+        {
+          "type": "file",
+          "path": "src/agent/rlm-runner.ts",
+          "description": "Agent runner patterns"
+        }
+      ]
+    },
+    {
+      "id": "streaming-output-capture",
+      "name": "Streaming Output Capture",
+      "description": "Captures subprocess output in real-time via streaming callbacks instead of buffering entire output. Enables live progress display and handles long-running commands with large output. Based on patterns from sprite-runner.ts runWispCommand.",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": "src/agent/sprite-runner.ts",
+          "description": "Streaming output patterns"
+        }
+      ]
+    },
+    {
+      "id": "timeout-handling",
+      "name": "Timeout Handling",
+      "description": "Implements proper timeout handling for long-running operations with SIGTERM→SIGKILL escalation. Uses AbortControllers for cancellation and ensures processes are cleaned up on timeout. Based on patterns from sprite-runner.ts and agent/runner.ts.",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash"
+      ],
+      "required_context": []
+    },
+    {
+      "id": "mcp-tool-integration",
+      "name": "MCP Tool Integration",
+      "description": "Integrates Model Context Protocol (MCP) servers with agents by adapting MCP tools to AxFunction format. Handles tool registration, parameter mapping, and server lifecycle. Based on patterns from rlm-tools.ts and wreckit MCP server.",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Grep"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": "src/agent/rlm-tools.ts",
+          "description": "MCP tool adaptation patterns"
+        },
+        {
+          "type": "file",
+          "path": "src/agent/mcp/",
+          "description": "MCP server implementations"
+        }
+      ]
+    },
+    {
+      "id": "exponential-backoff",
+      "name": "Exponential Backoff",
+      "description": "Implements retry logic with exponential backoff for transient failures. Calculates delays using exponential progression and limits maximum retry attempts. Based on patterns from fs/lock.ts and errorDetector.ts.",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit"
+      ],
+      "required_context": []
+    },
+    {
+      "id": "file-lock-management",
+      "name": "File Lock Management",
+      "description": "Manages file-based mutex locks to prevent concurrent access conflicts. Handles lock acquisition, stale lock detection, process liveness checking, and lock cleanup. Based on patterns from fs/lock.ts.",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": "src/fs/lock.ts",
+          "description": "FileLock implementation patterns"
+        }
+      ]
+    },
+    {
+      "id": "mcp-server-integration",
+      "name": "MCP Server Integration",
+      "description": "Creates and manages Model Context Protocol (MCP) servers for extending agent capabilities. Handles server initialization, tool registration, lifecycle management, and graceful shutdown. Based on item 033 skill loading patterns.",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Grep"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": "src/agent/mcp/wreckitMcpServer.ts",
+          "description": "MCP server implementation patterns"
+        }
+      ]
+    },
+    {
+      "id": "file-operations",
+      "name": "File Operations",
+      "description": "Atomic file writes, safe JSON operations, file locking, and backup/restore mechanisms. Prevents data corruption during concurrent operations and provides rollback capability. Based on patterns from items 032 (backup), 076 (atomic writes), and fs/lock.ts.",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": "src/fs/atomic.ts",
+          "description": "Atomic write patterns"
+        },
+        {
+          "type": "file",
+          "path": "src/fs/lock.ts",
+          "description": "File lock patterns"
+        }
+      ]
+    },
+    {
+      "id": "source-item-analysis",
+      "name": "Source Item Analysis",
+      "description": "Analyzes source items (research.md, plan.md, implemented code) to extract patterns for skill compilation. Reads item artifacts, identifies tool usage patterns, context requirements, and phase applicability. Used by wreckit learn command for pattern extraction.",
+      "tools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ],
+      "required_context": [
+        {
+          "type": "file",
+          "path": ".wreckit/items/",
+          "description": "Source items directory for analysis"
+        },
+        {
+          "type": "git_status",
+          "description": "Repository state for context"
+        }
+      ]
+    },
+    {
+      "id": "agent-based-analysis",
+      "name": "Agent-Based Analysis",
+      "description": "Runs autonomous agents to analyze codebases and extract insights. Uses agent SDK with Read, Write, Glob, Grep tools for pattern detection, produces structured output with schema validation. Based on patterns from strategy command (item 034) and learn command.",
+      "tools": [
+        "Read",
+        "Write",
+        "Glob",
+        "Grep"
+      ],
+      "required_context": [
+        {
+          "type": "git_status",
+          "description": "Current repository state"
+        }
+      ]
+    },
+    {
+      "id": "interactive-merge",
+      "name": "Interactive Merge",
+      "description": "Provides interactive merge capability for configuration files (skills.json, etc.) using TTY detection, readline prompts, and conflict resolution. Allows users to choose between conflicting values during merge operations. Based on item 041 patterns.",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Grep"
+      ],
+      "required_context": [
+        {
+          "type": "git_status",
+          "description": "Check for TTY environment availability"
+        }
+      ]
     }
   ]
 }

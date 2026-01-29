@@ -2,7 +2,12 @@ import { describe, it, expect, beforeEach, afterEach } from "bun:test";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import * as os from "node:os";
-import { pathExists, dirExists, tryReadFile, checkPathAccess } from "../fs/util";
+import {
+  pathExists,
+  dirExists,
+  tryReadFile,
+  checkPathAccess,
+} from "../fs/util";
 import { ArtifactReadError } from "../errors";
 
 describe("fs/util utilities", () => {

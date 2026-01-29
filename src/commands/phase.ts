@@ -16,12 +16,19 @@ import {
 } from "../workflow";
 import { formatDryRunPhase } from "./dryRunFormatter";
 
-export type Phase = "research" | "plan" | "implement" | "critique" | "pr" | "complete";
+export type Phase =
+  | "research"
+  | "plan"
+  | "implement"
+  | "critique"
+  | "pr"
+  | "complete";
 
 export interface PhaseOptions {
   force?: boolean;
   dryRun?: boolean;
   cwd?: string;
+  sandbox?: boolean;
 }
 
 /**
@@ -85,7 +92,7 @@ const PHASE_CONFIG: Record<
 
 function isInRequiredState(
   currentState: WorkflowState,
-  required: WorkflowState | WorkflowState[]
+  required: WorkflowState | WorkflowState[],
 ): boolean {
   if (Array.isArray(required)) {
     return required.includes(currentState);
@@ -95,7 +102,7 @@ function isInRequiredState(
 
 function isInTargetState(
   currentState: WorkflowState,
-  targetState: WorkflowState
+  targetState: WorkflowState,
 ): boolean {
   return currentState === targetState;
 }
@@ -115,7 +122,7 @@ function isInTargetState(
  */
 function isInvalidTransition(
   phase: Phase,
-  currentState: WorkflowState
+  currentState: WorkflowState,
 ): boolean {
   const config = PHASE_CONFIG[phase];
   // IMPORTANT: This array MUST match WORKFLOW_STATES in src/domain/states.ts:3-10
@@ -148,12 +155,16 @@ export async function runPhaseCommand(
   phase: Phase,
   itemId: string,
   options: PhaseOptions,
-  logger: Logger
+  logger: Logger,
 ): Promise<void> {
-  const { force = false, dryRun = false, cwd } = options;
+  const { force = false, dryRun = false, cwd, sandbox } = options;
 
   const root = findRootFromOptions(options);
-  const config = await loadConfig(root);
+  const config = await loadConfig(
+    root,
+    sandbox ? { sandbox } : undefined,
+    logger,
+  );
 
   const itemDir = getItemDir(root, itemId);
   let item;
@@ -171,13 +182,17 @@ export async function runPhaseCommand(
   if (isInvalidTransition(phase, item.state)) {
     throw new WreckitError(
       `Cannot run ${phase} on item in state '${item.state}' - invalid transition`,
-      "INVALID_TRANSITION"
+      "INVALID_TRANSITION",
     );
   }
 
-  if (!force && phaseConfig.skipIfInTarget && isInTargetState(item.state, phaseConfig.targetState)) {
+  if (
+    !force &&
+    phaseConfig.skipIfInTarget &&
+    isInTargetState(item.state, phaseConfig.targetState)
+  ) {
     logger.info(
-      `Item ${itemId} is already in state '${item.state}', skipping (use --force to override)`
+      `Item ${itemId} is already in state '${item.state}', skipping (use --force to override)`,
     );
     return;
   }
@@ -192,7 +207,7 @@ export async function runPhaseCommand(
       : phaseConfig.requiredState;
     throw new WreckitError(
       `Item is in state '${item.state}', expected '${requiredStr}' for ${phase} phase`,
-      "INVALID_STATE"
+      "INVALID_STATE",
     );
   }
 
@@ -213,12 +228,13 @@ export async function runPhaseCommand(
 
   if (result.success) {
     console.log(
-      `Successfully ran ${phase} phase on ${itemId}: ${item.state} → ${result.item.state}`
+      `Successfully ran ${phase} phase on ${itemId}: ${item.state} → ${result.item.state}`,
     );
   } else {
-    const errorMsg = typeof result.error === "string"
-      ? result.error
-      : result.error?.message ?? `Phase ${phase} failed for ${itemId}`;
+    const errorMsg =
+      typeof result.error === "string"
+        ? result.error
+        : (result.error?.message ?? `Phase ${phase} failed for ${itemId}`);
 
     // Re-throw if already a WreckitError, otherwise wrap
     if (isWreckitError(result.error)) {

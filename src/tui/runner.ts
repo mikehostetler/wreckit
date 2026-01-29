@@ -3,7 +3,13 @@ import { render, type Instance } from "ink";
 import { PassThrough } from "stream";
 import type { IndexItem } from "../schemas";
 import type { Logger } from "../logging";
-import { createTuiState, updateTuiState, type TuiState, type AgentActivityForItem, type ToolExecution } from "./dashboard";
+import {
+  createTuiState,
+  updateTuiState,
+  type TuiState,
+  type AgentActivityForItem,
+  type ToolExecution,
+} from "./dashboard";
 import { InkApp } from "./InkApp";
 import type { AgentEvent } from "./agentEvents";
 
@@ -90,7 +96,7 @@ export class TuiRunner {
         {
           stdout: this.debugStream as unknown as NodeJS.WriteStream,
           debug: true,
-        }
+        },
       );
     } else {
       this.inkInstance = render(
@@ -98,7 +104,7 @@ export class TuiRunner {
           subscribe,
           onQuit,
           initialState: this.state,
-        })
+        }),
       );
     }
   }
@@ -110,7 +116,9 @@ export class TuiRunner {
 
   stop(): void {
     if (this.options.debugLogger) {
-      this.options.debugLogger.debug(`[TUI Debug] Stopping after ${this.frameCount} frames`);
+      this.options.debugLogger.debug(
+        `[TUI Debug] Stopping after ${this.frameCount} frames`,
+      );
     }
     if (this.inkInstance) {
       this.inkInstance.unmount();
@@ -142,7 +150,10 @@ export class TuiRunner {
     const MAX_TOOLS = 20;
 
     const existing = this.state.activityByItem[itemId];
-    const activity: AgentActivityForItem = existing ?? { thoughts: [], tools: [] };
+    const activity: AgentActivityForItem = existing ?? {
+      thoughts: [],
+      tools: [],
+    };
 
     switch (event.type) {
       case "assistant_text": {
@@ -173,28 +184,41 @@ export class TuiRunner {
         break;
       }
       case "tool_result": {
-        const toolIndex = activity.tools.findIndex((t) => t.toolUseId === event.toolUseId);
+        const toolIndex = activity.tools.findIndex(
+          (t) => t.toolUseId === event.toolUseId,
+        );
         if (toolIndex !== -1) {
           activity.tools = activity.tools.map((t, i) =>
             i === toolIndex
-              ? { ...t, status: "completed" as const, result: event.result, finishedAt: new Date() }
-              : t
+              ? {
+                  ...t,
+                  status: "completed" as const,
+                  result: event.result,
+                  finishedAt: new Date(),
+                }
+              : t,
           );
         }
         break;
       }
       case "tool_error": {
-        const errorToolIndex = activity.tools.findIndex((t) => t.toolUseId === event.toolUseId);
+        const errorToolIndex = activity.tools.findIndex(
+          (t) => t.toolUseId === event.toolUseId,
+        );
         if (errorToolIndex !== -1) {
           activity.tools = activity.tools.map((t, i) =>
-            i === errorToolIndex ? { ...t, status: "error" as const, finishedAt: new Date() } : t
+            i === errorToolIndex
+              ? { ...t, status: "error" as const, finishedAt: new Date() }
+              : t,
           );
         }
         break;
       }
       case "error": {
         const errorMessage = `[ERROR] ${event.message}`;
-        activity.thoughts = [...activity.thoughts, errorMessage].slice(-MAX_THOUGHTS);
+        activity.thoughts = [...activity.thoughts, errorMessage].slice(
+          -MAX_THOUGHTS,
+        );
         break;
       }
       case "run_result":

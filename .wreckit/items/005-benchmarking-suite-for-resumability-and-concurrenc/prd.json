@@ -149,7 +149,7 @@
         "Tests formatCsv has correct header and row count",
         "All tests pass: bun test src/__tests__/benchmarks.test.ts"
       ],
-      "priority": 5,
+      "priority": 4,
       "status": "done",
       "notes": "Follow patterns from src/__tests__/edge-cases/concurrent.test.ts for test structure."
     }

@@ -62,12 +62,75 @@ export const OpenCodeSdkAgentSchema = z.object({
   kind: z.literal("opencode_sdk"),
 });
 
+export const RlmSdkAgentSchema = z.object({
+  kind: z.literal("rlm"),
+  model: z.string().default("claude-sonnet-4-20250514"),
+  maxIterations: z.number().default(100),
+  aiProvider: z
+    .enum(["anthropic", "openai", "google", "zai", "glm"])
+    .default("anthropic"),
+  sandbox: z.boolean().optional().describe("Run commands in Sprite Sandbox"),
+  wispPath: z.string().optional().describe("Path to Sprite CLI executable"),
+});
+
+export const SpriteAgentSchema = z.object({
+  kind: z.literal("sprite"),
+  model: z
+    .string()
+    .optional()
+    .describe("AI model to use (default: claude-sonnet-4-20250514)"),
+  max_tokens: z.number().optional().describe("Max output tokens"),
+  wispPath: z
+    .string()
+    .default("sprite")
+    .describe("Path to sprite CLI binary (default: 'sprite' from PATH)"),
+  token: z
+    .string()
+    .optional()
+    .describe(
+      "Sprites.dev authentication token (optional, can use SPRITES_TOKEN env var)",
+    ),
+  vmName: z
+    .string()
+    .optional()
+    .describe("Name of the Sprite VM to use (auto-generated if not provided)"),
+  syncEnabled: z
+    .boolean()
+    .default(true)
+    .describe("Automatically synchronize project to Sprite VM on start"),
+  syncExcludePatterns: z
+    .array(z.string())
+    .default([".git", "node_modules", ".wreckit", "dist", "build", ".DS_Store"])
+    .describe("Patterns to exclude from synchronization"),
+  syncOnSuccess: z
+    .boolean()
+    .default(false)
+    .describe(
+      "Automatically pull files from VM after successful agent completion",
+    ),
+  maxVMs: z.number().default(5).describe("Maximum concurrent VMs allowed"),
+  defaultMemory: z
+    .string()
+    .default("512MiB")
+    .describe("Default memory allocation per VM"),
+  defaultCPUs: z
+    .string()
+    .default("1")
+    .describe("Default CPU allocation per VM"),
+  timeout: z
+    .number()
+    .default(300)
+    .describe("Default timeout in seconds for VM operations"),
+});
+
 export const AgentConfigUnionSchema = z.discriminatedUnion("kind", [
   ProcessAgentSchema,
   ClaudeSdkAgentSchema,
   AmpSdkAgentSchema,
   CodexSdkAgentSchema,
   OpenCodeSdkAgentSchema,
+  RlmSdkAgentSchema,
+  SpriteAgentSchema,
 ]);
 
 // Legacy agent config (mode-based) - for backwards compatibility
@@ -86,41 +149,61 @@ export const LegacyAgentConfigSchema = z.object({
  * Context requirement for a skill.
  * Specifies what context the skill needs for JIT loading.
  */
-export const SkillContextRequirementSchema = z.object({
-  type: z.enum(["file", "git_status", "item_metadata", "phase_artifact"]),
-  path: z.string().optional(), // For type="file" or type="phase_artifact"
-  description: z.string().optional(),
-}).optional();
+export const SkillContextRequirementSchema = z
+  .object({
+    type: z.enum(["file", "git_status", "item_metadata", "phase_artifact"]),
+    path: z.string().optional(), // For type="file" or type="phase_artifact"
+    description: z.string().optional(),
+  })
+  .optional();
 
 /**
  * A skill defines reusable capabilities (tools, MCP servers, context)
  * that can be loaded for specific phases.
  */
-export const SkillSchema = z.object({
-  id: z.string().describe("Unique skill identifier (e.g., 'code-analysis', 'test-generation')"),
-  name: z.string().describe("Human-readable skill name"),
-  description: z.string().describe("What this skill provides and when to use it"),
-  tools: z.array(z.string()).describe("Tool names required by this skill"),
-  mcp_servers: z.record(z.string(), z.any()).optional().describe("MCP servers to attach (advanced usage)"),
-  required_context: z.array(SkillContextRequirementSchema).optional().describe("JIT context requirements"),
-}).strict();
+export const SkillSchema = z
+  .object({
+    id: z
+      .string()
+      .describe(
+        "Unique skill identifier (e.g., 'code-analysis', 'test-generation')",
+      ),
+    name: z.string().describe("Human-readable skill name"),
+    description: z
+      .string()
+      .describe("What this skill provides and when to use it"),
+    tools: z.array(z.string()).describe("Tool names required by this skill"),
+    mcp_servers: z
+      .record(z.string(), z.any())
+      .optional()
+      .describe("MCP servers to attach (advanced usage)"),
+    required_context: z
+      .array(SkillContextRequirementSchema)
+      .optional()
+      .describe("JIT context requirements"),
+  })
+  .strict();
 
 /**
  * Maps phase names to skill IDs that should be loaded for that phase.
  */
 export const PhaseSkillsMappingSchema = z.record(
   z.string(), // phase name (e.g., "research", "implement")
-  z.array(z.string()) // array of skill IDs
+  z.array(z.string()), // array of skill IDs
 );
 
 /**
  * Skill configuration for wreckit.
  * Maps phases to skills and defines the skill library.
  */
-export const SkillConfigSchema = z.object({
-  phase_skills: PhaseSkillsMappingSchema.describe("Phase -> skill IDs mapping"),
-  skills: z.array(SkillSchema).describe("Available skill definitions"),
-}).strict();
+export const SkillConfigSchema = z
+  .object({
+    phase_skills: PhaseSkillsMappingSchema.describe(
+      "Phase -> skill IDs mapping",
+    ),
+    skills: z.array(SkillSchema).describe("Available skill definitions"),
+  })
+  .strict();
 
 // ============================================================
 // Doctor Configuration Schema (Item 038 - Agent Doctor Self-Healing Runtime)
@@ -141,12 +224,111 @@ export const DoctorAutoRepairModeSchema = z.union([
 /**
  * Doctor configuration for automatic self-healing
  */
-export const DoctorConfigSchema = z.object({
-  enabled: z.boolean().default(true).describe("Enable automatic self-healing"),
-  auto_repair: DoctorAutoRepairModeSchema.default("safe-only").describe("What repairs are allowed"),
-  max_retries: z.number().default(3).describe("Max retry attempts after healing"),
-  timeout_ms: z.number().default(300000).describe("Timeout for healing operations (default 5 minutes)"),
-}).strict();
+export const DoctorConfigSchema = z
+  .object({
+    enabled: z
+      .boolean()
+      .default(true)
+      .describe("Enable automatic self-healing"),
+    auto_repair: DoctorAutoRepairModeSchema.default("safe-only").describe(
+      "What repairs are allowed",
+    ),
+    max_retries: z
+      .number()
+      .default(3)
+      .describe("Max retry attempts after healing"),
+    timeout_ms: z
+      .number()
+      .default(300000)
+      .describe("Timeout for healing operations (default 5 minutes)"),
+  })
+  .strict();
+
+// ============================================================
+// Compute Configuration Schema (Item 001 - Cloud VM Integration)
+// ============================================================
+
+/**
+ * Compute backend selection and configuration
+ * Enables switching between local and remote execution
+ */
+export const ComputeConfigSchema = z
+  .object({
+    backend: z
+      .enum(["local", "sprites"])
+      .default("local")
+      .describe("Execution backend: 'local' (default) or 'sprites' (Fly.io)"),
+    sprites: SpriteAgentSchema.optional().describe(
+      "Sprite-specific config when backend='sprites'",
+    ),
+  })
+  .strict();
+
+export type ComputeConfig = z.infer<typeof ComputeConfigSchema>;
+
+// ============================================================
+// Limits Configuration Schema (Item 001 - Resource Limits)
+// ============================================================
+
+/**
+ * Resource limits for agent execution
+ * Prevents runaway agents and unexpected costs
+ */
+export const LimitsConfigSchema = z
+  .object({
+    maxIterations: z
+      .number()
+      .default(100)
+      .describe("Maximum agent loop iterations"),
+    maxDurationSeconds: z
+      .number()
+      .default(3600)
+      .describe("Maximum execution time in seconds (default 1 hour)"),
+    maxBudgetDollars: z
+      .number()
+      .optional()
+      .describe("Maximum estimated cost in USD (future: integrate with Fly.io API)"),
+    maxProgressSteps: z
+      .number()
+      .default(1000)
+      .describe("Maximum tool calls/progress steps"),
+  })
+  .strict();
+
+export type LimitsConfig = z.infer<typeof LimitsConfigSchema>;
+
+// ============================================================
+// Story Scope Configuration Schema (Item 084 - Story Scope Enforcement)
+// ============================================================
+
+/**
+ * Story scope enforcement configuration
+ * Controls diff-size heuristics to prevent runaway token costs
+ */
+export const StoryScopeConfigSchema = z
+  .object({
+    enabled: z
+      .boolean()
+      .default(true)
+      .describe("Enable story scope enforcement"),
+    max_diff_lines: z
+      .number()
+      .default(1000)
+      .describe("Maximum lines of diff allowed per story"),
+    max_diff_files: z
+      .number()
+      .default(50)
+      .describe("Maximum files allowed to change per story"),
+    max_diff_bytes: z
+      .number()
+      .default(100000)
+      .describe("Maximum bytes of diff allowed per story (default 100KB)"),
+    exclude_patterns: z
+      .array(z.string())
+      .default(["*.lock", "package-lock.json", "yarn.lock", "*.log"])
+      .describe("Patterns to exclude from scope checks"),
+  })
+  .strict();
 
 export const ConfigSchema = z.object({
   schema_version: z.number().default(1),
@@ -163,6 +345,11 @@ export const ConfigSchema = z.object({
   skills: SkillConfigSchema.optional(),
   // Add optional doctor configuration (Item 038)
   doctor: DoctorConfigSchema.optional(),
+  // Add optional story scope configuration (Item 084)
+  story_scope: StoryScopeConfigSchema.optional(),
+  // Add new sections (Item 001)
+  compute: ComputeConfigSchema.optional(),
+  limits: LimitsConfigSchema.optional(),
 });
 
 export const PriorityHintSchema = z.enum(["low", "medium", "high", "critical"]);
@@ -253,8 +440,14 @@ export const BatchProgressSchema = z.object({
   skipped: z.array(z.string()), // Already done at session start
 
   // Healing metrics (Item 038)
-  healing_attempts: z.number().default(0).describe("Number of healing attempts this session"),
-  last_healing_at: z.string().nullable().describe("ISO timestamp of last healing event"),
+  healing_attempts: z
+    .number()
+    .default(0)
+    .describe("Number of healing attempts this session"),
+  last_healing_at: z
+    .string()
+    .nullable()
+    .describe("ISO timestamp of last healing event"),
 });
 
 export type WorkflowState = z.infer<typeof ItemStateSchema>;
@@ -274,11 +467,15 @@ export type ClaudeSdkAgentConfig = z.infer<typeof ClaudeSdkAgentSchema>;
 export type AmpSdkAgentConfig = z.infer<typeof AmpSdkAgentSchema>;
 export type CodexSdkAgentConfig = z.infer<typeof CodexSdkAgentSchema>;
 export type OpenCodeSdkAgentConfig = z.infer<typeof OpenCodeSdkAgentSchema>;
+export type RlmSdkAgentConfig = z.infer<typeof RlmSdkAgentSchema>;
+export type SpriteAgentConfig = z.infer<typeof SpriteAgentSchema>;
 export type AgentConfigUnion = z.infer<typeof AgentConfigUnionSchema>;
 export type BatchProgress = z.infer<typeof BatchProgressSchema>;
 
 // Type exports for skill configuration (Item 033)
-export type SkillContextRequirement = z.infer<typeof SkillContextRequirementSchema>;
+export type SkillContextRequirement = z.infer<
+  typeof SkillContextRequirementSchema
+>;
 export type Skill = z.infer<typeof SkillSchema>;
 export type PhaseSkillsMapping = z.infer<typeof PhaseSkillsMappingSchema>;
 export type SkillConfig = z.infer<typeof SkillConfigSchema>;
@@ -286,6 +483,9 @@ export type SkillConfig = z.infer<typeof SkillConfigSchema>;
 // Type exports for doctor configuration (Item 038)
 export type DoctorAutoRepairMode = z.infer<typeof DoctorAutoRepairModeSchema>;
 export type DoctorConfig = z.infer<typeof DoctorConfigSchema>;
+
+// Type exports for story scope configuration (Item 084)
+export type StoryScopeConfig = z.infer<typeof StoryScopeConfigSchema>;
 
 // Backup manifest schemas for doctor --fix
 export const BackupFileEntrySchema = z.object({

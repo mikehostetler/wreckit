@@ -1,22 +1,22 @@
-// New API (preferred)
+// ============================================================
+// Agent API
+// ============================================================
+// Agent execution and lifecycle management using discriminated union format.
+// Supports multiple agent backends (process, claude_sdk, amp_sdk, etc.).
+
 export {
   runAgentUnion,
   getAgentConfigUnion,
-  terminateAllAgents,
-  registerSdkController,
-  unregisterSdkController,
   type AgentResult,
   type UnionRunAgentOptions,
 } from "./runner";
 
-/**
- * @deprecated Legacy API - use runAgentUnion and getAgentConfigUnion instead.
- * These exports are kept for backward compatibility with existing tests.
- * They will be removed in a future version.
- */
+export type { AgentConfigUnion } from "../schemas";
+
 export {
-  runAgent,
-  getAgentConfig,
-  type AgentConfig,
-  type RunAgentOptions,
-} from "./runner";
+  terminateAllAgents,
+  registerSdkController,
+  unregisterSdkController,
+  registerProcessAgent,
+  unregisterProcessAgent,
+} from "./lifecycle";

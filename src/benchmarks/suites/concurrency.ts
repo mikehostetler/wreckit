@@ -31,7 +31,7 @@ async function simulateWorkUnit(dir: string, id: number): Promise<void> {
 async function runWorkerPool(
   workItems: number[],
   parallelism: number,
-  workFn: (id: number) => Promise<void>
+  workFn: (id: number) => Promise<void>,
 ): Promise<number> {
   const queue = [...workItems];
   const start = performance.now();
@@ -60,7 +60,7 @@ async function runWorkerPool(
  * Calculates duration, throughput, and scaling efficiency for each parallelism level.
  */
 export async function runConcurrencySuite(
-  options: ConcurrencyOptions = {}
+  options: ConcurrencyOptions = {},
 ): Promise<SuiteResult> {
   const { iterations = 5 } = options;
   const metrics: Metric[] = [];
@@ -80,7 +80,7 @@ export async function runConcurrencySuite(
 
       const workItems = Array.from({ length: workItemCount }, (_, idx) => idx);
       const durationMs = await runWorkerPool(workItems, parallelism, (id) =>
-        simulateWorkUnit(workDir, id)
+        simulateWorkUnit(workDir, id),
       );
       samples.push(durationMs);
     }

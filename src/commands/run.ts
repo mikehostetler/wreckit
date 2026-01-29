@@ -2,7 +2,14 @@ import * as fs from "node:fs/promises";
 import type { Logger } from "../logging";
 import type { AgentEvent } from "../tui/agentEvents";
 import type { Item } from "../schemas";
-import { findRepoRoot, findRootFromOptions, getItemDir, getResearchPath, getPlanPath, getPrdPath } from "../fs/paths";
+import {
+  findRepoRoot,
+  findRootFromOptions,
+  getItemDir,
+  getResearchPath,
+  getPlanPath,
+  getPrdPath,
+} from "../fs/paths";
 import { pathExists } from "../fs/util";
 import { readItem } from "../fs/json";
 import { loadConfig } from "../config";
@@ -31,12 +38,14 @@ export interface RunOptions {
   cwd?: string;
   /** Disable automatic self-healing for this run (Item 038) */
   noHealing?: boolean;
+  /** Run in sandbox mode with ephemeral Sprite VM */
+  sandbox?: boolean;
 }
 
 async function phaseArtifactsExist(
   phase: string,
   root: string,
-  itemId: string
+  itemId: string,
 ): Promise<boolean> {
   switch (phase) {
     case "research":
@@ -59,12 +68,28 @@ async function phaseArtifactsExist(
 export async function runCommand(
   itemId: string,
   options: RunOptions,
-  logger: Logger
+  logger: Logger,
 ): Promise<void> {
-  const { force = false, dryRun = false, mockAgent = false, onAgentOutput, onAgentEvent, onIterationChanged, onStoryChanged, onPhaseChanged, cwd, noHealing = false } = options;
+  const {
+    force = false,
+    dryRun = false,
+    mockAgent = false,
+    onAgentOutput,
+    onAgentEvent,
+    onIterationChanged,
+    onStoryChanged,
+    onPhaseChanged,
+    cwd,
+    noHealing = false,
+    sandbox,
+  } = options;
 
   const root = findRootFromOptions(options);
-  const config = await loadConfig(root);
+  const config = await loadConfig(
+    root,
+    sandbox ? { sandbox } : undefined,
+    logger,
+  );
 
   const itemDir = getItemDir(root, itemId);
   let item: Item;
@@ -116,18 +141,24 @@ export async function runCommand(
 
     const nextPhase = getNextPhase(item);
     if (!nextPhase) {
-      logger.info(`Item ${itemId} is in state '${item.state}' with no next phase`);
+      logger.info(
+        `Item ${itemId} is in state '${item.state}' with no next phase`,
+      );
       return;
     }
 
     if (!force && (await phaseArtifactsExist(nextPhase, root, itemId))) {
-      logger.info(`Skipping ${nextPhase} phase (artifacts exist, use --force to regenerate)`);
+      logger.info(
+        `Skipping ${nextPhase} phase (artifacts exist, use --force to regenerate)`,
+      );
       const runner = phaseRunners[nextPhase];
       const result = await runner(itemId, { ...workflowOptions, force: false });
       if (!result.success) {
-        const errorMsg = typeof result.error === "string"
-          ? result.error
-          : result.error?.message ?? `Phase ${nextPhase} failed for ${itemId}`;
+        const errorMsg =
+          typeof result.error === "string"
+            ? result.error
+            : (result.error?.message ??
+              `Phase ${nextPhase} failed for ${itemId}`);
 
         // Re-throw if already a WreckitError, otherwise wrap
         if (isWreckitError(result.error)) {
@@ -144,25 +175,27 @@ export async function runCommand(
     }
 
     logger.info(`Running ${nextPhase} phase on ${itemId}`);
-    
+
     // Map phase names to workflow states for TUI display
     const phaseToState: Record<string, string> = {
       research: "researched",
-      plan: "planned", 
+      plan: "planned",
       implement: "implementing",
       critique: "critique",
       pr: "in_pr",
       complete: "done",
     };
     onPhaseChanged?.(phaseToState[nextPhase] ?? nextPhase);
-    
+
     const runner = phaseRunners[nextPhase];
     const result = await runner(itemId, workflowOptions);
 
     if (!result.success) {
-      const errorMsg = typeof result.error === "string"
-        ? result.error
-        : result.error?.message ?? `Phase ${nextPhase} failed for ${itemId}`;
+      const errorMsg =
+        typeof result.error === "string"
+          ? result.error
+          : (result.error?.message ??
+            `Phase ${nextPhase} failed for ${itemId}`);
       logger.error(`Phase ${nextPhase} failed for ${itemId}: ${errorMsg}`);
 
       // Re-throw if already a WreckitError, otherwise wrap
@@ -172,6 +205,8 @@ export async function runCommand(
       throw new WreckitError(errorMsg, "PHASE_FAILED");
     }
 
-    logger.info(`Completed ${nextPhase} phase: ${item.state} → ${result.item.state}`);
+    logger.info(
+      `Completed ${nextPhase} phase: ${item.state} → ${result.item.state}`,
+    );
   }
 }

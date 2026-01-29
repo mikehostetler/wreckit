@@ -36,6 +36,7 @@
 | `wreckit init` | Initialize `.wreckit/` in repo |
 | `wreckit doctor` | Validate items, fix broken state |
 | `wreckit rollback <id>` | Rollback a direct-merge item to pre-merge state |
+| `wreckit geneticist` | Recursive prompt self-optimization (evolution) |
 
 ### Phase Commands (debugging)
 
@@ -57,6 +58,17 @@
 - `--force` — Regenerate artifacts
 - `--cwd <path>` — Override working directory
 - `--fix` — Auto-repair (doctor only)
+
+## Meta-Agents
+
+Wreckit includes specialized "meta-agents" that operate on the system itself rather than just executing tasks.
+
+| Agent | Command | Purpose |
+|-------|---------|---------|
+| **Dreamer** | `wreckit dream` | **Ideation**: Scans the codebase for TODOs, gaps, and technical debt to autonomously generate new roadmap items. Acts as a product manager. |
+| **Strategy** | `wreckit strategy` | **Navigator**: Analyzes the project state and roadmap to recommend the next best action. Acts as a technical lead. |
+| **Learn** | `wreckit learn` | **Skills**: Extracts reusable patterns from completed items and compiles them into skills.json. Acts as a knowledge engineer. |
+| **Geneticist** | `wreckit geneticist` | **Evolution**: Analyzes healing logs to identify recurrent failures and autonomously optimizes system prompts via PRs. Acts as an immune system. |
 
 ## State Flow
 
@@ -105,6 +117,7 @@ TypeScript CLI built with Bun. Key directories:
 | `codex_sdk` | Codex SDK (experimental) |
 | `opencode_sdk` | OpenCode SDK (experimental) |
 | `process` | External CLI process |
+| `rlm` | RLM Mode (ReAct Loop Mode) via @ax-llm/ax |
 
 See [README.md](./README.md#agent-options) for configuration examples for each kind.
 
@@ -143,6 +156,71 @@ For complete environment variable documentation including model selection variab
 - `0` — Success
 - `1` — Error
 - `130` — Interrupted
+
+## RLM Mode (Recursive Language Models)
+
+RLM mode implements the **Recursive Language Model** architecture (Prompt-as-Environment). Instead of passing the full prompt to the model's context window, it is offloaded to a persistent JavaScript Runtime (JSRuntime) as a global variable `CONTEXT_DATA`. The agent uses the `RunJS` tool to inspect and process this data programmatically.
+
+This allows Wreckit to handle "infinite" context by enabling the agent to read and process instructions in chunks, rather than stuffing everything into the prompt.
+
+### Configuration
+
+In `.wreckit/config.json`:
+
+```json
+{
+  "agent": {
+    "kind": "rlm",
+    "model": "claude-sonnet-4-20250514",
+    "maxIterations": 100,
+    "aiProvider": "anthropic" // or "zai", "openai", "google"
+  }
+}
+```
+
+### Provider Support
+
+| Provider | Config Value | Env Variable |
+|---|---|---|
+| Anthropic | `anthropic` | `ANTHROPIC_API_KEY` (or `ANTHROPIC_AUTH_TOKEN`) |
+| Z.AI | `zai` | `ZAI_API_KEY` (maps to Anthropic client) |
+| OpenAI | `openai` | `OPENAI_API_KEY` |
+| Google | `google` | `GOOGLE_API_KEY` |
+
+### CLI Usage
+
+```bash
+# Use RLM for a single run
+wreckit --rlm run 001
+
+# Or specify explicitly
+wreckit --agent rlm run 001
+```
+
+### Architecture: Prompt-as-Environment
+
+Unlike standard agents where the prompt is in the context window:
+1. **Offload:** The user's prompt is stored in `CONTEXT_DATA` inside a `JSRuntime` (Node `vm`).
+2. **Trigger:** The agent receives a minimal trigger: *"The user's request is in CONTEXT_DATA. Use RunJS to inspect it."*
+3. **Pull:** The agent calls `RunJS({ code: "CONTEXT_DATA" })` to read the instructions.
+4. **Loop:** The agent enters a ReAct loop (Think -> Act -> Observe) to execute the task.
+
+### Tools
+
+RLM supports:
+- **Core Tool:** `RunJS` (Execute JS code to read `CONTEXT_DATA` or perform logic).
+- **Built-in Tools:** `Read`, `Write`, `Edit`, `Glob`, `Grep`, `Bash`.
+- **MCP Tools:** Automatically adapts Claude SDK MCP servers.
+
+### When to Use
+
+- **Infinite Context:** When the task instructions or input files are too large for the model's window.
+- **Complex Logic:** When the agent needs to perform calculations or logic on the input data before acting.
+- **Self-Verification:** The agent can write code to verify its own understanding of the task.
+
+### Debugging
+
+Use `--verbose` to see the `RunJS` interactions and the agent's reasoning process.
 
 ## Code Style
 

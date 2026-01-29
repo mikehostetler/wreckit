@@ -30,8 +30,8 @@ function createPinoLogger(options?: LoggerOptions): pino.Logger {
   } else if (quiet) {
     level = "error";
   } else {
-    // Default: suppress all logging
-    level = "silent";
+    // Default: primary CLI output
+    level = "info";
   }
 
   // Use raw JSON for debug mode, pretty-printed for everything else
@@ -44,8 +44,14 @@ function createPinoLogger(options?: LoggerOptions): pino.Logger {
 
   const stream = pretty({
     colorize: !(options?.noColor ?? false),
-    ignore: "pid,hostname,time",
-    messageFormat: "{msg}",
+    ignore: "pid,hostname,time,level",
+    messageFormat: (log, messageKey) => {
+      const msg = log[messageKey];
+      if (log.level === 30) return msg as string;
+      const levelLabel =
+        log.level === 40 ? "WARN" : log.level === 50 ? "ERROR" : "DEBUG";
+      return `${levelLabel}: ${msg}`;
+    },
     singleLine: true,
   });
 

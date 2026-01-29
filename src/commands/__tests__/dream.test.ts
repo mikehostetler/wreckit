@@ -9,16 +9,22 @@ describe("Dreamer: Similarity Detection", () => {
 
   it("should ignore case and special characters", () => {
     expect(calculateSimilarity("Hello World!", "hello world")).toBe(1.0);
-    expect(calculateSimilarity("[DREAMER] Fix bug", "fix bug")).toBeGreaterThan(0.9);
+    expect(calculateSimilarity("[DREAMER] Fix bug", "fix bug")).toBeGreaterThan(
+      0.9,
+    );
   });
 
   it("should detect high similarity for minor typos", () => {
     // "mian" vs "main"
-    expect(calculateSimilarity("fix main loop", "fix mian loop")).toBeGreaterThan(0.9);
+    expect(
+      calculateSimilarity("fix main loop", "fix mian loop"),
+    ).toBeGreaterThan(0.9);
   });
 
   it("should detect low similarity for distinct concepts", () => {
-    expect(calculateSimilarity("fix login bug", "add user profile")).toBeLessThan(0.5);
+    expect(
+      calculateSimilarity("fix login bug", "add user profile"),
+    ).toBeLessThan(0.5);
   });
 
   it("should handle prefix matching via Jaro-Winkler", () => {

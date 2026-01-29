@@ -1,0 +1,239 @@
+{
+  "schema_version": 1,
+  "id": "073-integrate-wisp-go-stack",
+  "branch_name": "wreckit/073-integrate-wisp-go-stack",
+  "user_stories": [
+    {
+      "id": "US-073-001",
+      "title": "Add Sprite Agent Schema to Configuration System",
+      "acceptance_criteria": [
+        "SpriteAgentSchema defined in src/schemas.ts with all required fields (kind, wispPath, maxVMs, defaultMemory, defaultCPUs, timeout)",
+        "SpriteAgentSchema added to AgentConfigUnionSchema discriminated union array",
+        "SpriteAgentConfig TypeScript type exported and usable",
+        "Schema validation passes for valid sprite config objects",
+        "Schema validation fails for invalid sprite config objects (missing required fields, wrong types)"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "This is the foundation - must be done first before any other sprite work. Follow the existing pattern for ClaudeSdkAgentSchema and RlmSdkAgentSchema."
+    },
+    {
+      "id": "US-073-002",
+      "title": "Create Wisp CLI Wrapper Module",
+      "acceptance_criteria": [
+        "src/agent/sprite-runner.ts module created with runWispCommand helper function",
+        "runWispCommand uses child_process.spawn (not exec)",
+        "Timeout enforcement with SIGTERM→SIGKILL escalation (5 second delay)",
+        "Stdout/stderr captured and returned in WispResult interface",
+        "parseWispJson function extracts JSON from Wisp output",
+        "startSprite function calls 'wisp start' with proper arguments",
+        "attachSprite function calls 'wisp attach' command",
+        "listSprites function calls 'wisp list --json' command",
+        "killSprite function calls 'wisp kill' command",
+        "All functions handle ENOENT error when wisp binary not found",
+        "All functions return structured results (success boolean, data/error fields)"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Reference process-runner.ts:68-182 for timeout and subprocess handling patterns. The runWispCommand function is the core primitive all other functions build on."
+    },
+    {
+      "id": "US-073-003",
+      "title": "Add Sprite-Specific Error Types",
+      "acceptance_criteria": [
+        "Error codes added to ErrorCodes object: WISP_NOT_FOUND, SPRITE_START_FAILED, SPRITE_ATTACH_FAILED, SPRITE_KILL_FAILED",
+        "WispNotFoundError class extends WreckitError with helpful installation message",
+        "SpriteStartError class extends WreckitError with sprite name and message",
+        "SpriteAttachError class extends WreckitError with sprite name and message",
+        "SpriteKillError class extends WreckitError with sprite name and message",
+        "All error classes follow existing pattern (constructor with specific fields, proper error code)"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Error messages must be actionable. WispNotFoundError should include instructions for installing Wisp. Follow the pattern of existing error classes like BranchError and PushError."
+    },
+    {
+      "id": "US-073-004",
+      "title": "Update Configuration System to Support Sprite Agent Kind",
+      "acceptance_criteria": [
+        "'sprite' added to validKinds array in src/config.ts applyOverrides function",
+        "Config loading accepts agent.kind: 'sprite' without errors",
+        "Config validation passes for complete sprite config",
+        "Config validation provides sensible defaults for omitted sprite fields",
+        "No errors when loading .wreckit/config.json with sprite agent configuration"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Only needs to update the validKinds array. No migration logic needed since sprite is a new agent kind with no legacy equivalent."
+    },
+    {
+      "id": "US-073-005",
+      "title": "Implement Sprite Agent Runner",
+      "acceptance_criteria": [
+        "runSpriteAgent function exported from src/agent/sprite-runner.ts",
+        "Function signature matches other runners (config, options) -> Promise<AgentResult>",
+        "Handles dryRun mode by logging what would be done",
+        "Handles mockAgent mode by returning simulated output",
+        "In normal mode, calls listSprites to verify Wisp connectivity",
+        "Returns AgentResult with proper success/output/timedOut/exitCode/completionDetected fields",
+        "Function is importable and callable from agent dispatch system"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "This is a minimal implementation that satisfies the agent runner interface. Full agent execution inside Sprites (file mounting, code transfer, etc.) is deferred to a follow-up item."
+    },
+    {
+      "id": "US-073-006",
+      "title": "Add Sprite Agent Dispatch Case",
+      "acceptance_criteria": [
+        "'sprite' case added to runAgentUnion switch statement in src/agent/runner.ts",
+        "Case imports and calls runSpriteAgent function",
+        "All required options passed to runSpriteAgent (config, cwd, prompt, logger, callbacks, etc.)",
+        "TypeScript compilation succeeds without type errors",
+        "Agent dispatch properly routes sprite agent config to sprite runner"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Add the sprite case before the default case. Follow the exact pattern of the existing cases (claude_sdk, amp_sdk, etc.)."
+    },
+    {
+      "id": "US-073-007",
+      "title": "Add RLM Tools for Sprite Management",
+      "acceptance_criteria": [
+        "SpawnSpriteTool defined with AxFunction interface (name, description, JSON Schema parameters, func)",
+        "AttachSpriteTool defined with AxFunction interface",
+        "ListSpritesTool defined with AxFunction interface",
+        "KillSpriteTool defined with AxFunction interface",
+        "All tools added to ALL_TOOLS registry in src/agent/rlm-tools.ts",
+        "Tools are accessible to RLM agents via buildToolRegistry function",
+        "Tools return JSON-formatted results (success, data/error fields)",
+        "Tools handle errors gracefully (catch and return in JSON, don't throw)"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Tools use a default SpriteAgentConfig for now. In a future enhancement, they could accept config from the RLM runner or environment. Follow the pattern of existing tools like ReadTool and WriteTool."
+    },
+    {
+      "id": "US-073-008",
+      "title": "Create Sprite Start CLI Command",
+      "acceptance_criteria": [
+        "spriteStartCommand function exported from src/commands/sprite.ts",
+        "Function accepts SpriteStartOptions (name, memory, cpus, cwd, json)",
+        "Function loads config and validates agent.kind is 'sprite'",
+        "Function calls startSprite from sprite-runner module",
+        "On success, outputs 'Started Sprite {id}' with connection info",
+        "On success with --json, outputs JSON result",
+        "On failure, outputs error message and exits with code 1",
+        "Handles WispNotFoundError with clear error message"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "Use the getSpriteConfig helper to load and validate config. Follow the command pattern from src/commands/init.ts."
+    },
+    {
+      "id": "US-073-009",
+      "title": "Create Sprite List CLI Command",
+      "acceptance_criteria": [
+        "spriteListCommand function exported from src/commands/sprite.ts",
+        "Function accepts SpriteListOptions (cwd, json)",
+        "Function loads config and validates agent.kind is 'sprite'",
+        "Function calls listSprites from sprite-runner module",
+        "On success with no Sprites, outputs 'No active Sprites'",
+        "On success with Sprites, lists each Sprite with ID and state",
+        "On success with --json, outputs JSON result",
+        "On failure, outputs error message and exits with code 1",
+        "Handles WispNotFoundError with clear error message"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "List output should be human-readable in normal mode (table or list format) and valid JSON in JSON mode."
+    },
+    {
+      "id": "US-073-010",
+      "title": "Create Sprite Kill CLI Command",
+      "acceptance_criteria": [
+        "spriteKillCommand function exported from src/commands/sprite.ts",
+        "Function accepts SpriteKillOptions (name, cwd, json)",
+        "Function loads config and validates agent.kind is 'sprite'",
+        "Function calls killSprite from sprite-runner module",
+        "On success, outputs 'Killed Sprite {name}'",
+        "On success with --json, outputs JSON result",
+        "On failure, outputs error message and exits with code 1",
+        "Handles WispNotFoundError with clear error message"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "Follow the same error handling and JSON output pattern as the other sprite commands."
+    },
+    {
+      "id": "US-073-011",
+      "title": "Create Sprite Attach CLI Command",
+      "acceptance_criteria": [
+        "spriteAttachCommand function exported from src/commands/sprite.ts",
+        "Function accepts SpriteAttachOptions (name, cwd, json)",
+        "Function loads config and validates agent.kind is 'sprite'",
+        "Function calls attachSprite from sprite-runner module",
+        "On success, outputs attach result (console output from Wisp)",
+        "On success with --json, outputs JSON result",
+        "On failure, outputs error message and exits with code 1",
+        "Handles WispNotFoundError with clear error message"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "Attach output comes directly from Wisp. In JSON mode, wrap the output in a JSON response object."
+    },
+    {
+      "id": "US-073-012",
+      "title": "Register Sprite Commands in CLI",
+      "acceptance_criteria": [
+        "Sprite commands imported at top of src/index.ts",
+        "'sprite' command group registered with Commander.js",
+        "'sprite start <name>' subcommand registered with --memory, --cpus, --json options",
+        "'sprite attach <name>' subcommand registered with --json option",
+        "'sprite list' subcommand registered with --json option",
+        "'sprite kill <name>' subcommand registered with --json option",
+        "All subcommands use executeCommand wrapper with proper error handling",
+        "All subcommands respect global options (--cwd, --verbose, --quiet, --dry-run)",
+        "'wreckit sprite --help' displays all subcommands and options"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "Register the sprite command group after the rollback command (around line 432). Use Commander.js's command group feature to nest subcommands under 'sprite'."
+    },
+    {
+      "id": "US-073-013",
+      "title": "Create Integration Tests for Sprite Commands",
+      "acceptance_criteria": [
+        "src/__tests__/commands/sprite.test.ts file created",
+        "Tests mock global.spawn to simulate Wisp CLI responses",
+        "spriteStartCommand tests: success path, JSON output, Wisp not found error",
+        "spriteListCommand tests: success path, empty list, JSON output",
+        "spriteKillCommand tests: success path, JSON output",
+        "spriteAttachCommand tests: success path, JSON output",
+        "Mock logger created using vi.fn() pattern",
+        "Test cleanup removes temp directories and restores spies",
+        "All tests pass with 'npm test -- src/__tests__/commands/sprite.test.ts'"
+      ],
+      "priority": 4,
+      "status": "done",
+      "notes": "Use Bun's spyOn to mock spawn, not mock.module. Return a mock ChildProcess that emits fake stdout/stderr. Follow the pattern from src/__tests__/commands/init.test.ts."
+    },
+    {
+      "id": "US-073-014",
+      "title": "Create Sprite Usage Documentation",
+      "acceptance_criteria": [
+        "SPRITE_USAGE.md file created in item directory",
+        "Documentation includes Wisp installation instructions",
+        "Documentation includes configuration examples (.wreckit/config.json)",
+        "Documentation includes CLI command examples for all subcommands",
+        "Documentation includes RLM tool usage examples",
+        "Documentation includes configuration options reference",
+        "Documentation includes troubleshooting section (common errors and solutions)",
+        "Documentation is accurate and matches actual implementation"
+      ],
+      "priority": 4,
+      "status": "done",
+      "notes": "This is user-facing documentation. It should be clear, concise, and include practical examples. The troubleshooting section should cover the most common issues users will encounter."
+    }
+  ]
+}

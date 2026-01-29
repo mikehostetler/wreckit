@@ -18,7 +18,7 @@ export function findRepoRoot(startCwd: string): string {
 
     if (hasWreckit && !hasGit) {
       throw new RepoNotFoundError(
-        `Found .wreckit at ${current} but no .git directory`
+        `Found .wreckit at ${current} but no .git directory`,
       );
     }
 
@@ -26,7 +26,7 @@ export function findRepoRoot(startCwd: string): string {
   }
 
   throw new RepoNotFoundError(
-    "Could not find repository root with .git and .wreckit directories"
+    "Could not find repository root with .git and .wreckit directories",
   );
 }
 
@@ -47,6 +47,10 @@ export function getWreckitDir(root: string): string {
 
 export function getConfigPath(root: string): string {
   return path.join(getWreckitDir(root), "config.json");
+}
+
+export function getConfigLocalPath(root: string): string {
+  return path.join(getWreckitDir(root), "config.local.json");
 }
 
 export function getIndexPath(root: string): string {
@@ -121,4 +125,25 @@ export function getMediaOutputPath(root: string, itemId: string): string {
   // Sanitize item ID for filename (replace slashes with dashes)
   const sanitizedId = itemId.replace(/\//g, "-");
   return path.join(getMediaDir(root), `${sanitizedId}-summary.mp4`);
+}
+
+export function getBuildMetadataPath(root: string): string {
+  return path.join(getWreckitDir(root), "build-metadata.json");
+}
+
+export function getWatchdogLogPath(root: string): string {
+  return path.join(getWreckitDir(root), "watchdog-log.jsonl");
+}
+
+export function getBuildLockPath(root: string): string {
+  return path.join(getWreckitDir(root), ".build-lock");
+}
+
+export function getSessionsDir(root: string): string {
+  return path.join(getWreckitDir(root), "sessions");
+}
+
+export function getSessionPath(root: string, sessionId: string): string {
+  const sanitizedId = sessionId.replace(/[^a-zA-Z0-9-_]/g, "_");
+  return path.join(getSessionsDir(root), `${sanitizedId}.json`);
 }

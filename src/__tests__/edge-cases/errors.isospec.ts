@@ -1,4 +1,12 @@
-import { describe, it, expect, beforeEach, afterEach, afterAll, vi } from "bun:test";
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  afterAll,
+  vi,
+} from "bun:test";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import * as os from "node:os";
@@ -7,15 +15,11 @@ import { RepoNotFoundError } from "../../errors";
 
 import * as childProcess from "node:child_process";
 import {
-  runAgent,
-  type AgentConfig,
-  type RunAgentOptions,
+  runAgentUnion,
+  type AgentConfigUnion,
+  type UnionRunAgentOptions,
 } from "../../agent";
-import {
-  pushBranch,
-  getPrByBranch,
-  type GitOptions,
-} from "../../git";
+import { pushBranch, getPrByBranch, type GitOptions } from "../../git";
 import { findRepoRoot } from "../../fs";
 
 const spawn = vi.spyOn(childProcess, "spawn");
@@ -115,22 +119,21 @@ describe("Edge Case Tests 59-65: Error Conditions", () => {
     it("returns success: false and exitCode: null when agent binary not found", async () => {
       mockSpawnError(new Error("ENOENT: spawn /nonexistent/binary failed"));
 
-      const config: AgentConfig = {
+      const config: AgentConfigUnion = {
+        kind: "process",
         command: "/nonexistent/binary",
         args: [],
         completion_signal: "<promise>COMPLETE</promise>",
-        timeout_seconds: 10,
-        max_iterations: 1,
       };
 
-      const options: RunAgentOptions = {
+      const options: UnionRunAgentOptions = {
         config,
         cwd: tempDir,
         prompt: "test prompt",
         logger: mockLogger,
       };
 
-      const result = await runAgent(options);
+      const result = await runAgentUnion(options);
 
       expect(result.success).toBe(false);
       expect(result.exitCode).toBe(null);
@@ -141,22 +144,21 @@ describe("Edge Case Tests 59-65: Error Conditions", () => {
     it("logs spawn failure with clear error message", async () => {
       mockSpawnError(new Error("ENOENT: spawn failed"));
 
-      const config: AgentConfig = {
+      const config: AgentConfigUnion = {
+        kind: "process",
         command: "/path/to/missing/agent",
         args: ["--flag"],
         completion_signal: "<promise>COMPLETE</promise>",
-        timeout_seconds: 10,
-        max_iterations: 1,
       };
 
-      const options: RunAgentOptions = {
+      const options: UnionRunAgentOptions = {
         config,
         cwd: tempDir,
         prompt: "test prompt",
         logger: mockLogger,
       };
 
-      const result = await runAgent(options);
+      const result = await runAgentUnion(options);
 
       expect(result.success).toBe(false);
       expect(result.output).toContain("error");
@@ -175,40 +177,42 @@ describe("Edge Case Tests 59-65: Error Conditions", () => {
       };
 
       let closeCallback: ((code: number | null) => void) | null = null;
-      mockProc.on.mockImplementation((event: string, cb: (code?: number | null) => void) => {
-        if (event === "close") {
-          closeCallback = cb;
-        }
-      });
+      mockProc.on.mockImplementation(
+        (event: string, cb: (code?: number | null) => void) => {
+          if (event === "close") {
+            closeCallback = cb as (code: number | null) => void;
+          }
+        },
+      );
 
       spawn.mockReturnValueOnce(mockProc as any);
 
-      const config: AgentConfig = {
+      const config: AgentConfigUnion = {
+        kind: "process",
         command: "sleep",
         args: ["10"],
         completion_signal: "<promise>COMPLETE</promise>",
-        timeout_seconds: 1,
-        max_iterations: 1,
       };
 
-      const options: RunAgentOptions = {
+      const options: UnionRunAgentOptions = {
         config,
         cwd: tempDir,
         prompt: "test prompt",
         logger: mockLogger,
+        timeoutSeconds: 1,
       };
 
-      const resultPromise = runAgent(options);
+      const resultPromise = runAgentUnion(options);
 
       await new Promise((resolve) => setTimeout(resolve, 1100));
 
       expect(mockProc.kill).toHaveBeenCalledWith("SIGTERM");
       expect(mockLogger.warn).toHaveBeenCalledWith(
-        expect.stringContaining("timed out")
+        expect.stringContaining("timed out"),
       );
 
       if (closeCallback) {
-        closeCallback(null);
+        (closeCallback as (code: number | null) => void)(null);
       }
 
       const result = await resultPromise;
@@ -227,35 +231,37 @@ describe("Edge Case Tests 59-65: Error Conditions", () => {
       };
 
       let closeCallback: ((code: number | null) => void) | null = null;
-      mockProc.on.mockImplementation((event: string, cb: (code?: number | null) => void) => {
-        if (event === "close") {
-          closeCallback = cb;
-        }
-      });
+      mockProc.on.mockImplementation(
+        (event: string, cb: (code?: number | null) => void) => {
+          if (event === "close") {
+            closeCallback = cb as (code: number | null) => void;
+          }
+        },
+      );
 
       spawn.mockReturnValueOnce(mockProc as any);
 
-      const config: AgentConfig = {
+      const config: AgentConfigUnion = {
+        kind: "process",
         command: "long-running-agent",
         args: [],
         completion_signal: "<promise>COMPLETE</promise>",
-        timeout_seconds: 1,
-        max_iterations: 1,
       };
 
-      const options: RunAgentOptions = {
+      const options: UnionRunAgentOptions = {
         config,
         cwd: tempDir,
         prompt: "test prompt",
         logger: mockLogger,
+        timeoutSeconds: 1,
       };
 
-      const resultPromise = runAgent(options);
+      const resultPromise = runAgentUnion(options);
 
       await new Promise((resolve) => setTimeout(resolve, 1100));
 
       if (closeCallback) {
-        closeCallback(null);
+        (closeCallback as (code: number | null) => void)(null);
       }
 
       const result = await resultPromise;
@@ -268,22 +274,21 @@ describe("Edge Case Tests 59-65: Error Conditions", () => {
     it("returns success: false and completionDetected: false", async () => {
       mockSpawnOnce("Some output without completion signal\n", 0);
 
-      const config: AgentConfig = {
+      const config: AgentConfigUnion = {
+        kind: "process",
         command: "sh",
         args: ["-c", "echo 'output'"],
         completion_signal: "<promise>COMPLETE</promise>",
-        timeout_seconds: 10,
-        max_iterations: 1,
       };
 
-      const options: RunAgentOptions = {
+      const options: UnionRunAgentOptions = {
         config,
         cwd: tempDir,
         prompt: "test prompt",
         logger: mockLogger,
       };
 
-      const result = await runAgent(options);
+      const result = await runAgentUnion(options);
 
       expect(result.success).toBe(false);
       expect(result.completionDetected).toBe(false);
@@ -294,22 +299,21 @@ describe("Edge Case Tests 59-65: Error Conditions", () => {
     it("treats partial completion signal as not detected", async () => {
       mockSpawnOnce("<promise>COMPLE", 0);
 
-      const config: AgentConfig = {
+      const config: AgentConfigUnion = {
+        kind: "process",
         command: "sh",
         args: ["-c", "echo partial"],
         completion_signal: "<promise>COMPLETE</promise>",
-        timeout_seconds: 10,
-        max_iterations: 1,
       };
 
-      const options: RunAgentOptions = {
+      const options: UnionRunAgentOptions = {
         config,
         cwd: tempDir,
         prompt: "test prompt",
         logger: mockLogger,
       };
 
-      const result = await runAgent(options);
+      const result = await runAgentUnion(options);
 
       expect(result.success).toBe(false);
       expect(result.completionDetected).toBe(false);
@@ -330,7 +334,7 @@ describe("Edge Case Tests 59-65: Error Conditions", () => {
       expect(spawn).toHaveBeenCalledWith(
         "git",
         ["push", "-u", "origin", "feature-branch"],
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -469,7 +473,13 @@ describe("Edge Case Tests 59-65: Error Conditions", () => {
     });
 
     it("returns parsed data when valid JSON is returned", async () => {
-      mockSpawnOnce(JSON.stringify({ url: "https://github.com/org/repo/pull/50", number: 50 }), 0);
+      mockSpawnOnce(
+        JSON.stringify({
+          url: "https://github.com/org/repo/pull/50",
+          number: 50,
+        }),
+        0,
+      );
 
       const options: GitOptions = {
         cwd: "/repo",
@@ -492,7 +502,7 @@ describe("Edge Case Tests 59-65: Error Conditions", () => {
 
       expect(() => findRepoRoot(emptyDir)).toThrow(RepoNotFoundError);
       expect(() => findRepoRoot(emptyDir)).toThrow(
-        "Could not find repository root with .git and .wreckit directories"
+        "Could not find repository root with .git and .wreckit directories",
       );
     });
 
@@ -502,7 +512,7 @@ describe("Edge Case Tests 59-65: Error Conditions", () => {
 
       expect(() => findRepoRoot(mismatchDir)).toThrow(RepoNotFoundError);
       expect(() => findRepoRoot(mismatchDir)).toThrow(
-        /Found .wreckit at .* but no .git directory/
+        /Found .wreckit at .* but no .git directory/,
       );
     });
 
@@ -512,7 +522,7 @@ describe("Edge Case Tests 59-65: Error Conditions", () => {
 
       expect(() => findRepoRoot(gitOnlyDir)).toThrow(RepoNotFoundError);
       expect(() => findRepoRoot(gitOnlyDir)).toThrow(
-        "Could not find repository root with .git and .wreckit directories"
+        "Could not find repository root with .git and .wreckit directories",
       );
     });
 
@@ -548,11 +558,13 @@ describe("Edge Case Tests 59-65: Error Conditions", () => {
       await fs.mkdir(path.join(repoRoot, ".git"), { recursive: true });
 
       const childWithWreckit = path.join(repoRoot, "child-wreckit");
-      await fs.mkdir(path.join(childWithWreckit, ".wreckit"), { recursive: true });
+      await fs.mkdir(path.join(childWithWreckit, ".wreckit"), {
+        recursive: true,
+      });
 
       expect(() => findRepoRoot(childWithWreckit)).toThrow(RepoNotFoundError);
       expect(() => findRepoRoot(childWithWreckit)).toThrow(
-        /Found .wreckit at .* but no .git directory/
+        /Found .wreckit at .* but no .git directory/,
       );
     });
   });

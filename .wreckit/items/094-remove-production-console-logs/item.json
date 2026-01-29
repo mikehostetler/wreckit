@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "id": "094-remove-production-console-logs",
+  "title": "Remove Production Console Logs",
+  "section": "technical-debt",
+  "state": "planned",
+  "overview": "Replace hardcoded console.log statements with proper logger usage in rlm-runner.ts, sprite.ts, doctor.ts, and status.ts.",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": "Critic failed: I'll audit the implementation of this item. Let me check the actual code changes to verify they are ...",
+  "created_at": "2026-01-28T15:00:00.000Z",
+  "updated_at": "2026-01-28T19:39:12.281Z"
+}

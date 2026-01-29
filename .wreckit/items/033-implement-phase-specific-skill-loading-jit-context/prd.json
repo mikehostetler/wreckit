@@ -97,7 +97,7 @@
         "Unit tests verify backward compatibility without skills",
         "npm run typecheck passes"
       ],
-      "priority": 5,
+      "priority": 4,
       "status": "done",
       "notes": "This is the core integration point. The phase parameter flows from phase execution functions to buildPromptVariables. Follow existing logging patterns in itemWorkflow.ts."
     },
@@ -115,7 +115,7 @@
         "Integration tests verify research phase without skills config",
         "npm run typecheck passes"
       ],
-      "priority": 6,
+      "priority": 4,
       "status": "done",
       "notes": "First phase integration. Pattern will be replicated for plan, implement, pr phases. Research phase has no wreckit MCP server, so only skill MCP servers are merged."
     },
@@ -135,7 +135,7 @@
         "Integration tests verify plan phase without skills config",
         "npm run typecheck passes"
       ],
-      "priority": 7,
+      "priority": 4,
       "status": "done",
       "notes": "Plan phase has existing wreckit MCP server - must ensure skill MCP servers merged alongside, not replacing. Test that save_prd tool still works with skills."
     },
@@ -155,7 +155,7 @@
         "Integration tests verify PR phase with skills config",
         "npm run typecheck passes"
       ],
-      "priority": 8,
+      "priority": 4,
       "status": "done",
       "notes": "Implement and PR phases follow the same pattern as plan phase (wreckit MCP server + skill MCP servers). Verify story status updates still work in implement phase."
     },
@@ -178,7 +178,7 @@
         "Documentation is clear and complete",
         "Example skills work when tested manually"
       ],
-      "priority": 9,
+      "priority": 4,
       "status": "done",
       "notes": "This makes the feature discoverable and usable. Create practical, realistic skills that demonstrate the feature's value. Include comments in skills.json explaining what each skill does."
     },
@@ -199,7 +199,7 @@
         "Type checking passes with new types",
         "No breaking changes to existing APIs"
       ],
-      "priority": 10,
+      "priority": 4,
       "status": "done",
       "notes": "Critical story - backward compatibility must be 100%. Test with existing repos, existing configs, edge cases. This is the verification story that confirms the entire implementation works correctly."
     }

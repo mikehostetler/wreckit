@@ -52,7 +52,7 @@ export async function buildJitContext(
   contextRequirements: SkillContextRequirement[],
   item: Item,
   config: ConfigResolved,
-  root: string
+  root: string,
 ): Promise<BuiltContext> {
   const context: BuiltContext = {
     files: {},
@@ -87,7 +87,17 @@ export async function buildJitContext(
         }
 
         case "git_status": {
-          const status: GitFileChange[] = await getGitStatus({ cwd: root, logger: console });
+          const noopLogger = {
+            info: () => {},
+            warn: () => {},
+            error: () => {},
+            debug: () => {},
+            json: () => {},
+          };
+          const status: GitFileChange[] = await getGitStatus({
+            cwd: root,
+            logger: noopLogger,
+          });
           context.gitStatus = formatGitStatus(status);
           break;
         }
@@ -110,7 +120,9 @@ export async function buildJitContext(
 
         case "phase_artifact": {
           if (!req.path) {
-            context.errors.push(`Phase artifact requirement missing artifact name`);
+            context.errors.push(
+              `Phase artifact requirement missing artifact name`,
+            );
             continue;
           }
           const artifactPath = path.join(itemDir, req.path);
@@ -120,11 +132,15 @@ export async function buildJitContext(
         }
 
         default:
-          context.errors.push(`Unknown context requirement type: ${(req as any).type}`);
+          context.errors.push(
+            `Unknown context requirement type: ${(req as any).type}`,
+          );
       }
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : String(err);
-      context.errors.push(`Failed to load context for ${req.type}${req.path ? ` (${req.path})` : ""}: ${errorMsg}`);
+      context.errors.push(
+        `Failed to load context for ${req.type}${req.path ? ` (${req.path})` : ""}: ${errorMsg}`,
+      );
     }
   }
 
@@ -140,11 +156,16 @@ function formatGitStatus(status: GitFileChange[]): string {
   }
 
   const lines = status.map((s) => {
-    const statusChar = s.status === "A" ? "A" // Added
-      : s.status === "D" ? "D" // Deleted
-      : s.status === "M" ? "M" // Modified
-      : s.status === "R" ? "R" // Renamed
-      : "?"; // Untracked
+    const statusChar =
+      s.statusCode === "A"
+        ? "A" // Added
+        : s.statusCode === "D"
+          ? "D" // Deleted
+          : s.statusCode === "M"
+            ? "M" // Modified
+            : s.statusCode === "R"
+              ? "R" // Renamed
+              : "?"; // Untracked
     return `${statusChar} ${s.path}`;
   });
 

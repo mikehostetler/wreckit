@@ -1,4 +1,12 @@
-import { describe, expect, it, beforeEach, afterEach, vi, mock } from "bun:test";
+import {
+  describe,
+  expect,
+  it,
+  beforeEach,
+  afterEach,
+  vi,
+  mock,
+} from "bun:test";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import * as os from "node:os";
@@ -25,7 +33,7 @@ function createMockLogger() {
 async function createItem(
   root: string,
   id: string,
-  overrides: Partial<Item> = {}
+  overrides: Partial<Item> = {},
 ): Promise<Item> {
   const itemDir = path.join(root, ".wreckit", "items", id);
   await fs.mkdir(itemDir, { recursive: true });
@@ -47,7 +55,10 @@ async function createItem(
     ...overrides,
   };
 
-  await fs.writeFile(path.join(itemDir, "item.json"), JSON.stringify(item, null, 2));
+  await fs.writeFile(
+    path.join(itemDir, "item.json"),
+    JSON.stringify(item, null, 2),
+  );
   return item;
 }
 
@@ -56,27 +67,31 @@ async function createConfig(root: string): Promise<void> {
   await fs.mkdir(configDir, { recursive: true });
   await fs.writeFile(
     path.join(configDir, "config.json"),
-    JSON.stringify({
-      schema_version: 1,
-      base_branch: "main",
-      branch_prefix: "wreckit/",
-      merge_mode: "direct",
-      agent: {
-        mode: "process",
-        command: "claude",
-        args: ["--dangerously-skip-permissions", "--print"],
-        completion_signal: "<promise>COMPLETE</promise>",
+    JSON.stringify(
+      {
+        schema_version: 1,
+        base_branch: "main",
+        branch_prefix: "wreckit/",
+        merge_mode: "direct",
+        agent: {
+          mode: "process",
+          command: "claude",
+          args: ["--dangerously-skip-permissions", "--print"],
+          completion_signal: "<promise>COMPLETE</promise>",
+        },
+        max_iterations: 100,
+        timeout_seconds: 3600,
+        pr_checks: {
+          commands: [],
+          secret_scan: false,
+          require_all_stories_done: true,
+          allow_unsafe_direct_merge: true,
+          allowed_remote_patterns: [],
+        },
       },
-      max_iterations: 100,
-      timeout_seconds: 3600,
-      pr_checks: {
-        commands: [],
-        secret_scan: false,
-        require_all_stories_done: true,
-        allow_unsafe_direct_merge: true,
-        allowed_remote_patterns: [],
-      },
-    }, null, 2)
+      null,
+      2,
+    ),
   );
 }
 
@@ -91,7 +106,9 @@ describe("rollbackCommand", () => {
   let originalCwd: string;
 
   beforeEach(async () => {
-    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "wreckit-rollback-test-"));
+    tempDir = await fs.mkdtemp(
+      path.join(os.tmpdir(), "wreckit-rollback-test-"),
+    );
     await fs.mkdir(path.join(tempDir, ".git"), { recursive: true });
     await createConfig(tempDir);
     originalCwd = process.cwd();
@@ -133,7 +150,7 @@ describe("rollbackCommand", () => {
     const result = await rollbackCommand(
       "001-test",
       { cwd: tempDir, force: true },
-      logger
+      logger,
     );
 
     expect(result.success).toBe(true);
@@ -146,13 +163,15 @@ describe("rollbackCommand", () => {
     const result = await rollbackCommand(
       "001-test",
       { cwd: tempDir, dryRun: true },
-      logger
+      logger,
     );
 
     expect(result.success).toBe(true);
     expect(result.rollbackSha).toBe("abc123def456");
     expect(mockRunGitCommand).not.toHaveBeenCalled();
-    expect(logger.info).toHaveBeenCalledWith(expect.stringContaining("[dry-run]"));
+    expect(logger.info).toHaveBeenCalledWith(
+      expect.stringContaining("[dry-run]"),
+    );
 
     const item = await readItemState(tempDir, "001-test");
     expect(item.state).toBe("done");
@@ -169,15 +188,15 @@ describe("rollbackCommand", () => {
     expect(result.success).toBe(true);
     expect(mockRunGitCommand).toHaveBeenCalledWith(
       ["checkout", "main"],
-      expect.any(Object)
+      expect.any(Object),
     );
     expect(mockRunGitCommand).toHaveBeenCalledWith(
       ["reset", "--hard", "abc123def456"],
-      expect.any(Object)
+      expect.any(Object),
     );
     expect(mockRunGitCommand).toHaveBeenCalledWith(
       ["push", "--force", "origin", "main"],
-      expect.any(Object)
+      expect.any(Object),
     );
   });
 
@@ -198,7 +217,10 @@ describe("rollbackCommand", () => {
   it("returns error if checkout fails", async () => {
     await createItem(tempDir, "001-test");
 
-    mockRunGitCommand.mockResolvedValue({ stdout: "checkout error", exitCode: 1 });
+    mockRunGitCommand.mockResolvedValue({
+      stdout: "checkout error",
+      exitCode: 1,
+    });
 
     const logger = createMockLogger();
     const result = await rollbackCommand("001-test", { cwd: tempDir }, logger);

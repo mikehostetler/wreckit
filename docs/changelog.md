@@ -18,6 +18,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - The `idea` command was identical to `ideas` and caused confusion
   - All functionality is preserved in the `ideas` command
   - `ideas` supports file input (`-f`), stdin, and interactive interview mode
+- Removed deprecated legacy agent APIs (breaking change)
+  - Removed `runAgent()` function - use `runAgentUnion()` instead
+  - Removed `getAgentConfig()` function - use `getAgentConfigUnion()` instead
+  - Removed `AgentConfig` type - use `AgentConfigUnion` from `schemas.ts` instead
+  - Removed `RunAgentOptions` type - use `UnionRunAgentOptions` instead
+  - Removed supporting functions: `simulateMockAgent()`, `runLegacyProcessAgent()`
+  - Legacy mode-based API (`mode: "process" | "sdk"`) replaced by kind-based API (`kind: "process" | "claude_sdk" | "amp_sdk" | "codex_sdk" | "opencode_sdk" | "rlm"`)
+  - All internal code and tests have been migrated to the modern API
+  - **Breaking change**: External consumers importing these functions/types will need to update their code (if any exist)
+
+**Migration guide for external consumers:**
+
+If you were using the deprecated APIs directly from the wreckit agent module:
+
+```typescript
+// ❌ Old (removed)
+import { runAgent, getAgentConfig, AgentConfig } from "wreckit/agent";
+const config: AgentConfig = getAgentConfig(resolvedConfig);
+await runAgent({ config, cwd, prompt, logger });
+
+// ✅ New (current)
+import { runAgentUnion, getAgentConfigUnion } from "wreckit/agent";
+import type { AgentConfigUnion } from "wreckit/schemas";
+const config: AgentConfigUnion = getAgentConfigUnion(resolvedConfig);
+await runAgentUnion({ config, cwd, prompt, logger });
+```
+
+**Key differences:**
+- Mode-based (`mode: "process" | "sdk"`) → Kind-based (`kind: "process" | "claude_sdk" | "amp_sdk" | "codex_sdk" | "opencode_sdk" | "rlm"`)
+- No automatic fallback - explicitly select agent kind via config
+- Agent config fields simplified - `timeout_seconds` and `max_iterations` moved to top-level `ConfigResolved`
 
 ## [1.0.0] - 2025-01-13
 

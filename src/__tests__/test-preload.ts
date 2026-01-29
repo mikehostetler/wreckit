@@ -1,7 +1,7 @@
 /**
  * Bun test preload script
  * This file is loaded before any test files to set up consistent mocking
- * 
+ *
  * Usage: bun test --preload ./src/__tests__/test-preload.ts
  */
 

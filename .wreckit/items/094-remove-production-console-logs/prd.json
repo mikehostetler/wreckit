@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "id": "094-remove-production-console-logs",
+  "branch_name": "wreckit/094-remove-production-console-logs",
+  "user_stories": [
+    {
+      "id": "US-001",
+      "title": "Replace console.log with logger.debug in rlm-runner.ts",
+      "acceptance_criteria": [
+        "Line 298 in src/agent/rlm-runner.ts uses logger.debug instead of console.log",
+        "Debug output respects --debug flag"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Simple replacement using available logger parameter."
+    },
+    {
+      "id": "US-002",
+      "title": "Replace console.error with logger.error in rlm-runner.ts",
+      "acceptance_criteria": [
+        "Line 392 in src/agent/rlm-runner.ts uses logger.error instead of console.error"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Simple replacement in catch block."
+    },
+    {
+      "id": "US-003",
+      "title": "Update diagnoseDependencies() to accept logger parameter",
+      "acceptance_criteria": [
+        "Function signature updated to accept Logger",
+        "Call sites updated"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Function signature: async function diagnoseDependencies(root: string, logger: Logger). Call site properly passes logger."
+    },
+    {
+      "id": "US-004",
+      "title": "Replace console.warn with logger.warn in doctor.ts",
+      "acceptance_criteria": [
+        "Line 185 in doctor.ts uses logger.warn",
+        "Inline console functions updated to use logger"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Replaced console.warn with logger.warn at line 152 (actual line number may vary). No console statements remain in doctor.ts."
+    }
+  ]
+}

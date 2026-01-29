@@ -32,7 +32,7 @@ export class FileLock {
    */
   static async acquireExclusive(
     filePath: string,
-    options: { timeout?: number } = {}
+    options: { timeout?: number } = {},
   ): Promise<FileLock> {
     const lockfilePath = getLockfilePath(filePath);
     const lock = new FileLock(lockfilePath);
@@ -52,7 +52,7 @@ export class FileLock {
    */
   static async acquireShared(
     filePath: string,
-    options: { timeout?: number } = {}
+    options: { timeout?: number } = {},
   ): Promise<FileLock> {
     const lockfilePath = getLockfilePath(filePath);
     const lock = new FileLock(lockfilePath);
@@ -134,7 +134,7 @@ export class FileLock {
         // Check timeout
         if (Date.now() - startTime > timeout) {
           throw new Error(
-            `Failed to acquire lock on ${this.lockfilePath} after ${timeout}ms`
+            `Failed to acquire lock on ${this.lockfilePath} after ${timeout}ms`,
           );
         }
 
@@ -229,7 +229,7 @@ export class FileLock {
   static async withExclusiveLock<T>(
     filePath: string,
     fn: () => Promise<T>,
-    options?: { timeout?: number }
+    options?: { timeout?: number },
   ): Promise<T> {
     const lock = await FileLock.acquireExclusive(filePath, options);
     try {
@@ -251,7 +251,7 @@ export class FileLock {
   static async withSharedLock<T>(
     filePath: string,
     fn: () => Promise<T>,
-    options?: { timeout?: number }
+    options?: { timeout?: number },
   ): Promise<T> {
     const lock = await FileLock.acquireShared(filePath, options);
     try {
@@ -281,7 +281,7 @@ function getLockfilePath(filePath: string): string {
  */
 export async function withRetry<T>(
   fn: () => Promise<T>,
-  options: { maxRetries?: number; delay?: number } = {}
+  options: { maxRetries?: number; delay?: number } = {},
 ): Promise<T> {
   const { maxRetries = 5, delay = 100 } = options;
   let lastError: Error | undefined;
@@ -300,7 +300,7 @@ export async function withRetry<T>(
         errorCode === "EEXIST"
       ) {
         await new Promise((resolve) =>
-          setTimeout(resolve, delay * Math.pow(2, i))
+          setTimeout(resolve, delay * Math.pow(2, i)),
         );
         continue;
       }

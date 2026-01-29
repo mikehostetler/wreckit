@@ -1,7 +1,7 @@
 import { Codex } from "@openai/codex-sdk";
 import type { Logger } from "../logging";
 import type { AgentResult } from "./runner";
-import { registerSdkController, unregisterSdkController } from "./runner.js";
+import { registerSdkController, unregisterSdkController } from "./lifecycle.js";
 import type { CodexSdkAgentConfig } from "../schemas";
 import type { AgentEvent } from "../tui/agentEvents";
 import { getAllowedToolsForPhase } from "./toolAllowlist";
@@ -21,7 +21,9 @@ export interface CodexRunAgentOptions {
   phase?: string;
 }
 
-function getEffectiveToolAllowlist(options: CodexRunAgentOptions): string[] | undefined {
+function getEffectiveToolAllowlist(
+  options: CodexRunAgentOptions,
+): string[] | undefined {
   if (options.allowedTools !== undefined) {
     return options.allowedTools;
   }
@@ -32,11 +34,15 @@ function getEffectiveToolAllowlist(options: CodexRunAgentOptions): string[] | un
 }
 
 export async function runCodexSdkAgent(
-  options: CodexRunAgentOptions
+  options: CodexRunAgentOptions,
 ): Promise<AgentResult> {
   const { cwd, prompt, logger, dryRun, onStdoutChunk } = options;
 
   if (dryRun) {
+    const effectiveTools = getEffectiveToolAllowlist(options);
+    if (effectiveTools && effectiveTools.length > 0) {
+      logger.debug(`Tool restrictions: ${effectiveTools.join(", ")}`);
+    }
     logger.info("[dry-run] Would run Codex SDK agent");
     return {
       success: true,
@@ -59,7 +65,10 @@ export async function runCodexSdkAgent(
 
     // Real Codex SDK usage
     const client = new Codex({
-      apiKey: sdkEnv.CODEX_API_KEY || process.env.CODEX_API_KEY || process.env.OPENAI_API_KEY
+      apiKey:
+        sdkEnv.CODEX_API_KEY ||
+        process.env.CODEX_API_KEY ||
+        process.env.OPENAI_API_KEY,
     });
 
     const thread = await client.startThread();

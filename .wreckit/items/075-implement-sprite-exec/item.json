@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "id": "075-implement-sprite-exec",
+  "title": "Implement Sprite Exec Capability",
+  "section": "infrastructure",
+  "state": "done",
+  "overview": "Add the ability to execute commands inside a running Sprite VM via the `sprite exec` CLI command. This enables Wreckit agents to perform work (clone, build, test) inside the sandbox, not just manage the VM lifecycle.",
+  "problem_statement": "The current Sprite integration supports lifecycle (start/stop) but not execution. Agents cannot run commands inside the isolated environment.",
+  "motivation": "To fully realize 'Sandbox Mode', agents need to execute shell commands within the Sprite VM.",
+  "success_criteria": [
+    "`SpriteRunner` supports `exec` method wrapping `sprite exec`",
+    "`wreckit sprite exec <name> -- <command>` CLI command implemented",
+    "`exec_in_sprite` RLM tool available to agents",
+    "Support for capturing stdout/stderr/exit code from inside the VM",
+    "Integration tests mocking `sprite exec`"
+  ],
+  "technical_constraints": [
+    "Must use `child_process.spawn`",
+    "Must handle streaming output",
+    "Must propagate exit codes correctly"
+  ],
+  "scope_in_scope": [
+    "src/agent/sprite-runner.ts",
+    "src/commands/sprite.ts",
+    "src/agent/rlm-tools.ts",
+    "src/__tests__/commands/sprite.test.ts"
+  ],
+  "scope_out_of_scope": [],
+  "priority_hint": "high",
+  "urgency_hint": "Missing core capability",
+  "branch": "wreckit/075-implement-sprite-exec",
+  "pr_url": "https://github.com/jmanhype/wreckit/pull/31",
+  "pr_number": 31,
+  "last_error": null,
+  "created_at": "2026-01-27T23:55:00.000Z",
+  "updated_at": "2026-01-28T01:00:00.000Z"
+}

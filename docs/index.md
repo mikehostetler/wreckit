@@ -3,8 +3,11 @@ layout: home
 
 hero:
   name: Wreckit
-  text: Your AI agent, unsupervised, wrecking through your backlog while you sleep
-  tagline: A CLI tool for turning ideas into automated PRs through an autonomous agent loop
+  text: The Sovereign Software Engineer
+  tagline: A fully autonomous, self-healing, self-improving development entity.
+  image:
+    src: /logo.png
+    alt: Wreckit
   actions:
     - theme: brand
       text: Get Started
@@ -14,62 +17,51 @@ hero:
       link: https://github.com/mikehostetler/wreckit
 
 features:
+  - icon: 🧠
+    title: The Dreamer
+    details: Autonomously scans your codebase for technical debt and gaps, creating its own roadmap items without human input.
+  - icon: 🧬
+    title: The Geneticist
+    details: Analyzes its own failure logs and rewrites its system prompts to "evolve" its cognitive capabilities over time.
+  - icon: 🏥
+    title: The Doctor
+    details: Self-healing immune system. Detects data corruption, dirty git states, and runtime errors—then fixes them automatically.
+  - icon: 🛡️
+    title: The Watchdog
+    details: A persistent runtime that monitors the codebase. If the system modifies its own source code, it recompiles and restarts itself instantly.
   - icon: ⚡
-    title: Idea to PR
-    details: Dump a text file of half-baked ideas. Wreckit turns them into researched, planned, implemented, and PR'd code.
-  - icon: 🔄
-    title: Ralph Wiggum Loop
-    details: The Research → Plan → Implement workflow, fully automated. Go do literally anything else while Ralph works.
-  - icon: 📁
-    title: Files are Truth
-    details: Everything lives in .wreckit/ as JSON and Markdown. Git-trackable. Inspectable. Resumable. No magic.
-  - icon: 🔧
-    title: Agent SDK
-    details: Uses Claude Agent SDK for best performance. Supports multiple backends (Amp, Codex, OpenCode).
+    title: The Factory
+    details: The classic "Idea to PR" pipeline. Researches, plans, implements, tests, and ships code while you sleep.
   - icon: ☁️
-    title: Cloud Sandboxes
-    details: Designed for multi-actor parallelism. Spin up a fleet of Ralphs, let them wreck in parallel.
-  - icon: 🎯
-    title: Idempotent & Resumable
-    details: Re-run anything safely. Ctrl-C and pick up where you left off. Every prompt is inspectable.
+    title: Cloud Native
+    details: Designed for multi-actor parallelism. Spin up a fleet of autonomous agents on cloud sandboxes.
 ---
 
-## How It Works
+## The Singularity is Here
 
-Each item progresses through states:
+Wreckit has evolved beyond a CLI tool. It is now a **Recursive Self-Improvement Engine**.
+
+### The Loop
 
 ```
-raw → researched → planned → implementing → in_pr → done
+Dream (Create Tasks) → Build (Write Code) → Heal (Fix Errors) → Evolve (Rewrite Prompts)
+      ↑                                                                      │
+      └──────────────────────────────────────────────────────────────────────┘
 ```
 
-### The Workflow
+### Quick Start
 
-1. **Research** — Agent reads your codebase thoroughly. Finds patterns. Documents file paths, conventions, integration points.
-2. **Plan** — Agent designs the solution. Breaks it into phases with success criteria. Creates user stories with acceptance criteria.
-3. **Implement** — Agent picks the highest priority story, implements it, runs tests, commits, marks it done. Repeats until all stories complete.
-4. **PR** — Agent opens a pull request. You review. You merge. You ship.
-
-## Quick Start
-
-\`\`\`bash
-# Install the chaos
+```bash
+# 1. Install
 npm install -g wreckit
 
-# Initialize in your repo
-cd my-project
+# 2. Initialize
 wreckit init
 
-# Feed it ideas
-wreckit ideas < IDEAS.md
-
-# Let Ralph loose
-wreckit
-
-# Go do something else. Come back to PRs.
-\`\`\`
+# 3. Unleash the Autonomous Engine
+./watchdog.sh
+```
 
 ---
 
-**What is this?** — A CLI that runs a Ralph Wiggum Loop over your roadmap.
-
-Built on the [HumanLayer](https://github.com/humanlayer/humanlayer) Research → Plan → Implement workflow.
+**Warning:** This software writes its own code. Review all PRs carefully.

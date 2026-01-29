@@ -3,6 +3,7 @@
 You are tasked with conducting comprehensive research for the following item. Be thorough, skeptical, and document your findings with specific file references.
 
 ## Item Details
+
 - **ID:** {{id}}
 - **Title:** {{title}}
 - **Section:** {{section}}
@@ -40,6 +41,7 @@ You are tasked with conducting comprehensive research for the following item. Be
 ### Step 3: Synthesize Findings
 
 Compile your research with:
+
 - Concrete file references (file:line format)
 - Patterns, connections, and architectural decisions
 - Areas that need special attention
@@ -52,6 +54,7 @@ Create a file at: `{{item_path}}/research.md`
 **CRITICAL:** You MUST use the EXACT section headers below. Do not paraphrase or omit them. The system validates these headers strictly.
 
 Required Headers:
+
 1. `# Research: {{title}}` (Top-level header)
 2. `## Research Question`
 3. `## Summary`
@@ -71,42 +74,50 @@ Use this structure:
 **Item**: {{id}}
 
 ## Research Question
+
 {{overview}}
 
 ## Summary
+
 [High-level findings - 2-3 paragraphs answering what needs to be done and how]
 
 ## Current State Analysis
 
 ### Existing Implementation
+
 - [What exists now with file:line references]
 - [Current patterns and conventions]
 - [Integration points]
 
 ## Key Files
+
 - `path/to/file.ext:123` - Description of what's there
 - `another/file.ts:45-67` - Description of the code block
 
 ## Technical Considerations
 
 ### Dependencies
+
 - [External dependencies needed]
 - [Internal modules to integrate with]
 
 ### Patterns to Follow
+
 - [Existing patterns to maintain consistency]
 - [Conventions observed in the codebase]
 
 ## Risks and Mitigations
 
-| Risk | Impact | Mitigation |
-|------|--------|------------|
+| Risk     | Impact            | Mitigation       |
+| -------- | ----------------- | ---------------- |
 | [Risk 1] | [High/Medium/Low] | [How to address] |
 
 ## Recommended Approach
+
 [High-level strategy based on research findings]
 
 ## Open Questions
+
 [Any areas that need clarification before implementation]
 ```
 
