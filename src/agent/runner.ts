@@ -5,6 +5,7 @@ import type {
   AgentConfigUnion,
   ProcessAgentConfig,
   ClaudeSdkAgentConfig,
+  LimitsConfig, // Add import
 } from "../schemas";
 
 // ============================================================ 
@@ -86,6 +87,8 @@ export interface UnionRunAgentOptions {
   allowedTools?: string[];
   /** Item ID for VM naming (used when ephemeral mode is enabled) */
   itemId?: string;
+  /** Resource limits for agent execution */
+  limits?: LimitsConfig;
 }
 
 function exhaustiveCheck(x: never): never {
@@ -309,6 +312,7 @@ export async function runAgentUnion(
         timeoutSeconds: options.timeoutSeconds,
         ephemeral: isEphemeral,
         itemId: options.itemId,
+        limits: options.limits,
       });
     }
 

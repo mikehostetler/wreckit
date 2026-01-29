@@ -1,0 +1,240 @@
+{
+  "schema_version": 1,
+  "id": "001-cloud-vm-integration-with-flyio-sprites",
+  "branch_name": "wreckit/001-cloud-vm-integration-with-flyio-sprites",
+  "user_stories": [
+    {
+      "id": "US-001",
+      "title": "Add compute and limits configuration sections to schemas",
+      "acceptance_criteria": [
+        "ComputeConfigSchema defined with backend enum ('local' | 'sprites') and optional sprites config",
+        "LimitsConfigSchema defined with maxIterations, maxDurationSeconds, maxBudgetDollars, maxProgressSteps",
+        "ConfigSchema updated to include optional compute and limits sections",
+        "ConfigResolved type updated to include compute and limits",
+        "mergeWithDefaults() function preserves compute and limits from partial config",
+        "applyOverrides() function preserves compute and limits when applying overrides",
+        "TypeScript compilation passes without errors",
+        "Zod validation accepts valid compute and configs",
+        "Zod validation rejects invalid backend value (not 'local' or 'sprites')",
+        "Default values applied when sections omitted (backend='local', maxIterations=100)"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Foundation for all other stories. Must be completed first."
+    },
+    {
+      "id": "US-002",
+      "title": "Add session path utilities to fs/paths.ts",
+      "acceptance_criteria": [
+        "getSessionsDir() function returns path to .wreckit/sessions directory",
+        "getSessionPath() function returns path to .wreckit/sessions/{sessionId}.json",
+        "Functions follow existing path utility patterns",
+        "TypeScript compilation passes without errors"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Quick win, enables session store implementation."
+    },
+    {
+      "id": "US-003",
+      "title": "Implement SpriteSessionStore for session persistence",
+      "acceptance_criteria": [
+        "SpriteSession interface defined with sessionId, vmName, itemId, startTime, config, state, checkpoint fields",
+        "SpriteSessionStore class created with constructor taking cwd and logger",
+        "save() method writes session to .wreckit/sessions/{sessionId}.json",
+        "load() method reads session file and returns SpriteSession or null if not found",
+        "list() method scans sessions directory and returns array of SpriteSession sorted by startTime",
+        "list() supports optional filter by state and/or itemId",
+        "delete() method removes session file",
+        "updateState() method updates session state and optional fields",
+        "generateSessionId() static method creates unique session ID with format 'sprite-{timestamp}-{random}'",
+        "Session directory created automatically if it doesn't exist",
+        "Session files are valid JSON matching TypeScript interface",
+        "TypeScript compilation passes without errors"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Core persistence layer for resume functionality."
+    },
+    {
+      "id": "US-004",
+      "title": "Add CLI command aliases (status, resume, destroy)",
+      "acceptance_criteria": [
+        "spriteStatusCommand() implemented as alias to spriteListCommand()",
+        "spriteResumeCommand() implemented to load session and check state",
+        "spriteDestroyCommand() implemented to accept sessionId or vmName",
+        "Commands registered in src/index.ts under sprite subcommand",
+        "wreckit sprite status lists active VMs (same as list)",
+        "wreckit sprite destroy <vmName> kills VM (same as kill)",
+        "wreckit sprite resume <sessionId> loads session and validates state",
+        "All commands accept --json flag",
+        "All commands respect --cwd flag",
+        "TypeScript compilation passes without errors"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Resume functionality is minimal in this story (just marks session as running). Full resume logic added in US-008."
+    },
+    {
+      "id": "US-005",
+      "title": "Implement limits enforcement module",
+      "acceptance_criteria": [
+        "LimitsContext interface defined with iterations, durationSeconds, progressSteps fields",
+        "LimitExceededError class defined with limitType, limitValue, actualValue properties",
+        "enforceLimits() function throws LimitExceededError when maxIterations exceeded",
+        "enforceLimits() function throws LimitExceededError when maxDurationSeconds exceeded",
+        "enforceLimits() function throws LimitExceededError when maxProgressSteps exceeded",
+        "enforceLimits() function logs debug message with current limits usage",
+        "LimitsTracker class created to track duration and progress steps",
+        "LimitsTracker.getContext() returns current LimitsContext",
+        "LimitsTracker.incrementProgress() increments step counter",
+        "TypeScript compilation passes without errors"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "Safety mechanism to prevent runaway agents and unexpected costs."
+    },
+    {
+      "id": "US-006",
+      "title": "Integrate GITHUB_TOKEN into environment loading",
+      "acceptance_criteria": [
+        "GITHUB_TOKEN added to ALLOWED_PREFIXES in src/agent/env.ts",
+        "buildSpriteEnv() loads GITHUB_TOKEN from environment using same precedence as other tokens",
+        "GITHUB_TOKEN logged as 'present (redacted)' in debug output",
+        "runWispCommand() passes GITHUB_TOKEN to Sprite CLI environment",
+        "GITHUB_TOKEN available inside Sprite VMs",
+        "TypeScript compilation passes without errors"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "Simple enhancement, enables GitHub operations from within Sprite VMs."
+    },
+    {
+      "id": "US-007",
+      "title": "Implement ComputeBackend abstraction layer",
+      "acceptance_criteria": [
+        "ComputeBackend interface defined with kind, executeAgent(), start(), stop() methods",
+        "ExecuteAgentOptions interface defined with all required parameters",
+        "LocalBackend class implements ComputeBackend with kind='local'",
+        "LocalBackend.executeAgent() calls runAgent from dispatcher",
+        "SpritesBackend class implements ComputeBackend with kind='sprites'",
+        "SpritesBackend.executeAgent() calls runSpriteAgent with limits enforcement",
+        "createComputeBackend() factory function returns correct backend based on config",
+        "createComputeBackend() returns LocalBackend when backend='local' or undefined",
+        "createComputeBackend() returns SpritesBackend when backend='sprites'",
+        "createComputeBackend() throws error when sprites config missing for sprites backend",
+        "executeAgentOnBackend() function executes agent on specified backend",
+        "TypeScript compilation passes without errors"
+      ],
+      "priority": 4,
+      "status": "done",
+      "notes": "Most complex story. Enables clean switching between local and remote execution."
+    },
+    {
+      "id": "US-008",
+      "title": "Integrate session persistence with ComputeBackend for resume",
+      "acceptance_criteria": [
+        "SpritesBackend.executeAgent() checks for sessionId in options",
+        "SpritesBackend.executeAgent() loads session if sessionId provided",
+        "SpritesBackend.executeAgent() validates session state is 'paused' before resume",
+        "SpritesBackend.executeAgent() updates session state to 'running' on resume",
+        "SpritesBackend.executeAgent() updates session state to 'completed' on success",
+        "SpritesBackend.executeAgent() updates session state to 'failed' on error",
+        "runSpriteAgent() accepts sessionId parameter in SpriteRunAgentOptions",
+        "runSpriteAgent() loads session and extracts vmName and iteration if resuming",
+        "runSpriteAgent() uses session vmName instead of generating new name",
+        "runSpriteAgent() starts loop from session iteration instead of 0",
+        "spriteResumeCommand() uses executeAgentOnBackend() with sessionId",
+        "spriteResumeCommand() creates backend from config.compute",
+        "spriteResumeCommand() passes sessionId to backend execution",
+        "Resumed session continues from correct iteration",
+        "Resumed session uses same VM",
+        "Resumed session respects limits",
+        "Session files updated correctly after resume",
+        "TypeScript compilation passes without errors"
+      ],
+      "priority": 5,
+      "status": "done",
+      "notes": "Final story. Completes end-to-end resume functionality."
+    },
+    {
+      "id": "US-009",
+      "title": "Write unit tests for sprite-session-store",
+      "acceptance_criteria": [
+        "Test save() writes session file to correct path",
+        "Test load() reads and parses session file correctly",
+        "Test load() returns null for non-existent session",
+        "Test list() returns all sessions sorted by startTime (newest first)",
+        "Test list({ state: 'paused' }) filters by state",
+        "Test list({ itemId: '001' }) filters by itemId",
+        "Test list({ state: 'paused', itemId: '001' }) filters by both",
+        "Test delete() removes session file",
+        "Test delete() handles non-existent session gracefully",
+        "Test updateState() updates session state and fields",
+        "Test updateState() throws error for non-existent session",
+        "Test session directory created automatically",
+        "All tests pass"
+      ],
+      "priority": 6,
+      "status": "done",
+      "notes": "Unit tests for session persistence layer."
+    },
+    {
+      "id": "US-010",
+      "title": "Write unit tests for limits enforcement",
+      "acceptance_criteria": [
+        "Test enforceLimits throws LimitExceededError when iterations >= maxIterations",
+        "Test enforceLimits throws LimitExceededError when durationSeconds >= maxDurationSeconds",
+        "Test enforceLimits throws LimitExceededError when progressSteps >= maxProgressSteps",
+        "Test enforceLimits passes when all limits within bounds",
+        "Test enforceLimits logs debug message with current usage",
+        "Test LimitsTracker calculates duration correctly",
+        "Test LimitsTracker increments progress steps",
+        "Test LimitsTracker.resetProgress() resets counter to 0",
+        "Test LimitExceededError has correct properties (limitType, limitValue, actualValue)",
+        "All tests pass"
+      ],
+      "priority": 6,
+      "status": "done",
+      "notes": "Unit tests for limits enforcement module."
+    },
+    {
+      "id": "US-011",
+      "title": "Write unit tests for compute-backend",
+      "acceptance_criteria": [
+        "Test createComputeBackend() returns LocalBackend when backend='local'",
+        "Test createComputeBackend() returns LocalBackend when compute undefined",
+        "Test createComputeBackend() returns SpritesBackend when backend='sprites'",
+        "Test createComputeBackend() throws error when sprites config missing",
+        "Test createComputeBackend() throws error for unknown backend",
+        "Test LocalBackend.executeAgent() calls runAgent from dispatcher",
+        "Test SpritesBackend.executeAgent() calls runSpriteAgent",
+        "Test executeAgentOnBackend() calls backend.executeAgent()",
+        "All tests pass (may need to mock sprite calls)"
+      ],
+      "priority": 6,
+      "status": "done",
+      "notes": "Unit tests for compute backend abstraction."
+    },
+    {
+      "id": "US-012",
+      "title": "Write config schema validation tests",
+      "acceptance_criteria": [
+        "Test ComputeConfigSchema accepts backend='local'",
+        "Test ComputeConfigSchema accepts backend='sprites' with sprites config",
+        "Test ComputeConfigSchema rejects backend='invalid'",
+        "Test ComputeConfigSchema applies default backend='local'",
+        "Test LimitsConfigSchema accepts all limit fields",
+        "Test LimitsConfigSchema applies all default values",
+        "Test LimitsConfigSchema makes maxBudgetDollars optional",
+        "Test ConfigSchema accepts compute section",
+        "Test ConfigSchema accepts limits section",
+        "Test ConfigSchema makes compute and limits optional",
+        "All tests pass"
+      ],
+      "priority": 6,
+      "status": "done",
+      "notes": "Schema validation tests for new config sections."
+    }
+  ]
+}

@@ -655,6 +655,89 @@ spriteCmd
     );
   });
 
+spriteCmd
+  .command("status")
+  .description("List active Sprite VMs (alias for list)")
+  .option("--json", "Output as JSON")
+  .action(async (options, cmd) => {
+    const globalOpts = cmd.optsWithGlobals();
+    await executeCommand(
+      async () => {
+        const { spriteStatusCommand } = await import("./commands/sprite.js");
+        await spriteStatusCommand(
+          {
+            cwd: resolveCwd(globalOpts.cwd),
+            json: options.json,
+          },
+          logger,
+        );
+      },
+      logger,
+      {
+        verbose: globalOpts.verbose,
+        quiet: globalOpts.quiet,
+        dryRun: globalOpts.dryRun,
+        cwd: resolveCwd(globalOpts.cwd),
+      },
+    );
+  });
+
+spriteCmd
+  .command("resume <sessionId>")
+  .description("Resume a paused Sprite agent session")
+  .option("--json", "Output as JSON")
+  .action(async (sessionId, options, cmd) => {
+    const globalOpts = cmd.optsWithGlobals();
+    await executeCommand(
+      async () => {
+        const { spriteResumeCommand } = await import("./commands/sprite.js");
+        await spriteResumeCommand(
+          {
+            sessionId,
+            cwd: resolveCwd(globalOpts.cwd),
+            json: options.json,
+          },
+          logger,
+        );
+      },
+      logger,
+      {
+        verbose: globalOpts.verbose,
+        quiet: globalOpts.quiet,
+        dryRun: globalOpts.dryRun,
+        cwd: resolveCwd(globalOpts.cwd),
+      },
+    );
+  });
+
+spriteCmd
+  .command("destroy <id>")
+  .description("Destroy a Sprite session or VM")
+  .option("--json", "Output as JSON")
+  .action(async (id, options, cmd) => {
+    const globalOpts = cmd.optsWithGlobals();
+    await executeCommand(
+      async () => {
+        const { spriteDestroyCommand } = await import("./commands/sprite.js");
+        await spriteDestroyCommand(
+          {
+            id,
+            cwd: resolveCwd(globalOpts.cwd),
+            json: options.json,
+          },
+          logger,
+        );
+      },
+      logger,
+      {
+        verbose: globalOpts.verbose,
+        quiet: globalOpts.quiet,
+        dryRun: globalOpts.dryRun,
+        cwd: resolveCwd(globalOpts.cwd),
+      },
+    );
+  });
+
 program
   .command("run <id>")
   .description("Run single item through all phases until done")

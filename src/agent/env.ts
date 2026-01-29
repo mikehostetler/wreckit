@@ -22,6 +22,7 @@ const ALLOWED_PREFIXES = [
   "GOOGLE_",
   "ZAI_",
   "SPRITES_",
+  "GITHUB_",
 ];
 
 /**
@@ -210,6 +211,11 @@ export async function buildSpriteEnv(
   // Redact token from logs for security
   if (spriteEnv.SPRITES_TOKEN) {
     logger.debug("SPRITES_TOKEN: present (redacted)");
+  }
+
+  // Add GITHUB_TOKEN if present
+  if (spriteEnv.GITHUB_TOKEN) {
+    logger.debug("GITHUB_TOKEN: present (redacted)");
   }
 
   return spriteEnv;
