@@ -8,7 +8,7 @@
   "branch": null,
   "pr_url": null,
   "pr_number": null,
-  "last_error": "Failed to checkout base branch main",
+  "last_error": "Failed to checkout existing branch wreckit/038-implement-agent-doctor-self-healing-runtime",
   "created_at": "2026-01-25T14:20:05.000Z",
   "updated_at": "2026-01-26T02:15:05.990Z",
   "campaign": "M5"
