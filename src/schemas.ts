@@ -245,6 +245,59 @@ export const DoctorConfigSchema = z
   .strict();
 
 // ============================================================
+// Compute Configuration Schema (Item 001 - Cloud VM Integration)
+// ============================================================
+
+/**
+ * Compute backend selection and configuration
+ * Enables switching between local and remote execution
+ */
+export const ComputeConfigSchema = z
+  .object({
+    backend: z
+      .enum(["local", "sprites"])
+      .default("local")
+      .describe("Execution backend: 'local' (default) or 'sprites' (Fly.io)"),
+    sprites: SpriteAgentSchema.optional().describe(
+      "Sprite-specific config when backend='sprites'",
+    ),
+  })
+  .strict();
+
+export type ComputeConfig = z.infer<typeof ComputeConfigSchema>;
+
+// ============================================================
+// Limits Configuration Schema (Item 001 - Resource Limits)
+// ============================================================
+
+/**
+ * Resource limits for agent execution
+ * Prevents runaway agents and unexpected costs
+ */
+export const LimitsConfigSchema = z
+  .object({
+    maxIterations: z
+      .number()
+      .default(100)
+      .describe("Maximum agent loop iterations"),
+    maxDurationSeconds: z
+      .number()
+      .default(3600)
+      .describe("Maximum execution time in seconds (default 1 hour)"),
+    maxBudgetDollars: z
+      .number()
+      .optional()
+      .describe("Maximum estimated cost in USD (future: integrate with Fly.io API)"),
+    maxProgressSteps: z
+      .number()
+      .default(1000)
+      .describe("Maximum tool calls/progress steps"),
+  })
+  .strict();
+
+export type LimitsConfig = z.infer<typeof LimitsConfigSchema>;
+
+// ============================================================
 // Story Scope Configuration Schema (Item 084 - Story Scope Enforcement)
 // ============================================================
 
@@ -294,6 +347,9 @@ export const ConfigSchema = z.object({
   doctor: DoctorConfigSchema.optional(),
   // Add optional story scope configuration (Item 084)
   story_scope: StoryScopeConfigSchema.optional(),
+  // Add new sections (Item 001)
+  compute: ComputeConfigSchema.optional(),
+  limits: LimitsConfigSchema.optional(),
 });
 
 export const PriorityHintSchema = z.enum(["low", "medium", "high", "critical"]);

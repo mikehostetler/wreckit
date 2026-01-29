@@ -44,6 +44,14 @@ export interface SpriteRunAgentOptions {
   ephemeral?: boolean;
   /** Item ID for VM naming (used when ephemeral is true) */
   itemId?: string;
+  /** Session ID for resume functionality */
+  sessionId?: string;
+  /** Resume from this iteration (for resume functionality) */
+  resumeFromIteration?: number;
+  /** Use this specific VM name (for resume functionality) */
+  vmName?: string;
+  /** Limits configuration */
+  limits?: import("./limits").LimitsConfig;
 }
 
 // ============================================================ 
@@ -150,6 +158,10 @@ export async function runSpriteAgent(
     onAgentEvent,
     ephemeral = false,
     itemId,
+    sessionId,
+    resumeFromIteration = 0,
+    vmName: providedVmName,
+    limits,
   } = options;
 
   if (dryRun) {
@@ -161,11 +173,12 @@ export async function runSpriteAgent(
   registerSdkController(abortController);
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
-  const vmName = config.vmName || (ephemeral && itemId ? `wreckit-sandbox-${itemId}-${Date.now()}` : `wreckit-sandbox-agent-${Date.now()}`);
+  // Use provided VM name if resuming, otherwise generate or use config
+  const vmName = providedVmName || config.vmName || (ephemeral && itemId ? `wreckit-sandbox-${itemId}-${Date.now()}` : `wreckit-sandbox-agent-${Date.now()}`);
 
   try {
     // 1. Initialize VM
-    logger.info(`Initializing Sprite environment (${vmName})...`);
+    logger.info({ vmName, resumeFromIteration, sessionId }, sessionId ? `Resuming Sprite execution in ${vmName}` : `Initializing Sprite environment (${vmName})...`);
     if (ephemeral) currentEphemeralVM = { vmName, startTime: Date.now() };
 
     const vmReady = await ensureSpriteRunning(vmName, config, logger);
@@ -205,8 +218,15 @@ When you are finished, summarize your work and stop.`,
 
     let fullOutput = "";
     let completionDetected = false;
-    let loopCount = 0;
+    let loopCount = resumeFromIteration; // Start from resumed iteration
     const MAX_LOOPS = 100;
+
+    // Import limits enforcement if limits provided
+    let limitsTracker: import("./limits").LimitsTracker | undefined;
+    if (limits) {
+      const { LimitsTracker } = await import("./limits.js");
+      limitsTracker = new LimitsTracker();
+    }
 
     if (options.timeoutSeconds && options.timeoutSeconds > 0) {
       timeoutId = setTimeout(() => abortController.abort(), options.timeoutSeconds * 1000);
@@ -214,6 +234,14 @@ When you are finished, summarize your work and stop.`,
 
     while (loopCount < MAX_LOOPS && !completionDetected) {
       if (abortController.signal.aborted) throw new Error("Agent aborted");
+
+      // Enforce limits if provided
+      if (limits && limitsTracker) {
+        const { enforceLimits } = await import("./limits.js");
+        const context = limitsTracker.getContext(loopCount);
+        enforceLimits(limits, context, logger);
+      }
+
       loopCount++;
       
       const response = await ai.chat({
@@ -329,6 +357,23 @@ When you are finished, summarize your work and stop.`,
     }
 
     if (timeoutId) clearTimeout(timeoutId);
+
+    // Save session checkpoint if sessionId provided
+    if (sessionId && loopCount > resumeFromIteration) {
+      const { SpriteSessionStore } = await import("./sprite-session-store.js");
+      const store = new SpriteSessionStore(cwd, logger);
+
+      const session = await store.load(sessionId);
+      if (session) {
+        await store.updateState(sessionId, session.state, {
+          checkpoint: {
+            iteration: loopCount,
+            progressLog: "Agent checkpoint",
+            timestamp: new Date().toISOString(),
+          },
+        });
+      }
+    }
 
     // 5. Sync Back
     if (config.syncOnSuccess) {

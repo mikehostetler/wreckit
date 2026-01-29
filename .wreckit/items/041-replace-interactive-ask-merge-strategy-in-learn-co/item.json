@@ -2,7 +2,7 @@
   "schema_version": 1,
   "id": "041-replace-interactive-ask-merge-strategy-in-learn-co",
   "title": "Replace interactive 'ask' merge strategy in learn command",
-  "state": "implementing",
+  "state": "done",
   "overview": "Interactive merge strategy for skill configurations is documented but throws a 'not yet implemented' error at runtime, breaking user expectations.\n\n**Motivation:** The 'ask' strategy would allow users to interactively choose which skills to keep during merges, providing finer-grained control than binary append/replace options. This is particularly valuable when curating skills from multiple extraction sessions.\n\n**Success criteria:**\n- Interactive prompt asks user which skills to keep for each conflict\n- Works with both phase_skills and skills arrays\n- Gracefully handles non-TTY environments by falling back to append\n- Test added for interactive merge flow\n- Documentation updated to describe interactive behavior\n\n**Technical constraints:**\n- Must handle non-TTY environments (CI/CD) gracefully\n- Should not break existing 'append' and 'replace' strategies\n- Interactive prompts should use standard readline interface\n- Cannot add new dependencies (use Node.js built-ins)\n\n**In scope:**\n- Implement interactive merge logic in mergeSkillConfigs function\n- Add TTY detection and fallback to append when not interactive\n- Add user prompts for conflict resolution\n- Test with both TTY and non-TTY environments\n**Out of scope:**\n- Changing the append/replace strategies\n- Modifying the skills.json schema\n- Adding conflict resolution for skill definitions (only IDs)\n\n**Signals:** priority: medium",
   "branch": null,
   "pr_url": null,

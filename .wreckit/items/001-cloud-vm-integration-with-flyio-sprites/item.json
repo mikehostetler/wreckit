@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "id": "001-cloud-vm-integration-with-flyio-sprites",
+  "title": "Cloud VM integration with Fly.io Sprites",
+  "section": "backend",
+  "state": "done",
+  "overview": "Agent tasks currently run only on local machines, limiting scalability and requiring local resources.\n\n**Motivation:** Enables remote execution, better resource management, and scalable compute for Wreckit agent tasks.\n\n**Success criteria:**\n- CLI commands work: `wreckit sprite status|resume|destroy`\n- ComputeBackend interface supports both LocalBackend and SpritesBackend\n- SpriteSessionStore persists session state correctly\n- SpriteEnv loads SPRITE_TOKEN and GITHUB_TOKEN from multiple sources\n- New `compute` and `limits` config sections validated\n\n**Technical constraints:**\n- Requires Fly.io account and SPRITE_TOKEN\n- Requires GitHub token for repo operations\n- Must maintain backward compatibility with local backend\n- Base64 encoding for file sync operations\n\n**In scope:**\n- CLI sprite commands\n- Backend abstraction layer\n- Session persistence\n- Environment token loading\n- Config validation for new sections\n- File sync (upload/download)\n- Auto-delete and resume behavior\n- Limits enforcement (iterations, duration, budget, progress)\n**Out of scope:**\n- Multi-region support\n- Concurrent session limits enforcement\n- Sprite image customization\n- Credential rotation automation\n- Built-in cost tracking (relies on Fly.io dashboard)\n\n**Signals:** priority: high, urgency: Feature branch ready for testing",
+  "branch": "wreckit/001-cloud-vm-integration-with-flyio-sprites",
+  "pr_url": "https://github.com/jmanhype/wreckit/pull/40",
+  "pr_number": 40,
+  "last_error": "PR not merged yet",
+  "created_at": "2026-01-22T18:39:42.078Z",
+  "updated_at": "2026-01-29T04:57:17.689Z",
+  "problem_statement": "Agent tasks currently run only on local machines, limiting scalability and requiring local resources.",
+  "motivation": "Enables remote execution, better resource management, and scalable compute for Wreckit agent tasks.",
+  "success_criteria": [
+    "CLI commands work: `wreckit sprite status|resume|destroy`",
+    "ComputeBackend interface supports both LocalBackend and SpritesBackend",
+    "SpriteSessionStore persists session state correctly",
+    "SpriteEnv loads SPRITE_TOKEN and GITHUB_TOKEN from multiple sources",
+    "New `compute` and `limits` config sections validated"
+  ],
+  "technical_constraints": [
+    "Requires Fly.io account and SPRITE_TOKEN",
+    "Requires GitHub token for repo operations",
+    "Must maintain backward compatibility with local backend",
+    "Base64 encoding for file sync operations"
+  ],
+  "scope_in_scope": [
+    "CLI sprite commands",
+    "Backend abstraction layer",
+    "Session persistence",
+    "Environment token loading",
+    "Config validation for new sections",
+    "File sync (upload/download)",
+    "Auto-delete and resume behavior",
+    "Limits enforcement (iterations, duration, budget, progress)"
+  ],
+  "scope_out_of_scope": [
+    "Multi-region support",
+    "Concurrent session limits enforcement",
+    "Sprite image customization",
+    "Credential rotation automation",
+    "Built-in cost tracking (relies on Fly.io dashboard)"
+  ],
+  "priority_hint": "high",
+  "urgency_hint": "Feature branch ready for testing"
+}

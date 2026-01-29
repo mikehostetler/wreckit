@@ -24,6 +24,9 @@ import {
   spriteAttachCommand,
   spriteExecCommand,
   spritePullCommand,
+  spriteStatusCommand,
+  spriteResumeCommand,
+  spriteDestroyCommand,
 } from "./commands/sprite";
 import { learnCommand } from "./commands/learn";
 import { dreamCommand } from "./commands/dream";
@@ -147,6 +150,87 @@ program
             dryRun: globalOpts.dryRun,
             cwd: resolveCwd(globalOpts.cwd),
             verbose: globalOpts.verbose,
+          },
+          logger,
+        );
+      },
+      logger,
+      {
+        verbose: globalOpts.verbose,
+        quiet: globalOpts.quiet,
+        dryRun: globalOpts.dryRun,
+        cwd: resolveCwd(globalOpts.cwd),
+      },
+    );
+  });
+
+// Session management commands (Item 001)
+spriteCmd
+  .command("status")
+  .description("List active Sprite VMs (alias for list)")
+  .option("--json", "Output as JSON")
+  .action(async (options, cmd) => {
+    const globalOpts = cmd.optsWithGlobals();
+    await executeCommand(
+      async () => {
+        await spriteStatusCommand(
+          {
+            cwd: resolveCwd(globalOpts.cwd),
+            json: options.json,
+          },
+          logger,
+        );
+      },
+      logger,
+      {
+        verbose: globalOpts.verbose,
+        quiet: globalOpts.quiet,
+        dryRun: globalOpts.dryRun,
+        cwd: resolveCwd(globalOpts.cwd),
+      },
+    );
+  });
+
+spriteCmd
+  .command("resume <sessionId>")
+  .description("Resume a paused Sprite session")
+  .option("--json", "Output as JSON")
+  .action(async (sessionId, options, cmd) => {
+    const globalOpts = cmd.optsWithGlobals();
+    await executeCommand(
+      async () => {
+        await spriteResumeCommand(
+          sessionId,
+          {
+            cwd: resolveCwd(globalOpts.cwd),
+            json: options.json,
+          },
+          logger,
+        );
+      },
+      logger,
+      {
+        verbose: globalOpts.verbose,
+        quiet: globalOpts.quiet,
+        dryRun: globalOpts.dryRun,
+        cwd: resolveCwd(globalOpts.cwd),
+      },
+    );
+  });
+
+spriteCmd
+  .command("destroy <sessionIdOrVmName>")
+  .description("Destroy a Sprite session or VM")
+  .option("--json", "Output as JSON")
+  .action(async (sessionIdOrVmName, options, cmd) => {
+    const globalOpts = cmd.optsWithGlobals();
+    await executeCommand(
+      async () => {
+        await spriteDestroyCommand(
+          sessionIdOrVmName,
+          {
+            cwd: resolveCwd(globalOpts.cwd),
+            json: options.json,
           },
           logger,
         );

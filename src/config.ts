@@ -47,6 +47,9 @@ export interface ConfigResolved {
   doctor?: import("./schemas").DoctorConfig;
   // Add optional story scope configuration (Item 084)
   story_scope?: StoryScopeConfig;
+  // Add new sections (Item 001)
+  compute?: import("./schemas").ComputeConfig;
+  limits?: import("./schemas").LimitsConfig;
 }
 
 export interface ConfigOverrides {
@@ -170,6 +173,8 @@ export function mergeWithDefaults(partial: Partial<Config>): ConfigResolved {
     skills: partial.skills, // Add optional skills (Item 033)
     doctor: partial.doctor, // Add optional doctor (Item 038)
     story_scope: partial.story_scope, // Add optional story scope (Item 084)
+    compute: partial.compute,  // Add (Item 001)
+    limits: partial.limits,    // Add (Item 001)
   };
 }
 
@@ -297,6 +302,8 @@ export function applyOverrides(
     skills: config.skills,
     doctor: config.doctor,
     story_scope: config.story_scope,
+    compute: config.compute,  // Add (Item 001)
+    limits: config.limits,    // Add (Item 001)
   };
 }
 

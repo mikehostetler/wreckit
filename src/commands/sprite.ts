@@ -627,3 +627,213 @@ export async function spritePullCommand(
     throw err;
   }
 }
+
+// ============================================================
+// Session Management Commands (Item 001)
+// ============================================================
+
+/**
+ * Status command - alias for list command.
+ *
+ * Usage: wreckit sprite status [--json]
+ */
+export async function spriteStatusCommand(
+  options: SpriteListOptions,
+  logger: Logger,
+): Promise<void> {
+  // Alias to existing list command
+  return spriteListCommand(options, logger);
+}
+
+/**
+ * Resume a paused session.
+ *
+ * Usage: wreckit sprite resume <sessionId> [--json]
+ */
+export async function spriteResumeCommand(
+  sessionId: string,
+  options: { cwd?: string; json?: boolean },
+  logger: Logger,
+): Promise<void> {
+  const cwd = options.cwd ?? process.cwd();
+
+  // Import session store and backend
+  const { SpriteSessionStore } = await import("../agent/sprite-session-store.js");
+  const { createComputeBackend, executeAgentOnBackend } = await import("../agent/compute-backend.js");
+  const { loadConfig } = await import("../config.js");
+
+  const store = new SpriteSessionStore(cwd, logger);
+
+  try {
+    const session = await store.load(sessionId);
+
+    if (!session) {
+      const errorData = {
+        success: false,
+        error: `Session '${sessionId}' not found`,
+      };
+
+      if (options.json) {
+        outputJson(errorData);
+      } else {
+        console.error(`❌ ${errorData.error}`);
+      }
+      process.exit(1);
+    }
+
+    if (session.state !== "paused") {
+      const errorData = {
+        success: false,
+        error: `Cannot resume session in state: ${session.state}. Only paused sessions can be resumed.`,
+        data: {
+          sessionId,
+          currentState: session.state,
+        },
+      };
+
+      if (options.json) {
+        outputJson(errorData);
+      } else {
+        console.error(`❌ ${errorData.error}`);
+      }
+      process.exit(1);
+    }
+
+    logger.info(
+      `Resuming session ${sessionId}\n` +
+      `  VM: ${session.vmName}\n` +
+      `  Item: ${session.itemId || "N/A"}\n` +
+      `  Iteration: ${session.checkpoint?.iteration || 0}`
+    );
+
+    // Load config to get backend settings
+    const config = await loadConfig(cwd);
+
+    // Create backend (use sprites backend for session resume)
+    const backend = createComputeBackend(
+      config.compute || { backend: "sprites" }
+    );
+
+    // Mark session as running
+    await store.updateState(sessionId, "running");
+
+    // Execute agent with session
+    await executeAgentOnBackend(backend, {
+      itemId: session.itemId || "resumed",
+      agentConfig: session.config,
+      computeConfig: config.compute || { backend: "sprites" },
+      limitsConfig: config.limits,
+      cwd,
+      logger,
+      sessionId,
+    });
+
+    logger.info(`Session ${sessionId} resumed and completed`);
+
+    const outputData = {
+      success: true,
+      message: `Resumed session '${sessionId}'`,
+      data: {
+        sessionId,
+        vmName: session.vmName,
+        itemId: session.itemId,
+        iteration: session.checkpoint?.iteration || 0,
+      },
+    };
+
+    if (options.json) {
+      outputJson(outputData);
+    } else {
+      console.log(`✅ ${outputData.message}`);
+      console.log(`   🖥️  VM: ${session.vmName}`);
+      console.log(`   📦 Item: ${session.itemId || "N/A"}`);
+      console.log(`   🔄 Iteration: ${session.checkpoint?.iteration || 0}`);
+    }
+  } catch (err) {
+    const errorData = {
+      success: false,
+      error: err instanceof Error ? err.message : String(err),
+    };
+
+    if (options.json) {
+      outputJson(errorData);
+    } else {
+      console.error(`❌ ${errorData.error}`);
+    }
+    process.exit(1);
+  }
+}
+
+/**
+ * Destroy a session or VM.
+ *
+ * Usage: wreckit sprite destroy <sessionIdOrVmName> [--json]
+ */
+export async function spriteDestroyCommand(
+  sessionIdOrVmName: string,
+  options: SpriteKillOptions & { json?: boolean },
+  logger: Logger,
+): Promise<void> {
+  const cwd = options.cwd ?? process.cwd();
+
+  // Import session store
+  const { SpriteSessionStore } = await import("../agent/sprite-session-store.js");
+
+  const store = new SpriteSessionStore(cwd, logger);
+
+  try {
+    // Try to load as session first
+    const session = await store.load(sessionIdOrVmName);
+
+    if (session) {
+      // It's a session ID
+      logger.debug(`Destroying session '${sessionIdOrVmName}'`);
+
+      // Kill the VM first
+      await spriteKillCommand(
+        { name: session.vmName, cwd, json: options.json },
+        logger,
+      );
+
+      // Delete the session
+      await store.delete(sessionIdOrVmName);
+
+      const outputData = {
+        success: true,
+        message: `Destroyed session '${sessionIdOrVmName}'`,
+        data: {
+          sessionId: sessionIdOrVmName,
+          vmName: session.vmName,
+          itemId: session.itemId,
+        },
+      };
+
+      if (options.json) {
+        outputJson(outputData);
+      } else {
+        console.log(`✅ ${outputData.message}`);
+        console.log(`   🖥️  VM: ${session.vmName}`);
+        console.log(`   📦 Item: ${session.itemId || "N/A"}`);
+      }
+    } else {
+      // Treat as VM name - use kill command
+      logger.debug(`Destroying VM '${sessionIdOrVmName}'`);
+      await spriteKillCommand(
+        { name: sessionIdOrVmName, cwd, json: options.json },
+        logger,
+      );
+    }
+  } catch (err) {
+    const errorData = {
+      success: false,
+      error: err instanceof Error ? err.message : String(err),
+    };
+
+    if (options.json) {
+      outputJson(errorData);
+    } else {
+      console.error(`❌ ${errorData.error}`);
+    }
+    process.exit(1);
+  }
+}
