@@ -14,15 +14,12 @@ import * as os from "node:os";
 import type { Logger } from "../../logging";
 import { FileNotFoundError } from "../../errors";
 import type { ParsedIdea } from "../../domain/ideas";
-// Import real git module for passthrough in mock
 import * as gitModule from "../../git";
 
 const mockedParseIdeasWithAgent =
   vi.fn<(text: string, root: string) => Promise<ParsedIdea[]>>();
 const mockedRunIdeaInterview = vi.fn<(root: string) => Promise<ParsedIdea[]>>();
 const mockedRunSimpleInterview = vi.fn<() => Promise<ParsedIdea[]>>();
-const mockedHasUncommittedChanges = vi.fn<() => Promise<boolean>>();
-const mockedIsGitRepo = vi.fn<() => Promise<boolean>>();
 
 mock.module("../../domain/ideas-agent", () => ({
   parseIdeasWithAgent: mockedParseIdeasWithAgent,
@@ -31,32 +28,6 @@ mock.module("../../domain/ideas-agent", () => ({
 mock.module("../../domain/ideas-interview", () => ({
   runIdeaInterview: mockedRunIdeaInterview,
   runSimpleInterview: mockedRunSimpleInterview,
-}));
-
-mock.module("../../git", () => ({
-  hasUncommittedChanges: mockedHasUncommittedChanges,
-  isGitRepo: mockedIsGitRepo,
-  // Pass through real implementations for functions used by git-status-comparison.test.ts
-  compareGitStatus: gitModule.compareGitStatus,
-  getGitStatus: gitModule.getGitStatus,
-  parseGitStatusPorcelain: gitModule.parseGitStatusPorcelain,
-  formatViolations: gitModule.formatViolations,
-  // Also pass through other functions that might be imported
-  runGitCommand: gitModule.runGitCommand,
-  runGhCommand: gitModule.runGhCommand,
-  branchExists: gitModule.branchExists,
-  ensureBranch: gitModule.ensureBranch,
-  getCurrentBranch: gitModule.getCurrentBranch,
-  commitAll: gitModule.commitAll,
-  pushBranch: gitModule.pushBranch,
-  createOrUpdatePr: gitModule.createOrUpdatePr,
-  getPrByBranch: gitModule.getPrByBranch,
-  isPrMerged: gitModule.isPrMerged,
-  checkGitPreflight: gitModule.checkGitPreflight,
-  isDetachedHead: gitModule.isDetachedHead,
-  hasRemote: gitModule.hasRemote,
-  getBranchSyncStatus: gitModule.getBranchSyncStatus,
-  mergeAndPushToBase: gitModule.mergeAndPushToBase,
 }));
 
 const { ideasCommand, readFile } = await import("../../commands/ideas");
@@ -83,20 +54,27 @@ async function setupTempRepo(): Promise<string> {
 describe("ideasCommand", () => {
   let tempDir: string;
   let mockLogger: Logger & { messages: string[] };
+  let hasUncommittedChangesSpy: ReturnType<typeof vi.spyOn>;
+  let isGitRepoSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(async () => {
     tempDir = await setupTempRepo();
     mockLogger = createMockLogger();
     mockedParseIdeasWithAgent.mockReset();
-    mockedHasUncommittedChanges.mockReset();
-    mockedIsGitRepo.mockReset();
-    // Default: in a git repo with no uncommitted changes
-    mockedIsGitRepo.mockResolvedValue(true);
-    mockedHasUncommittedChanges.mockResolvedValue(false);
+
+    // Spy on git functions instead of mocking the entire module
+    hasUncommittedChangesSpy = vi.spyOn(
+      gitModule,
+      "hasUncommittedChanges",
+    ).mockResolvedValue(false);
+    isGitRepoSpy = vi.spyOn(gitModule, "isGitRepo").mockResolvedValue(true);
   });
 
   afterEach(async () => {
     await fs.rm(tempDir, { recursive: true, force: true });
+    // Restore spied functions
+    hasUncommittedChangesSpy.mockRestore();
+    isGitRepoSpy.mockRestore();
     // Restore mocked modules to prevent pollution of other test files
     mock.restore();
   });
@@ -259,8 +237,6 @@ describe("readFile", () => {
 
   afterEach(async () => {
     await fs.rm(tempDir, { recursive: true, force: true });
-    // Restore mocked modules to prevent pollution of other test files
-    mock.restore();
   });
 
   it("reads file content", async () => {
@@ -290,16 +266,21 @@ describe("readFile", () => {
 describe("ideasCommand - git warnings", () => {
   let tempDir: string;
   let mockLogger: Logger & { messages: string[] };
+  let hasUncommittedChangesSpy: ReturnType<typeof vi.spyOn>;
+  let isGitRepoSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(async () => {
     tempDir = await setupTempRepo();
     mockLogger = createMockLogger();
     mockedParseIdeasWithAgent.mockReset();
-    mockedHasUncommittedChanges.mockReset();
-    mockedIsGitRepo.mockReset();
-    // Default: in a git repo with no uncommitted changes
-    mockedIsGitRepo.mockResolvedValue(true);
-    mockedHasUncommittedChanges.mockResolvedValue(false);
+
+    // Spy on git functions instead of mocking the entire module
+    hasUncommittedChangesSpy = vi.spyOn(
+      gitModule,
+      "hasUncommittedChanges",
+    ).mockResolvedValue(false);
+    isGitRepoSpy = vi.spyOn(gitModule, "isGitRepo").mockResolvedValue(true);
+
     mockedParseIdeasWithAgent.mockResolvedValue([
       { title: "Test idea", description: "" },
     ]);
@@ -307,13 +288,16 @@ describe("ideasCommand - git warnings", () => {
 
   afterEach(async () => {
     await fs.rm(tempDir, { recursive: true, force: true });
+    // Restore spied functions
+    hasUncommittedChangesSpy.mockRestore();
+    isGitRepoSpy.mockRestore();
     // Restore mocked modules to prevent pollution of other test files
     mock.restore();
   });
 
   it("warns when uncommitted changes exist", async () => {
     // Set up: uncommitted changes exist
-    mockedHasUncommittedChanges.mockResolvedValue(true);
+    hasUncommittedChangesSpy.mockResolvedValue(true);
 
     const ideasFile = path.join(tempDir, "ideas.md");
     await fs.writeFile(ideasFile, "# Test idea");
@@ -332,7 +316,7 @@ describe("ideasCommand - git warnings", () => {
 
   it("does not warn when repo is clean", async () => {
     // Set up: no uncommitted changes (default from beforeEach)
-    mockedHasUncommittedChanges.mockResolvedValue(false);
+    hasUncommittedChangesSpy.mockResolvedValue(false);
 
     const ideasFile = path.join(tempDir, "ideas.md");
     await fs.writeFile(ideasFile, "# Test idea");
@@ -350,7 +334,7 @@ describe("ideasCommand - git warnings", () => {
 
   it("does not warn in dry-run mode even with changes", async () => {
     // Set up: uncommitted changes exist
-    mockedHasUncommittedChanges.mockResolvedValue(true);
+    hasUncommittedChangesSpy.mockResolvedValue(true);
 
     const ideasFile = path.join(tempDir, "ideas.md");
     await fs.writeFile(ideasFile, "# Test idea");
@@ -371,7 +355,7 @@ describe("ideasCommand - git warnings", () => {
 
   it("does not warn outside git repo", async () => {
     // Set up: not in a git repo
-    mockedIsGitRepo.mockResolvedValue(false);
+    isGitRepoSpy.mockResolvedValue(false);
 
     const ideasFile = path.join(tempDir, "ideas.md");
     await fs.writeFile(ideasFile, "# Test idea");

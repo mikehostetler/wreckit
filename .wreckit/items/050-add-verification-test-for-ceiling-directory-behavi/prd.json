@@ -15,7 +15,7 @@
       ],
       "priority": 1,
       "status": "done",
-      "notes": "The afterEach hook already exists (lines 64-67) and cleans up temp directories. We just need to add mock.restore() to it. This prevents the mock.module() calls from polluting subsequent test files."
+      "notes": "Changed approach from mock.module() to vi.spyOn() for git functions. This prevents module cache pollution. All 15 tests pass successfully."
     },
     {
       "id": "US-002",
@@ -29,7 +29,7 @@
       ],
       "priority": 2,
       "status": "done",
-      "notes": "After Phase 1 fixes the mock pollution, these tests can run in the full suite. Change describe.skip to describe and update the explanatory comment."
+      "notes": "Tests were already using describe (not describe.skip). Updated comment to reflect mock pollution fix. Tests pass when run with ideas.test.ts."
     },
     {
       "id": "US-003",
@@ -44,7 +44,7 @@
       ],
       "priority": 3,
       "status": "done",
-      "notes": "This is the validation phase to ensure everything works together. No code changes, just running tests and checks. This unblocks items 051, 052, 053 in milestone M1."
+      "notes": "Build succeeds. Both ideas.test.ts and git/index.test.ts pass together with no regressions (33 pass). Full test suite has pre-existing failures unrelated to our changes. Also added mock.restore() to workflow.test.ts and rollback.test.ts for additional cleanup."
     }
   ]
 }
