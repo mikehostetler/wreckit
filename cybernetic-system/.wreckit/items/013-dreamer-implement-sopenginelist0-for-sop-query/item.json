@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "id": "013-dreamer-implement-sopenginelist0-for-sop-query",
+  "title": "[DREAMER] Implement SOPEngine.list/0 for SOP Query",
+  "section": "Feature",
+  "state": "idea",
+  "overview": "In lib/cybernetic/vsm/system5/sop_shim.ex at lines 230-234, the get_sops_for_episode/1 function is designed to query the SOP store for SOPs with a specific episode_id in their metadata. However, the implementation is a stub returning {:ok, []} with a TODO comment stating 'Implement when SOPEngine.list/0 is available'. This breaks the traceability from episodes to their generated SOPs.\n\n**Motivation:** SOP (Standard Operating Procedure) traceability is important for:\n1. Auditing which procedures were auto-generated from which episodes\n2. Understanding the decision trail when reviewing SOPs\n3. Debugging when an episode produces unexpected or incorrect SOPs\n4. Analytics on SOP generation patterns and effectiveness\n\nThe System5 layer is about 'Policy - Strategic direction and governance' (README line 26), and governance requires auditability. This stub breaks that audit trail.\n\n**Success criteria:**\n- SOPEngine.list/0 or equivalent query function is implemented\n- get_sops_for_episode/1 returns actual SOPs created from the episode\n- Query filters by episode_id in SOP metadata\n- Performance is acceptable for SOP stores with thousands of entries\n- Tests verify bidirectional episode <-> SOP relationship\n\n**Technical constraints:**\n- SOPEngine module exists but list/0 may need to be added\n- Need to decide if SOPs are stored in CRDT, ETS, or database\n- Query performance must scale with SOP count\n- Metadata storage format must support efficient filtering by episode_id\n\n**In scope:**\n- lib/cybernetic/vsm/system5/sop_shim.ex (lines 230-234)\n- lib/cybernetic/vsm/system5/sop_engine.ex (add list/0 or query/1 function)\n- test/cybernetic/vsm/system5/sop_engine_test.exs (test query functionality)\n- test/cybernetic/vsm/system5/policy_intelligence_test.exs (if it tests SOP queries)\n**Out of scope:**\n- SOP versioning (separate concern)\n- SOP approval workflow (policy layer, not storage)\n- Full-text search of SOP content (different feature)\n\n**Signals:** priority: medium, urgency: Blocks auditability and traceability in System5 governance layer.",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-29T01:39:01.630Z",
+  "updated_at": "2026-01-29T01:39:01.630Z",
+  "problem_statement": "In lib/cybernetic/vsm/system5/sop_shim.ex at lines 230-234, the get_sops_for_episode/1 function is designed to query the SOP store for SOPs with a specific episode_id in their metadata. However, the implementation is a stub returning {:ok, []} with a TODO comment stating 'Implement when SOPEngine.list/0 is available'. This breaks the traceability from episodes to their generated SOPs.",
+  "motivation": "SOP (Standard Operating Procedure) traceability is important for:\n1. Auditing which procedures were auto-generated from which episodes\n2. Understanding the decision trail when reviewing SOPs\n3. Debugging when an episode produces unexpected or incorrect SOPs\n4. Analytics on SOP generation patterns and effectiveness\n\nThe System5 layer is about 'Policy - Strategic direction and governance' (README line 26), and governance requires auditability. This stub breaks that audit trail.",
+  "success_criteria": [
+    "SOPEngine.list/0 or equivalent query function is implemented",
+    "get_sops_for_episode/1 returns actual SOPs created from the episode",
+    "Query filters by episode_id in SOP metadata",
+    "Performance is acceptable for SOP stores with thousands of entries",
+    "Tests verify bidirectional episode <-> SOP relationship"
+  ],
+  "technical_constraints": [
+    "SOPEngine module exists but list/0 may need to be added",
+    "Need to decide if SOPs are stored in CRDT, ETS, or database",
+    "Query performance must scale with SOP count",
+    "Metadata storage format must support efficient filtering by episode_id"
+  ],
+  "scope_in_scope": [
+    "lib/cybernetic/vsm/system5/sop_shim.ex (lines 230-234)",
+    "lib/cybernetic/vsm/system5/sop_engine.ex (add list/0 or query/1 function)",
+    "test/cybernetic/vsm/system5/sop_engine_test.exs (test query functionality)",
+    "test/cybernetic/vsm/system5/policy_intelligence_test.exs (if it tests SOP queries)"
+  ],
+  "scope_out_of_scope": [
+    "SOP versioning (separate concern)",
+    "SOP approval workflow (policy layer, not storage)",
+    "Full-text search of SOP content (different feature)"
+  ],
+  "priority_hint": "medium",
+  "urgency_hint": "Blocks auditability and traceability in System5 governance layer."
+}

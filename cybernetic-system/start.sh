@@ -1,0 +1,20 @@
+#!/bin/bash
+export AMQP_URL="amqp://cybernetic:changeme@localhost:5672"
+export RABBITMQ_PASSWORD="changeme"
+export DATABASE_URL="postgres://cybernetic:changeme@localhost:5432/cybernetic"
+export POSTGRES_PASSWORD="changeme"
+export REDIS_URL="redis://default:changeme@localhost:6379"
+export REDIS_PASSWORD="changeme"
+export ANTHROPIC_API_KEY="placeholder"
+export OPENAI_API_KEY="placeholder"
+export TOGETHER_API_KEY="placeholder"
+export LLM_STACK="legacy_httpoison"
+export OLLAMA_ENDPOINT="http://localhost:11434"
+export OTEL_EXPORTER_OTLP_ENDPOINT="http://localhost:4317"
+export OTEL_SERVICE_NAME="cybernetic"
+export CYBERNETIC_HMAC_SECRET="cybernetic-dev-hmac-secret"
+export SECRET_KEY_BASE="cybernetic-dev-secret-key-base"
+export MIX_ENV="dev"
+
+echo "Starting Cybernetic with AMQP_URL=$AMQP_URL"
+exec iex -S mix

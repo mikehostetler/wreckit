@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "id": "020-dreamer-implement-wasm-policy-evaluation-in-intell",
+  "title": "[DREAMER] Implement WASM policy evaluation in Intelligence Runtime",
+  "section": "features",
+  "state": "idea",
+  "overview": "Policies cannot be executed in a WASM sandbox, limiting the security model and preventing third-party policy submission. Without WASM, policies run in the BEAM VM which poses security risks for untrusted policies.\n\n**Motivation:** WASM sandboxing enables safe execution of untrusted policies. This is critical for multi-tenant environments where tenants may submit custom policies. WASM provides resource isolation and limits.\n\n**Success criteria:**\n- Policies compile to WASM bytecode\n- Wasmex instance created with memory limits\n- Policy evaluation executes in WASM sandbox\n- Resource limits enforced (CPU, memory)\n- Fallback to native evaluation if WASM unavailable\n\n**Technical constraints:**\n- Requires Wasmex dependency\n- Needs AST-to-WASM compiler\n- Resource limiting must be robust\n- Serialization/deserialization of context to WASM\n\n**In scope:**\n- Implement do_evaluate_wasm/2 with Wasmex\n- Add policy AST to WASM compilation\n- Implement memory and CPU limits\n- Add WASM health checks\n- Write tests for WASM policy execution\n**Out of scope:**\n- Policy DSL implementation (already exists)\n- Native policy evaluation (already exists)\n- WASM validator for edge (separate module)\n\n**Signals:** priority: medium, urgency: Blocks secure multi-tenant policy execution",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-29T01:39:51.052Z",
+  "updated_at": "2026-01-29T01:39:51.052Z",
+  "problem_statement": "Policies cannot be executed in a WASM sandbox, limiting the security model and preventing third-party policy submission. Without WASM, policies run in the BEAM VM which poses security risks for untrusted policies.",
+  "motivation": "WASM sandboxing enables safe execution of untrusted policies. This is critical for multi-tenant environments where tenants may submit custom policies. WASM provides resource isolation and limits.",
+  "success_criteria": [
+    "Policies compile to WASM bytecode",
+    "Wasmex instance created with memory limits",
+    "Policy evaluation executes in WASM sandbox",
+    "Resource limits enforced (CPU, memory)",
+    "Fallback to native evaluation if WASM unavailable"
+  ],
+  "technical_constraints": [
+    "Requires Wasmex dependency",
+    "Needs AST-to-WASM compiler",
+    "Resource limiting must be robust",
+    "Serialization/deserialization of context to WASM"
+  ],
+  "scope_in_scope": [
+    "Implement do_evaluate_wasm/2 with Wasmex",
+    "Add policy AST to WASM compilation",
+    "Implement memory and CPU limits",
+    "Add WASM health checks",
+    "Write tests for WASM policy execution"
+  ],
+  "scope_out_of_scope": [
+    "Policy DSL implementation (already exists)",
+    "Native policy evaluation (already exists)",
+    "WASM validator for edge (separate module)"
+  ],
+  "priority_hint": "medium",
+  "urgency_hint": "Blocks secure multi-tenant policy execution"
+}

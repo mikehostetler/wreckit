@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "id": "016-dreamer-implement-email-notification-sending",
+  "title": "[DREAMER] Implement Email Notification Sending",
+  "section": "Feature",
+  "state": "idea",
+  "overview": "In lib/cybernetic/workers/notification_sender.ex at lines 151-160, the send_email/3 function has detailed logic for rendering templates and checking preferences, but at line 154 there's a comment 'Placeholder for actual email sending' and it just logs 'Would send email: #{to}'. The implementation calls a do_send_email/4 function that should actually interact with an email service.\n\n**Motivation:** Email notifications are critical for:\n1. Alerting operators to policy violations or security events\n2. Sending reports (daily/weekly summaries)\n3. System health alerts (circuit breaker trips, high error rates)\n4. User notifications for long-running operations\n\nThe NotificationSender is part of the worker tree and is likely started by the application supervisor, but it can't fulfill its purpose without actual email delivery. This is a production-readiness blocker for any deployment requiring operator notification.\n\n**Success criteria:**\n- do_send_email/4 sends real emails via SMTP or API\n- Email service is configurable (SMTP server, API key, or cloud provider)\n- Templates are rendered with actual data (not just logged)\n- Email sending failures are retried with exponential backoff\n- Telemetry events are emitted for email success/failure\n- Tests verify email delivery (can use mock SMTP server like Bamboo.TestAdapter)\n\n**Technical constraints:**\n- Need to choose email library (Bamboo, Swoosh, or Mailgun/SendGrid APIs)\n- SMTP configuration must be environment-aware (dev: log only, prod: actual send)\n- Must handle email service rate limits and errors\n- Template rendering should support HTML and plain text\n- Need to handle attachments if required by notifications\n\n**In scope:**\n- lib/cybernetic/workers/notification_sender.ex (lines 151-250)\n- mix.exs (add email library dependency)\n- config/*.exs (email service configuration)\n- test/cybernetic/workers/notification_sender_test.exs (email sending tests)\n**Out of scope:**\n- Email template UI/visual editor\n- Notification preferences UI (API exists, this is backend)\n- Push notifications (separate channel)\n- SMS notifications (separate channel)\n\n**Signals:** priority: medium, urgency: Blocks production deployment with operator notifications; placeholder clearly marked.",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-29T01:39:01.632Z",
+  "updated_at": "2026-01-29T01:39:01.632Z",
+  "problem_statement": "In lib/cybernetic/workers/notification_sender.ex at lines 151-160, the send_email/3 function has detailed logic for rendering templates and checking preferences, but at line 154 there's a comment 'Placeholder for actual email sending' and it just logs 'Would send email: #{to}'. The implementation calls a do_send_email/4 function that should actually interact with an email service.",
+  "motivation": "Email notifications are critical for:\n1. Alerting operators to policy violations or security events\n2. Sending reports (daily/weekly summaries)\n3. System health alerts (circuit breaker trips, high error rates)\n4. User notifications for long-running operations\n\nThe NotificationSender is part of the worker tree and is likely started by the application supervisor, but it can't fulfill its purpose without actual email delivery. This is a production-readiness blocker for any deployment requiring operator notification.",
+  "success_criteria": [
+    "do_send_email/4 sends real emails via SMTP or API",
+    "Email service is configurable (SMTP server, API key, or cloud provider)",
+    "Templates are rendered with actual data (not just logged)",
+    "Email sending failures are retried with exponential backoff",
+    "Telemetry events are emitted for email success/failure",
+    "Tests verify email delivery (can use mock SMTP server like Bamboo.TestAdapter)"
+  ],
+  "technical_constraints": [
+    "Need to choose email library (Bamboo, Swoosh, or Mailgun/SendGrid APIs)",
+    "SMTP configuration must be environment-aware (dev: log only, prod: actual send)",
+    "Must handle email service rate limits and errors",
+    "Template rendering should support HTML and plain text",
+    "Need to handle attachments if required by notifications"
+  ],
+  "scope_in_scope": [
+    "lib/cybernetic/workers/notification_sender.ex (lines 151-250)",
+    "mix.exs (add email library dependency)",
+    "config/*.exs (email service configuration)",
+    "test/cybernetic/workers/notification_sender_test.exs (email sending tests)"
+  ],
+  "scope_out_of_scope": [
+    "Email template UI/visual editor",
+    "Notification preferences UI (API exists, this is backend)",
+    "Push notifications (separate channel)",
+    "SMS notifications (separate channel)"
+  ],
+  "priority_hint": "medium",
+  "urgency_hint": "Blocks production deployment with operator notifications; placeholder clearly marked."
+}

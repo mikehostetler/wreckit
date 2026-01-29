@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "id": "012-dreamer-remove-hardcoded-api-key-from-cybevolve-mi",
+  "title": "[DREAMER] Remove Hardcoded API Key from Cyb.Evolve Mix Task",
+  "section": "Security",
+  "state": "idea",
+  "overview": "In lib/mix/tasks/cyb.evolve.ex at line 61, there's a hardcoded API key: '1cd54a1d237e4693b516a56e8513366a.1r4gXJRbfYp0Nw52' used as a fallback when ANTHROPIC_API_KEY environment variable is not set. Hardcoded API keys in source code are a security anti-pattern and expose credentials to anyone with repository access.\n\n**Motivation:** Security vulnerabilities:\n1. API key is exposed in version control history\n2. Anyone with code access can use the API key for billing to the owner's account\n3. The key appears to be for 'z.ai' (a Chinese AI service) based on the base_url at line 59\n4. Violates principle of least privilege and credential management best practices\n5. If this code is open-sourced, the key would be publicly exposed\n\nAdditionally, the presence of a fallback key means developers might not realize they need to configure their own key, leading to unexpected usage of the shared credential.\n\n**Success criteria:**\n- Hardcoded API key is removed from line 61\n- Missing ANTHROPIC_API_KEY causes clear error message explaining configuration\n- Documentation is updated to explain required environment variables\n- Pre-commit hooks prevent future hardcoded credentials\n- All CI/CD pipelines use proper secret management\n- Security scan (e.g., truffleHog, gitleaks) is integrated\n\n**Technical constraints:**\n- Must provide helpful error message when key is missing\n- Should not break existing workflows that do have the env var set\n- Consider supporting .env files for local development (document in README)\n- Add to .gitignore if not already: .env, .env.local\n\n**In scope:**\n- lib/mix/tasks/cyb.evolve.ex (line 61)\n- docs/README_SETUP.md (document required env vars)\n- .gitignore (ensure credential files are ignored)\n- .github/workflows/ (CI secret management)\n**Out of scope:**\n- Credential rotation for existing keys\n- Audit of other potential hardcoded secrets (separate initiative)\n\n**Signals:** priority: critical, urgency: Security vulnerability with exposed credentials; must fix immediately.",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-29T01:39:01.629Z",
+  "updated_at": "2026-01-29T01:39:01.629Z",
+  "problem_statement": "In lib/mix/tasks/cyb.evolve.ex at line 61, there's a hardcoded API key: '1cd54a1d237e4693b516a56e8513366a.1r4gXJRbfYp0Nw52' used as a fallback when ANTHROPIC_API_KEY environment variable is not set. Hardcoded API keys in source code are a security anti-pattern and expose credentials to anyone with repository access.",
+  "motivation": "Security vulnerabilities:\n1. API key is exposed in version control history\n2. Anyone with code access can use the API key for billing to the owner's account\n3. The key appears to be for 'z.ai' (a Chinese AI service) based on the base_url at line 59\n4. Violates principle of least privilege and credential management best practices\n5. If this code is open-sourced, the key would be publicly exposed\n\nAdditionally, the presence of a fallback key means developers might not realize they need to configure their own key, leading to unexpected usage of the shared credential.",
+  "success_criteria": [
+    "Hardcoded API key is removed from line 61",
+    "Missing ANTHROPIC_API_KEY causes clear error message explaining configuration",
+    "Documentation is updated to explain required environment variables",
+    "Pre-commit hooks prevent future hardcoded credentials",
+    "All CI/CD pipelines use proper secret management",
+    "Security scan (e.g., truffleHog, gitleaks) is integrated"
+  ],
+  "technical_constraints": [
+    "Must provide helpful error message when key is missing",
+    "Should not break existing workflows that do have the env var set",
+    "Consider supporting .env files for local development (document in README)",
+    "Add to .gitignore if not already: .env, .env.local"
+  ],
+  "scope_in_scope": [
+    "lib/mix/tasks/cyb.evolve.ex (line 61)",
+    "docs/README_SETUP.md (document required env vars)",
+    ".gitignore (ensure credential files are ignored)",
+    ".github/workflows/ (CI secret management)"
+  ],
+  "scope_out_of_scope": [
+    "Credential rotation for existing keys",
+    "Audit of other potential hardcoded secrets (separate initiative)"
+  ],
+  "priority_hint": "critical",
+  "urgency_hint": "Security vulnerability with exposed credentials; must fix immediately."
+}

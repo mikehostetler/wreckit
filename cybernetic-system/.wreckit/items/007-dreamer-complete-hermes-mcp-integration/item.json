@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "id": "007-dreamer-complete-hermes-mcp-integration",
+  "title": "[DREAMER] Complete Hermes MCP Integration",
+  "section": "Feature",
+  "state": "idea",
+  "overview": "Three key MCP integration points are incomplete:\n1. Cybernetic.MCP.Core.call_tool/3 (line 70) has mock response instead of actual Hermes call\n2. Cybernetic.MCP.Core.send_prompt/2 (line 89) returns mock response instead of using Hermes\n3. Cybernetic.MCP.HermesClient.call_tool/3 (line 18) returns {:error, :not_implemented}\n\n**Motivation:** MCP integration is a core feature advertised in the README (line 63: 'MCP Tools: Database, code analysis, financial calculations'). Without this implementation, the system cannot actually use external MCP tools, severely limiting AI agent capabilities.\n\n**Success criteria:**\n- Cybernetic.MCP.Core.call_tool/3 successfully invokes HermesMCP.call/2\n- Cybernetic.MCP.Core.send_prompt/2 uses actual Hermes prompt sending\n- Cybernetic.MCP.HermesClient.call_tool/3 handles both success and error responses from Hermes\n- All MCP-related TODO comments are removed from lib/cybernetic/core/mcp/*.ex\n- Integration tests pass with real Hermes MCP connections\n\n**Technical constraints:**\n- Hermes library is already in mix.exs (ref: 97a3dd7e4b6907cc79136da7999b4f51af4834eb)\n- Must maintain backward compatibility with existing mock-based tests\n- Need to implement proper error handling for network failures\n- Must preserve the Plugin behavior contract\n\n**In scope:**\n- lib/cybernetic/core/mcp/core.ex (lines 70-98)\n- lib/cybernetic/core/mcp/transports/hermes_client.ex (lines 18-128)\n- test/core/hermes_mcp_client_test.exs\n- test/integration/test_real_mcp_connection.exs\n**Out of scope:**\n- MAGG adapter (separate concern)\n- MCP server implementation (different module)\n- Tool discovery UI components\n\n**Signals:** priority: high, urgency: This is blocking a marketed feature and is referenced in 4 TODO comments across the MCP codebase.",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-29T01:39:01.626Z",
+  "updated_at": "2026-01-29T01:39:01.626Z",
+  "problem_statement": "Three key MCP integration points are incomplete:\n1. Cybernetic.MCP.Core.call_tool/3 (line 70) has mock response instead of actual Hermes call\n2. Cybernetic.MCP.Core.send_prompt/2 (line 89) returns mock response instead of using Hermes\n3. Cybernetic.MCP.HermesClient.call_tool/3 (line 18) returns {:error, :not_implemented}",
+  "motivation": "MCP integration is a core feature advertised in the README (line 63: 'MCP Tools: Database, code analysis, financial calculations'). Without this implementation, the system cannot actually use external MCP tools, severely limiting AI agent capabilities.",
+  "success_criteria": [
+    "Cybernetic.MCP.Core.call_tool/3 successfully invokes HermesMCP.call/2",
+    "Cybernetic.MCP.Core.send_prompt/2 uses actual Hermes prompt sending",
+    "Cybernetic.MCP.HermesClient.call_tool/3 handles both success and error responses from Hermes",
+    "All MCP-related TODO comments are removed from lib/cybernetic/core/mcp/*.ex",
+    "Integration tests pass with real Hermes MCP connections"
+  ],
+  "technical_constraints": [
+    "Hermes library is already in mix.exs (ref: 97a3dd7e4b6907cc79136da7999b4f51af4834eb)",
+    "Must maintain backward compatibility with existing mock-based tests",
+    "Need to implement proper error handling for network failures",
+    "Must preserve the Plugin behavior contract"
+  ],
+  "scope_in_scope": [
+    "lib/cybernetic/core/mcp/core.ex (lines 70-98)",
+    "lib/cybernetic/core/mcp/transports/hermes_client.ex (lines 18-128)",
+    "test/core/hermes_mcp_client_test.exs",
+    "test/integration/test_real_mcp_connection.exs"
+  ],
+  "scope_out_of_scope": [
+    "MAGG adapter (separate concern)",
+    "MCP server implementation (different module)",
+    "Tool discovery UI components"
+  ],
+  "priority_hint": "high",
+  "urgency_hint": "This is blocking a marketed feature and is referenced in 4 TODO comments across the MCP codebase."
+}

@@ -1,0 +1,112 @@
+name: Claude Code Self-Improve
+
+on:
+  schedule:
+    # Twice daily: 06:00 and 18:00 America/Chicago (11:00 and 23:00 UTC)
+    - cron: "0 11 * * *"
+    - cron: "0 23 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+  id-token: write
+
+jobs:
+  self-improve:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Claude Code Self-Improvement
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          show_full_output: true
+          prompt: |
+            You are a SENIOR ENGINEER conducting recursive self-improvement on this repository.
+
+            GOAL: Identify and fix 2-4 high-impact gaps, then create a PR
+            TIME LIMIT: You have 50 turns. Explore efficiently, implement quickly.
+
+            === EXECUTION STRATEGY ===
+
+            PHASE 1 - RAPID ASSESSMENT (10-15 turns):
+            - Use Glob to see structure
+            - Read README, main code files
+            - Use Grep to find TODOs, FIXMEs, error patterns
+            - Identify 2-4 HIGH IMPACT + LOW RISK improvements
+
+            PHASE 2 - IMPLEMENT FIXES (25-30 turns):
+            - Fix the gaps you identified
+            - Use Edit/Write to make changes
+            - Run tests if available (pytest, make test)
+            - Keep changes focused and safe
+
+            PHASE 3 - CREATE PR (5-10 turns):
+            - Use git to stage, commit, push changes
+            - Use gh to create PR with clear description
+            - Include Receipt: <hash of changes>
+
+            === WHAT TO FIX (prioritize these) ===
+            High-impact, low-risk improvements:
+            - Missing/unclear documentation (README, docstrings)
+            - Missing error handling
+            - Missing type hints
+            - Dead code or unused imports
+            - Code duplication
+            - Missing tests for core functionality
+            - Security issues (hardcoded secrets, etc.)
+            - Build/deployment issues
+
+            SKIP complex refactoring or architectural changes.
+
+            === EXECUTION TIPS ===
+            - Use Glob/Grep, not find/cat/wc (prefer specialized tools)
+            - Read selectively (don't read every file)
+            - Focus on IMPACT: what helps users/developers most?
+            - Be surgical: fix what matters, leave rest alone
+            - MUST create PR before turn 50
+
+            === CONSTRAINTS (from CLAUDE.md) ===
+            ✅ You CAN modify:
+               - Source code (for bug fixes, improvements, refactoring)
+               - Tests (add/fix tests)
+               - Documentation (add/improve docs)
+               - Configuration (fix build/deploy issues)
+               - Dependencies (with clear justification)
+
+            ❌ You MUST NOT:
+               - Break public APIs
+               - Make breaking changes without discussion
+               - Change behavior without justification
+               - Introduce new dependencies without reason
+
+            === EXECUTION TIPS (Think like an RLM) ===
+            - Use Glob to efficiently explore structure (don't read everything)
+            - Use Grep to find patterns (TODOs, error-prone code, duplicates)
+            - Read selectively (only files relevant to gaps you find)
+            - Partition work: analyze different aspects recursively
+            - Focus on IMPACT: what will make the biggest difference?
+            - Be surgical: fix what matters, leave the rest alone
+
+            Remember: You're autonomous. Decide what needs fixing and fix it.
+          claude_args: |
+            --max-turns 75
+            --model claude-sonnet-4-5-20250929
+            --allowedTools "Read,Write,Edit,Glob,Grep,Bash(git:*),Bash(gh:*),Bash(pytest:*),Bash(python:*),Bash(make:*),Bash(find:*),Bash(wc:*),Bash(cat:*),Bash(head:*),Bash(tail:*),Bash(ls:*),Bash(tree:*)"
+            --system-prompt "You are a senior software engineer conducting autonomous recursive code review. Use RLM patterns: peek, grep, partition, recurse. Prioritize high-impact improvements. Be surgical and focused."
+
+      - name: Trigger Qodo Review
+        if: steps.anthropics-claude-code-action.outputs.pr_number != ''
+        env:
+          GH_TOKEN: \${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUMBER=\$(gh pr list --head \$(git branch --show-current) --json number --jq '.[0].number')
+          if [ -n "\$PR_NUMBER" ]; then
+            echo "Commenting on PR #\$PR_NUMBER to trigger Qodo review"
+            gh pr comment \$PR_NUMBER --body "/describe"
+            gh pr comment \$PR_NUMBER --body "/review"
+          fi

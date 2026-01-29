@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "id": "029-dreamer-implement-embedding-support-in-reqllmprovi",
+  "title": "[DREAMER] Implement embedding support in ReqLLMProvider",
+  "section": "features",
+  "state": "idea",
+  "overview": "Embedding generation is not implemented in the unified LLM provider. This blocks semantic search, vector database operations, and retrieval-augmented generation (RAG) features that depend on embeddings.\n\n**Motivation:** Embeddings are foundational for modern AI features like semantic search, document similarity, and RAG. Without embedding support, the platform cannot support these advanced capabilities.\n\n**Success criteria:**\n- embed/2 generates embeddings via configured provider\n- Supports batch embedding for efficiency\n- Works with Anthropic, OpenAI, and local models\n- Proper error handling and retries\n- Embedding caching for cost optimization\n\n**Technical constraints:**\n- Must work with existing req_llm pipeline\n- Needs provider-specific embedding endpoints\n- Should support different embedding dimensions\n- Cost tracking for embedding API calls\n\n**In scope:**\n- Implement embed/2 in ReqLLMProvider\n- Add embedding endpoint configuration\n- Support batch embeddings\n- Add embedding caching\n- Write tests for embedding generation\n**Out of scope:**\n- Vector database (separate concern)\n- Semantic search implementation (uses embeddings)\n- RAG pipeline (separate feature)\n\n**Signals:** priority: medium, urgency: Blocks semantic features",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-29T01:39:51.055Z",
+  "updated_at": "2026-01-29T01:39:51.055Z",
+  "problem_statement": "Embedding generation is not implemented in the unified LLM provider. This blocks semantic search, vector database operations, and retrieval-augmented generation (RAG) features that depend on embeddings.",
+  "motivation": "Embeddings are foundational for modern AI features like semantic search, document similarity, and RAG. Without embedding support, the platform cannot support these advanced capabilities.",
+  "success_criteria": [
+    "embed/2 generates embeddings via configured provider",
+    "Supports batch embedding for efficiency",
+    "Works with Anthropic, OpenAI, and local models",
+    "Proper error handling and retries",
+    "Embedding caching for cost optimization"
+  ],
+  "technical_constraints": [
+    "Must work with existing req_llm pipeline",
+    "Needs provider-specific embedding endpoints",
+    "Should support different embedding dimensions",
+    "Cost tracking for embedding API calls"
+  ],
+  "scope_in_scope": [
+    "Implement embed/2 in ReqLLMProvider",
+    "Add embedding endpoint configuration",
+    "Support batch embeddings",
+    "Add embedding caching",
+    "Write tests for embedding generation"
+  ],
+  "scope_out_of_scope": [
+    "Vector database (separate concern)",
+    "Semantic search implementation (uses embeddings)",
+    "RAG pipeline (separate feature)"
+  ],
+  "priority_hint": "medium",
+  "urgency_hint": "Blocks semantic features"
+}

@@ -1,0 +1,127 @@
+{
+  "schema_version": 1,
+  "id": "006-system-overlay-tool-for-static-dynamic-analysis",
+  "branch_name": "wreckit/006-system-overlay-tool-for-static-dynamic-analysis",
+  "user_stories": [
+    {
+      "id": "US-001",
+      "title": "Create Overlay module with data loading",
+      "acceptance_criteria": [
+        "load_static_data/1 loads JSON",
+        "load_dynamic_data/1 loads JSON",
+        "normalize_static_functions/1 converts to map",
+        "normalize_dynamic_spans/1 converts to map"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": ""
+    },
+    {
+      "id": "US-002",
+      "title": "Implement dead code detection",
+      "acceptance_criteria": [
+        "Computes static - dynamic set difference",
+        "Filters test functions",
+        "Filters callback functions"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": ""
+    },
+    {
+      "id": "US-003",
+      "title": "Implement ghost path detection",
+      "acceptance_criteria": [
+        "Computes dynamic - static set difference",
+        "Tracks execution count",
+        "Sorts by module"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": ""
+    },
+    {
+      "id": "US-004",
+      "title": "Implement coverage metrics",
+      "acceptance_criteria": [
+        "Calculates per-module coverage %",
+        "Identifies hot modules",
+        "Identifies cold modules"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": ""
+    },
+    {
+      "id": "US-005",
+      "title": "Implement analyze orchestrator",
+      "acceptance_criteria": [
+        "Orchestrates full analysis pipeline",
+        "Accepts threshold options",
+        "Returns complete result map"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": ""
+    },
+    {
+      "id": "US-006",
+      "title": "Create Mix.Tasks.Cyb.Overlay CLI",
+      "acceptance_criteria": [
+        "Implements run/1",
+        "Parses command line args",
+        "Handles input files"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": ""
+    },
+    {
+      "id": "US-007",
+      "title": "Implement JSON reporting",
+      "acceptance_criteria": [
+        "Generates valid JSON output",
+        "Writes to specified file",
+        "Includes all analysis sections"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": ""
+    },
+    {
+      "id": "US-008",
+      "title": "Implement console summary",
+      "acceptance_criteria": [
+        "Prints readable summary",
+        "Uses emoji indicators",
+        "Shows top findings"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": ""
+    },
+    {
+      "id": "US-009",
+      "title": "Add unit tests",
+      "acceptance_criteria": [
+        "Tests normalization",
+        "Tests detection logic",
+        "Tests filtering"
+      ],
+      "priority": 4,
+      "status": "done",
+      "notes": ""
+    },
+    {
+      "id": "US-010",
+      "title": "Add integration tests",
+      "acceptance_criteria": [
+        "Tests full pipeline",
+        "Tests CLI interface"
+      ],
+      "priority": 4,
+      "status": "done",
+      "notes": ""
+    }
+  ]
+}

@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "id": "003-system-archeology-tool-for-cybernetic-amcp",
+  "branch_name": "wreckit/003-system-archeology-tool-for-cybernetic-amcp",
+  "user_stories": [
+    {
+      "id": "US-001",
+      "title": "Build AST parser and function catalog",
+      "acceptance_criteria": [
+        "Parser extracts all function definitions",
+        "Catalog indexes all functions",
+        "Catalog builds call graph"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": ""
+    },
+    {
+      "id": "US-002",
+      "title": "Discover all external entry points",
+      "acceptance_criteria": [
+        "HTTP discovery extracts routes",
+        "AMQP discovery identifies consumers",
+        "Mix task discovery finds tasks"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": ""
+    },
+    {
+      "id": "US-003",
+      "title": "Generate execution traces",
+      "acceptance_criteria": [
+        "Tracer performs DFS traversal",
+        "Trace includes every function call",
+        "Tracer handles cycles"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": ""
+    },
+    {
+      "id": "US-004",
+      "title": "Analyze shared modules",
+      "acceptance_criteria": [
+        "Analyzer extracts modules from traces",
+        "Analyzer counts occurrences",
+        "Results sorted by reference count"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": ""
+    },
+    {
+      "id": "US-005",
+      "title": "Detect orphan functions",
+      "acceptance_criteria": [
+        "Detector finds unreferenced functions",
+        "Detector filters whitelisted patterns",
+        "Output classifies orphans"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": ""
+    },
+    {
+      "id": "US-006",
+      "title": "Generate structured output",
+      "acceptance_criteria": [
+        "Output includes all analysis results",
+        "Write Elixir term format",
+        "Write JSON format"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": ""
+    }
+  ]
+}

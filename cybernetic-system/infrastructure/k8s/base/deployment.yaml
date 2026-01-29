@@ -1,0 +1,216 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cybernetic
+  namespace: cybernetic
+  labels:
+    app: cybernetic
+    version: v1
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: cybernetic
+  template:
+    metadata:
+      labels:
+        app: cybernetic
+        version: v1
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9568"
+        prometheus.io/path: "/metrics"
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - cybernetic
+              topologyKey: kubernetes.io/hostname
+      containers:
+      - name: cybernetic
+        image: ghcr.io/your-org/cybernetic:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 4000
+          name: http
+          protocol: TCP
+        - containerPort: 4369
+          name: epmd
+          protocol: TCP
+        - containerPort: 9568
+          name: metrics
+          protocol: TCP
+        env:
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: RELEASE_NODE
+          value: "cybernetic@$(POD_IP)"
+        - name: RELEASE_COOKIE
+          valueFrom:
+            secretKeyRef:
+              name: cybernetic-secrets
+              key: release-cookie
+        - name: AMQP_URL
+          valueFrom:
+            secretKeyRef:
+              name: cybernetic-secrets
+              key: amqp-url
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: cybernetic-secrets
+              key: database-url
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: cybernetic-secrets
+              key: redis-url
+        - name: ANTHROPIC_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: cybernetic-secrets
+              key: anthropic-api-key
+              optional: true
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: cybernetic-secrets
+              key: openai-api-key
+              optional: true
+        - name: TOGETHER_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: cybernetic-secrets
+              key: together-api-key
+              optional: true
+        - name: OLLAMA_ENDPOINT
+          value: "http://ollama:11434"
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: "http://otel-collector:4317"
+        - name: OTEL_SERVICE_NAME
+          value: "cybernetic"
+        - name: PHX_HOST
+          value: "cybernetic.example.com"
+        - name: PORT
+          value: "4000"
+        - name: POOL_SIZE
+          value: "10"
+        - name: MIX_ENV
+          value: "prod"
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "2000m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        volumeMounts:
+        - name: claude-md
+          mountPath: /app/CLAUDE.md
+          subPath: CLAUDE.md
+          readOnly: true
+      volumes:
+      - name: claude-md
+        configMap:
+          name: cybernetic-config
+          items:
+          - key: CLAUDE.md
+            path: CLAUDE.md
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cybernetic
+  namespace: cybernetic
+  labels:
+    app: cybernetic
+spec:
+  type: ClusterIP
+  selector:
+    app: cybernetic
+  ports:
+  - port: 4000
+    targetPort: 4000
+    name: http
+  - port: 4369
+    targetPort: 4369
+    name: epmd
+  - port: 9568
+    targetPort: 9568
+    name: metrics
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cybernetic-headless
+  namespace: cybernetic
+  labels:
+    app: cybernetic
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    app: cybernetic
+  ports:
+  - port: 4369
+    targetPort: 4369
+    name: epmd
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: cybernetic
+  namespace: cybernetic
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  tls:
+  - hosts:
+    - cybernetic.example.com
+    secretName: cybernetic-tls
+  rules:
+  - host: cybernetic.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: cybernetic
+            port:
+              number: 4000

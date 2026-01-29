@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "id": "026-dreamer-implement-system4-router-provider-fallback",
+  "title": "[DREAMER] Implement System4 Router provider fallback telemetry",
+  "section": "observability",
+  "state": "idea",
+  "overview": "When LLM providers fail and the router falls back to alternatives, there's insufficient visibility into the failure reasons, latency impact, and which providers are most reliable. This makes it hard to optimize routing policies and diagnose issues.\n\n**Motivation:** Good observability is critical for a multi-provider LLM router. Understanding why providers fail, how often fallbacks occur, and the latency impact helps optimize costs and reliability.\n\n**Success criteria:**\n- Telemetry tracks each provider failure with detailed error reason\n- Fallback latency metrics\n- Provider-specific success/error rates\n- Circuit breaker state tracking\n- Dashboard-ready metrics\n\n**Technical constraints:**\n- Must not impact routing performance\n- Telemetry should be asynchronous\n- Needs proper error categorization\n- Dashboard integration required\n\n**In scope:**\n- Add detailed error tracking in try_provider/5\n- Emit fallback telemetry with error categories\n- Track circuit breaker state changes\n- Create Prometheus metrics\n- Add Grafana dashboard panels\n**Out of scope:**\n- Router implementation itself (already exists)\n- Provider implementations (separate)\n- Alerting rules (separate project)\n\n**Signals:** priority: medium, urgency: Operational visibility gap",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-29T01:39:51.054Z",
+  "updated_at": "2026-01-29T01:39:51.054Z",
+  "problem_statement": "When LLM providers fail and the router falls back to alternatives, there's insufficient visibility into the failure reasons, latency impact, and which providers are most reliable. This makes it hard to optimize routing policies and diagnose issues.",
+  "motivation": "Good observability is critical for a multi-provider LLM router. Understanding why providers fail, how often fallbacks occur, and the latency impact helps optimize costs and reliability.",
+  "success_criteria": [
+    "Telemetry tracks each provider failure with detailed error reason",
+    "Fallback latency metrics",
+    "Provider-specific success/error rates",
+    "Circuit breaker state tracking",
+    "Dashboard-ready metrics"
+  ],
+  "technical_constraints": [
+    "Must not impact routing performance",
+    "Telemetry should be asynchronous",
+    "Needs proper error categorization",
+    "Dashboard integration required"
+  ],
+  "scope_in_scope": [
+    "Add detailed error tracking in try_provider/5",
+    "Emit fallback telemetry with error categories",
+    "Track circuit breaker state changes",
+    "Create Prometheus metrics",
+    "Add Grafana dashboard panels"
+  ],
+  "scope_out_of_scope": [
+    "Router implementation itself (already exists)",
+    "Provider implementations (separate)",
+    "Alerting rules (separate project)"
+  ],
+  "priority_hint": "medium",
+  "urgency_hint": "Operational visibility gap"
+}

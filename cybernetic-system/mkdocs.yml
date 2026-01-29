@@ -1,0 +1,138 @@
+site_name: Cybernetic aMCP Framework
+site_description: Distributed AI orchestration system implementing the Viable System Model
+site_url: https://jmanhype.github.io/cybernetic-amcp
+repo_url: https://github.com/jmanhype/cybernetic-amcp
+repo_name: jmanhype/cybernetic-amcp
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: deep purple
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: deep purple
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - announce.dismiss
+    - content.action.edit
+    - content.action.view
+    - content.code.annotate
+    - content.code.copy
+    - content.code.select
+    - content.tabs.link
+    - content.tooltips
+    - header.autohide
+    - navigation.expand
+    - navigation.footer
+    - navigation.indexes
+    - navigation.instant
+    - navigation.instant.prefetch
+    - navigation.instant.progress
+    - navigation.prune
+    - navigation.sections
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.top
+    - navigation.tracking
+    - search.highlight
+    - search.share
+    - search.suggest
+    - toc.follow
+    - toc.integrate
+  font:
+    text: Inter
+    code: JetBrains Mono
+  icon:
+    repo: fontawesome/brands/github
+
+plugins:
+  - search
+
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - toc:
+      permalink: true
+      permalink_title: Link to this section
+      toc_depth: 3
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+      combine_header_slug: true
+      slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Installation: getting-started/installation.md
+    - Setup Guide: README_SETUP.md
+  - API:
+    - Overview: api/overview.md
+  - Architecture:
+    - Overview: architecture.md
+    - Features: features.md
+  - Deployment:
+    - Guide: DEPLOYMENT.md
+    - Staging: STAGING_DEPLOYMENT.md
+    - Proof: DEPLOYMENT_PROOF.md
+  - AI Providers:
+    - Anthropic: ANTHROPIC_PROVIDER_SUMMARY.md
+    - Ollama: ollama_s4_summary.md
+  - Monitoring:
+    - Telemetry: OTEL_STAGING_GUIDE.md
+    - Analysis: polling_analysis.md
+  - Reports:
+    - Completion: COMPLETION_REPORT.md
+  - Development:
+    - Claude Config: CLAUDE.md
+    - Secrets: SECRETS.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/jmanhype/cybernetic-amcp
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/cybernetic_ai
+    - icon: fontawesome/brands/discord
+      link: https://discord.gg/cybernetic

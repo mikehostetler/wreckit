@@ -1,0 +1,66 @@
+# Elixir/Mix artifacts
+/_build/
+/deps/
+*/_build/
+*/deps/
+**/_build/
+**/deps/
+/.fetch
+erl_crash.dump
+*.ez
+*.beam
+/config/*.secret.exs
+.elixir_ls/
+
+# Test coverage
+/cover/
+
+# Documentation
+/doc/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+*.iml
+
+# AI Assistant files
+.claude/hooks/logs/
+.claude/settings.local.json
+.claude/checkpoints/
+.claude-flow/
+.vincent/
+
+# Logs
+/log/
+*.log
+
+# Database
+*.db
+*.sqlite3
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+secrets/
+*_api_key*
+*_secret*
+!*_secret.exs
+
+# Temporary files
+*.tmp
+/tmp/
+.swarm/
+
+# Wreckit local config (may contain secrets)
+.wreckit/config.local.json

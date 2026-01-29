@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "id": "023-dreamer-implement-pii-redaction-in-llm-pipeline-re",
+  "title": "[DREAMER] Implement PII redaction in LLM Pipeline Redactor step",
+  "section": "features",
+  "state": "idea",
+  "overview": "User data sent to external LLM providers may contain PII (personally identifiable information), API keys, credentials, or other sensitive data. This violates privacy policies, GDPR requirements, and security best practices.\n\n**Motivation:** Redacting PII before sending data to external LLMs is critical for privacy compliance. Many industries have strict requirements about what data can leave their systems. This is a blocker for production deployment in regulated environments.\n\n**Success criteria:**\n- Detects and redacts common PII patterns (SSN, email, phone, credit card)\n- Redacts API keys and credentials\n- Supports tenant-specific redaction rules\n- Provides redaction audit log\n- Configurable sensitivity levels\n\n**Technical constraints:**\n- Must handle false positives carefully\n- Cannot break LLM prompt structure\n- Needs to support multiple data formats\n- Performance impact must be minimal\n- Redaction must be irreversible\n\n**In scope:**\n- Implement PII detection patterns\n- Add redaction logic that replaces with placeholders\n- Add tenant-specific rule configuration\n- Implement audit logging\n- Write tests with known PII patterns\n**Out of scope:**\n- ML-based PII detection (future enhancement)\n- Custom redaction strategies beyond basic patterns)\n- Data encryption (separate concern)\n\n**Signals:** priority: high, urgency: Privacy compliance requirement",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-29T01:39:51.053Z",
+  "updated_at": "2026-01-29T01:39:51.053Z",
+  "problem_statement": "User data sent to external LLM providers may contain PII (personally identifiable information), API keys, credentials, or other sensitive data. This violates privacy policies, GDPR requirements, and security best practices.",
+  "motivation": "Redacting PII before sending data to external LLMs is critical for privacy compliance. Many industries have strict requirements about what data can leave their systems. This is a blocker for production deployment in regulated environments.",
+  "success_criteria": [
+    "Detects and redacts common PII patterns (SSN, email, phone, credit card)",
+    "Redacts API keys and credentials",
+    "Supports tenant-specific redaction rules",
+    "Provides redaction audit log",
+    "Configurable sensitivity levels"
+  ],
+  "technical_constraints": [
+    "Must handle false positives carefully",
+    "Cannot break LLM prompt structure",
+    "Needs to support multiple data formats",
+    "Performance impact must be minimal",
+    "Redaction must be irreversible"
+  ],
+  "scope_in_scope": [
+    "Implement PII detection patterns",
+    "Add redaction logic that replaces with placeholders",
+    "Add tenant-specific rule configuration",
+    "Implement audit logging",
+    "Write tests with known PII patterns"
+  ],
+  "scope_out_of_scope": [
+    "ML-based PII detection (future enhancement)",
+    "Custom redaction strategies beyond basic patterns)",
+    "Data encryption (separate concern)"
+  ],
+  "priority_hint": "high",
+  "urgency_hint": "Privacy compliance requirement"
+}

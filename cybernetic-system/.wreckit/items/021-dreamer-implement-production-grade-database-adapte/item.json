@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "id": "021-dreamer-implement-production-grade-database-adapte",
+  "title": "[DREAMER] Implement production-grade database adapter for MCP DatabaseTool",
+  "section": "features",
+  "state": "idea",
+  "overview": "Database queries through MCP are mocked, returning fake data. This prevents external systems from querying the Cybernetic platform's database through the MCP interface, limiting observability and integration capabilities.\n\n**Motivation:** External tools need to query the platform database for monitoring, analytics, and integration. The MCP interface is the standard way to expose this capability securely.\n\n**Success criteria:**\n- execute_query/2 runs real SQL queries against configured database\n- Proper SQL injection prevention (beyond basic string replacement)\n- Connection pooling and timeout handling\n- Query result limits to prevent large result sets\n- Authorization checks for database access\n\n**Technical constraints:**\n- Must use existing Repo for tenant isolation\n- SQL injection prevention is critical\n- Query result size limits required\n- Must only allow read operations in production\n- Needs proper error messages\n\n**In scope:**\n- Implement execute_query/2 with Ecto.Repo.query\n- Add proper SQL sanitization\n- Implement connection pooling\n- Add query timeouts and result limits\n- Write security tests for SQL injection\n**Out of scope:**\n- Write operations (intentionally not allowed)\n- Database migrations (separate concern)\n- Multi-database support (single database only)\n\n**Signals:** priority: high, urgency: Security risk with mock data",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-29T01:39:51.052Z",
+  "updated_at": "2026-01-29T01:39:51.052Z",
+  "problem_statement": "Database queries through MCP are mocked, returning fake data. This prevents external systems from querying the Cybernetic platform's database through the MCP interface, limiting observability and integration capabilities.",
+  "motivation": "External tools need to query the platform database for monitoring, analytics, and integration. The MCP interface is the standard way to expose this capability securely.",
+  "success_criteria": [
+    "execute_query/2 runs real SQL queries against configured database",
+    "Proper SQL injection prevention (beyond basic string replacement)",
+    "Connection pooling and timeout handling",
+    "Query result limits to prevent large result sets",
+    "Authorization checks for database access"
+  ],
+  "technical_constraints": [
+    "Must use existing Repo for tenant isolation",
+    "SQL injection prevention is critical",
+    "Query result size limits required",
+    "Must only allow read operations in production",
+    "Needs proper error messages"
+  ],
+  "scope_in_scope": [
+    "Implement execute_query/2 with Ecto.Repo.query",
+    "Add proper SQL sanitization",
+    "Implement connection pooling",
+    "Add query timeouts and result limits",
+    "Write security tests for SQL injection"
+  ],
+  "scope_out_of_scope": [
+    "Write operations (intentionally not allowed)",
+    "Database migrations (separate concern)",
+    "Multi-database support (single database only)"
+  ],
+  "priority_hint": "high",
+  "urgency_hint": "Security risk with mock data"
+}

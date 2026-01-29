@@ -1,0 +1,220 @@
+# Spec Kit Test Gate - GitHub Actions Workflow
+# Enforces 100% test pass rate on all PRs and pushes
+#
+# INSTALLATION:
+#   mkdir -p .github/workflows
+#   cp .specify/templates/github-workflows/test-gate.yml .github/workflows/
+#
+# CUSTOMIZATION:
+#   - Uncomment the section for your language/framework
+#   - Adjust paths in `paths` filter if needed
+#   - Add coverage thresholds as needed
+
+name: Test Gate
+
+on:
+  push:
+    branches: [main, master, develop]
+    paths:
+      - '**.py'
+      - '**.js'
+      - '**.ts'
+      - '**.jsx'
+      - '**.tsx'
+      - '**.go'
+      - '**.rs'
+      - '**.rb'
+      - '**.java'
+      - '**.kt'
+      - 'package.json'
+      - 'pyproject.toml'
+      - 'go.mod'
+      - 'Cargo.toml'
+      - 'Gemfile'
+      - 'pom.xml'
+      - 'build.gradle*'
+
+  pull_request:
+    branches: [main, master, develop]
+    paths:
+      - '**.py'
+      - '**.js'
+      - '**.ts'
+      - '**.jsx'
+      - '**.tsx'
+      - '**.go'
+      - '**.rs'
+      - '**.rb'
+      - '**.java'
+      - '**.kt'
+
+jobs:
+  #############################################
+  # PYTHON - Uncomment if using Python
+  #############################################
+  # test-python:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #
+  #     - name: Set up Python
+  #       uses: actions/setup-python@v5
+  #       with:
+  #         python-version: '3.11'
+  #         cache: 'pip'
+  #
+  #     - name: Install dependencies
+  #       run: |
+  #         python -m pip install --upgrade pip
+  #         pip install -e ".[dev]" || pip install -r requirements-dev.txt || pip install -r requirements.txt
+  #         pip install pytest pytest-cov
+  #
+  #     - name: Run unit tests
+  #       run: pytest tests/unit/ -v --tb=short
+  #
+  #     - name: Run integration tests
+  #       run: pytest tests/integration/ -v --tb=short
+  #
+  #     - name: Run all tests with coverage
+  #       run: |
+  #         pytest --cov=src --cov-report=term-missing --cov-fail-under=90
+  #
+  #     - name: Upload coverage
+  #       uses: codecov/codecov-action@v4
+  #       with:
+  #         fail_ci_if_error: true
+
+  #############################################
+  # NODE.JS - Uncomment if using Node.js
+  #############################################
+  # test-node:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #
+  #     - name: Set up Node.js
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: '20'
+  #         cache: 'npm'
+  #
+  #     - name: Install dependencies
+  #       run: npm ci
+  #
+  #     - name: Run linter
+  #       run: npm run lint
+  #
+  #     - name: Run unit tests
+  #       run: npm test
+  #
+  #     - name: Run integration tests
+  #       run: npm run test:integration || true
+  #
+  #     - name: Check coverage
+  #       run: npm run coverage -- --check-coverage --lines 90
+
+  #############################################
+  # GO - Uncomment if using Go
+  #############################################
+  # test-go:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #
+  #     - name: Set up Go
+  #       uses: actions/setup-go@v5
+  #       with:
+  #         go-version: '1.22'
+  #         cache: true
+  #
+  #     - name: Run tests
+  #       run: go test -v -race -coverprofile=coverage.out ./...
+  #
+  #     - name: Check coverage
+  #       run: |
+  #         go tool cover -func=coverage.out
+  #         # Fail if coverage < 90%
+  #         COVERAGE=$(go tool cover -func=coverage.out | grep total | awk '{print $3}' | sed 's/%//')
+  #         if (( $(echo "$COVERAGE < 90" | bc -l) )); then
+  #           echo "Coverage $COVERAGE% is below 90%"
+  #           exit 1
+  #         fi
+
+  #############################################
+  # RUST - Uncomment if using Rust
+  #############################################
+  # test-rust:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #
+  #     - name: Set up Rust
+  #       uses: dtolnay/rust-toolchain@stable
+  #
+  #     - name: Cache cargo
+  #       uses: Swatinem/rust-cache@v2
+  #
+  #     - name: Run tests
+  #       run: cargo test --all-features
+  #
+  #     - name: Run clippy
+  #       run: cargo clippy -- -D warnings
+
+  #############################################
+  # JAVA (Maven) - Uncomment if using Maven
+  #############################################
+  # test-java-maven:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #
+  #     - name: Set up JDK
+  #       uses: actions/setup-java@v4
+  #       with:
+  #         java-version: '17'
+  #         distribution: 'temurin'
+  #         cache: 'maven'
+  #
+  #     - name: Run tests
+  #       run: mvn test -B
+  #
+  #     - name: Check coverage
+  #       run: mvn jacoco:report jacoco:check -B
+
+  #############################################
+  # JAVA (Gradle) - Uncomment if using Gradle
+  #############################################
+  # test-java-gradle:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #
+  #     - name: Set up JDK
+  #       uses: actions/setup-java@v4
+  #       with:
+  #         java-version: '17'
+  #         distribution: 'temurin'
+  #         cache: 'gradle'
+  #
+  #     - name: Run tests
+  #       run: ./gradlew test
+  #
+  #     - name: Check coverage
+  #       run: ./gradlew jacocoTestCoverageVerification
+
+  #############################################
+  # PLACEHOLDER - Delete when customizing
+  #############################################
+  placeholder:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Reminder
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "⚠️  TEST GATE NOT CONFIGURED"
+          echo ""
+          echo "Edit .github/workflows/test-gate.yml to:"
+          echo "1. Uncomment the section for your language"
+          echo "2. Delete this placeholder job"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          exit 1

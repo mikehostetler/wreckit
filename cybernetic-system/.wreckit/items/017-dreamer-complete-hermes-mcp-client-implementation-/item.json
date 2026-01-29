@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "id": "017-dreamer-complete-hermes-mcp-client-implementation-",
+  "title": "[DREAMER] Complete Hermes MCP client implementation for tool execution",
+  "section": "features",
+  "state": "idea",
+  "overview": "MCP tool calls are failing with :not_implemented errors, preventing the system from leveraging external MCP tools and capabilities. This blocks integration with oh-my-opencode and other MCP-based services.\n\n**Motivation:** MCP (Model Context Protocol) is critical for extensibility and external tool integration. Without a functional Hermes client, the platform cannot communicate with external MCP servers, severely limiting its capabilities.\n\n**Success criteria:**\n- call_tool/3 successfully invokes external MCP tools with proper error handling\n- read_resource/2 retrieves resources from MCP servers\n- Proper timeout handling and connection management\n- Integration tests pass with real MCP servers\n- Telemetry events emitted for all MCP operations\n\n**Technical constraints:**\n- Must maintain backward compatibility with existing Plugin behavior\n- Should support stdio and websocket transports\n- Needs proper connection pooling and circuit breaking\n- Must handle OpenTelemetry trace propagation\n\n**In scope:**\n- Implement call_tool/3 in HermesClient\n- Implement read_resource/2 in HermesClient\n- Add connection management and health checks\n- Implement proper error handling and retries\n- Add comprehensive integration tests\n**Out of scope:**\n- Creating new MCP tools (that's separate)\n- MCP server implementation (already exists)\n- Tool discovery (partially implemented)\n\n**Signals:** priority: high, urgency: Blocks oh-my-opencode integration",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-29T01:39:51.051Z",
+  "updated_at": "2026-01-29T01:39:51.051Z",
+  "problem_statement": "MCP tool calls are failing with :not_implemented errors, preventing the system from leveraging external MCP tools and capabilities. This blocks integration with oh-my-opencode and other MCP-based services.",
+  "motivation": "MCP (Model Context Protocol) is critical for extensibility and external tool integration. Without a functional Hermes client, the platform cannot communicate with external MCP servers, severely limiting its capabilities.",
+  "success_criteria": [
+    "call_tool/3 successfully invokes external MCP tools with proper error handling",
+    "read_resource/2 retrieves resources from MCP servers",
+    "Proper timeout handling and connection management",
+    "Integration tests pass with real MCP servers",
+    "Telemetry events emitted for all MCP operations"
+  ],
+  "technical_constraints": [
+    "Must maintain backward compatibility with existing Plugin behavior",
+    "Should support stdio and websocket transports",
+    "Needs proper connection pooling and circuit breaking",
+    "Must handle OpenTelemetry trace propagation"
+  ],
+  "scope_in_scope": [
+    "Implement call_tool/3 in HermesClient",
+    "Implement read_resource/2 in HermesClient",
+    "Add connection management and health checks",
+    "Implement proper error handling and retries",
+    "Add comprehensive integration tests"
+  ],
+  "scope_out_of_scope": [
+    "Creating new MCP tools (that's separate)",
+    "MCP server implementation (already exists)",
+    "Tool discovery (partially implemented)"
+  ],
+  "priority_hint": "high",
+  "urgency_hint": "Blocks oh-my-opencode integration"
+}

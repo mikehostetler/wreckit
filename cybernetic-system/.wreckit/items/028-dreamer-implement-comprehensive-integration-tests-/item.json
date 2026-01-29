@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "id": "028-dreamer-implement-comprehensive-integration-tests-",
+  "title": "[DREAMER] Implement comprehensive integration tests for skipped tests",
+  "section": "testing",
+  "state": "idea",
+  "overview": "Several integration and unit tests are skipped, including System2 coordinator tests, starvation tests, and multi-provider tests. This reduces confidence in the system and allows regressions in untested code paths.\n\n**Motivation:** High test coverage is critical for a distributed cybernetic system. Skipped tests represent gaps in validation and potential sources of bugs. Enabling these tests improves system reliability.\n\n**Success criteria:**\n- All System2 tests run without skipping\n- Integration tests for multi-provider LLM routing\n- Starvation tests validate resource management\n- CI/CD runs full test suite\n- Test coverage above 80%\n\n**Technical constraints:**\n- Some tests require external services (LLM providers)\n- Need proper test fixtures and mocks\n- Tests should be fast enough for CI/CD\n- Must handle flaky integration tests\n\n**In scope:**\n- Unskip and fix System2 coordinator tests\n- Implement multi-provider integration tests\n- Fix starvation test assertions\n- Add test data fixtures\n- Document test requirements\n**Out of scope:**\n- Implementing the features being tested (separate)\n- Unit tests (those exist)\n- Performance tests (separate suite)\n\n**Signals:** priority: medium, urgency: Quality assurance gap",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-29T01:39:51.054Z",
+  "updated_at": "2026-01-29T01:39:51.054Z",
+  "problem_statement": "Several integration and unit tests are skipped, including System2 coordinator tests, starvation tests, and multi-provider tests. This reduces confidence in the system and allows regressions in untested code paths.",
+  "motivation": "High test coverage is critical for a distributed cybernetic system. Skipped tests represent gaps in validation and potential sources of bugs. Enabling these tests improves system reliability.",
+  "success_criteria": [
+    "All System2 tests run without skipping",
+    "Integration tests for multi-provider LLM routing",
+    "Starvation tests validate resource management",
+    "CI/CD runs full test suite",
+    "Test coverage above 80%"
+  ],
+  "technical_constraints": [
+    "Some tests require external services (LLM providers)",
+    "Need proper test fixtures and mocks",
+    "Tests should be fast enough for CI/CD",
+    "Must handle flaky integration tests"
+  ],
+  "scope_in_scope": [
+    "Unskip and fix System2 coordinator tests",
+    "Implement multi-provider integration tests",
+    "Fix starvation test assertions",
+    "Add test data fixtures",
+    "Document test requirements"
+  ],
+  "scope_out_of_scope": [
+    "Implementing the features being tested (separate)",
+    "Unit tests (those exist)",
+    "Performance tests (separate suite)"
+  ],
+  "priority_hint": "medium",
+  "urgency_hint": "Quality assurance gap"
+}

@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "id": "019-dreamer-complete-crdt-integration-for-system4-memo",
+  "title": "[DREAMER] Complete CRDT integration for System4 Memory distributed sync",
+  "section": "features",
+  "state": "idea",
+  "overview": "Episode memory entries are not synchronized across distributed nodes. When System4 Intelligence creates or updates memory in one node, other nodes don't see the updates, leading to inconsistent analysis and potential duplicate work.\n\n**Motivation:** For a distributed cybernetic system, all nodes must share a consistent view of episode memory. Without CRDT sync, the system cannot scale horizontally and will have inconsistent intelligence analysis results.\n\n**Success criteria:**\n- Memory updates broadcast via ContextGraph.add_event/3\n- Memory changes propagate to all nodes in cluster\n- Conflict resolution handles concurrent updates\n- Telemetry events track sync latency\n- Tests verify distributed consistency\n\n**Technical constraints:**\n- Must handle network partitions gracefully\n- Sync should not block memory operations\n- Needs proper error handling when CRDT unavailable\n- Should use existing ContextGraph infrastructure\n\n**In scope:**\n- Implement broadcast_memory_update/2 with CRDT calls\n- Handle CRDT unavailability gracefully\n- Add telemetry for sync operations\n- Write distributed tests\n- Document CRDT sync behavior\n**Out of scope:**\n- Implementing ContextGraph (already exists)\n- Memory caching (already exists)\n- Episode creation (separate concern)\n\n**Signals:** priority: medium, urgency: Required for horizontal scaling",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-29T01:39:51.052Z",
+  "updated_at": "2026-01-29T01:39:51.052Z",
+  "problem_statement": "Episode memory entries are not synchronized across distributed nodes. When System4 Intelligence creates or updates memory in one node, other nodes don't see the updates, leading to inconsistent analysis and potential duplicate work.",
+  "motivation": "For a distributed cybernetic system, all nodes must share a consistent view of episode memory. Without CRDT sync, the system cannot scale horizontally and will have inconsistent intelligence analysis results.",
+  "success_criteria": [
+    "Memory updates broadcast via ContextGraph.add_event/3",
+    "Memory changes propagate to all nodes in cluster",
+    "Conflict resolution handles concurrent updates",
+    "Telemetry events track sync latency",
+    "Tests verify distributed consistency"
+  ],
+  "technical_constraints": [
+    "Must handle network partitions gracefully",
+    "Sync should not block memory operations",
+    "Needs proper error handling when CRDT unavailable",
+    "Should use existing ContextGraph infrastructure"
+  ],
+  "scope_in_scope": [
+    "Implement broadcast_memory_update/2 with CRDT calls",
+    "Handle CRDT unavailability gracefully",
+    "Add telemetry for sync operations",
+    "Write distributed tests",
+    "Document CRDT sync behavior"
+  ],
+  "scope_out_of_scope": [
+    "Implementing ContextGraph (already exists)",
+    "Memory caching (already exists)",
+    "Episode creation (separate concern)"
+  ],
+  "priority_hint": "medium",
+  "urgency_hint": "Required for horizontal scaling"
+}
