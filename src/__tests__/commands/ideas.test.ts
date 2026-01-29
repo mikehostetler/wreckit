@@ -97,6 +97,8 @@ describe("ideasCommand", () => {
 
   afterEach(async () => {
     await fs.rm(tempDir, { recursive: true, force: true });
+    // Restore mocked modules to prevent pollution of other test files
+    mock.restore();
   });
 
   it("creates items from file input", async () => {
@@ -257,6 +259,8 @@ describe("readFile", () => {
 
   afterEach(async () => {
     await fs.rm(tempDir, { recursive: true, force: true });
+    // Restore mocked modules to prevent pollution of other test files
+    mock.restore();
   });
 
   it("reads file content", async () => {
@@ -303,6 +307,8 @@ describe("ideasCommand - git warnings", () => {
 
   afterEach(async () => {
     await fs.rm(tempDir, { recursive: true, force: true });
+    // Restore mocked modules to prevent pollution of other test files
+    mock.restore();
   });
 
   it("warns when uncommitted changes exist", async () => {

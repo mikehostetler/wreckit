@@ -376,9 +376,9 @@ describe("git/index", () => {
     });
   });
 
-  // NOTE: These tests pass in isolation but fail in full suite due to mock.module
-  // pollution from ideas.test.ts. Run with: bun test src/__tests__/git/index.test.ts
-  describe.skip("isGitRepo", () => {
+  // NOTE: Mock pollution from ideas.test.ts has been fixed
+  // These tests validate GIT_CEILING_DIRECTORIES behavior
+  describe("isGitRepo", () => {
     it("returns false when in subdirectory of git repo but ceiling is set", async () => {
       // Restore the spy before running real git commands
       runGhCommandSpy.mockRestore();

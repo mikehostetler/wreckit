@@ -3,7 +3,7 @@
   "id": "049-implement-gitceilingdirectories-in-isgitrepo-funct",
   "title": "Implement `GIT_CEILING_DIRECTORIES` in `isGitRepo()` function (specs/fix-git-tests-ci.md)",
   "section": "roadmap",
-  "state": "implementing",
+  "state": "done",
   "overview": "From milestone [M1] Complete Git Integration Test Fix\n\n**Motivation:** Strategic milestone: Complete Git Integration Test Fix",
   "branch": null,
   "pr_url": null,

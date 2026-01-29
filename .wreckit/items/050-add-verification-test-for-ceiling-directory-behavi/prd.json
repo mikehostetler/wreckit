@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "id": "050-add-verification-test-for-ceiling-directory-behavi",
+  "branch_name": "wreckit/050-add-verification-test-for-ceiling-directory-behavi",
+  "user_stories": [
+    {
+      "id": "US-001",
+      "title": "Fix mock pollution in commands/ideas.test.ts",
+      "acceptance_criteria": [
+        "Add mock.restore() to afterEach hook in src/__tests__/commands/ideas.test.ts",
+        "All 24 existing tests in commands/ideas.test.ts continue to pass",
+        "Mock restoration happens after each test, not just at end of file",
+        "Running bun test src/__tests__/commands/ideas.test.ts succeeds",
+        "No changes to test assertions or test logic"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "The afterEach hook already exists (lines 64-67) and cleans up temp directories. We just need to add mock.restore() to it. This prevents the mock.module() calls from polluting subsequent test files."
+    },
+    {
+      "id": "US-002",
+      "title": "Remove describe.skip from git/index.test.ts verification tests",
+      "acceptance_criteria": [
+        "Remove describe.skip directive from line 381 of src/__tests__/git/index.test.ts",
+        "Update comment to reflect that mock pollution has been fixed",
+        "Verification tests run when executing bun test src/__tests__/git/index.test.ts",
+        "Both isGitRepo tests execute and pass",
+        "Tests create temporary git repos and validate ceiling directory behavior"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "After Phase 1 fixes the mock pollution, these tests can run in the full suite. Change describe.skip to describe and update the explanatory comment."
+    },
+    {
+      "id": "US-003",
+      "title": "Validate full test suite passes with no regressions",
+      "acceptance_criteria": [
+        "Run bun test - full test suite executes with 0 failures",
+        "All git/index.test.ts tests pass including the 2 previously skipped verification tests",
+        "All commands/ideas.test.ts tests continue to pass (no regressions)",
+        "Type checking passes: npm run typecheck",
+        "Linting passes: npm run lint",
+        "Build succeeds: npm run build"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "This is the validation phase to ensure everything works together. No code changes, just running tests and checks. This unblocks items 051, 052, 053 in milestone M1."
+    }
+  ]
+}
