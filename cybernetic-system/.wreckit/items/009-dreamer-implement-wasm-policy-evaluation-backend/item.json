@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "id": "009-dreamer-implement-wasm-policy-evaluation-backend",
+  "title": "[DREAMER] Implement WASM Policy Evaluation Backend",
+  "section": "Feature",
+  "state": "idea",
+  "overview": "In lib/cybernetic/intelligence/policy/runtime.ex at lines 386-391, the do_evaluate_wasm/2 function returns {:error, :wasm_not_implemented}. The function has detailed TODO comments outlining the implementation plan (compile AST to WASM, create Wasmex instance, call evaluate function), but the Wasmex dependency is not yet added to the project.\n\n**Motivation:** WASM evaluation provides several benefits:\n1. Sandboxed execution environment for untrusted policies\n2. Near-native performance vs the current Elixir AST interpreter\n3. Language-agnostic policy authoring (Rust, Go, C++ policies possible)\n4. Resource limits via Wasmex memory controls\n\nThe placeholder at lib/cybernetic/edge/wasm/validator_host.ex:68 also mentions 'Wasmex dependency not yet added', indicating this was planned but deferred.\n\n**Success criteria:**\n- Wasmex dependency added to mix.exs\n- do_evaluate_wasm/2 compiles policy AST to WASM bytecode\n- Wasmex instances are created with memory limits\n- Policies can be evaluated via WASM with performance comparable to native\n- Fallback to Elixir evaluation when WASM fails\n- wasm_available?/0 checks for Wasmex presence\n\n**Technical constraints:**\n- Wasmex library needs to be added to dependencies\n- Need WASM compiler/translator from Elixir AST to WASM\n- Memory and CPU limits must be enforced via Wasmex\n- Must handle WASM crashes gracefully (isolate from BEAM)\n- Serialization of eval_context to WASM memory format required\n\n**In scope:**\n- lib/cybernetic/intelligence/policy/runtime.ex (lines 386-391)\n- lib/cybernetic/edge/wasm/validator_host.ex (Wasmex integration)\n- lib/cybernetic/edge/wasm/validator_wasmex_test.exs\n- mix.exs (add Wasmex dependency)\n**Out of scope:**\n- WASM compiler for Elixir->WASM (may use external tool)\n- WASM policy IDE/editor\n- Alternative WASM runtimes (e.g., wasmtime via Rustler)\n\n**Signals:** priority: medium, urgency: TODO comment present; feature is architecturally designed but not implemented.",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-29T01:39:01.628Z",
+  "updated_at": "2026-01-29T01:39:01.628Z",
+  "problem_statement": "In lib/cybernetic/intelligence/policy/runtime.ex at lines 386-391, the do_evaluate_wasm/2 function returns {:error, :wasm_not_implemented}. The function has detailed TODO comments outlining the implementation plan (compile AST to WASM, create Wasmex instance, call evaluate function), but the Wasmex dependency is not yet added to the project.",
+  "motivation": "WASM evaluation provides several benefits:\n1. Sandboxed execution environment for untrusted policies\n2. Near-native performance vs the current Elixir AST interpreter\n3. Language-agnostic policy authoring (Rust, Go, C++ policies possible)\n4. Resource limits via Wasmex memory controls\n\nThe placeholder at lib/cybernetic/edge/wasm/validator_host.ex:68 also mentions 'Wasmex dependency not yet added', indicating this was planned but deferred.",
+  "success_criteria": [
+    "Wasmex dependency added to mix.exs",
+    "do_evaluate_wasm/2 compiles policy AST to WASM bytecode",
+    "Wasmex instances are created with memory limits",
+    "Policies can be evaluated via WASM with performance comparable to native",
+    "Fallback to Elixir evaluation when WASM fails",
+    "wasm_available?/0 checks for Wasmex presence"
+  ],
+  "technical_constraints": [
+    "Wasmex library needs to be added to dependencies",
+    "Need WASM compiler/translator from Elixir AST to WASM",
+    "Memory and CPU limits must be enforced via Wasmex",
+    "Must handle WASM crashes gracefully (isolate from BEAM)",
+    "Serialization of eval_context to WASM memory format required"
+  ],
+  "scope_in_scope": [
+    "lib/cybernetic/intelligence/policy/runtime.ex (lines 386-391)",
+    "lib/cybernetic/edge/wasm/validator_host.ex (Wasmex integration)",
+    "lib/cybernetic/edge/wasm/validator_wasmex_test.exs",
+    "mix.exs (add Wasmex dependency)"
+  ],
+  "scope_out_of_scope": [
+    "WASM compiler for Elixir->WASM (may use external tool)",
+    "WASM policy IDE/editor",
+    "Alternative WASM runtimes (e.g., wasmtime via Rustler)"
+  ],
+  "priority_hint": "medium",
+  "urgency_hint": "TODO comment present; feature is architecturally designed but not implemented."
+}

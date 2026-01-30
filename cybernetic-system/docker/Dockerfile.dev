@@ -1,0 +1,53 @@
+# Development Dockerfile for Cybernetic VSM Framework
+# Includes live reload and development tools
+
+FROM elixir:1.17.3-otp-26-alpine
+
+# Install development dependencies
+RUN apk add --no-cache \
+    git \
+    gcc \
+    g++ \
+    make \
+    libc-dev \
+    openssl-dev \
+    ncurses-dev \
+    bash \
+    curl \
+    jq \
+    inotify-tools \
+    postgresql-client
+
+# Set development environment
+ENV MIX_ENV=dev \
+    ERL_AFLAGS="-kernel shell_history enabled"
+
+# Prepare app directory
+WORKDIR /app
+
+# Install hex and rebar
+RUN mix local.hex --force && \
+    mix local.rebar --force
+
+# Copy mix files first for dependency caching
+COPY mix.exs mix.lock ./
+
+# Get and compile dependencies
+RUN mix deps.get && mix deps.compile
+
+# Copy configuration
+COPY config config/
+
+# Copy the rest of the application
+COPY lib lib/
+COPY priv priv/
+COPY test test/
+
+# Expose ports
+EXPOSE 4000 4369 9568
+
+# Copy and set entrypoint
+COPY docker/scripts/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]

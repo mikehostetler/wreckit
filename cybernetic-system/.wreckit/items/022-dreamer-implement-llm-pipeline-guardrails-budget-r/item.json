@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "id": "022-dreamer-implement-llm-pipeline-guardrails-budget-r",
+  "title": "[DREAMER] Implement LLM Pipeline Guardrails (budget, rate limits, content policy)",
+  "section": "features",
+  "state": "idea",
+  "overview": "LLM requests bypass token budgets, rate limits, and content moderation checks. This allows users to potentially exceed quotas, spam the system, or submit prohibited content, leading to cost overruns and policy violations.\n\n**Motivation:** Guardrails are essential for multi-tenant LLM platforms. Without proper enforcement, the system cannot control costs, ensure fair usage, or comply with content policies. This is critical for production deployment.\n\n**Success criteria:**\n- Token budget checked per tenant before LLM calls\n- Rate limiting prevents abuse\n- Content policy filters prohibited content\n- Telemetry tracks guardrail violations\n- Configurable policies per tenant\n\n**Technical constraints:**\n- Must integrate with existing S3 RateLimiter\n- Budget checking must be fast\n- Content filtering should not block legitimate requests\n- Needs tenant-specific configuration\n- False positive handling required\n\n**In scope:**\n- Implement check_token_budget/1 with real budget tracking\n- Implement check_rate_limits/1 with S3 integration\n- Implement check_content_policy/1 with configurable rules\n- Add violation telemetry\n- Write tests for guardrail enforcement\n**Out of scope:**\n- LLM calling itself (separate pipeline step)\n- Budget management UI (backend only)\n- Content moderation service integration (future)\n\n**Signals:** priority: high, urgency: Critical for production deployment",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-29T01:39:51.053Z",
+  "updated_at": "2026-01-29T01:39:51.053Z",
+  "problem_statement": "LLM requests bypass token budgets, rate limits, and content moderation checks. This allows users to potentially exceed quotas, spam the system, or submit prohibited content, leading to cost overruns and policy violations.",
+  "motivation": "Guardrails are essential for multi-tenant LLM platforms. Without proper enforcement, the system cannot control costs, ensure fair usage, or comply with content policies. This is critical for production deployment.",
+  "success_criteria": [
+    "Token budget checked per tenant before LLM calls",
+    "Rate limiting prevents abuse",
+    "Content policy filters prohibited content",
+    "Telemetry tracks guardrail violations",
+    "Configurable policies per tenant"
+  ],
+  "technical_constraints": [
+    "Must integrate with existing S3 RateLimiter",
+    "Budget checking must be fast",
+    "Content filtering should not block legitimate requests",
+    "Needs tenant-specific configuration",
+    "False positive handling required"
+  ],
+  "scope_in_scope": [
+    "Implement check_token_budget/1 with real budget tracking",
+    "Implement check_rate_limits/1 with S3 integration",
+    "Implement check_content_policy/1 with configurable rules",
+    "Add violation telemetry",
+    "Write tests for guardrail enforcement"
+  ],
+  "scope_out_of_scope": [
+    "LLM calling itself (separate pipeline step)",
+    "Budget management UI (backend only)",
+    "Content moderation service integration (future)"
+  ],
+  "priority_hint": "high",
+  "urgency_hint": "Critical for production deployment"
+}

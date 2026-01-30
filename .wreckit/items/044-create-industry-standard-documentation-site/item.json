@@ -2,12 +2,16 @@
   "schema_version": 1,
   "id": "044-create-industry-standard-documentation-site",
   "title": "Create Industry Standard Documentation Site",
-  "state": "critique",
+  "state": "done",
   "overview": "Implement a polished, industry-standard documentation site for Wreckit using a modern static site generator (e.g., VitePress or Docusaurus) compatible with GitHub Pages.",
-  "branch": null,
-  "pr_url": null,
-  "pr_number": null,
-  "last_error": "Failed to checkout existing branch wreckit/044-create-industry-standard-documentation-site",
+  "branch": "wreckit/044-create-industry-standard-documentation-site",
+  "pr_url": "https://github.com/jmanhype/wreckit/pull/41",
+  "pr_number": 41,
+  "last_error": null,
   "created_at": "2026-01-26T12:00:00.000Z",
-  "updated_at": "2026-01-26T20:56:56.852Z"
+  "updated_at": "2026-01-29T14:19:24.309Z",
+  "completed_at": "2026-01-29T14:19:24.308Z",
+  "merged_at": "2026-01-29T13:02:57Z",
+  "merge_commit_sha": "817771ed931c4811b555d444c80f48e7ea372068",
+  "checks_passed": false
 }

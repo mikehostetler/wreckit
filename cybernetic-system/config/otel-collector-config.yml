@@ -1,0 +1,136 @@
+# OpenTelemetry Collector Configuration for Cybernetic Staging
+# Supports end-to-end tracing: S1→S2→S3→AMQP→S4→S5
+
+receivers:
+  # OTLP receiver for traces and metrics from Cybernetic app
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+        cors:
+          allowed_origins:
+            - "http://localhost:*"
+            - "http://cybernetic-*"
+
+  # Prometheus receiver for scraping internal metrics
+  prometheus:
+    config:
+      scrape_configs:
+        - job_name: 'otel-collector'
+          scrape_interval: 30s
+          static_configs:
+            - targets: ['localhost:8888']
+              labels:
+                service: 'otel-collector'
+
+processors:
+  # Batch processor for efficiency
+  batch:
+    timeout: 1s
+    send_batch_size: 1024
+
+  # Resource processor to add deployment info
+  resource:
+    attributes:
+      - key: deployment.environment
+        value: staging
+        action: upsert
+      - key: service.namespace
+        value: cybernetic
+        action: upsert
+
+  # Memory limiter to prevent OOMs
+  memory_limiter:
+    limit_mib: 512
+    spike_limit_mib: 128
+    check_interval: 1s
+
+  # Tail sampling for production readiness
+  tail_sampling:
+    decision_wait: 10s
+    num_traces: 100
+    expected_new_traces_per_sec: 10
+    policies:
+      # Always sample errors
+      - name: error-sampling
+        type: status_code
+        status_code:
+          status_codes: [ERROR]
+      # Sample 100% of VSM system interactions
+      - name: vsm-sampling
+        type: string_attribute
+        string_attribute:
+          key: service.name
+          values: [cybernetic]
+          invert_match: false
+      # Sample 50% of AMQP operations for load testing
+      - name: amqp-sampling
+        type: string_attribute
+        string_attribute:
+          key: messaging.system
+          values: [rabbitmq]
+        probabilistic:
+          sampling_percentage: 50
+
+exporters:
+  # Export traces to Jaeger
+  otlp/jaeger:
+    endpoint: http://jaeger:14250
+    tls:
+      insecure: true
+    headers:
+      # Add custom headers for trace correlation
+      "x-deployment": "staging"
+      "x-framework": "cybernetic-vsm"
+
+  # Export metrics to Prometheus
+  prometheus:
+    endpoint: "0.0.0.0:8889"
+    namespace: cybernetic
+    const_labels:
+      deployment: staging
+      framework: vsm
+
+  # Console exporter for debugging
+  logging:
+    loglevel: info
+
+  # File exporter for audit trail
+  file:
+    path: /tmp/otel-traces.json
+    rotation:
+      max_megabytes: 10
+      max_days: 3
+
+extensions:
+  # Health check extension
+  health_check:
+    endpoint: 0.0.0.0:13133
+
+  # Performance profiling
+  pprof:
+    endpoint: 0.0.0.0:1777
+
+service:
+  extensions: [health_check, pprof]
+  pipelines:
+    # Traces pipeline: Cybernetic → Collector → Jaeger
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, resource, tail_sampling, batch]
+      exporters: [otlp/jaeger, logging]
+    
+    # Metrics pipeline: Cybernetic → Collector → Prometheus
+    metrics:
+      receivers: [otlp, prometheus]
+      processors: [memory_limiter, resource, batch]
+      exporters: [prometheus, logging]
+
+  telemetry:
+    logs:
+      level: "info"
+    metrics:
+      level: detailed
+      address: 0.0.0.0:8888

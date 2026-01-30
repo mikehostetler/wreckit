@@ -1,0 +1,235 @@
+services:
+  # RabbitMQ Message Broker
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    container_name: cyb-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: cybernetic
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-changeme}
+      RABBITMQ_DEFAULT_VHOST: /
+    ports:
+      - "5672:5672"    # AMQP
+      - "15672:15672"  # Management UI
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - cybernetic
+
+  # PostgreSQL for persistent storage
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: cyb-postgres
+    environment:
+      POSTGRES_DB: cybernetic
+      POSTGRES_USER: cybernetic
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cybernetic"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - cybernetic
+
+  # Redis for caching and rate limiting
+  redis:
+    image: redis:7-alpine
+    container_name: cyb-redis
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-changeme}
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - cybernetic
+
+  # Ollama for local LLM inference
+  ollama:
+    image: ollama/ollama:latest
+    container_name: cyb-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    environment:
+      OLLAMA_KEEP_ALIVE: "5m"
+      OLLAMA_HOST: "0.0.0.0"
+    networks:
+      - cybernetic
+    deploy:
+      resources:
+        limits:
+          memory: 8G
+        reservations:
+          memory: 4G
+
+  # Grafana for monitoring dashboard
+  grafana:
+    image: grafana/grafana:10.2.3
+    container_name: cyb-grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-changeme}
+      GF_INSTALL_PLUGINS: redis-datasource
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - prometheus
+    networks:
+      - cybernetic
+
+  # Prometheus for metrics collection
+  prometheus:
+    image: prom/prometheus:v2.48.0
+    container_name: cyb-prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    ports:
+      - "9090:9090"
+    volumes:
+      - prometheus_data:/prometheus
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    networks:
+      - cybernetic
+
+  # Jaeger for distributed tracing
+  jaeger:
+    image: jaegertracing/all-in-one:1.54
+    container_name: cyb-jaeger
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+      COLLECTOR_ZIPKIN_HOST_PORT: ":9411"
+    ports:
+      - "16686:16686"  # Jaeger UI
+      - "14250:14250"  # gRPC
+      - "14268:14268"  # HTTP
+      - "9411:9411"    # Zipkin
+    networks:
+      - cybernetic
+
+  # OpenTelemetry Collector
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.109.0
+    container_name: cyb-otel
+    command: ["--config=/etc/otel-collector.yaml"]
+    ports:
+      - "4317:4317"   # OTLP gRPC
+      - "4318:4318"   # OTLP HTTP
+      - "8889:8889"   # Prometheus metrics
+    volumes:
+      - ./otel/otel-collector.yaml:/etc/otel-collector.yaml:ro
+    depends_on:
+      - prometheus
+      - jaeger
+    networks:
+      - cybernetic
+
+  # Main Cybernetic Application
+  cybernetic:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: cyb-app
+    environment:
+      # AMQP Configuration
+      AMQP_URL: amqp://cybernetic:${RABBITMQ_PASSWORD:-changeme}@rabbitmq:5672
+      
+      # Database Configuration
+      DATABASE_URL: postgres://cybernetic:${POSTGRES_PASSWORD:-changeme}@postgres:5432/cybernetic
+      
+      # Redis Configuration
+      REDIS_URL: redis://default:${REDIS_PASSWORD:-changeme}@redis:6379
+      
+      # AI Provider Keys
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      ANTHROPIC_BASE_URL: ${ANTHROPIC_BASE_URL}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL}
+      OPENAI_MODEL: ${OPENAI_MODEL}
+      OPENAI_CHAT_COMPLETIONS_PATH: ${OPENAI_CHAT_COMPLETIONS_PATH}
+      OPENAI_EMBEDDINGS_PATH: ${OPENAI_EMBEDDINGS_PATH}
+      TOGETHER_API_KEY: ${TOGETHER_API_KEY}
+      
+      # Ollama Configuration
+      OLLAMA_ENDPOINT: http://ollama:11434
+      
+      # OpenTelemetry Configuration
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      OTEL_SERVICE_NAME: cybernetic
+      
+      # Security
+      CYBERNETIC_HMAC_SECRET: ${CYBERNETIC_HMAC_SECRET}
+      CYBERNETIC_SYSTEM_API_KEY: ${CYBERNETIC_SYSTEM_API_KEY}
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE}
+      JWT_SECRET: ${JWT_SECRET}
+      PASSWORD_SALT: ${PASSWORD_SALT}
+      
+      # Application Settings
+      PHX_HOST: ${PHX_HOST:-localhost}
+      PORT: 4000
+      POOL_SIZE: 10
+      MIX_ENV: prod
+      RELEASE_DISTRIBUTION: ${RELEASE_DISTRIBUTION:-none}
+    ports:
+      - "4000:4000"   # HTTP API
+      - "4369:4369"   # EPMD
+      - "9568:9568"   # Prometheus metrics
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - cybernetic
+    volumes:
+      - ../CLAUDE.md:/app/CLAUDE.md:ro
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+
+networks:
+  cybernetic:
+    driver: bridge
+
+volumes:
+  rabbitmq_data:
+  postgres_data:
+  redis_data:
+  ollama_data:
+  grafana_data:
+  prometheus_data:

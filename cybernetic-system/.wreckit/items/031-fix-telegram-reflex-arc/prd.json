@@ -1,0 +1,113 @@
+{
+  "schema_version": 1,
+  "id": "031-fix-telegram-reflex-arc",
+  "branch_name": "wreckit/031-fix-telegram-reflex-arc",
+  "user_stories": [
+    {
+      "id": "US-001",
+      "title": "Create S4 AMQP Consumer module",
+      "acceptance_criteria": [
+        "Module lib/cybernetic/vsm/system4/amqp_consumer.ex exists and compiles",
+        "Consumes from cyb.s4.llm queue bound to cyb.commands exchange with s4.* routing key",
+        "Extracts operation from routing key (s4.reason → intelligence)",
+        "Calls Cybernetic.VSM.System4.MessageHandler.handle_message/3",
+        "Sends response to TelegramAgent via send(TelegramAgent, {:s4_response, correlation_id, response})",
+        "Emits telemetry events for message processing",
+        "Handles decode errors by rejecting messages",
+        "Handles missing TelegramAgent gracefully with try/catch"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": "Follow existing consumer pattern from lib/cybernetic/core/transport/amqp/consumer.ex but specialized for S4 queue"
+    },
+    {
+      "id": "US-002",
+      "title": "Register S4 AMQP Consumer in application supervisor",
+      "acceptance_criteria": [
+        "Cybernetic.VSM.System4.AMQPConsumer added to lib/cybernetic/application.ex children list",
+        "Positioned after S4 Service, before S4 Memory",
+        "Application starts without errors",
+        "Logs show 'S4 AMQP Consumer started on queue cyb.s4.llm'",
+        "Consumer appears in process tree (Observer)"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "Must start after AMQP connection is established and S4 services are ready"
+    },
+    {
+      "id": "US-003",
+      "title": "Implement response formatting for Telegram",
+      "acceptance_criteria": [
+        "format_result/1 function converts S4 results to Telegram-friendly format",
+        "Handles :ok tuple",
+        "Handles {:ok, result} tuple with vsm.s4.analysis_complete type",
+        "Handles {:error, reason} tuple",
+        "Handles any other result with inspect/1",
+        "Analysis results formatted as text with health score and recommendations"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "TelegramAgent expects %{'result' => ...} or %{'error' => ...} format"
+    },
+    {
+      "id": "US-004",
+      "title": "Implement operation extraction from routing keys",
+      "acceptance_criteria": [
+        "extract_operation/2 function maps routing keys to operations",
+        "s4.reason → intelligence",
+        "s4.analyze → analyze",
+        "s4.learn → learn",
+        "s4.predict → predict",
+        "Falls back to operation field in message payload",
+        "Defaults to 'intelligence' for unknown routing keys"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "TelegramAgent uses s4.reason routing key for intelligence requests"
+    },
+    {
+      "id": "US-005",
+      "title": "Implement correlation ID extraction and response routing",
+      "acceptance_criteria": [
+        "Extracts correlation_id from message headers",
+        "Only sends response to TelegramAgent if correlation_id present",
+        "Uses send/2 for direct process messaging",
+        "Pattern: send(TelegramAgent, {:s4_response, correlation_id, response})",
+        "Logs response sent for debugging"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": "TelegramAgent tracks pending responses in state.pending_responses[correlation_id]"
+    },
+    {
+      "id": "US-006",
+      "title": "Add unit tests for S4 AMQP Consumer",
+      "acceptance_criteria": [
+        "test/cybernetic/vsm/system4/amqp_consumer_test.exs exists",
+        "Tests extract_operation/2 maps routing keys correctly",
+        "Tests format_result/1 converts analysis results",
+        "Tests format_result/1 handles error tuples",
+        "Tests format_result/1 handles ok atom",
+        "All tests pass: mix test"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "Focus on unit testing pure functions, integration tests can be separate"
+    },
+    {
+      "id": "US-007",
+      "title": "Verify end-to-end message flow",
+      "acceptance_criteria": [
+        "Send 'hi' to Telegram bot receives response within 2 seconds",
+        "Send 'think: what is 2+2?' receives analysis response",
+        "Send 'analyze: why is the sky blue?' receives structured response",
+        "No error logs in console",
+        "No message buildup in RabbitMQ cyb.s4.llm queue",
+        "Complete message flow visible in logs: TelegramAgent → AMQP → S4 → Response"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": "Manual testing phase - requires running Telegram bot and RabbitMQ"
+    }
+  ]
+}

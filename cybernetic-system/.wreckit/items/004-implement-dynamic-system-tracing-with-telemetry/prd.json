@@ -1,0 +1,150 @@
+{
+  "schema_version": 1,
+  "id": "004-implement-dynamic-system-tracing-with-telemetry",
+  "branch_name": "wreckit/004-implement-dynamic-system-tracing-with-telemetry",
+  "user_stories": [
+    {
+      "id": "US-001",
+      "title": "Create DynamicCollector GenServer",
+      "acceptance_criteria": [
+        "Collector starts as GenServer",
+        "ETS table created",
+        "Attaches to span events"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": ""
+    },
+    {
+      "id": "US-002",
+      "title": "Implement trace_id extraction",
+      "acceptance_criteria": [
+        "Extracts from OTEL context",
+        "Fallback generation",
+        "Correct format"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": ""
+    },
+    {
+      "id": "US-003",
+      "title": "Add VSM handler spans",
+      "acceptance_criteria": [
+        "Wraps System1 handler",
+        "Wraps System2 handler",
+        "Wraps System3 handler",
+        "Wraps System4 handler",
+        "Wraps System5 handler"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": ""
+    },
+    {
+      "id": "US-004",
+      "title": "Add VSM bridge spans",
+      "acceptance_criteria": [
+        "Wraps push_state",
+        "Wraps pull_state"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": ""
+    },
+    {
+      "id": "US-005",
+      "title": "Attach Phoenix events",
+      "acceptance_criteria": [
+        "Attaches to endpoint stop",
+        "Extracts route path",
+        "Extracts trace ID"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": ""
+    },
+    {
+      "id": "US-006",
+      "title": "Attach AMQP events",
+      "acceptance_criteria": [
+        "Attaches to publish",
+        "Attaches to consume",
+        "Extracts trace ID"
+      ],
+      "priority": 2,
+      "status": "done",
+      "notes": ""
+    },
+    {
+      "id": "US-007",
+      "title": "Create mix cyb.trace task",
+      "acceptance_criteria": [
+        "Starts collector",
+        "Generates traffic",
+        "Outputs JSON"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": ""
+    },
+    {
+      "id": "US-008",
+      "title": "Implement synthetic traffic",
+      "acceptance_criteria": [
+        "Generates HTTP traffic",
+        "Generates AMQP traffic"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": ""
+    },
+    {
+      "id": "US-009",
+      "title": "Format output JSON",
+      "acceptance_criteria": [
+        "Matches static analysis format",
+        "Includes summary",
+        "Includes traces"
+      ],
+      "priority": 3,
+      "status": "done",
+      "notes": ""
+    },
+    {
+      "id": "US-010",
+      "title": "Unit tests for collector",
+      "acceptance_criteria": [
+        "Test start/stop",
+        "Test storage",
+        "Test eviction"
+      ],
+      "priority": 4,
+      "status": "done",
+      "notes": ""
+    },
+    {
+      "id": "US-011",
+      "title": "Integration tests for tracing",
+      "acceptance_criteria": [
+        "Test VSM handler tracing",
+        "Test span grouping"
+      ],
+      "priority": 4,
+      "status": "done",
+      "notes": ""
+    },
+    {
+      "id": "US-012",
+      "title": "Documentation",
+      "acceptance_criteria": [
+        "Module docs",
+        "Task docs",
+        "Usage examples"
+      ],
+      "priority": 4,
+      "status": "done",
+      "notes": ""
+    }
+  ]
+}

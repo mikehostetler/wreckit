@@ -1,0 +1,176 @@
+{
+  "rabbit_version": "4.1.3",
+  "rabbitmq_version": "4.1.3",
+  "product_name": "RabbitMQ",
+  "product_version": "4.1.3",
+  "users": [
+    {
+      "name": "cybernetic",
+      "password_hash": "WILL_BE_REPLACED_BY_ENV",
+      "hashing_algorithm": "rabbit_password_hashing_sha256",
+      "tags": ["administrator"]
+    }
+  ],
+  "vhosts": [
+    {
+      "name": "/"
+    }
+  ],
+  "permissions": [
+    {
+      "user": "cybernetic",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    }
+  ],
+  "exchanges": [
+    {
+      "name": "vsm.events",
+      "vhost": "/",
+      "type": "topic",
+      "durable": true,
+      "auto_delete": false
+    },
+    {
+      "name": "vsm.commands",
+      "vhost": "/",
+      "type": "direct",
+      "durable": true,
+      "auto_delete": false
+    },
+    {
+      "name": "vsm.dlx",
+      "vhost": "/",
+      "type": "topic",
+      "durable": true,
+      "auto_delete": false
+    }
+  ],
+  "queues": [
+    {
+      "name": "vsm.system1.operations",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-message-ttl": 3600000,
+        "x-dead-letter-exchange": "vsm.dlx",
+        "x-max-length": 10000
+      }
+    },
+    {
+      "name": "vsm.system2.coordination",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-message-ttl": 3600000,
+        "x-dead-letter-exchange": "vsm.dlx",
+        "x-max-length": 10000
+      }
+    },
+    {
+      "name": "vsm.system3.control",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-message-ttl": 3600000,
+        "x-dead-letter-exchange": "vsm.dlx",
+        "x-max-length": 10000
+      }
+    },
+    {
+      "name": "vsm.system4.intelligence",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-message-ttl": 3600000,
+        "x-dead-letter-exchange": "vsm.dlx",
+        "x-max-length": 10000,
+        "x-max-priority": 10
+      }
+    },
+    {
+      "name": "vsm.system5.policy",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-message-ttl": 3600000,
+        "x-dead-letter-exchange": "vsm.dlx",
+        "x-max-length": 1000
+      }
+    },
+    {
+      "name": "vsm.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-message-ttl": 86400000,
+        "x-max-length": 50000
+      }
+    }
+  ],
+  "bindings": [
+    {
+      "source": "vsm.events",
+      "vhost": "/",
+      "destination": "vsm.system1.operations",
+      "destination_type": "queue",
+      "routing_key": "system1.#"
+    },
+    {
+      "source": "vsm.events",
+      "vhost": "/",
+      "destination": "vsm.system2.coordination",
+      "destination_type": "queue",
+      "routing_key": "system2.#"
+    },
+    {
+      "source": "vsm.events",
+      "vhost": "/",
+      "destination": "vsm.system3.control",
+      "destination_type": "queue",
+      "routing_key": "system3.#"
+    },
+    {
+      "source": "vsm.events",
+      "vhost": "/",
+      "destination": "vsm.system4.intelligence",
+      "destination_type": "queue",
+      "routing_key": "system4.#"
+    },
+    {
+      "source": "vsm.events",
+      "vhost": "/",
+      "destination": "vsm.system5.policy",
+      "destination_type": "queue",
+      "routing_key": "system5.#"
+    },
+    {
+      "source": "vsm.dlx",
+      "vhost": "/",
+      "destination": "vsm.dlq",
+      "destination_type": "queue",
+      "routing_key": "#"
+    }
+  ],
+  "policies": [
+    {
+      "vhost": "/",
+      "name": "ha-all",
+      "pattern": "^vsm\\.",
+      "priority": 1,
+      "definition": {
+        "ha-mode": "all",
+        "ha-sync-mode": "automatic",
+        "ha-sync-batch-size": 5
+      }
+    }
+  ]
+}

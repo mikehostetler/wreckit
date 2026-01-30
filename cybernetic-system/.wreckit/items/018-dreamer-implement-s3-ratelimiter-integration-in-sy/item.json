@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "id": "018-dreamer-implement-s3-ratelimiter-integration-in-sy",
+  "title": "[DREAMER] Implement S3 RateLimiter integration in System4 Router",
+  "section": "features",
+  "state": "idea",
+  "overview": "LLM provider routing lacks proper rate limiting integration with System 3's RateLimiter. This can lead to API rate limit violations, especially for Anthropic and OpenAI which have strict rate limits. Without proper budget checking, the system may exhaust quotas quickly.\n\n**Motivation:** Rate limiting is critical for cost control and API reliability. Exceeding rate limits can cause service degradation and increased costs. The S3 RateLimiter is already implemented but not properly integrated with the S4 Router.\n\n**Success criteria:**\n- check_budget/2 properly validates tokens against S3 RateLimiter\n- Provider-specific budgets are respected (anthropic, openai, ollama, together)\n- Telemetry events emitted for budget denials\n- Graceful fallback when budget exhausted\n- Configurable budget limits per provider and priority level\n\n**Technical constraints:**\n- Must not break existing routing fallback chains\n- Needs to handle both legacy and req_llm pipeline providers\n- Budget checking must be fast (sub-millisecond)\n- Must work with distributed deployments\n\n**In scope:**\n- Implement proper RateLimiter budget checking in router.ex:247\n- Add provider-specific budget configuration\n- Implement budget denial telemetry\n- Add tests for budget exhaustion scenarios\n- Document budget configuration\n**Out of scope:**\n- Implementing the RateLimiter itself (already exists)\n- Rate limiting for non-LLM operations\n\n**Signals:** priority: high, urgency: Prevents production API rate limit issues",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-29T01:39:51.051Z",
+  "updated_at": "2026-01-29T01:39:51.051Z",
+  "problem_statement": "LLM provider routing lacks proper rate limiting integration with System 3's RateLimiter. This can lead to API rate limit violations, especially for Anthropic and OpenAI which have strict rate limits. Without proper budget checking, the system may exhaust quotas quickly.",
+  "motivation": "Rate limiting is critical for cost control and API reliability. Exceeding rate limits can cause service degradation and increased costs. The S3 RateLimiter is already implemented but not properly integrated with the S4 Router.",
+  "success_criteria": [
+    "check_budget/2 properly validates tokens against S3 RateLimiter",
+    "Provider-specific budgets are respected (anthropic, openai, ollama, together)",
+    "Telemetry events emitted for budget denials",
+    "Graceful fallback when budget exhausted",
+    "Configurable budget limits per provider and priority level"
+  ],
+  "technical_constraints": [
+    "Must not break existing routing fallback chains",
+    "Needs to handle both legacy and req_llm pipeline providers",
+    "Budget checking must be fast (sub-millisecond)",
+    "Must work with distributed deployments"
+  ],
+  "scope_in_scope": [
+    "Implement proper RateLimiter budget checking in router.ex:247",
+    "Add provider-specific budget configuration",
+    "Implement budget denial telemetry",
+    "Add tests for budget exhaustion scenarios",
+    "Document budget configuration"
+  ],
+  "scope_out_of_scope": [
+    "Implementing the RateLimiter itself (already exists)",
+    "Rate limiting for non-LLM operations"
+  ],
+  "priority_hint": "high",
+  "urgency_hint": "Prevents production API rate limit issues"
+}

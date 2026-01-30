@@ -1,0 +1,105 @@
+{
+  "schema_version": 1,
+  "id": "007-dreamer-complete-hermes-mcp-integration",
+  "branch_name": "wreckit/007-dreamer-complete-hermes-mcp-integration",
+  "user_stories": [
+    {
+      "id": "US-001",
+      "title": "Implement HermesClient with use Hermes.Client macro",
+      "acceptance_criteria": [
+        "HermesClient module uses Hermes.Client macro with proper configuration (name, version, protocol_version, capabilities)",
+        "call_tool/3 function calls super() to use Hermes.Client.call_tool/2 from the macro",
+        "list_tools/0 function calls super() to use Hermes.Client.list_tools/0 from the macro",
+        "ping/0 function calls super() to use Hermes.Client.ping/0 from the macro",
+        "read_resource/1 function calls super() to use Hermes.Client.read_resource/1 from the macro",
+        "All functions include proper error handling with try/rescue/catch for :exit, {:noproc, _} and other errors",
+        "process/2 function has uncommented success handling logic that extracts results from responses",
+        "start_link/1 function properly initializes Hermes client with transport configuration",
+        "child_spec/2 function supports dynamic transport configuration",
+        "Module compiles without warnings",
+        "test/core/hermes_mcp_client_test.exs passes all tests"
+      ],
+      "priority": 1,
+      "status": "pending",
+      "notes": "This is the foundation for all other work. The Hermes.Client macro provides the actual MCP client functionality that we need to expose through our wrapper."
+    },
+    {
+      "id": "US-002",
+      "title": "Add mock_mode configuration support to MCP Core",
+      "acceptance_criteria": [
+        "mock_mode?/0 helper function added to check Application.get_env(:cybernetic, :mcp, []) |> Keyword.get(:mock_mode, false)",
+        "handle_call({:call_tool, ...}) uses mock response when mock_mode?() returns true",
+        "handle_call({:call_tool, ...}) uses HermesClient.call_tool/3 when mock_mode?() returns false",
+        "handle_call({:send_prompt, ...}) uses mock response when mock_mode?() returns true",
+        "handle_call({:send_prompt, ...}) uses HermesClient when mock_mode?() returns false",
+        "handle_info(:discover_tools) registers mock tools when mock_mode?() returns true",
+        "handle_info(:discover_tools) calls HermesClient.list_tools/0 when mock_mode?() returns false",
+        "tool_handler/2 function delegates to HermesClient.call_tool/3 for real tool invocation",
+        "Old mock_handler/1 function is removed",
+        "config/test.exs includes mock_mode: true in :mcp configuration",
+        "config/runtime.exs includes mock_mode: false in :mcp configuration",
+        "All existing tests in test/core/mcp_core_test.exs pass without modification"
+      ],
+      "priority": 1,
+      "status": "pending",
+      "notes": "This is critical for backward compatibility. Existing tests expect mock responses, so we need a configuration flag to switch between mock and real modes."
+    },
+    {
+      "id": "US-003",
+      "title": "Add optional HermesClient to application supervision tree",
+      "acceptance_criteria": [
+        "mcp_client_child/0 helper function added to lib/cybernetic/application.ex",
+        "Helper checks :mock_mode, :enable_client, and :transport configuration",
+        "Helper returns {Cybernetic.MCP.HermesClient, transport: transport} when conditions are met",
+        "Helper returns nil when conditions are not met",
+        "Application supervisor adds mcp_client_child() result to children list (filtering out nils)",
+        "config/runtime.exs includes example transport configuration (commented out)",
+        "Application starts successfully with mock_mode: true (client not started)",
+        "Application starts successfully with mock_mode: false, enable_client: false (client not started)",
+        "Application starts successfully with mock_mode: false, enable_client: true, transport configured (client started)"
+      ],
+      "priority": 2,
+      "status": "pending",
+      "notes": "Optional startup allows flexibility. Some deployments may not need the client at all, while others can enable it with proper transport configuration."
+    },
+    {
+      "id": "US-004",
+      "title": "Update tests for mock and real mode support",
+      "acceptance_criteria": [
+        "test/core/mcp_core_test.exs includes setup_all that sets mock_mode: true",
+        "All existing tests in mcp_core_test.exs pass without modification",
+        "test/core/hermes_mcp_client_test.exs includes new describe block for 'Real Hermes.Client integration'",
+        "New tests verify child_spec/2 returns correct specification",
+        "New tests verify call_tool/3 returns :client_not_started when client not running",
+        "New tests verify list_tools/0 returns error when client not started",
+        "New tests verify health_check/0 reports unhealthy when client not started",
+        "test/integration/hermes_real_connection_test.exs created with :real_hermes tag",
+        "Integration tests verify client can start with transport configuration",
+        "Integration tests are skipped unless INTEGRATION_TEST=true environment variable is set",
+        "mix test passes completely with all test files"
+      ],
+      "priority": 2,
+      "status": "pending",
+      "notes": "Tests need to support both modes. Mock mode tests ensure backward compatibility, while real mode tests verify the new functionality works correctly."
+    },
+    {
+      "id": "US-005",
+      "title": "Remove all TODO comments from MCP codebase",
+      "acceptance_criteria": [
+        "Zero TODO comments in lib/cybernetic/core/mcp/core.ex",
+        "Zero TODO comments in lib/cybernetic/core/mcp/transports/hermes_client.ex",
+        "Zero TODO comments in lib/cybernetic/core/mcp/*.ex files",
+        "Zero TODO comments in lib/cybernetic/mcp/*.ex files",
+        "Zero TODO comments in test/core/*mcp*.ex files",
+        "Zero TODO comments in test/integration/*mcp*.ex files",
+        "Module documentation for MCP Core updated to reflect real integration",
+        "Module documentation for HermesClient updated to reflect real integration",
+        "Documentation includes configuration examples and usage patterns",
+        "Documentation builds successfully with mix docs"
+      ],
+      "priority": 3,
+      "status": "pending",
+      "notes": "This is the cleanup phase. Once all functionality is implemented, we remove the TODO markers and update documentation to reflect the actual implementation."
+    }
+  ]
+}

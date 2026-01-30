@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "id": "005-mock-amqp-publisher-for-in-memory-tracing",
+  "title": "Mock AMQP Publisher for In-Memory Tracing",
+  "section": "testing",
+  "state": "implementing",
+  "overview": "The current system crashes when trying to trace full message flows (S1 -> S2 -> S3 -> S4 -> S5) because it requires external RabbitMQ infrastructure. Item 004 encountered crashes due to invalid process calls to the AMQP Publisher.\n\n**Motivation:** Enables capturing complete VSM feedback loops and visualizing inter-system dependencies through `dynamic-traces.json` output without requiring external message queue infrastructure. Converts async AMQP messaging into synchronous function calls for tracing purposes.\n\n**Success criteria:**\n- Mock publisher GenServer can be started via start_link/1 and registered as Cybernetic.Core.Transport.AMQP.Publisher\n- Publisher accepts messages via handle_call({:publish, ...}, ...)\n- Publish events are emitted as :telemetry spans\n- Messages are immediately dispatched to target system MessageHandlers (e.g., Cybernetic.VSM.System2.MessageHandler.handle_message/3)\n- Mix.Tasks.Cyb.Trace successfully starts MockPublisher and generates complete traces\n- Produces dynamic-traces.json file containing full conversation history of VSM systems\n- No crashes occur when tracing full S1 -> S2 -> S3 -> S4 -> S5 message flows\n\n**Technical constraints:**\n- Must only run in test/dev mode (requires guard clauses)\n- Create Cybernetic.Archeology.MockPublisher GenServer\n- Register as Cybernetic.Core.Transport.AMQP.Publisher\n- Inspect routing keys (e.g., 's2.coordinate') for message routing\n- Update Mix.Tasks.Cyb.Trace to start MockPublisher before generating traffic\n\n**In scope:**\n- Creating Mock Publisher GenServer\n- Implementing handle_call for publish operations\n- Emitting telemetry spans for publish events\n- In-memory message routing to target system MessageHandlers\n- Integration with Mix.Tasks.Cyb.Trace\n- Test/dev mode only execution\n**Out of scope:**\n- Production deployment\n- Actual AMQP/RabbitMQ functionality\n- Permanent replacement of real AMQP publisher\n\n**Signals:** priority: high, urgency: Resolves crash encountered in Item 004 and enables full tracing capability",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-22T19:20:01.028Z",
+  "updated_at": "2026-01-22T19:52:57.582Z",
+  "problem_statement": "The current system crashes when trying to trace full message flows (S1 -> S2 -> S3 -> S4 -> S5) because it requires external RabbitMQ infrastructure. Item 004 encountered crashes due to invalid process calls to the AMQP Publisher.",
+  "motivation": "Enables capturing complete VSM feedback loops and visualizing inter-system dependencies through `dynamic-traces.json` output without requiring external message queue infrastructure. Converts async AMQP messaging into synchronous function calls for tracing purposes.",
+  "success_criteria": [
+    "Mock publisher GenServer can be started via start_link/1 and registered as Cybernetic.Core.Transport.AMQP.Publisher",
+    "Publisher accepts messages via handle_call({:publish, ...}, ...)",
+    "Publish events are emitted as :telemetry spans",
+    "Messages are immediately dispatched to target system MessageHandlers (e.g., Cybernetic.VSM.System2.MessageHandler.handle_message/3)",
+    "Mix.Tasks.Cyb.Trace successfully starts MockPublisher and generates complete traces",
+    "Produces dynamic-traces.json file containing full conversation history of VSM systems",
+    "No crashes occur when tracing full S1 -> S2 -> S3 -> S4 -> S5 message flows"
+  ],
+  "technical_constraints": [
+    "Must only run in test/dev mode (requires guard clauses)",
+    "Create Cybernetic.Archeology.MockPublisher GenServer",
+    "Register as Cybernetic.Core.Transport.AMQP.Publisher",
+    "Inspect routing keys (e.g., 's2.coordinate') for message routing",
+    "Update Mix.Tasks.Cyb.Trace to start MockPublisher before generating traffic"
+  ],
+  "scope_in_scope": [
+    "Creating Mock Publisher GenServer",
+    "Implementing handle_call for publish operations",
+    "Emitting telemetry spans for publish events",
+    "In-memory message routing to target system MessageHandlers",
+    "Integration with Mix.Tasks.Cyb.Trace",
+    "Test/dev mode only execution"
+  ],
+  "scope_out_of_scope": [
+    "Production deployment",
+    "Actual AMQP/RabbitMQ functionality",
+    "Permanent replacement of real AMQP publisher"
+  ],
+  "priority_hint": "high",
+  "urgency_hint": "Resolves crash encountered in Item 004 and enables full tracing capability"
+}

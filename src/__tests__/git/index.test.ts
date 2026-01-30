@@ -6,6 +6,7 @@ import {
   afterEach,
   vi,
   spyOn,
+  mock,
 } from "bun:test";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
@@ -376,9 +377,18 @@ describe("git/index", () => {
     });
   });
 
-  // NOTE: These tests pass in isolation but fail in full suite due to mock.module
-  // pollution from ideas.test.ts. Run with: bun test src/__tests__/git/index.test.ts
-  describe.skip("isGitRepo", () => {
+  // NOTE: Mock pollution from ideas.test.ts has been fixed
+  // These tests validate GIT_CEILING_DIRECTORIES behavior
+  describe("isGitRepo", () => {
+    beforeEach(async () => {
+      // Restore all mocks and re-import git module to get real implementation
+      mock.restore();
+      // Re-import to get fresh module after mock.restore()
+      gitModule = await import("../../git/index");
+      // Re-establish spy on runGhCommand
+      runGhCommandSpy = vi.spyOn(gitModule, "runGhCommand");
+    });
+
     it("returns false when in subdirectory of git repo but ceiling is set", async () => {
       // Restore the spy before running real git commands
       runGhCommandSpy.mockRestore();

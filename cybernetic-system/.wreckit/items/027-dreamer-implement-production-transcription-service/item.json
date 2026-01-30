@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "id": "027-dreamer-implement-production-transcription-service",
+  "title": "[DREAMER] Implement production transcription service for live streaming",
+  "section": "features",
+  "state": "idea",
+  "overview": "Live audio streams are transcribed with placeholder text like '[Audio chunk N]' when the transcription service fails. This makes the live stream feature unusable for production use cases where real transcription is required.\n\n**Motivation:** Real-time transcription is a key feature for live stream processing. Without working transcription, the system cannot extract text from audio streams for analysis, search, or indexing.\n\n**Success criteria:**\n- Transcription service integration (OpenAI Whisper or similar)\n- Graceful fallback when service unavailable\n- Transcription quality metrics\n- Cost tracking for transcription API\n- Language detection support\n\n**Technical constraints:**\n- Must handle real-time audio chunks\n- Transcription latency must be low\n- API cost management required\n- Should support multiple languages\n- Error handling for audio quality issues\n\n**In scope:**\n- Integrate real transcription service (Whisper API)\n- Implement proper error handling\n- Add transcription cost tracking\n- Support multiple audio formats\n- Write tests with real audio\n**Out of scope:**\n- Audio processing pipeline (already exists)\n- Stream relay infrastructure (already exists)\n- Custom transcription model (use API)\n\n**Signals:** priority: medium, urgency: Live stream feature incomplete",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-29T01:39:51.054Z",
+  "updated_at": "2026-01-29T01:39:51.054Z",
+  "problem_statement": "Live audio streams are transcribed with placeholder text like '[Audio chunk N]' when the transcription service fails. This makes the live stream feature unusable for production use cases where real transcription is required.",
+  "motivation": "Real-time transcription is a key feature for live stream processing. Without working transcription, the system cannot extract text from audio streams for analysis, search, or indexing.",
+  "success_criteria": [
+    "Transcription service integration (OpenAI Whisper or similar)",
+    "Graceful fallback when service unavailable",
+    "Transcription quality metrics",
+    "Cost tracking for transcription API",
+    "Language detection support"
+  ],
+  "technical_constraints": [
+    "Must handle real-time audio chunks",
+    "Transcription latency must be low",
+    "API cost management required",
+    "Should support multiple languages",
+    "Error handling for audio quality issues"
+  ],
+  "scope_in_scope": [
+    "Integrate real transcription service (Whisper API)",
+    "Implement proper error handling",
+    "Add transcription cost tracking",
+    "Support multiple audio formats",
+    "Write tests with real audio"
+  ],
+  "scope_out_of_scope": [
+    "Audio processing pipeline (already exists)",
+    "Stream relay infrastructure (already exists)",
+    "Custom transcription model (use API)"
+  ],
+  "priority_hint": "medium",
+  "urgency_hint": "Live stream feature incomplete"
+}

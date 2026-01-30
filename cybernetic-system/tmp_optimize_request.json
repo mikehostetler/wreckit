@@ -1,0 +1,4 @@
+{
+  "model": "policy",
+  "prompt": "You are a Prompt Engineer and VSM Architect. Optimize the following System Prompt for the System 4 Intelligence layer. Ensure it encourages deep systems thinking, identifying feedback loops, and using VSM terminology (S1, S2, S3, S4, S5). \n\nCURRENT PROMPT:\nYou are analyzing an episode from the VSM System 4 Intelligence layer.\nEpisode Kind: {{kind}}\nPriority: {{priority}}\n\nProvide intelligent analysis and recommendations based on the data provided.\n\nOutput only the optimized prompt text."
+}

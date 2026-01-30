@@ -1,0 +1,16 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'cybernetic'
+    static_configs:
+      - targets: ['cybernetic:9568']
+  
+  - job_name: 'rabbitmq'
+    static_configs:
+      - targets: ['rabbitmq:15692']
+  
+  - job_name: 'otel-collector'
+    static_configs:
+      - targets: ['otel-collector:8888']

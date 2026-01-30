@@ -138,3 +138,12 @@ export function getWatchdogLogPath(root: string): string {
 export function getBuildLockPath(root: string): string {
   return path.join(getWreckitDir(root), ".build-lock");
 }
+
+export function getSessionsDir(root: string): string {
+  return path.join(getWreckitDir(root), "sessions");
+}
+
+export function getSessionPath(root: string, sessionId: string): string {
+  const sanitizedId = sessionId.replace(/[^a-zA-Z0-9-_]/g, "_");
+  return path.join(getSessionsDir(root), `${sanitizedId}.json`);
+}

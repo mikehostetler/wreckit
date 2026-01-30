@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "id": "001-audit-blackice-repository-for-technical-debt-and-d",
+  "title": "Audit Blackice Repository for Technical Debt and Dead Code",
+  "section": "infra",
+  "state": "idea",
+  "overview": "Conduct a comprehensive audit of the Blackice repository to identify technical debt and dead code that can be removed or refactored.",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": "Agent failed with exit code 1",
+  "created_at": "2026-01-22T00:00:00.000Z",
+  "updated_at": "2026-01-22T07:58:28.996Z"
+}

@@ -270,3 +270,17 @@
 - [x] Add isospec tests for phase transitions
 - [x] Add edge case tests for error scenarios
 - [x] Benchmark infrastructure for performance tracking
+
+### [DONE-11] Complete Git Integration Test Fix
+
+**Status:** done
+**Target:** Q1 2025
+**Strategic Goal:** Fix git integration tests that fail in CI due to false-positive git repository detection in temporary directories
+
+#### Objectives
+
+- [x] Implement `GIT_CEILING_DIRECTORIES` in `isGitRepo()` function (specs/fix-git-tests-ci.md)
+- [x] Add verification test for ceiling directory behavior in `src/__tests__/git/index.test.ts`
+- [x] Validate git tests pass in CI environment (original 23 failing tests now pass)
+- [x] Document git behavior and CI testing considerations in `TESTING.md`
+- [x] Verify no regressions in production git operations
