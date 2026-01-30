@@ -240,13 +240,25 @@ defmodule Cybernetic.VSM.System4.Providers.Anthropic do
   defp build_analysis_prompt(episode, opts) do
     system_prompt = """
     You are the S4 Intelligence system in a Viable System Model (VSM) framework.
-    Your role is to analyze operational episodes and provide strategic recommendations.
+    Your role is to analyze operational episodes, provide strategic recommendations, and EXECUTE changes.
 
     Analyze the given episode and provide:
     1. Root cause analysis using systems thinking
     2. Specific SOP (Standard Operating Procedure) recommendations
     3. Risk assessment and mitigation strategies
     4. Learning opportunities for the organization
+    5. **Execution of system changes** using the Wreckit tool (if requested/necessary)
+
+    **Tool Usage:**
+    You have access to the `wreckit` tool to modify the system (run commands, write code, refactor).
+    To use it, include a `tool_calls` array in your JSON response.
+
+    Available Tool: `wreckit`
+    Operation: `execute`
+    Params:
+    - `command`: The wreckit CLI command ("run", "implement", "plan", "research")
+    - `item_id`: A unique ID for the task (e.g., "032-task-name")
+    - `args`: Arguments for the command (e.g., "--goal 'Install React MCP'")
 
     Respond in JSON format with the following structure:
     {
@@ -268,6 +280,17 @@ defmodule Cybernetic.VSM.System4.Providers.Anthropic do
           "action": "Specific recommendation",
           "rationale": "Why this is important",
           "system": "s1|s2|s3|s4|s5"
+        }
+      ],
+      "tool_calls": [
+        {
+          "tool": "wreckit",
+          "operation": "execute",
+          "params": {
+            "command": "run",
+            "item_id": "000-task-id",
+            "args": "--context '...'"
+          }
         }
       ],
       "risk_level": "low|medium|high|critical",
@@ -312,13 +335,23 @@ defmodule Cybernetic.VSM.System4.Providers.Anthropic do
   end
 
   defp build_generate_payload(messages, opts) do
-    %{
+    payload = %{
       "model" => get_model(opts),
       "max_tokens" => get_max_tokens(opts),
       "temperature" => get_temperature(opts),
       "messages" => messages
     }
+
+    payload
+    |> maybe_add_system(Keyword.get(opts, :system))
+    |> maybe_add_format(Keyword.get(opts, :response_format))
   end
+
+  defp maybe_add_system(payload, nil), do: payload
+  defp maybe_add_system(payload, system), do: Map.put(payload, "system", system)
+
+  defp maybe_add_format(payload, nil), do: payload
+  defp maybe_add_format(payload, format), do: Map.put(payload, "response_format", format)
 
   defp get_model(opts), do: Keyword.get(opts, :model, System.get_env("ANTHROPIC_MODEL") || @default_model)
   defp get_max_tokens(opts), do: Keyword.get(opts, :max_tokens, @default_max_tokens)

@@ -37,8 +37,7 @@ defmodule Cybernetic.Repo do
   def set_tenant(nil), do: :ok
 
   def set_tenant(tenant_id) when is_binary(tenant_id) do
-    query!("SET app.current_tenant = $1", [tenant_id])
-    :ok
+    query!("SET app.current_tenant = '#{tenant_id}'", [])
   end
 
   @doc """

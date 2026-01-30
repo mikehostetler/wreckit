@@ -23,6 +23,13 @@ else
     timeout: String.to_integer(System.get_env("ECTO_TIMEOUT") || "30000")
 end
 
+# DatabaseTool Configuration
+# Security settings for MCP database queries
+config :cybernetic, :database_tool,
+  max_result_rows: String.to_integer(System.get_env("DB_TOOL_MAX_ROWS") || "1000"),
+  query_timeout_ms: String.to_integer(System.get_env("DB_TOOL_QUERY_TIMEOUT_MS") || "15000"),
+  read_only_enforced: System.get_env("DB_TOOL_READ_ONLY") != "false"
+
 # Oban production configuration
 if config_env() == :prod do
   config :cybernetic, Oban,
@@ -291,10 +298,26 @@ else
       }
     ]
 
+  otlp_headers =
+    case System.get_env("OTEL_EXPORTER_OTLP_HEADERS") do
+      nil -> []
+      "" -> []
+      val ->
+        val
+        |> String.split(",")
+        |> Enum.map(fn pair ->
+          case String.split(pair, "=", parts: 2) do
+            [k, v] -> {String.trim(k), String.trim(v)}
+            _ -> nil
+          end
+        end)
+        |> Enum.reject(&is_nil/1)
+    end
+
   config :opentelemetry_exporter,
     otlp_protocol: :grpc,
     otlp_endpoint: System.get_env("OTEL_EXPORTER_OTLP_ENDPOINT") || "http://localhost:4317",
-    otlp_headers: System.get_env("OTEL_EXPORTER_OTLP_HEADERS") || "",
+    otlp_headers: otlp_headers,
     otlp_compression: :gzip
 end
 

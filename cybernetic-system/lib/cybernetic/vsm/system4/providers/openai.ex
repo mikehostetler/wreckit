@@ -11,7 +11,7 @@ defmodule Cybernetic.VSM.System4.Providers.OpenAI do
   require Logger
   require OpenTelemetry.Tracer
 
-  @default_model "gpt-4o"
+  @default_model "glm-4.7"
   @default_base_url "https://api.openai.com"
   @default_chat_path "/v1/chat/completions"
   @default_embeddings_path "/v1/embeddings"
@@ -217,12 +217,25 @@ defmodule Cybernetic.VSM.System4.Providers.OpenAI do
   end
 
   defp build_generate_payload(messages, opts) do
-    %{
+    final_messages = 
+      if system = Keyword.get(opts, :system) do
+        [%{"role" => "system", "content" => system} | messages]
+      else
+        messages
+      end
+
+    payload = %{
       "model" => get_model(opts),
-      "messages" => messages,
+      "messages" => final_messages,
       "max_tokens" => get_max_tokens(opts),
       "temperature" => get_temperature(opts)
     }
+
+    if format = Keyword.get(opts, :response_format) do
+      Map.put(payload, "response_format", format)
+    else
+      payload
+    end
   end
 
   defp make_openai_request(payload, endpoint \\ nil) do

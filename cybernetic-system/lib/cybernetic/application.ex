@@ -102,6 +102,8 @@ defmodule Cybernetic.Application do
                Cybernetic.Core.Security.NonceBloom,
                # CRDT Graph
                Cybernetic.Core.CRDT.Graph,
+               # CRDT Distributed Graph (DeltaCrdt)
+               Cybernetic.Core.CRDT.DistributedGraph,
                # CRDT Context Graph for semantic triples
                Cybernetic.Core.CRDT.ContextGraph,
                # AMQP Transport
@@ -127,9 +129,11 @@ defmodule Cybernetic.Application do
                {Cybernetic.VSM.System5.PolicyIntelligence, []},
                # S4 Intelligence Layer
                {Cybernetic.VSM.System4.LLMBridge,
-                provider: Cybernetic.VSM.System4.Providers.Null},
+                provider: Cybernetic.VSM.System4.Providers.OpenAI},
                # S4 Multi-Provider Intelligence Service
                {Cybernetic.VSM.System4.Service, []},
+      # VSM System 4 (Intelligence) AMQP Consumer
+      Cybernetic.VSM.System4.AMQPConsumer,
                # S4 Memory for conversation context
                {Cybernetic.VSM.System4.Memory, []},
                # S3 Rate Limiter for budget management

@@ -6,4 +6,8 @@
 {:ok, _} = Application.ensure_all_started(:cybernetic)
 
 # Integration tests run via `mix test --include integration`
-ExUnit.start(exclude: [:integration])
+ExUnit.start()
+
+# Start the Repo for database tests
+{:ok, _} = Cybernetic.Repo.start_link()
+Ecto.Adapters.SQL.Sandbox.mode(Cybernetic.Repo, :manual)

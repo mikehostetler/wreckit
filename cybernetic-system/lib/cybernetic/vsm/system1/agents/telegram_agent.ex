@@ -108,7 +108,7 @@ defmodule Cybernetic.VSM.System1.Agents.TelegramAgent do
     Logger.info("S1 Telegram received from #{chat_id}: #{text}")
 
     # Classify and route message
-    {routing_key, enhanced_payload} = classify_and_route(text, chat_id, from)
+    {routing_key, enhanced_payload} = classify_and_route(chat_id, text, from)
 
     # Publish to appropriate system via AMQP
     correlation_id = generate_correlation_id()
@@ -123,10 +123,9 @@ defmodule Cybernetic.VSM.System1.Agents.TelegramAgent do
 
     # Track pending response
     new_state =
-      put_in(
-        state.pending_responses[correlation_id],
-        %{chat_id: chat_id, timestamp: System.system_time(:second)}
-      )
+      state
+      |> put_in([:pending_responses, correlation_id], %{chat_id: chat_id, timestamp: System.system_time(:second)})
+      |> Map.put(:last_chat_id, chat_id)
 
     {:noreply, new_state}
   end
@@ -154,7 +153,18 @@ defmodule Cybernetic.VSM.System1.Agents.TelegramAgent do
         {:noreply, new_state}
 
       nil ->
-        Logger.warning("Received response for unknown correlation_id: #{correlation_id}")
+        Logger.warning("Received response for unknown correlation_id: #{correlation_id}. Using fallback.")
+        
+        # Fallback: Try to find a chat_id to send to
+        fallback_chat_id = 
+          Map.get(response, "chat_id") || 
+          Map.get(response, :chat_id) || 
+          state[:last_chat_id]
+
+        if fallback_chat_id do
+          send_message(fallback_chat_id, format_response(response))
+        end
+        
         {:noreply, state}
     end
   end
@@ -249,61 +259,39 @@ defmodule Cybernetic.VSM.System1.Agents.TelegramAgent do
      }}
   end
 
-  def handle_info({:EXIT, pid, reason}, state) when pid == state.polling_task do
-    # Polling task crashed
-    Logger.error("Telegram polling task crashed: #{inspect(reason)}")
-    failures = state.polling_failures + 1
+  def handle_info({:EXIT, pid, reason}, state) do
+    # Handle task exits
+    if pid == state.polling_task do
+      Logger.debug("Telegram polling task exited: #{inspect(reason)}")
+      failures = if reason == :normal, do: 0, else: state.polling_failures + 1
+      
+      # Schedule retry with backoff if not normal
+      delay = if reason == :normal, do: 100, else: calculate_poll_delay(failures)
+      Process.send_after(self(), :poll_updates, delay)
 
-    # Schedule retry with backoff
-    delay = calculate_poll_delay(failures)
-    Process.send_after(self(), :poll_updates, delay)
-
-    {:noreply, %{state | polling_task: nil, polling_failures: failures}}
+      {:noreply, %{state | polling_task: nil, polling_failures: failures}}
+    else
+      Logger.debug("Received EXIT from unknown process #{inspect(pid)}: #{inspect(reason)}")
+      {:noreply, state}
+    end
   end
 
-  def handle_info(:check_health, state) do
-    # Health check - restart polling if it's been too long
-    now = System.system_time(:second)
-    time_since_success = now - state.last_poll_success
-
-    # 60 seconds without success
-    if time_since_success > 60 do
-      Logger.warning("Telegram polling unhealthy, restarting...")
-      send(self(), :poll_updates)
-    end
-
-    # Schedule next health check
-    Process.send_after(self(), :check_health, 30_000)
+  def handle_info(msg, state) do
+    Logger.debug("Telegram agent received unexpected message: #{inspect(msg)}")
     {:noreply, state}
   end
 
   # Private functions
-  defp classify_and_route(text, chat_id, from) do
-    cond do
-      # Policy questions go to S3
-      String.starts_with?(text, "policy:") || String.contains?(text, "rule") ->
-        {"s3.policy", build_payload(text, chat_id, from, "policy_query")}
-
-      # Identity/meta questions go to S5
-      text in ["whoami", "identity", "purpose"] ->
-        {"s5.identity", build_payload(text, chat_id, from, "identity_query")}
-
-      # Complex reasoning goes to S4
-      String.starts_with?(text, "think:") ||
-        String.starts_with?(text, "analyze:") ||
-          String.contains?(text, "?") ->
-        {"s4.reason", build_payload(text, chat_id, from, "reasoning_request")}
-
-      # Coordination requests go to S2
-      String.starts_with?(text, "coordinate:") ->
-        {"s2.coordinate", build_payload(text, chat_id, from, "coordination")}
-
-      # Simple echo stays in S1
-      true ->
-        # Handle directly in S1
-        send_message(chat_id, "Echo from S1: #{text}")
-        {"s1.echo", build_payload(text, chat_id, from, "echo")}
-    end
+  # Default to S4 reasoning for anything else
+  defp classify_and_route(chat_id, text, _opts) do
+    {"s4.reason",
+     %{
+       operation: "reasoning_request",
+       text: text,
+       chat_id: chat_id,
+       source: "telegram",
+       timestamp: System.system_time(:second)
+     }}
   end
 
   defp build_payload(text, chat_id, from, operation) do
@@ -333,8 +321,26 @@ defmodule Cybernetic.VSM.System1.Agents.TelegramAgent do
     "tg_#{System.unique_integer([:positive, :monotonic])}_#{:rand.uniform(999_999)}"
   end
 
-  defp send_telegram_message(chat_id, text, _options, bot_token) do
-    # Use ExGram or Tesla to send
+  defp send_telegram_message(chat_id, text, options, bot_token) do
+    # Telegram limit is 4096 chars. We use 4000 to be safe.
+    max_length = 4000
+
+    if String.length(text) > max_length do
+      text
+      |> String.graphemes()
+      |> Enum.chunk_every(max_length)
+      |> Enum.map(&Enum.join/1)
+      |> Enum.each(fn chunk ->
+        do_send_message_chunk(chat_id, chunk, options, bot_token)
+        # Small sleep to prevent rate limiting
+        Process.sleep(100)
+      end)
+    else
+      do_send_message_chunk(chat_id, text, options, bot_token)
+    end
+  end
+
+  defp do_send_message_chunk(chat_id, text, _options, bot_token) do
     url = "https://api.telegram.org/bot#{bot_token}/sendMessage"
 
     body = %{
@@ -343,12 +349,33 @@ defmodule Cybernetic.VSM.System1.Agents.TelegramAgent do
       parse_mode: "Markdown"
     }
 
-    case HTTPoison.post(url, Jason.encode!(body), [{"Content-Type", "application/json"}]) do
-      {:ok, %{status_code: 200}} ->
-        Logger.debug("Telegram message sent to #{chat_id}")
+    # We use a rescue block to prevent crashes on API errors (like 400 Bad Request)
+    try do
+      case HTTPoison.post(url, Jason.encode!(body), [{"Content-Type", "application/json"}]) do
+        {:ok, %{status_code: 200}} ->
+          Logger.debug("Telegram message sent to #{chat_id}")
 
-      {:error, reason} ->
-        Logger.error("Failed to send Telegram message: #{inspect(reason)}")
+        {:ok, %{status_code: 400, body: resp_body}} ->
+          # Check for Markdown parsing errors
+          if String.contains?(resp_body, "can't parse entities") do
+            Logger.warning("Telegram Markdown error, retrying as plain text: #{resp_body}")
+            
+            # Retry without parse_mode
+            plain_body = Map.delete(body, :parse_mode)
+            HTTPoison.post(url, Jason.encode!(plain_body), [{"Content-Type", "application/json"}])
+          else
+            Logger.warning("Telegram API error 400: #{resp_body}")
+          end
+
+        {:ok, %{status_code: code, body: resp_body}} ->
+          Logger.warning("Telegram API error #{code}: #{resp_body}")
+
+        {:error, reason} ->
+          Logger.error("Failed to send Telegram message: #{inspect(reason)}")
+      end
+    rescue
+      e ->
+        Logger.error("Exception sending Telegram message: #{inspect(e)}")
     end
   end
 

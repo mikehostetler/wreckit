@@ -20,6 +20,32 @@ defmodule Cybernetic.VSM.System4.LLMBridge do
     {:ok, %{provider: provider}}
   end
 
+  @doc """
+  Synchronous chat with the configured LLM provider.
+  Delegates to provider.generate/2.
+  """
+  def chat(messages, opts \\ []) do
+    # For now, we'll implement this as a direct call to the provider
+    # In a real system, we might want to route this through the GenServer
+    # to handle rate limiting or provider state, but for now we need direct access.
+    
+    # We need to get the provider from the GenServer state, or instantiate a new one
+    # Since the provider is usually stateless (just configuration), we can instantiate a new one
+    # Or, cleaner: make a GenServer call
+    
+    GenServer.call(__MODULE__, {:chat, messages, opts}, 60_000)
+  end
+
+  @impl true
+  def handle_call({:chat, messages, opts}, _from, state) do
+    case state.provider.generate(messages, opts) do
+      {:ok, result} ->
+        {:reply, {:ok, result.text}, state}
+      {:error, reason} ->
+        {:reply, {:error, reason}, state}
+    end
+  end
+
   # Hook for your Aggregator to send episodes to S4
   @impl true
   def handle_cast({:episode, ep}, state) do

@@ -6,23 +6,21 @@ defmodule Cybernetic.VSM.System4.MessageHandler do
   require Logger
 
   def handle_message(operation, payload, meta) do
-    # Wrap in telemetry span for dynamic tracing
-    :telemetry.span(
-      [:cybernetic, :archeology, :span],
-      %{system: :s4, operation: operation},
-      fn ->
-        Logger.debug("System4 received #{operation}: #{inspect(payload)}")
+    Logger.debug("System4 received #{operation}: #{inspect(payload)}")
 
-        result = do_handle_message(operation, payload, meta)
+    # Execute the operation
+    result = do_handle_message(operation, payload, meta)
 
-        {result, %{payload_size: byte_size(inspect(payload))}}
-      end
-    )
+    # Return the result and metadata directly, bypassing telemetry.span return value behavior
+    {result, %{payload_size: byte_size(inspect(payload))}}
   end
 
   defp do_handle_message(operation, payload, meta) do
     case operation do
       "intelligence" ->
+        handle_intelligence(payload, meta)
+
+      "reasoning_request" ->
         handle_intelligence(payload, meta)
 
       "analyze" ->
@@ -63,12 +61,12 @@ defmodule Cybernetic.VSM.System4.MessageHandler do
       Logger.info("System4: Processing intelligence - #{inspect(payload)}")
 
       # Process the intelligence and emit telemetry
-      process_intelligence_analysis(payload, meta)
+      result = process_intelligence_analysis(payload, meta)
 
       # Emit telemetry for S4 intelligence processing
       :telemetry.execute([:vsm, :s4, :intelligence], %{count: 1}, payload)
 
-      :ok
+      {:ok, result}
     end
   end
 
@@ -194,24 +192,121 @@ defmodule Cybernetic.VSM.System4.MessageHandler do
   end
 
   defp process_intelligence_analysis(payload, _meta) do
-    # Analyze the intelligence data from S2
+    # Analyze the intelligence data using the LLM Bridge
     coordination_id = Map.get(payload, "coordination_id")
-    analysis_type = Map.get(payload, "analysis_request", "general")
+    text = Map.get(payload, "text", "")
+    
+    Logger.debug("System4: Processing intelligence request: #{text}")
 
-    # Create analysis result
-    analysis_result = %{
-      "type" => "vsm.s4.analysis_complete",
-      "coordination_id" => coordination_id,
-      "analysis_type" => analysis_type,
-      "patterns_detected" => ["normal_operation", "coordination_success"],
-      "health_score" => 0.95,
-      "recommendations" => ["maintain_current_state"],
-      "timestamp" => DateTime.utc_now()
+    system_prompt = """
+    You are the S4 Intelligence system.
+    Your role is to analyze requests and EXECUTE changes using the `wreckit` tool.
+
+    **CRITICAL:** You MUST respond ONLY with a valid JSON object. Do not include any conversational text before or after the JSON.
+
+    **Tool Usage:**
+    To modify the system, include a `tool_calls` array in your JSON response.
+    Available Tool: `wreckit`
+    Operation: `execute`
+    Params:
+    - `command`: "shell" (for terminal commands), "implement", "plan", "research"
+    - `item_id`: A unique ID (e.g., "032-task-name")
+    - `args`: Arguments (e.g., "ls -la")
+
+    **Operational Notes:**
+    - Shell commands are **STATELESS**. `cd` will not persist across tool calls.
+    - To list parent directory files, use `ls ..`.
+    - Combine multiple commands using `&&` (e.g., `mix compile && mix test`).
+    - Use `mix test` to verify any code changes you make.
+
+    **Example for listing parent files:**
+    {
+      "summary": "Listing files in the parent directory.",
+      "tool_calls": [
+        {
+          "tool": "wreckit",
+          "operation": "execute",
+          "params": {
+            "command": "shell",
+            "item_id": "001-audit",
+            "args": "ls -la .."
+          }
+        }
+      ]
     }
 
-    Logger.debug("System4: Analysis complete for #{coordination_id}")
+    **Response Format (JSON):**
+    {
+      "summary": "Your explanation to the user",
+      "tool_calls": []
+    }
+    """
 
-    # Send analysis back to coordination or to other systems if needed
-    analysis_result
+    # Call LLM Bridge
+    messages = [
+      %{role: "user", content: text}
+    ]
+    
+    opts = [
+      system: system_prompt
+      # Note: Anthropic doesn't support response_format: json_object yet in all models, 
+      # but the prompt handles it. We omit the flag to be safe with older models/proxies.
+    ]
+
+    # We use the configured provider (Anthropic/Z.ai)
+    case Cybernetic.VSM.System4.LLMBridge.chat(messages, opts) do
+      {:ok, response_text} ->
+        Logger.debug("System4: LLM response received")
+        
+        # Parse JSON and handle tools
+        final_result = 
+          case Jason.decode(response_text) do
+            {:ok, %{"tool_calls" => calls, "summary" => summary}} when is_list(calls) and length(calls) > 0 ->
+              tool_outputs = 
+                Enum.map(calls, fn call -> execute_tool(call) end)
+                |> Enum.join("\n\n")
+              
+              "#{summary}\n\n**System Actions:**\n#{tool_outputs}"
+
+            {:ok, %{"summary" => summary}} ->
+              summary
+
+            _ ->
+              # Fallback for non-JSON or partial JSON
+              response_text
+          end
+
+        # Structure the response
+        %{
+          "type" => "vsm.s4.analysis_complete",
+          "coordination_id" => coordination_id,
+          "result" => final_result,
+          "timestamp" => DateTime.utc_now()
+        }
+        
+      {:error, reason} ->
+        Logger.error("System4: LLM processing failed: #{inspect(reason)}")
+        %{
+          "error" => "I could not process that thought. Error: #{inspect(reason)}"
+        }
+    end
+  end
+
+  defp execute_tool(%{"tool" => "wreckit", "operation" => "execute", "params" => params}) do
+    Logger.info("S4 Executing Wreckit Tool: #{inspect(params)}")
+    
+    context = %{actor: "system4"}
+    
+    case Cybernetic.MCP.Tools.WreckitTool.execute("execute", params, context) do
+      {:ok, result} ->
+        "✅ Executed `#{params["command"]}`: \n```\n#{String.slice(result.output || "", 0, 500)}\n```"
+      
+      {:error, reason} ->
+        "❌ Failed `#{params["command"]}`: #{inspect(reason)}"
+    end
+  end
+
+  defp execute_tool(call) do
+    "⚠️ Unknown tool call: #{inspect(call)}"
   end
 end

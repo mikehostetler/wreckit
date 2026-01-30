@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "id": "031-fix-telegram-reflex-arc",
+  "title": "Fix Telegram Reflex Arc (Input -> Response Loop)",
+  "section": "fixes",
+  "state": "critique",
+  "overview": "The Telegram Agent receives messages (Input confirmed via logs) but does not reply (Output confirmed working via manual script). The 'Reflex Arc' connects incoming messages to System 4 (Intelligence) and routes the response back to Telegram. Currently, messages enter the system and vanish into the void.",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-29T15:45:00.000Z",
+  "updated_at": "2026-01-29T21:56:37.873Z",
+  "motivation": "A silent bot is indistinguishable from a broken bot. We need immediate feedback (ACK) or processing to prove the system is alive.",
+  "success_criteria": [
+    "User sends 'hi' -> Bot replies (even if generic)",
+    "Latency is minimal (<2s)",
+    "Errors in processing loop are logged visibly"
+  ],
+  "technical_constraints": [
+    "Must use existing TelegramAgent",
+    "Must route through S1 -> S4 -> S1 if possible, or S1 -> Echo for testing"
+  ]
+}

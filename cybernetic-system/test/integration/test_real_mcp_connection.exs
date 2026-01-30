@@ -1,10 +1,8 @@
 #!/usr/bin/env elixir
 
 # Test script to prove real MCP connection works
-Mix.install([
-  {:hermes_mcp, git: "https://github.com/cloudwalk/hermes-mcp", branch: "main"}
-])
-
+# test_real_mcp_connection.exs
+require Logger
 defmodule RealMCPTest do
   use Hermes.Client,
     name: "CyberneticTest",

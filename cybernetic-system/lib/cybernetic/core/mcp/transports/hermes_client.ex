@@ -2,32 +2,76 @@ defmodule Cybernetic.MCP.HermesClient do
   @moduledoc """
   Real Hermes MCP client implementation for Cybernetic VSM.
   Provides access to external MCP tools and capabilities using the Hermes library.
+
+  This module implements the Hermes.Client behavior and provides a Plugin behavior
+  wrapper for integration with the Cybernetic plugin system.
+
+  ## Transport Configuration
+
+  The client supports multiple transport types via the Hermes library:
+
+  - **stdio**: For command-line MCP servers
+    Example: `{:stdio, command: "claude", args: ["mcp", "serve"]}`
+
+  - **websocket**: For WebSocket-based MCP servers
+    Example: `{:websocket, url: "ws://localhost:8080/mcp"}`
+
+  - **streamable_http**: For HTTP-based MCP servers
+    Example: `:streamable_http`
+
+  ## Usage
+
+      # Start the client with a transport
+      {:ok, pid} = HermesClient.start_link(transport: {:stdio, command: "echo", args: []})
+
+      # List available tools
+      {:ok, response} = HermesClient.list_tools()
+
+      # Call a tool
+      {:ok, result} = HermesClient.call_tool("tool_name", %{param: "value"})
+
+      # Check health
+      {:ok, status} = HermesClient.health_check()
   """
   require Logger
 
   @behaviour Cybernetic.Plugin
 
-  # Basic MCP client functions that tests expect
-  def ping(), do: :pong
-  def ping(_opts), do: :pong
+  # Use Hermes.Client macro with proper configuration
+  use Hermes.Client,
+    name: "cybernetic",
+    version: "0.1.0",
+    protocol_version: "2024-11-05",
+    capabilities: [:roots]
 
-  def list_tools(), do: {:ok, %{result: %{"tools" => []}}}
-  def list_tools(_opts), do: {:ok, %{result: %{"tools" => []}}}
+  # Wrapper functions for Hermes.Client macro functions
+  # Note: The Hermes.Client macro already provides call_tool/3, list_tools/1, ping/1, read_resource/2
+  # with proper error handling and transport delegation.
 
-  def call_tool(name, args), do: call_tool(name, args, [])
-  def call_tool(_name, _args, _opts), do: {:error, :not_implemented}
+  # Child spec for dynamic transport configuration
+  def child_spec(opts) do
+    transport = Keyword.get(opts, :transport, {:stdio, command: "echo", args: []})
 
-  def read_resource(uri), do: read_resource(uri, [])
-  def read_resource(_uri, _opts), do: {:error, :not_implemented}
-
-  # Other standard client functions that might be expected
-  def child_spec(opts), do: %{id: __MODULE__, start: {__MODULE__, :start_link, [opts]}}
-  def start_link(_opts), do: {:ok, self()}
+    %{
+      id: __MODULE__,
+      start: {__MODULE__, :start_link, [[transport: transport]]},
+      restart: :permanent,
+      shutdown: 5000,
+      type: :worker
+    }
+  end
 
   # Plugin behavior implementation
   def init(opts) do
-    # Initialize plugin state
-    {:ok, %{opts: opts, initialized: true}}
+    mock_mode = Keyword.get(opts, :mock_mode, Application.get_env(:cybernetic, :mcp, [])[:mock_mode] == true)
+    {:ok, %{opts: opts, initialized: true, mock_mode: mock_mode}}
+  end
+
+  def metadata(), do: %{name: "hermes_mcp", version: "0.1.0"}
+
+  def handle_event(event, state) do
+    Logger.debug("Hermes MCP client received event: #{inspect(event)}")
+    {:ok, state}
   end
 
   def process(%{tool: tool, params: params}, state) when is_binary(tool) and is_map(params) do
@@ -35,17 +79,18 @@ defmodule Cybernetic.MCP.HermesClient do
 
     try do
       case call_tool(tool, params, timeout: 30_000) do
-        # TODO: Implement when call_tool is implemented
-        # {:ok, %{is_error: false, result: result}} ->
-        #   {:ok, %{tool: tool, result: result, success: true}, state}
-        # 
-        # {:ok, %{is_error: true, result: error}} ->
-        #   Logger.warning("Hermes MCP tool error: #{inspect(error)}")
-        #   {:error, %{tool: tool, error: :tool_error, message: error["message"]}, state}
+        {:ok, response} ->
+          # Extract result from response
+          result = case response do
+            %{result: result_data} -> result_data
+            %{content: content} -> %{content: content}
+            other -> other
+          end
+          {:ok, %{tool: tool, result: result, success: true}, state}
 
         {:error, reason} ->
-          Logger.warning("Hermes MCP call failed: #{inspect(reason)}")
-          {:error, %{tool: tool, error: :client_error, reason: reason}, state}
+          Logger.warning("Hermes MCP tool error: #{inspect(reason)}")
+          {:error, %{tool: tool, error: :tool_error, reason: reason}, state}
       end
     rescue
       error ->
@@ -66,64 +111,5 @@ defmodule Cybernetic.MCP.HermesClient do
   def process(input, state) do
     Logger.warning("Hermes MCP invalid input structure: #{inspect(input)}")
     {:error, %{error: :client_error, details: "Invalid input structure", input: input}, state}
-  end
-
-  def metadata(), do: %{name: "hermes_mcp", version: "0.1.0"}
-
-  def handle_event(event, state) do
-    Logger.debug("Hermes MCP client received event: #{inspect(event)}")
-    {:ok, state}
-  end
-
-  @doc """
-  Check connection status and available tools.
-  """
-  def health_check do
-    try do
-      case ping() do
-        :pong ->
-          {:ok, %{result: %{"tools" => tools}}} = list_tools()
-          {:ok, %{status: :healthy, tools_count: length(tools)}}
-
-          # ping() only returns :pong
-          # {:error, reason} ->
-          #   {:error, %{status: :unhealthy, reason: reason}}
-      end
-    rescue
-      error ->
-        {:error, %{status: :error, error: inspect(error)}}
-    end
-  end
-
-  @doc """
-  Get available tools from the MCP server.
-  """
-  def get_available_tools do
-    {:ok, %{result: %{"tools" => tools}}} = list_tools()
-
-    formatted_tools =
-      Enum.map(tools, fn tool ->
-        %{
-          name: tool["name"],
-          description: tool["description"],
-          input_schema: tool["inputSchema"]
-        }
-      end)
-
-    {:ok, formatted_tools}
-  end
-
-  @doc """
-  Execute an MCP tool with progress tracking.
-  """
-  def execute_tool(tool_name, params) do
-    execute_tool(tool_name, params, [])
-  end
-
-  def execute_tool(tool_name, _params, opts) do
-    timeout = Keyword.get(opts, :timeout, 30_000)
-
-    # Direct implementation since call_tool always returns {:error, :not_implemented}
-    {:error, %{type: :client_error, reason: :not_implemented, tool: tool_name, timeout: timeout}}
   end
 end

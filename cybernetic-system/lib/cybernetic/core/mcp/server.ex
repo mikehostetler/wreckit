@@ -66,6 +66,16 @@ defmodule Cybernetic.Core.MCP.Server do
           options: %{type: "map", required: false}
         },
         handler: &handle_send_telegram/2
+      },
+      %{
+        name: "wreckit_execute",
+        description: "Execute a wreckit command (research, plan, implement, run)",
+        input_schema: %{
+          command: %{type: "string", required: true},
+          item_id: %{type: "string", required: true},
+          args: %{type: "string", required: false}
+        },
+        handler: &handle_wreckit_execute/2
       }
     ]
 
@@ -126,6 +136,10 @@ defmodule Cybernetic.Core.MCP.Server do
     )
 
     {:ok, %{status: "queued", chat_id: chat_id}}
+  end
+
+  defp handle_wreckit_execute(params, context) do
+    Cybernetic.MCP.Tools.WreckitTool.execute("execute", params, context)
   end
 
   # VSM Query helpers
