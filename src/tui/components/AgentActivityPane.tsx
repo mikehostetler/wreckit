@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 import { Box, Text } from "ink";
 import type { TuiState } from "../dashboard";
 import { ToolCallItem } from "./ToolCallItem";
@@ -9,7 +9,7 @@ interface AgentActivityPaneProps {
   height: number;
 }
 
-export function AgentActivityPane({
+export const AgentActivityPane = memo(function AgentActivityPane({
   state,
   width,
   height,
@@ -70,4 +70,4 @@ export function AgentActivityPane({
       )}
     </Box>
   );
-}
+});

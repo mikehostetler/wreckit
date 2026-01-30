@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 import { Box, Text } from "ink";
 import type { TuiState } from "../dashboard";
 import { WORKFLOW_STATES } from "../../domain/states";
@@ -8,7 +8,7 @@ interface ActiveItemPaneProps {
   width: number;
 }
 
-export function ActiveItemPane({
+export const ActiveItemPane = memo(function ActiveItemPane({
   state,
   width,
 }: ActiveItemPaneProps): React.ReactElement {
@@ -42,4 +42,4 @@ export function ActiveItemPane({
       <Text dimColor>{workflowLine}</Text>
     </Box>
   );
-}
+});

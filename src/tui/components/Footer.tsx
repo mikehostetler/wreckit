@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 import { Box, Text } from "ink";
 import { formatRuntime } from "../dashboard";
 import type { TuiState } from "../dashboard";
@@ -9,7 +9,7 @@ interface FooterProps {
   showLogs: boolean;
 }
 
-export function Footer({
+export const Footer = memo(function Footer({
   state,
   width,
   showLogs,
@@ -58,4 +58,4 @@ export function Footer({
       </Box>
     </Box>
   );
-}
+});

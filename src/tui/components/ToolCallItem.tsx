@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 import { Box, Text } from "ink";
 import type { ToolExecution } from "../dashboard";
 import { getToolColor, formatToolInput, formatToolResult } from "../colors";
@@ -9,7 +9,7 @@ interface ToolCallItemProps {
   showResult?: boolean;
 }
 
-export function ToolCallItem({
+export const ToolCallItem = memo(function ToolCallItem({
   tool,
   width,
   showResult = false,
@@ -60,4 +60,4 @@ export function ToolCallItem({
       </Box>
     </Box>
   );
-}
+});

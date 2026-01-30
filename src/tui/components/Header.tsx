@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 import { Box, Text } from "ink";
 import type { TuiState } from "../dashboard";
 
@@ -7,7 +7,10 @@ interface HeaderProps {
   width: number;
 }
 
-export function Header({ state, width }: HeaderProps): React.ReactElement {
+export const Header = memo(function Header({
+  state,
+  width,
+}: HeaderProps): React.ReactElement {
   const currentItemText = state.currentItem
     ? `Running: ${state.currentItem}`
     : "Waiting...";
@@ -53,7 +56,7 @@ export function Header({ state, width }: HeaderProps): React.ReactElement {
       </Box>
     </Box>
   );
-}
+});
 
 function truncate(str: string, maxLen: number): string {
   if (str.length > maxLen) {
