@@ -1,4 +1,5 @@
 import * as fs from "node:fs/promises";
+import { constants as FS_CONSTANTS } from "node:fs";
 import * as path from "node:path";
 import { z } from "zod";
 import type { Logger } from "./logging";
@@ -672,15 +673,8 @@ async function diagnoseSpriteCLI(
 ): Promise<Diagnostic[]> {
   const diagnostics: Diagnostic[] = [];
 
-  // If Sprite is not configured, return info diagnostic
+  // If Sprite is not configured, skip diagnostics (not an issue)
   if (!spriteConfig) {
-    diagnostics.push({
-      itemId: null,
-      severity: "info",
-      code: "SPRITE_NOT_CONFIGURED",
-      message: "Sprite agent is not configured",
-      fixable: false,
-    });
     return diagnostics;
   }
 
@@ -688,7 +682,7 @@ async function diagnoseSpriteCLI(
   const wispPath = spriteConfig.wispPath || "sprite";
 
   try {
-    await fs.access(wispPath, fs.constants.X_OK);
+    await fs.access(wispPath, FS_CONSTANTS.X_OK);
     // CLI is accessible and executable
   } catch (err) {
     const errno = err as NodeJS.ErrnoException;
@@ -909,12 +903,10 @@ export async function diagnose(root: string, logger: Logger): Promise<Diagnostic
     // (config errors will be reported by diagnoseConfig)
   }
 
-  // Run Sprite diagnostics if configured
-  if (spriteConfig) {
-    diagnostics.push(...(await diagnoseSpriteCLI(root, spriteConfig)));
-    diagnostics.push(...(await diagnoseSpriteAuth(root, spriteConfig)));
-    diagnostics.push(...(await diagnoseOrphanedVMs(root, spriteConfig, logger)));
-  }
+  // Always run Sprite diagnostics - let them decide what to return based on config
+  diagnostics.push(...(await diagnoseSpriteCLI(root, spriteConfig)));
+  diagnostics.push(...(await diagnoseSpriteAuth(root, spriteConfig)));
+  diagnostics.push(...(await diagnoseOrphanedVMs(root, spriteConfig, logger)));
 
   const itemsDir = getItemsDir(root);
   let itemDirs: string[];

@@ -18,14 +18,40 @@ export async function strategyCommand(
   logger: Logger,
 ): Promise<void> {
   const root = findRootFromOptions(options);
-  const config = await loadConfig(root, undefined, logger);
+  const config = await loadConfig(root);
+
+  // Check if ROADMAP.md exists and handle skip/force logic
+  const roadmapPath = path.join(root, "ROADMAP.md");
+  let roadmapExists = false;
+  try {
+    await fs.access(roadmapPath);
+    roadmapExists = true;
+  } catch {
+    // ROADMAP.md doesn't exist
+  }
+
+  if (roadmapExists && !options.force) {
+    logger.info("ROADMAP.md already exists (use --force to overwrite). Skipping.");
+    return;
+  }
+
+  // Log analyze dirs if specified
+  if (options.analyzeDirs && options.analyzeDirs.length > 0) {
+    logger.info(`Analyzing dirs: ${options.analyzeDirs.join(", ")}`);
+  }
+
+  // Handle dry-run mode
+  if (options.dryRun) {
+    logger.info("[dry-run] Would generate/update ROADMAP.md");
+    return;
+  }
 
   logger.info("Analysing project strategy...");
 
   // 1. Read Roadmap
   let roadmap = "";
   try {
-    roadmap = await fs.readFile(path.join(root, "ROADMAP.md"), "utf-8");
+    roadmap = await fs.readFile(roadmapPath, "utf-8");
   } catch (e) {
     logger.warn("ROADMAP.md not found.");
   }

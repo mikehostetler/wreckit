@@ -198,8 +198,8 @@ function validateOptimizedPrompt(
 ): { passed: boolean; errors: string[] } {
   const errors: string[] = [];
 
-  // Extract variables from both prompts
-  const variablePattern = /\{\{\w+\}\}/g;
+  // Extract variables from both prompts - use capture group to extract variable name
+  const variablePattern = /\{\{(\w+)\}\}/g;
   const originalVars = new Set<string>();
   let match;
 
@@ -207,6 +207,8 @@ function validateOptimizedPrompt(
     originalVars.add(match[1]);
   }
 
+  // Reset lastIndex for reuse
+  variablePattern.lastIndex = 0;
   const optimizedVars = new Set<string>();
   while ((match = variablePattern.exec(optimizedPrompt)) !== null) {
     optimizedVars.add(match[1]);

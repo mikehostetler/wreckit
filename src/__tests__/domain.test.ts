@@ -58,7 +58,8 @@ describe("state machine", () => {
       ["idea", "researched"],
       ["researched", "planned"],
       ["planned", "implementing"],
-      ["implementing", "in_pr"],
+      ["implementing", "critique"],
+      ["critique", "in_pr"],
       ["in_pr", "done"],
     ] as const)("returns %s -> %s", (current, expected) => {
       expect(getNextState(current)).toBe(expected);
@@ -74,7 +75,8 @@ describe("state machine", () => {
       ["idea", ["researched"]],
       ["researched", ["planned"]],
       ["planned", ["implementing"]],
-      ["implementing", ["in_pr"]],
+      ["implementing", ["critique"]],
+      ["critique", ["in_pr"]],
       ["in_pr", ["done"]],
       ["done", []],
     ] as const)("returns allowed states for %s", (current, expected) => {
@@ -256,6 +258,14 @@ describe("validateTransition", () => {
     expect(
       validateTransition(
         "implementing",
+        "critique",
+        makeContext({ prd: prdAllDone }),
+      ),
+    ).toEqual({ valid: true });
+
+    expect(
+      validateTransition(
+        "critique",
         "in_pr",
         makeContext({ prd: prdAllDone, hasPr: true }),
       ),

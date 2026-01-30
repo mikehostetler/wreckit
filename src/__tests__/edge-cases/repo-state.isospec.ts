@@ -21,10 +21,12 @@ import type { Logger } from "../../logging";
 const mockedSpawn = vi.fn();
 
 afterAll(() => {
-  mock.module("node:child_process", () => realChildProcess);
+  mock.restore();
 });
 
+// Preserve all exports from node:child_process, only mock spawn
 mock.module("node:child_process", () => ({
+  ...realChildProcess,
   spawn: mockedSpawn,
 }));
 

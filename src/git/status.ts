@@ -71,7 +71,9 @@ export function parseGitStatusPorcelain(
     return changes;
   }
 
-  const lines = stdout.trim().split("\n");
+  // Split on newlines first, then trim each line's trailing whitespace
+  // Do NOT use stdout.trim() because it would strip leading spaces from status codes
+  const lines = stdout.split("\n").map((l) => l.trimEnd());
   for (const line of lines) {
     if (line.length < 4) continue;
 

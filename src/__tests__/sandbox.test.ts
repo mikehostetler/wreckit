@@ -1,7 +1,16 @@
-import { describe, it, expect, beforeEach, afterEach, mock } from "bun:test";
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  afterAll,
+  mock,
+} from "bun:test";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import * as os from "node:os";
+import * as originalSpriteCore from "../agent/sprite-core";
 import {
   loadConfig,
   applyOverrides,
@@ -13,13 +22,20 @@ import { startSprite, killSprite } from "../agent/sprite-core";
 import { runSpriteAgent } from "../agent/sprite-runner";
 import { getCurrentEphemeralVM } from "../agent/sprite-runner";
 
-// Mock the Sprite CLI functions
+// Mock the Sprite CLI functions, preserve all other exports (especially parseWispJson)
 mock.module("../agent/sprite-core", () => ({
-  startSprite: async () => ({ success: true, data: { name: "test-vm", status: "running", firecrackerPid: 12345 } }),
+  ...originalSpriteCore,
+  startSprite: async () => ({
+    success: true,
+    data: { name: "test-vm", status: "running", firecrackerPid: 12345 },
+  }),
   killSprite: async () => ({ success: true, data: undefined }),
   listSprites: async () => ({ success: true, data: [] }),
-  parseWispJson: async () => ({ success: true, data: {} }),
 }));
+
+afterAll(() => {
+  mock.restore();
+});
 
 describe("Sandbox Mode - Config Transformation", () => {
   let tempDir: string;
@@ -233,7 +249,9 @@ describe("Sandbox Mode - Integration Tests", () => {
   let tempDir: string;
 
   beforeEach(async () => {
-    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "wreckit-sandbox-integration-"));
+    tempDir = await fs.mkdtemp(
+      path.join(os.tmpdir(), "wreckit-sandbox-integration-"),
+    );
     await fs.mkdir(path.join(tempDir, ".wreckit"), { recursive: true });
   });
 
@@ -277,7 +295,9 @@ describe("Sandbox Mode - Integration Tests", () => {
 
 describe("Sandbox Mode - Edge Cases", () => {
   it("should handle empty config gracefully", async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "wreckit-sandbox-edge-"));
+    const tempDir = await fs.mkdtemp(
+      path.join(os.tmpdir(), "wreckit-sandbox-edge-"),
+    );
     await fs.mkdir(path.join(tempDir, ".wreckit"), { recursive: true });
 
     const baseConfig = await loadConfig(tempDir);
@@ -291,7 +311,9 @@ describe("Sandbox Mode - Edge Cases", () => {
   });
 
   it("should handle invalid config.json gracefully", async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "wreckit-sandbox-edge-"));
+    const tempDir = await fs.mkdtemp(
+      path.join(os.tmpdir(), "wreckit-sandbox-edge-"),
+    );
     await fs.mkdir(path.join(tempDir, ".wreckit"), { recursive: true });
 
     // Write invalid JSON
