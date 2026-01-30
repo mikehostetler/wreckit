@@ -51,6 +51,7 @@ Integrated support for multiple AI providers with automatic failover:
 
 - [Setup Guide](docs/README_SETUP.md)
 - [Deployment Guide](docs/DEPLOYMENT.md)
+- [Telegram Testing Guide](docs/TELEGRAM_TESTING.md)
 - [API Documentation](docs/api/)
 - [Architecture Overview](docs/architecture/)
 
