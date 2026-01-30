@@ -11,6 +11,7 @@ import { listCommand } from "./commands/list";
 import { showCommand } from "./commands/show";
 import { runPhaseCommand } from "./commands/phase";
 import { runCommand } from "./commands/run";
+import { shellCommand } from "./commands/shell";
 import { orchestrateAll, orchestrateNext } from "./commands/orchestrator";
 import { doctorCommand } from "./commands/doctor";
 import { initCommand } from "./commands/init";
@@ -163,6 +164,18 @@ program
       },
     );
   });
+
+// ============================================================================
+// Sprite Commands (Item 073)
+// ============================================================================
+
+const spriteCmd = program
+  .command("sprite")
+  .description("Manage Sprite VMs (Firecracker microVMs)")
+  .addHelpText(
+    "beforeAll",
+    "\nCommands for managing isolated Firecracker microVMs via Wisp.\n",
+  );
 
 // Session management commands (Item 001)
 spriteCmd
@@ -545,18 +558,6 @@ program
     );
   });
 
-// ============================================================================
-// Sprite Commands (Item 073)
-// ============================================================================
-
-const spriteCmd = program
-  .command("sprite")
-  .description("Manage Sprite VMs (Firecracker microVMs)")
-  .addHelpText(
-    "beforeAll",
-    "\nCommands for managing isolated Firecracker microVMs via Wisp.\n",
-  );
-
 spriteCmd
   .command("start <name>")
   .description("Start a new Sprite VM")
@@ -728,6 +729,28 @@ spriteCmd
           },
           logger,
         );
+      },
+      logger,
+      {
+        verbose: globalOpts.verbose,
+        quiet: globalOpts.quiet,
+        dryRun: globalOpts.dryRun,
+        cwd: resolveCwd(globalOpts.cwd),
+      },
+    );
+  });
+
+program
+  .command("shell <id> <command...>")
+  .description("Execute a shell command in the context of a work item")
+  .action(async (id, command, options, cmd) => {
+    const globalOpts = cmd.optsWithGlobals();
+    await executeCommand(
+      async () => {
+        const cwd = resolveCwd(globalOpts.cwd);
+        const root = findRepoRoot(cwd);
+        const resolvedId = await resolveId(root, id);
+        await shellCommand(resolvedId, command, { cwd }, logger);
       },
       logger,
       {
