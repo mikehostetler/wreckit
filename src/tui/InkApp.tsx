@@ -1,14 +1,16 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Box, useInput, useStdout } from "ink";
+import { Box, Text, useInput, useStdout } from "ink";
 import {
-  Header,
+  StatusBar,
+  ActiveContext,
   ItemsPane,
+  Timeline,
   LogsPane,
-  Footer,
-  ActiveItemPane,
+  KeyHints,
   AgentActivityPane,
 } from "./components";
 import type { TuiState } from "./dashboard";
+import { LAYOUT } from "./dashboard";
 
 interface InkAppProps {
   subscribe: (cb: (state: TuiState) => void) => () => void;
@@ -22,7 +24,6 @@ export function InkApp({
   initialState,
 }: InkAppProps): React.ReactElement {
   const [state, setState] = useState<TuiState>(initialState);
-  const [showLogs, setShowLogs] = useState(false);
   const [scrollOffset, setScrollOffset] = useState(0);
   const [autoScroll, setAutoScroll] = useState(true);
   const { stdout } = useStdout();
@@ -47,10 +48,25 @@ export function InkApp({
     return () => clearInterval(timer);
   }, []);
 
+  const setViewMode = useCallback(
+    (mode: TuiState["viewMode"]) => {
+      setState((prev) => ({ ...prev, viewMode: mode }));
+      setScrollOffset(0);
+      setAutoScroll(true);
+    },
+    [],
+  );
+
   const handleScroll = useCallback(
     (direction: "up" | "down" | "pageUp" | "pageDown" | "top" | "bottom") => {
-      const logsHeight = height - 10;
-      const maxOffset = Math.max(0, state.logs.length - logsHeight);
+      const contentHeight = height - LAYOUT.HEADER_HEIGHT - LAYOUT.FOOTER_HEIGHT - 4;
+      const contentLength =
+        state.viewMode === "logs"
+          ? state.logs.length
+          : state.viewMode === "thoughts"
+            ? (state.activityByItem[state.currentItem ?? ""]?.thoughts.length ?? 0)
+            : 0;
+      const maxOffset = Math.max(0, contentLength - contentHeight);
 
       setScrollOffset((prev) => {
         let next = prev;
@@ -62,10 +78,10 @@ export function InkApp({
             next = Math.max(prev - 1, 0);
             break;
           case "pageUp":
-            next = Math.min(prev + logsHeight, maxOffset);
+            next = Math.min(prev + contentHeight, maxOffset);
             break;
           case "pageDown":
-            next = Math.max(prev - logsHeight, 0);
+            next = Math.max(prev - contentHeight, 0);
             break;
           case "top":
             next = maxOffset;
@@ -79,14 +95,30 @@ export function InkApp({
         return next;
       });
     },
-    [height, state.logs.length],
+    [height, state.logs.length, state.viewMode, state.activityByItem, state.currentItem],
   );
 
   useInput((input, key) => {
     if (input === "q" || (key.ctrl && input === "c")) {
       onQuit();
     } else if (input === "l") {
-      setShowLogs((prev) => !prev);
+      if (state.viewMode === "logs") {
+        setViewMode("dashboard");
+      } else {
+        setViewMode("logs");
+      }
+    } else if (input === "t") {
+      if (state.viewMode === "thoughts") {
+        setViewMode("dashboard");
+      } else {
+        setViewMode("thoughts");
+      }
+    } else if (key.return) {
+      if (state.viewMode === "tool-detail") {
+        setViewMode("dashboard");
+      } else if (state.viewMode === "dashboard") {
+        setViewMode("tool-detail");
+      }
     } else if (input === "j" || key.downArrow) {
       handleScroll("down");
     } else if (input === "k" || key.upArrow) {
@@ -102,62 +134,111 @@ export function InkApp({
     }
   });
 
-  const headerHeight = 5;
-  const footerHeight = 4;
-  const mainHeight = Math.max(1, height - headerHeight - footerHeight);
+  const statusBarHeight = 1;
+  const activeContextHeight = 3;
+  const keyHintsHeight = LAYOUT.FOOTER_HEIGHT;
+  const mainHeight = Math.max(
+    LAYOUT.MIN_MAIN_HEIGHT,
+    height - statusBarHeight - activeContextHeight - keyHintsHeight - 2,
+  );
 
-  const leftPaneWidth = Math.floor(width * 0.4);
-  const rightPaneWidth = width - leftPaneWidth - 3;
+  const leftPaneWidth = Math.floor(width * LAYOUT.ITEMS_WIDTH_RATIO);
+  const rightPaneWidth = width - leftPaneWidth - 1;
 
-  return (
-    <Box flexDirection="column" width={width} height={height}>
-      <Header state={state} width={width} />
-
-      {showLogs ? (
-        <Box height={mainHeight}>
-          <Box flexDirection="column" width={width - 4} paddingLeft={1}>
+  const renderMainContent = () => {
+    switch (state.viewMode) {
+      case "logs":
+        return (
+          <Box height={mainHeight} paddingLeft={1}>
             <LogsPane
               logs={state.logs}
-              width={width - 4}
+              width={width - 2}
               height={mainHeight}
               scrollOffset={scrollOffset}
             />
           </Box>
-        </Box>
-      ) : (
-        <Box height={mainHeight}>
-          <Box flexDirection="column" width={leftPaneWidth} paddingLeft={1}>
-            <ItemsPane
-              state={state}
-              width={leftPaneWidth}
-              height={mainHeight}
-            />
-          </Box>
-          <Box
-            flexDirection="column"
-            width={rightPaneWidth}
-            borderStyle="single"
-            borderLeft
-            borderTop={false}
-            borderRight={false}
-            borderBottom={false}
-            paddingLeft={1}
-          >
-            <Box height={4}>
-              <ActiveItemPane state={state} width={rightPaneWidth - 2} />
+        );
+
+      case "thoughts": {
+        const thoughts = state.activityByItem[state.currentItem ?? ""]?.thoughts ?? [];
+        return (
+          <Box height={mainHeight} paddingLeft={1} flexDirection="column">
+            <Box>
+              <Text dimColor>─ Thoughts ─{"─".repeat(Math.max(0, width - 16))}</Text>
             </Box>
-            <Box height={mainHeight - 4}>
-              <AgentActivityPane
+            {thoughts.slice(-(mainHeight - 1)).map((thought, idx) => (
+              <Box key={idx}>
+                <Text dimColor wrap="truncate-end">{thought.slice(0, width - 4)}</Text>
+              </Box>
+            ))}
+          </Box>
+        );
+      }
+
+      case "tool-detail": {
+        const activity = state.activityByItem[state.currentItem ?? ""];
+        const lastTool = activity?.tools[activity.tools.length - 1];
+        return (
+          <Box height={mainHeight} paddingLeft={1} flexDirection="column">
+            {lastTool ? (
+              <>
+                <Box>
+                  <Text color="cyan" bold>{lastTool.toolName}</Text>
+                  <Text dimColor> ({lastTool.status})</Text>
+                </Box>
+                <Box marginTop={1}>
+                  <Text dimColor>Input:</Text>
+                </Box>
+                <Box>
+                  <Text wrap="truncate-end">{JSON.stringify(lastTool.input, null, 2).slice(0, 500)}</Text>
+                </Box>
+                {lastTool.result && (
+                  <>
+                    <Box marginTop={1}>
+                      <Text dimColor>Result:</Text>
+                    </Box>
+                    <Box>
+                      <Text wrap="truncate-end">{String(lastTool.result).slice(0, 500)}</Text>
+                    </Box>
+                  </>
+                )}
+              </>
+            ) : (
+              <Text dimColor>No tool executions yet</Text>
+            )}
+          </Box>
+        );
+      }
+
+      case "dashboard":
+      default:
+        return (
+          <Box height={mainHeight}>
+            <Box flexDirection="column" width={leftPaneWidth}>
+              <ItemsPane
                 state={state}
-                width={rightPaneWidth - 2}
-                height={mainHeight - 4}
+                width={leftPaneWidth}
+                height={mainHeight}
+              />
+            </Box>
+            <Box flexDirection="column" width={rightPaneWidth} paddingLeft={1}>
+              <Timeline
+                events={state.timeline}
+                width={rightPaneWidth - 1}
+                height={mainHeight}
               />
             </Box>
           </Box>
-        </Box>
-      )}
+        );
+    }
+  };
 
-      <Footer state={state} width={width} showLogs={showLogs} />
+  return (
+    <Box flexDirection="column" width={width} height={height}>
+      <StatusBar state={state} width={width} />
+      <ActiveContext state={state} width={width} />
+      {renderMainContent()}
+      <KeyHints width={width} viewMode={state.viewMode} />
     </Box>
   );
 }

@@ -1,6 +1,7 @@
 import type { ViewAdapter, ItemSnapshot, StorySnapshot } from "./ViewAdapter";
 import type { AgentEvent } from "../tui/agentEvents";
 import type { WorkflowState } from "../schemas";
+import type { TimelineEvent } from "../tui/dashboard";
 import { TuiRunner, type TuiOptions } from "../tui/runner";
 
 export class TuiViewAdapter implements ViewAdapter {
@@ -33,7 +34,22 @@ export class TuiViewAdapter implements ViewAdapter {
   }
 
   onPhaseChanged(phase: WorkflowState | null): void {
-    this.runner.update({ currentPhase: phase });
+    const currentItem = this.runner.getState().currentItem;
+    if (phase && currentItem) {
+      const timelineEvent: TimelineEvent = {
+        type: "phase_change",
+        summary: `Phase → ${phase}`,
+        timestamp: new Date(),
+        itemId: currentItem,
+      };
+      const currentTimeline = this.runner.getState().timeline;
+      this.runner.update({
+        currentPhase: phase,
+        timeline: [...currentTimeline, timelineEvent].slice(-12),
+      });
+    } else {
+      this.runner.update({ currentPhase: phase });
+    }
   }
 
   onIterationChanged(iteration: number, maxIterations: number): void {
@@ -51,6 +67,9 @@ export class TuiViewAdapter implements ViewAdapter {
   onRunComplete(itemId: string, success: boolean, error?: string): void {
     if (error) {
       this.runner.appendAgentEvent(itemId, { type: "error", message: error });
+    }
+    if (success) {
+      this.runner.setRunState("done");
     }
   }
 

@@ -1,7 +1,11 @@
+export { ActiveContext } from "./ActiveContext";
 export { ActiveItemPane } from "./ActiveItemPane";
 export { AgentActivityPane } from "./AgentActivityPane";
 export { Footer } from "./Footer";
 export { Header } from "./Header";
 export { ItemsPane } from "./ItemsPane";
+export { KeyHints } from "./KeyHints";
 export { LogsPane } from "./LogsPane";
+export { StatusBar } from "./StatusBar";
+export { Timeline } from "./Timeline";
 export { ToolCallItem } from "./ToolCallItem";
