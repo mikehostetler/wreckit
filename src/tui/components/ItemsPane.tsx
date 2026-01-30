@@ -1,6 +1,6 @@
 import React from "react";
 import { Box, Text } from "ink";
-import { getStateIcon } from "../dashboard";
+import { getStateIcon, padToWidth } from "../dashboard";
 import type { TuiState } from "../dashboard";
 
 interface ItemsPaneProps {
@@ -15,10 +15,17 @@ export function ItemsPane({
   height,
 }: ItemsPaneProps): React.ReactElement {
   const innerWidth = width - 2;
+  const contentHeight = height - 1; // Account for header line
+
+  // Build header line with box drawing characters
+  const headerText = " Items (queue) ";
+  const remainingWidth = innerWidth - headerText.length;
+  const header = "─" + headerText + "─".repeat(Math.max(0, remainingWidth));
 
   if (state.items.length === 0) {
     return (
       <Box flexDirection="column" width={width} height={height}>
+        <Text dimColor>{header}</Text>
         <Text dimColor>{padToWidth("No items", innerWidth)}</Text>
       </Box>
     );
@@ -31,77 +38,59 @@ export function ItemsPane({
   let scrollOffset = 0;
   if (activeIndex >= 0) {
     // Keep active item in the middle of the visible area when possible
-    const middleOffset = Math.floor(height / 2);
+    const middleOffset = Math.floor(contentHeight / 2);
     scrollOffset = Math.max(
       0,
-      Math.min(activeIndex - middleOffset, state.items.length - height),
+      Math.min(activeIndex - middleOffset, state.items.length - contentHeight),
     );
   }
 
-  const visibleItems = state.items.slice(scrollOffset, scrollOffset + height);
-  const showScrollIndicator = state.items.length > height;
+  const hasMoreAbove = scrollOffset > 0;
+  const hasMoreBelow = scrollOffset + contentHeight < state.items.length;
+
+  // Adjust visible items for scroll indicators
+  let visibleStart = scrollOffset;
+  let visibleEnd = scrollOffset + contentHeight;
+  if (hasMoreAbove) {
+    visibleStart += 1;
+  }
+  if (hasMoreBelow) {
+    visibleEnd -= 1;
+  }
+
+  const visibleItems = state.items.slice(visibleStart, visibleEnd);
 
   return (
     <Box flexDirection="column" width={width} height={height}>
-      {showScrollIndicator && scrollOffset > 0 && (
-        <Box>
-          <Text dimColor>↑ {scrollOffset} more</Text>
-        </Box>
+      <Text dimColor>{header}</Text>
+      {hasMoreAbove && (
+        <Text dimColor>↑ {scrollOffset} more</Text>
       )}
-      {visibleItems.map((item, idx) => {
+      {visibleItems.map((item) => {
         const icon = getStateIcon(item.state);
         const isActive = item.id === state.currentItem;
-        const storyInfo = item.currentStoryId
-          ? ` [${item.currentStoryId}]`
-          : "";
+        const line = `${icon} ${item.id} ${item.state}`;
 
-        const idPart = truncate(item.id, 25);
-        const statePart = item.state.padEnd(12);
-        const line = `${icon} ${idPart.padEnd(26)} ${statePart}${storyInfo}`;
-
-        // Skip first line if showing "more above" indicator
-        if (showScrollIndicator && scrollOffset > 0 && idx === 0) {
-          return null;
+        let color: string | undefined;
+        if (item.state === "done") {
+          color = "green";
+        } else if (item.state === "in_pr") {
+          color = "blue";
+        } else if (isActive) {
+          color = "yellow";
         }
 
         return (
           <Box key={item.id}>
-            <Text
-              color={
-                item.state === "done"
-                  ? "green"
-                  : isActive
-                    ? "yellow"
-                    : undefined
-              }
-              bold={isActive}
-            >
-              {truncate(line, innerWidth)}
+            <Text color={color} bold={isActive}>
+              {padToWidth(line, innerWidth)}
             </Text>
           </Box>
         );
       })}
-      {showScrollIndicator && scrollOffset + height < state.items.length && (
-        <Box>
-          <Text dimColor>
-            ↓ {state.items.length - scrollOffset - height} more
-          </Text>
-        </Box>
+      {hasMoreBelow && (
+        <Text dimColor>↓ {state.items.length - visibleEnd} more</Text>
       )}
     </Box>
   );
-}
-
-function truncate(str: string, maxLen: number): string {
-  if (str.length > maxLen) {
-    return str.slice(0, maxLen - 1) + "…";
-  }
-  return str;
-}
-
-function padToWidth(str: string, width: number): string {
-  if (str.length > width) {
-    return str.slice(0, width - 1) + "…";
-  }
-  return str.padEnd(width);
 }

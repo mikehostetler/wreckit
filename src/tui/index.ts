@@ -1,5 +1,7 @@
 export {
   type TuiState,
+  type TimelineEvent,
+  LAYOUT,
   createTuiState,
   updateTuiState,
   renderDashboard,

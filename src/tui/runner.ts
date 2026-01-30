@@ -6,10 +6,13 @@ import type { Logger } from "../logging";
 import {
   createTuiState,
   updateTuiState,
+  LAYOUT,
   type TuiState,
   type AgentActivityForItem,
   type ToolExecution,
+  type TimelineEvent,
 } from "./dashboard";
+import { formatToolInput } from "./colors";
 import { InkApp } from "./InkApp";
 import type { AgentEvent } from "./agentEvents";
 
@@ -148,12 +151,18 @@ export class TuiRunner {
   appendAgentEvent(itemId: string, event: AgentEvent): void {
     const MAX_THOUGHTS = 50;
     const MAX_TOOLS = 20;
+    const now = new Date();
 
     const existing = this.state.activityByItem[itemId];
     const activity: AgentActivityForItem = existing ?? {
       thoughts: [],
       tools: [],
     };
+
+    let timelineEvent: TimelineEvent | null = null;
+    let newRunState: "running" | "paused" | "error" | "done" | null = null;
+    let newLastError: { message: string; itemId: string; phase: string } | null =
+      null;
 
     switch (event.type) {
       case "assistant_text": {
@@ -178,9 +187,17 @@ export class TuiRunner {
           toolName: event.toolName,
           input: event.input,
           status: "running",
-          startedAt: new Date(),
+          startedAt: now,
         };
         activity.tools = [...activity.tools, newTool].slice(-MAX_TOOLS);
+
+        const inputSummary = formatToolInput(event.input);
+        timelineEvent = {
+          type: "tool_start",
+          summary: `${event.toolName} ${inputSummary}`,
+          timestamp: now,
+          itemId,
+        };
         break;
       }
       case "tool_result": {
@@ -188,16 +205,25 @@ export class TuiRunner {
           (t) => t.toolUseId === event.toolUseId,
         );
         if (toolIndex !== -1) {
+          const tool = activity.tools[toolIndex];
           activity.tools = activity.tools.map((t, i) =>
             i === toolIndex
               ? {
                   ...t,
                   status: "completed" as const,
                   result: event.result,
-                  finishedAt: new Date(),
+                  finishedAt: now,
                 }
               : t,
           );
+
+          const inputSummary = formatToolInput(tool.input);
+          timelineEvent = {
+            type: "tool_complete",
+            summary: `${tool.toolName} ${inputSummary}`,
+            timestamp: now,
+            itemId,
+          };
         }
         break;
       }
@@ -206,11 +232,25 @@ export class TuiRunner {
           (t) => t.toolUseId === event.toolUseId,
         );
         if (errorToolIndex !== -1) {
+          const tool = activity.tools[errorToolIndex];
           activity.tools = activity.tools.map((t, i) =>
             i === errorToolIndex
-              ? { ...t, status: "error" as const, finishedAt: new Date() }
+              ? { ...t, status: "error" as const, finishedAt: now }
               : t,
           );
+
+          timelineEvent = {
+            type: "tool_error",
+            summary: `${tool.toolName}: ${event.error}`,
+            timestamp: now,
+            itemId,
+          };
+          newRunState = "error";
+          newLastError = {
+            message: event.error,
+            itemId,
+            phase: this.state.currentPhase ?? "unknown",
+          };
         }
         break;
       }
@@ -219,18 +259,53 @@ export class TuiRunner {
         activity.thoughts = [...activity.thoughts, errorMessage].slice(
           -MAX_THOUGHTS,
         );
+
+        timelineEvent = {
+          type: "tool_error",
+          summary: `Error: ${event.message}`,
+          timestamp: now,
+          itemId,
+        };
+        newRunState = "error";
+        newLastError = {
+          message: event.message,
+          itemId,
+          phase: this.state.currentPhase ?? "unknown",
+        };
         break;
       }
       case "run_result":
         break;
     }
 
+    const newTimeline = timelineEvent
+      ? [...this.state.timeline, timelineEvent].slice(
+          -LAYOUT.TIMELINE_MAX_EVENTS,
+        )
+      : this.state.timeline;
+
     this.state = updateTuiState(this.state, {
       activityByItem: {
         ...this.state.activityByItem,
         [itemId]: activity,
       },
+      timeline: newTimeline,
+      lastActivityAt: now,
+      ...(newRunState !== null && { runState: newRunState }),
+      ...(newLastError !== null && { lastError: newLastError }),
     });
+    this.notify();
+  }
+
+  setRunState(state: "running" | "paused" | "error" | "done"): void {
+    this.state = updateTuiState(this.state, { runState: state });
+    this.notify();
+  }
+
+  setLastError(
+    error: { message: string; itemId: string; phase: string } | null,
+  ): void {
+    this.state = updateTuiState(this.state, { lastError: error });
     this.notify();
   }
 }
