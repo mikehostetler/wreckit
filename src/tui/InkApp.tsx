@@ -40,9 +40,11 @@ export function InkApp({
     return unsubscribe;
   }, [subscribe, autoScroll]);
 
+  // Track runtime separately to avoid full state re-renders
+  const [, forceRuntimeUpdate] = useState(0);
   useEffect(() => {
     const timer = setInterval(() => {
-      setState((prev) => ({ ...prev }));
+      forceRuntimeUpdate((n) => n + 1);
     }, 1000);
     return () => clearInterval(timer);
   }, []);

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 import { Box, Text } from "ink";
 
 interface LogsPaneProps {
@@ -8,7 +8,7 @@ interface LogsPaneProps {
   scrollOffset: number;
 }
 
-export function LogsPane({
+export const LogsPane = memo(function LogsPane({
   logs,
   width,
   height,
@@ -55,7 +55,7 @@ export function LogsPane({
       ))}
     </Box>
   );
-}
+});
 
 function truncate(str: string, maxLen: number): string {
   if (str.length > maxLen) {
