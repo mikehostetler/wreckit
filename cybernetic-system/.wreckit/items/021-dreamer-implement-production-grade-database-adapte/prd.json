@@ -1,0 +1,153 @@
+{
+  "schema_version": 1,
+  "id": "021-dreamer-implement-production-grade-database-adapte",
+  "branch_name": "wreckit/021-dreamer-implement-production-grade-database-adapte",
+  "user_stories": [
+    {
+      "id": "US-001",
+      "title": "Replace mock execute_query with real Ecto.Repo.query",
+      "acceptance_criteria": [
+        "execute_query/2 function uses Ecto.Repo.query/4 to execute SQL",
+        "Query results are converted from Postgrex.Result to list of maps with column names as keys",
+        "Execution time is measured using System.monotonic_time and included in response",
+        "Database errors are caught and formatted with generic error messages",
+        "Connection pooling is handled by Ecto's DBConnection (pool_size: 10, timeout: 30s)",
+        "Query timeout of 15 seconds is enforced via Repo.query timeout option",
+        "Unit tests pass with mix test",
+        "Integration tests execute real queries against test database",
+        "No regressions in existing authorization tests"
+      ],
+      "priority": 1,
+      "status": "pending",
+      "notes": "This is the foundation for all other features. Must use Repo.query(sql, params, timeout) with proper error handling. Format Postgrex.Result rows into maps with column names as keys."
+    },
+    {
+      "id": "US-002",
+      "title": "Implement SQL injection prevention and read-only enforcement",
+      "acceptance_criteria": [
+        "validate_sql_read_only/1 function validates SQL starts with SELECT or WITH",
+        "Dangerous SQL keywords are detected: INSERT, UPDATE, DELETE, DROP, CREATE, ALTER, TRUNCATE, GRANT, REVOKE, COMMENT, COPY, LOCK",
+        "Query contains multiple statements (semicolons) is rejected",
+        "Case variations of dangerous keywords are detected (uppercase, lowercase, mixed)",
+        "Read-only violation returns {:error, :read_only_violation}",
+        "Invalid query type returns {:error, :invalid_query_type}",
+        "Old insecure sanitize_sql/1 function is removed from codebase",
+        "Security tests verify INSERT queries are rejected",
+        "Security tests verify UPDATE queries are rejected",
+        "Security tests verify DELETE queries are rejected",
+        "Security tests verify DROP TABLE queries are rejected",
+        "Security tests verify SELECT queries are allowed",
+        "Security tests verify WITH (CTE) queries are allowed",
+        "Error messages are generic and do not leak database structure"
+      ],
+      "priority": 1,
+      "status": "pending",
+      "notes": "This is a critical security feature. String replacement for SQL sanitization is fundamentally flawed - keyword validation is a defense-in-depth measure. The primary protection comes from rejecting write operations entirely."
+    },
+    {
+      "id": "US-003",
+      "title": "Implement query result limits to prevent memory exhaustion",
+      "acceptance_criteria": [
+        "enforce_result_limit/1 function parses SQL to check for existing LIMIT clause",
+        "Queries without LIMIT have 'LIMIT 1000' appended automatically (configurable via DB_TOOL_MAX_ROWS)",
+        "Queries with LIMIT > 1000 have their LIMIT replaced with 1000",
+        "Queries with LIMIT <= 1000 use original LIMIT unchanged",
+        "Regex pattern \\bLIMIT\\s+(\\d+)\\b is used for LIMIT detection",
+        "LIMIT clause is appended after removing trailing semicolons",
+        "Max result rows is configurable via Application.compile_env(:cybernetic, :database_tool)[:max_result_rows]",
+        "Unit tests verify LIMIT is appended when missing",
+        "Unit tests verify LIMIT is capped when exceeding maximum",
+        "Unit tests verify LIMIT is preserved when under maximum",
+        "Integration tests verify large result sets are capped at 1000 rows",
+        "Integration tests verify queries timeout after 15 seconds",
+        "Query timeout is configurable via DB_TOOL_QUERY_TIMEOUT_MS env variable"
+      ],
+      "priority": 2,
+      "status": "pending",
+      "notes": "Query result limits prevent denial of service attacks via large result sets. The 15-second timeout prevents runaway queries. Both limits are configurable via environment variables for production tuning."
+    },
+    {
+      "id": "US-004",
+      "title": "Integrate with existing tenant isolation infrastructure",
+      "acceptance_criteria": [
+        "extract_tenant_id/1 function extracts tenant_id from context[:auth_context][:metadata][:tenant_id]",
+        "query_with_tenant/2 function uses Repo.with_tenant/2 when tenant_id is present",
+        "Queries without tenant_id execute normally without Repo.with_tenant",
+        "Tenant isolation is logged via Logger.debug for debugging",
+        "Unit tests verify tenant_id extraction from various auth contexts",
+        "Integration tests create table with RLS policy",
+        "Integration tests verify queries with tenant_id only return tenant's data",
+        "Integration tests verify different tenants cannot see each other's data",
+        "Integration tests verify queries without tenant_id work correctly",
+        "Existing authorization checks continue to work",
+        "No regressions in existing query execution tests"
+      ],
+      "priority": 2,
+      "status": "pending",
+      "notes": "Tenant isolation via Repo.with_tenant/2 is already implemented in the Repo module. This story integrates DatabaseTool with that existing infrastructure. The pattern follows repo.ex:59-68."
+    },
+    {
+      "id": "US-005",
+      "title": "Write comprehensive security tests for SQL injection prevention",
+      "acceptance_criteria": [
+        "Test suite includes SQL injection attack scenarios for comment-based injection",
+        "Test suite includes tests for UNION-based injection attempts",
+        "Test suite includes tests for command stacking with semicolons",
+        "Test suite includes tests for case-bypass attempts (INSERT, insert, InSERT)",
+        "Test suite includes tests for whitespace obfuscation (tabs, newlines)",
+        "Test suite includes tests for nested statement attempts",
+        "Test suite includes tests for ALTER TABLE attempts",
+        "Test suite includes tests for TRUNCATE attempts",
+        "Test suite includes tests for GRANT/REVOKE attempts",
+        "Edge case tests verify empty queries are rejected",
+        "Edge case tests verify whitespace-only queries are rejected",
+        "Edge case tests verify very long queries are handled",
+        "Edge case tests verify Unicode in queries works correctly",
+        "Edge case tests verify NULL results are handled",
+        "All security tests pass with mix test",
+        "No false positives (legitimate queries blocked)",
+        "No false negatives (dangerous queries allowed)"
+      ],
+      "priority": 3,
+      "status": "pending",
+      "notes": "Comprehensive security testing is critical for a database interface. These tests validate that the security measures in US-002 work correctly against common SQL injection techniques and edge cases."
+    },
+    {
+      "id": "US-006",
+      "title": "Update existing tests to use real database queries",
+      "acceptance_criteria": [
+        "Test setup creates test_users table with CREATE TABLE IF NOT EXISTS",
+        "Test setup inserts sample data with INSERT statements",
+        "Test teardown drops test table with DROP TABLE IF NOT EXISTS",
+        "Query execution tests verify real data is returned (not mocked)",
+        "Old sanitization test (lines 87-94) is removed",
+        "Schema operation tests remain mocked (out of scope)",
+        "Transaction operation tests remain mocked (out of scope)",
+        "Analyze operation tests remain mocked (out of scope)",
+        "Authorization tests verify unauthorized users are rejected",
+        "All tests pass with mix test",
+        "Test coverage is adequate for security-critical code"
+      ],
+      "priority": 2,
+      "status": "pending",
+      "notes": "Existing tests expect the old mock behavior. They need to be updated to create test tables and verify real query execution. Schema, transaction, and analyze operations remain mocked per the out-of-scope items."
+    },
+    {
+      "id": "US-007",
+      "title": "Add configuration for DatabaseTool security settings",
+      "acceptance_criteria": [
+        "config/runtime.exs includes :database_tool configuration section",
+        "max_result_rows configurable via DB_TOOL_MAX_ROWS environment variable (default: 1000)",
+        "query_timeout_ms configurable via DB_TOOL_QUERY_TIMEOUT_MS env variable (default: 15000)",
+        "read_only_enforced configurable via DB_TOOL_READ_ONLY environment variable (default: true)",
+        "Module attributes read from Application.compile_env(:cybernetic, :database_tool)",
+        "Configuration is documented in code comments",
+        "Unit tests verify configuration values are read correctly",
+        "Manual testing verifies environment variables override defaults"
+      ],
+      "priority": 4,
+      "status": "pending",
+      "notes": "Configuration via environment variables allows production tuning without code changes. Default values prioritize security (read-only enforced, result limits, timeouts)."
+    }
+  ]
+}

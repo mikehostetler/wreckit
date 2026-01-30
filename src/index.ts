@@ -11,6 +11,7 @@ import { listCommand } from "./commands/list";
 import { showCommand } from "./commands/show";
 import { runPhaseCommand } from "./commands/phase";
 import { runCommand } from "./commands/run";
+import { shellCommand } from "./commands/shell";
 import { orchestrateAll, orchestrateNext } from "./commands/orchestrator";
 import { doctorCommand } from "./commands/doctor";
 import { initCommand } from "./commands/init";
@@ -24,6 +25,9 @@ import {
   spriteAttachCommand,
   spriteExecCommand,
   spritePullCommand,
+  spriteStatusCommand,
+  spriteResumeCommand,
+  spriteDestroyCommand,
 } from "./commands/sprite";
 import { learnCommand } from "./commands/learn";
 import { dreamCommand } from "./commands/dream";
@@ -147,6 +151,99 @@ program
             dryRun: globalOpts.dryRun,
             cwd: resolveCwd(globalOpts.cwd),
             verbose: globalOpts.verbose,
+          },
+          logger,
+        );
+      },
+      logger,
+      {
+        verbose: globalOpts.verbose,
+        quiet: globalOpts.quiet,
+        dryRun: globalOpts.dryRun,
+        cwd: resolveCwd(globalOpts.cwd),
+      },
+    );
+  });
+
+// ============================================================================
+// Sprite Commands (Item 073)
+// ============================================================================
+
+const spriteCmd = program
+  .command("sprite")
+  .description("Manage Sprite VMs (Firecracker microVMs)")
+  .addHelpText(
+    "beforeAll",
+    "\nCommands for managing isolated Firecracker microVMs via Wisp.\n",
+  );
+
+// Session management commands (Item 001)
+spriteCmd
+  .command("status")
+  .description("List active Sprite VMs (alias for list)")
+  .option("--json", "Output as JSON")
+  .action(async (options, cmd) => {
+    const globalOpts = cmd.optsWithGlobals();
+    await executeCommand(
+      async () => {
+        await spriteStatusCommand(
+          {
+            cwd: resolveCwd(globalOpts.cwd),
+            json: options.json,
+          },
+          logger,
+        );
+      },
+      logger,
+      {
+        verbose: globalOpts.verbose,
+        quiet: globalOpts.quiet,
+        dryRun: globalOpts.dryRun,
+        cwd: resolveCwd(globalOpts.cwd),
+      },
+    );
+  });
+
+spriteCmd
+  .command("resume <sessionId>")
+  .description("Resume a paused Sprite session")
+  .option("--json", "Output as JSON")
+  .action(async (sessionId, options, cmd) => {
+    const globalOpts = cmd.optsWithGlobals();
+    await executeCommand(
+      async () => {
+        await spriteResumeCommand(
+          sessionId,
+          {
+            cwd: resolveCwd(globalOpts.cwd),
+            json: options.json,
+          },
+          logger,
+        );
+      },
+      logger,
+      {
+        verbose: globalOpts.verbose,
+        quiet: globalOpts.quiet,
+        dryRun: globalOpts.dryRun,
+        cwd: resolveCwd(globalOpts.cwd),
+      },
+    );
+  });
+
+spriteCmd
+  .command("destroy <sessionIdOrVmName>")
+  .description("Destroy a Sprite session or VM")
+  .option("--json", "Output as JSON")
+  .action(async (sessionIdOrVmName, options, cmd) => {
+    const globalOpts = cmd.optsWithGlobals();
+    await executeCommand(
+      async () => {
+        await spriteDestroyCommand(
+          sessionIdOrVmName,
+          {
+            cwd: resolveCwd(globalOpts.cwd),
+            json: options.json,
           },
           logger,
         );
@@ -461,18 +558,6 @@ program
     );
   });
 
-// ============================================================================
-// Sprite Commands (Item 073)
-// ============================================================================
-
-const spriteCmd = program
-  .command("sprite")
-  .description("Manage Sprite VMs (Firecracker microVMs)")
-  .addHelpText(
-    "beforeAll",
-    "\nCommands for managing isolated Firecracker microVMs via Wisp.\n",
-  );
-
 spriteCmd
   .command("start <name>")
   .description("Start a new Sprite VM")
@@ -644,6 +729,28 @@ spriteCmd
           },
           logger,
         );
+      },
+      logger,
+      {
+        verbose: globalOpts.verbose,
+        quiet: globalOpts.quiet,
+        dryRun: globalOpts.dryRun,
+        cwd: resolveCwd(globalOpts.cwd),
+      },
+    );
+  });
+
+program
+  .command("shell <id> <command...>")
+  .description("Execute a shell command in the context of a work item")
+  .action(async (id, command, options, cmd) => {
+    const globalOpts = cmd.optsWithGlobals();
+    await executeCommand(
+      async () => {
+        const cwd = resolveCwd(globalOpts.cwd);
+        const root = findRepoRoot(cwd);
+        const resolvedId = await resolveId(root, id);
+        await shellCommand(resolvedId, command, { cwd }, logger);
       },
       logger,
       {

@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "id": "003-system-archeology-tool-for-cybernetic-amcp",
+  "title": "System Archeology Tool for Cybernetic AMCP",
+  "section": "tooling",
+  "state": "implementing",
+  "overview": "Need to understand the architecture and code flow of the Cybernetic AMCP system through systematic tracing and analysis.\n\n**Success criteria:**\n- List all external entry points (HTTP, MQ, CLI, cron) with file:line and function references\n- Generate execution traces from each entry point to exit\n- Identify modules appearing in 2+ traces (shared modules)\n- Identify public functions with zero trace references (orphans)\n- Output all results as structured data, not prose\n\n**In scope:**\n- External entry points: HTTP, MQ, CLI, cron\n- Execution traces from entry to exit\n- Shared module identification across traces\n- Orphan function detection\n**Out of scope:**\n- Prose descriptions or narrative output\n- Opinions or recommendations (only traces)",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-22T18:18:56.146Z",
+  "updated_at": "2026-01-22T18:38:40.992Z",
+  "problem_statement": "Need to understand the architecture and code flow of the Cybernetic AMCP system through systematic tracing and analysis.",
+  "success_criteria": [
+    "List all external entry points (HTTP, MQ, CLI, cron) with file:line and function references",
+    "Generate execution traces from each entry point to exit",
+    "Identify modules appearing in 2+ traces (shared modules)",
+    "Identify public functions with zero trace references (orphans)",
+    "Output all results as structured data, not prose"
+  ],
+  "scope_in_scope": [
+    "External entry points: HTTP, MQ, CLI, cron",
+    "Execution traces from entry to exit",
+    "Shared module identification across traces",
+    "Orphan function detection"
+  ],
+  "scope_out_of_scope": [
+    "Prose descriptions or narrative output",
+    "Opinions or recommendations (only traces)"
+  ]
+}

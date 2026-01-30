@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "id": "024-dreamer-implement-s3-adapter-with-proper-aws-signa",
+  "title": "[DREAMER] Implement S3 adapter with proper AWS signature authentication",
+  "section": "features",
+  "state": "idea",
+  "overview": "The S3 adapter lacks proper AWS signature v4 authentication, making it incompatible with real AWS S3 and S3-compatible services. This blocks production use of cloud storage for artifact storage.\n\n**Motivation:** Cloud storage is essential for scalable artifact storage. Without proper S3 authentication, the system cannot store artifacts in AWS S3, MinIO, or other S3-compatible services, limiting scalability.\n\n**Success criteria:**\n- Implements AWS Signature V4 authentication\n- Works with AWS S3 and S3-compatible services (MinIO, DigitalOcean)\n- Supports multipart uploads for large files\n- Proper error handling and retries\n- Configurable endpoint and region\n\n**Technical constraints:**\n- Must use ExAws or similar library\n- Needs proper credential management\n- Should support temporary credentials\n- Must handle S3-specific errors gracefully\n- Connection pooling required\n\n**In scope:**\n- Implement s3_put_object/1 with ExAws\n- Implement s3_get_object/1 with ExAws\n- Add proper authentication headers\n- Implement multipart upload support\n- Add integration tests with MinIO\n**Out of scope:**\n- Storage abstraction layer (already exists)\n- Local adapter (already exists)\n- Multipart upload orchestration (future enhancement)\n\n**Signals:** priority: high, urgency: Blocks cloud storage deployment",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-29T01:39:51.053Z",
+  "updated_at": "2026-01-29T01:39:51.053Z",
+  "problem_statement": "The S3 adapter lacks proper AWS signature v4 authentication, making it incompatible with real AWS S3 and S3-compatible services. This blocks production use of cloud storage for artifact storage.",
+  "motivation": "Cloud storage is essential for scalable artifact storage. Without proper S3 authentication, the system cannot store artifacts in AWS S3, MinIO, or other S3-compatible services, limiting scalability.",
+  "success_criteria": [
+    "Implements AWS Signature V4 authentication",
+    "Works with AWS S3 and S3-compatible services (MinIO, DigitalOcean)",
+    "Supports multipart uploads for large files",
+    "Proper error handling and retries",
+    "Configurable endpoint and region"
+  ],
+  "technical_constraints": [
+    "Must use ExAws or similar library",
+    "Needs proper credential management",
+    "Should support temporary credentials",
+    "Must handle S3-specific errors gracefully",
+    "Connection pooling required"
+  ],
+  "scope_in_scope": [
+    "Implement s3_put_object/1 with ExAws",
+    "Implement s3_get_object/1 with ExAws",
+    "Add proper authentication headers",
+    "Implement multipart upload support",
+    "Add integration tests with MinIO"
+  ],
+  "scope_out_of_scope": [
+    "Storage abstraction layer (already exists)",
+    "Local adapter (already exists)",
+    "Multipart upload orchestration (future enhancement)"
+  ],
+  "priority_hint": "high",
+  "urgency_hint": "Blocks cloud storage deployment"
+}

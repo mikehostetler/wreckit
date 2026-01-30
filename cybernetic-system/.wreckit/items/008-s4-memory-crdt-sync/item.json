@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "id": "008-s4-memory-crdt-sync",
+  "title": "Implement S4 Memory CRDT Synchronization",
+  "section": "codebase",
+  "state": "planned",
+  "overview": "Implement distributed memory synchronization for System 4 using Delta CRDTs to ensure context persistence across nodes and restarts.",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-29T12:00:00.000Z",
+  "updated_at": "2026-01-29T12:00:00.000Z"
+}

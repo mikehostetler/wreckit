@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "id": "015-dreamer-implement-real-embedding-service-for-s4-se",
+  "title": "[DREAMER] Implement Real Embedding Service for S4 Semantic Memory Search",
+  "section": "Feature",
+  "state": "idea",
+  "overview": "In lib/cybernetic/vsm/system4/memory.ex:\n- generate_embedding/1 at line 331 returns a random 768-dimension vector as a placeholder\n- search_by_embedding/4 at line 337 takes first N entries from ETS as a 'placeholder for semantic search'\n\nThe search function should compute cosine similarity between query embedding and cached embeddings, but instead it just takes the first entries. The find_related_context/3 function (line 274) relies on semantic search to find related episodes but currently just extracts references from metadata.\n\n**Motivation:** Semantic memory search is critical for:\n1. Finding relevant past episodes for context injection into LLM prompts\n2. Detecting patterns across similar episodes (e.g., recurring failures)\n3. Improving response quality by providing related historical context\n4. Enabling 'memory' in the AI agents (they can recall similar past situations)\n\nWithout real embeddings, the 'semantic' in 'semantic context graph' is misleading. The system already has vector infrastructure (lib/cybernetic/intelligence/vectors/ with PQ quantization, HNSW index) but it's not connected to S4 Memory.\n\n**Success criteria:**\n- generate_embedding/1 calls real embedding service (OpenAI, Together, or local)\n- Embeddings are cached in state.embeddings_cache to avoid recomputation\n- search_by_embedding/4 computes cosine similarity with cached embeddings\n- find_related_context/3 uses semantic similarity instead of just metadata references\n- Configurable embedding model (dev: local/small, prod: OpenAI/together)\n- Performance is acceptable (embeddings computed asynchronously)\n- Tests verify semantic search returns actually similar episodes\n\n**Technical constraints:**\n- Need to choose embedding service (OpenAI ada-002, Together MTEB leaderboards, or local)\n- Embedding dimension must match (current placeholder is 768)\n- Cache invalidation strategy needed (LRU, TTL, or size-based)\n- Async embedding generation to avoid blocking memory operations\n- Cosine similarity computation must be efficient (consider Nx library)\n\n**In scope:**\n- lib/cybernetic/vsm/system4/memory.ex (lines 274-346)\n- lib/cybernetic/intelligence/vectors/ (use existing vector infrastructure)\n- config/*.exs (embedding service configuration)\n- test/cybernetic/vsm/system4/memory_test.exs (semantic search tests)\n**Out of scope:**\n- HyDE (hypothetical document embeddings) enhancement\n- Multi-lingual embeddings\n- Embedding fine-tuning on domain data\n\n**Signals:** priority: high, urgency: Core AI capability is non-functional; placeholders at lines 331 and 337.",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-29T01:39:01.631Z",
+  "updated_at": "2026-01-29T01:39:01.631Z",
+  "problem_statement": "In lib/cybernetic/vsm/system4/memory.ex:\n- generate_embedding/1 at line 331 returns a random 768-dimension vector as a placeholder\n- search_by_embedding/4 at line 337 takes first N entries from ETS as a 'placeholder for semantic search'\n\nThe search function should compute cosine similarity between query embedding and cached embeddings, but instead it just takes the first entries. The find_related_context/3 function (line 274) relies on semantic search to find related episodes but currently just extracts references from metadata.",
+  "motivation": "Semantic memory search is critical for:\n1. Finding relevant past episodes for context injection into LLM prompts\n2. Detecting patterns across similar episodes (e.g., recurring failures)\n3. Improving response quality by providing related historical context\n4. Enabling 'memory' in the AI agents (they can recall similar past situations)\n\nWithout real embeddings, the 'semantic' in 'semantic context graph' is misleading. The system already has vector infrastructure (lib/cybernetic/intelligence/vectors/ with PQ quantization, HNSW index) but it's not connected to S4 Memory.",
+  "success_criteria": [
+    "generate_embedding/1 calls real embedding service (OpenAI, Together, or local)",
+    "Embeddings are cached in state.embeddings_cache to avoid recomputation",
+    "search_by_embedding/4 computes cosine similarity with cached embeddings",
+    "find_related_context/3 uses semantic similarity instead of just metadata references",
+    "Configurable embedding model (dev: local/small, prod: OpenAI/together)",
+    "Performance is acceptable (embeddings computed asynchronously)",
+    "Tests verify semantic search returns actually similar episodes"
+  ],
+  "technical_constraints": [
+    "Need to choose embedding service (OpenAI ada-002, Together MTEB leaderboards, or local)",
+    "Embedding dimension must match (current placeholder is 768)",
+    "Cache invalidation strategy needed (LRU, TTL, or size-based)",
+    "Async embedding generation to avoid blocking memory operations",
+    "Cosine similarity computation must be efficient (consider Nx library)"
+  ],
+  "scope_in_scope": [
+    "lib/cybernetic/vsm/system4/memory.ex (lines 274-346)",
+    "lib/cybernetic/intelligence/vectors/ (use existing vector infrastructure)",
+    "config/*.exs (embedding service configuration)",
+    "test/cybernetic/vsm/system4/memory_test.exs (semantic search tests)"
+  ],
+  "scope_out_of_scope": [
+    "HyDE (hypothetical document embeddings) enhancement",
+    "Multi-lingual embeddings",
+    "Embedding fine-tuning on domain data"
+  ],
+  "priority_hint": "high",
+  "urgency_hint": "Core AI capability is non-functional; placeholders at lines 331 and 337."
+}

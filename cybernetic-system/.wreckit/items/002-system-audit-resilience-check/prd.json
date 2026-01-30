@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "id": "002-system-audit-resilience-check",
+  "branch_name": "wreckit/002-system-audit-resilience-check",
+  "user_stories": [
+    {
+      "id": "US-001",
+      "title": "Implement Audit Script",
+      "acceptance_criteria": [
+        "Verifies all 5 VSM systems",
+        "Checks TelegramAgent resilience",
+        "Generates confidence report"
+      ],
+      "priority": 1,
+      "status": "done",
+      "notes": ""
+    }
+  ]
+}

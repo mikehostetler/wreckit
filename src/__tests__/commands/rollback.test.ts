@@ -119,6 +119,8 @@ describe("rollbackCommand", () => {
   afterEach(async () => {
     process.chdir(originalCwd);
     await fs.rm(tempDir, { recursive: true, force: true });
+    // Restore mocked modules to prevent pollution of other test files
+    mock.restore();
   });
 
   it("returns error when no rollback_sha exists", async () => {

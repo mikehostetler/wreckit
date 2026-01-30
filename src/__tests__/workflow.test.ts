@@ -354,6 +354,8 @@ describe("workflow", () => {
     mockedRunPrePushQualityGates.mockImplementation(realRunPrePushQualityGates);
   });
 
+    // Restore mocked modules to prevent pollution of other test files
+    mock.restore();
   async function setupItem(item: Item): Promise<string> {
     const itemsDir = path.join(tempDir, ".wreckit", "items");
     const itemDir = path.join(itemsDir, item.id);

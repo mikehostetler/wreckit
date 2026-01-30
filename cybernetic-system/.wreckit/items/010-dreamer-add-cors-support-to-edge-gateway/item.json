@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "id": "010-dreamer-add-cors-support-to-edge-gateway",
+  "title": "[DREAMER] Add CORS Support to Edge Gateway",
+  "section": "Feature",
+  "state": "idea",
+  "overview": "In lib/cybernetic/edge/gateway/endpoint.ex at lines 44-49, there's a complete CORS configuration using the Corsica plug that is commented out with 'TODO: Add CORS plug when corsica dependency is added'. The corsica dependency is not in mix.exs, so web clients cannot make cross-origin requests to the gateway.\n\n**Motivation:** CORS is essential for:\n1. Web UIs hosted on different domains calling the gateway API\n2. Development workflows with local dev servers (localhost:3000 -> gateway)\n3. Multi-region deployments with separate API and UI domains\n\nWithout CORS, browsers block cross-origin requests, making the Edge Gateway unusable for typical web applications. The configuration is already written and just needs the dependency.\n\n**Success criteria:**\n- Corsica dependency added to mix.exs\n- CORS plug is uncommented in endpoint.ex\n- CORS configuration is environment-aware (dev: allow *, prod: specific origins)\n- Web clients can successfully call Gateway APIs from different origins\n- CORS headers are properly set (allow-headers, allow-credentials, max-age)\n\n**Technical constraints:**\n- Corsica plug needs to be added to dependencies\n- CORS origins should be configurable per environment\n- Need to support credentials for authenticated requests\n- Must handle preflight OPTIONS requests correctly\n\n**In scope:**\n- lib/cybernetic/edge/gateway/endpoint.ex (lines 44-49)\n- mix.exs (add :corsica dependency)\n- config/dev.exs, config/prod.exs (CORS origin configuration)\n**Out of scope:**\n- Per-route CORS policies (global policy sufficient)\n- CORS for SSE/WebSocket endpoints (different mechanism)\n\n**Signals:** priority: medium, urgency: Simple TODO with complete implementation already written; just missing dependency.",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-29T01:39:01.629Z",
+  "updated_at": "2026-01-29T01:39:01.629Z",
+  "problem_statement": "In lib/cybernetic/edge/gateway/endpoint.ex at lines 44-49, there's a complete CORS configuration using the Corsica plug that is commented out with 'TODO: Add CORS plug when corsica dependency is added'. The corsica dependency is not in mix.exs, so web clients cannot make cross-origin requests to the gateway.",
+  "motivation": "CORS is essential for:\n1. Web UIs hosted on different domains calling the gateway API\n2. Development workflows with local dev servers (localhost:3000 -> gateway)\n3. Multi-region deployments with separate API and UI domains\n\nWithout CORS, browsers block cross-origin requests, making the Edge Gateway unusable for typical web applications. The configuration is already written and just needs the dependency.",
+  "success_criteria": [
+    "Corsica dependency added to mix.exs",
+    "CORS plug is uncommented in endpoint.ex",
+    "CORS configuration is environment-aware (dev: allow *, prod: specific origins)",
+    "Web clients can successfully call Gateway APIs from different origins",
+    "CORS headers are properly set (allow-headers, allow-credentials, max-age)"
+  ],
+  "technical_constraints": [
+    "Corsica plug needs to be added to dependencies",
+    "CORS origins should be configurable per environment",
+    "Need to support credentials for authenticated requests",
+    "Must handle preflight OPTIONS requests correctly"
+  ],
+  "scope_in_scope": [
+    "lib/cybernetic/edge/gateway/endpoint.ex (lines 44-49)",
+    "mix.exs (add :corsica dependency)",
+    "config/dev.exs, config/prod.exs (CORS origin configuration)"
+  ],
+  "scope_out_of_scope": [
+    "Per-route CORS policies (global policy sufficient)",
+    "CORS for SSE/WebSocket endpoints (different mechanism)"
+  ],
+  "priority_hint": "medium",
+  "urgency_hint": "Simple TODO with complete implementation already written; just missing dependency."
+}

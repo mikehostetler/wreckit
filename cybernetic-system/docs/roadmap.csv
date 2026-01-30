@@ -1,0 +1,24 @@
+title,description,phase,status
+Phoenix Edge Gateway,"API: POST /v1/generate, GET /v1/events (SSE), POST /telegram/webhook. Guards: OIDC, tenant, rate-limit, circuit-break, quotas. DoD: TLS 1.3; Prom metrics.",Now,To Do
+aMCP Envelope v1,"Struct: %Envelope{id, tenant, causal_id, nonce, ts, schema_v, priority, policy_ref}. Fns: validate/1, sign/verify. DoD: schema_v gated.",Now,To Do
+Replay Protection at Edge,NonceBloom + TTL; counters exported. DoD: Duplicate/non-fresh blocked; replay_rejects_total visible.,Now,In Progress
+Tamper-Evident Audit,Append-only JSONL + rolling prev_hash; daily anchor record. CLI verify. DoD: Any range verifies; admin actions emit proof.,Now,To Do
+Admin Console (Read-Only),"Routes: /admin/overview, /admin/traffic, /admin/audit. DoD: LiveView charts, trace link & envelope drill-down.",Now,To Do
+Telegram Agent → Webhook + RBAC,Allow-list admin chat IDs; per-chat rate-limit; audit commands. DoD: Commands throttled; audit offset returned.,Now,In Progress
+GoldRush Rules (Shadow Mode),"Rules: burst_traffic, refusal_spike, cost_anomaly. DoD: FP/FN stats recorded; no mutations.",Now,To Do
+LLM SOP Drafts,Batch telemetry → prompt LLM → SOP.Draft persisted. DoD: One incident summarized into a stored draft.,Now,To Do
+k6/Artillery Harness,"Scenarios: hit-heavy, miss-heavy, mixed @100rps. DoD: SLO gates wired into CI.",Now,To Do
+CAIL.CID + IPFS Bridge,"API: put/1 -> cid, get/1, pin/unpin, stat, verify/2. DoD: Test vectors pass.",Next,To Do
+CAIL.Provenance (Merkle-DAG),"API: link(child, parents, meta), verify_path/2. DoD: Random DAGs verify; lineage retrievable.",Next,To Do
+Cross-Surface Memory,Contract: conversation_cid per user/session. DoD: Telegram recall via CID; admin detail shows memory.,Next,To Do
+Deterministic Cache @ Edge,"Keys: model+params_hash+input_hash. API: get/put/invalidate, prefetch. DoD: Hit-ratio chart.",Next,To Do
+CEP → Workflow Hooks,"Behaviour: Workflow.run(playbook, ctx). DoD: Shadow→Active toggle; playbook executes.",Next,To Do
+Zombie Detection & Drain,"Gossip heartbeat, suspect after N misses. DoD: Auto-drain suspect nodes; log visible.",Next,To Do
+Quantizer (PQ/VQ),"API: fit/1, encode/1, decode/1; recall/storage knobs. DoD: Recall@10 target met.",Later,To Do
+HNSW ANN,"API: upsert/2, search/3; concurrent insert/search. DoD: p95 & recall targets met.",Later,To Do
+BeliefSet (Delta-CRDT),Types: notes/tasks/policies; decay & confidence. DoD: Multi-node convergence metric shown.,Later,To Do
+Policy → WASM Pipeline,Spec → wasm_module; served at /policies/:id.wasm; SSE install. DoD: One policy live in client; telemetry round-trip.,Later,To Do
+Live Stream Relay (Astro Demo),RTMP/WebRTC ingest → media.ingest events; Telegram announces. DoD: Start/stop events visible.,Later,To Do
+Twitter Spaces Bridge (MVP),Schedule/announce via API; join link stored. DoD: Admin + Telegram show live Spaces link.,Later,To Do
+SDKs (Elixir/Rust/JS),"Envelope helpers, signing, SSE client, retry/backoff. DoD: Quickstart works in CI.",Later,To Do
+Rules Catalog & Marketplace,Export/import packs; signed bundles. DoD: Pack moves between envs with signatures verified.,Later,To Do

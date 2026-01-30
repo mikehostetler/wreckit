@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "id": "006-system-overlay-tool-for-static-dynamic-analysis",
+  "title": "System Overlay Tool for Static-Dynamic Analysis",
+  "state": "implementing",
+  "overview": "Static analysis shows what code exists, while dynamic traces show what actually executes. We need to correlate these to find dead code (exists but never runs), ghost code (runs but wasn't detected statically), and hot paths (frequently executed code).\n\n**Motivation:** Enables safe dead code removal and architectural hardening by providing data-driven insights about actual code usage versus what's statically present.\n\n**Success criteria:**\n- Tool can read and normalize archeology-results.json and dynamic-traces.json\n- Dead code candidates identified: static functions never appearing in dynamic traces\n- Ghost paths detected: dynamic spans without corresponding static calls\n- Coverage metrics calculated per module showing % of static code exercised\n- Generates overlay-report.json with structured findings\n- Human-readable console summary with dead code, ghost paths, and hot modules\n\n**Technical constraints:**\n- Must create Mix.Tasks.Cyb.Overlay\n- Input formats: archeology-results.json (static) and dynamic-traces.json (dynamic)\n- Filter out known test/callback patterns in dead code detection\n- Normalize both data sources into unified graph format\n\n**In scope:**\n- Phase 1: Data ingestion and normalization from JSON files\n- Phase 2: Diff analysis for dead code, ghost code, and coverage\n- Phase 3: Report generation (JSON + console summary)\n\n**Signals:** priority: medium",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-22T20:00:22.154Z",
+  "updated_at": "2026-01-22T20:16:30.759Z",
+  "problem_statement": "Static analysis shows what code exists, while dynamic traces show what actually executes. We need to correlate these to find dead code (exists but never runs), ghost code (runs but wasn't detected statically), and hot paths (frequently executed code).",
+  "motivation": "Enables safe dead code removal and architectural hardening by providing data-driven insights about actual code usage versus what's statically present.",
+  "success_criteria": [
+    "Tool can read and normalize archeology-results.json and dynamic-traces.json",
+    "Dead code candidates identified: static functions never appearing in dynamic traces",
+    "Ghost paths detected: dynamic spans without corresponding static calls",
+    "Coverage metrics calculated per module showing % of static code exercised",
+    "Generates overlay-report.json with structured findings",
+    "Human-readable console summary with dead code, ghost paths, and hot modules"
+  ],
+  "technical_constraints": [
+    "Must create Mix.Tasks.Cyb.Overlay",
+    "Input formats: archeology-results.json (static) and dynamic-traces.json (dynamic)",
+    "Filter out known test/callback patterns in dead code detection",
+    "Normalize both data sources into unified graph format"
+  ],
+  "scope_in_scope": [
+    "Phase 1: Data ingestion and normalization from JSON files",
+    "Phase 2: Diff analysis for dead code, ghost code, and coverage",
+    "Phase 3: Report generation (JSON + console summary)"
+  ],
+  "scope_out_of_scope": [],
+  "priority_hint": "medium"
+}

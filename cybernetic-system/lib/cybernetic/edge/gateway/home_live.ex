@@ -1,0 +1,509 @@
+defmodule Cybernetic.Edge.Gateway.HomeLive do
+  use Phoenix.LiveView
+  require Logger
+
+  @impl true
+  def render(assigns) do
+    ~H"""
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Helvetica+Now+Display:wght@400;700&display=swap');
+      @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+      body {
+        background: #000000;
+        color: #00FF41;
+        font-family: 'Share Tech Mono', monospace;
+        margin: 0;
+        overflow: hidden;
+      }
+
+      .cybersyn-container {
+        display: grid;
+        grid-template-columns: 350px 1fr 350px;
+        grid-template-rows: 80px 1fr 200px;
+        height: 100vh;
+        padding: 40px;
+        gap: 40px;
+        box-sizing: border-box;
+        background: #000000;
+      }
+
+      /* Screen Frames */
+      .screen {
+        background: #000000;
+        border: 2px solid #00FF41; /* Matrix Green */
+        border-radius: 4px;
+        box-shadow: 0 0 15px rgba(0, 255, 65, 0.2);
+        padding: 20px;
+        color: #00FF41;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+      }
+
+      .screen::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: linear-gradient(135deg, rgba(0, 255, 65, 0.05) 0%, transparent 100%);
+        pointer-events: none;
+        border-radius: 2px;
+      }
+
+      .screen-title {
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin-bottom: 15px;
+        color: #00FF41;
+        font-weight: bold;
+        border-bottom: 1px solid #00FF41;
+        padding-bottom: 5px;
+      }
+
+      /* Center Display */
+      .main-display {
+        grid-column: 2 / 3;
+        grid-row: 2 / 3;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+      }
+
+      .vsm-diagram {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        width: 100%;
+        max-width: 400px;
+      }
+
+      .vsm-box {
+        background: #001100;
+        color: #00FF41;
+        padding: 15px;
+        border: 1px solid #00FF41;
+        font-weight: bold;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.3s ease;
+      }
+
+      .vsm-box.active {
+        background: #00FF41;
+        color: #000000;
+        transform: scale(1.02);
+        box-shadow: 0 0 15px rgba(0, 255, 65, 0.6);
+      }
+
+      /* Data Feed */
+      .data-feed {
+        grid-column: 1 / 2;
+        grid-row: 2 / 4;
+        font-family: 'Share Tech Mono', monospace;
+      }
+
+      .feed-content {
+        overflow-y: auto;
+        height: 100%;
+        font-size: 12px;
+        color: #00FF41;
+      }
+
+      /* Control Panel */
+      .control-panel {
+        grid-column: 3 / 4;
+        grid-row: 2 / 3;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .metric-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        border-bottom: 1px dashed #00FF41;
+        padding-bottom: 5px;
+      }
+
+      .metric-value {
+        font-size: 24px;
+        font-weight: bold;
+        color: #00FF41;
+        text-shadow: 0 0 5px rgba(0, 255, 65, 0.5);
+      }
+
+      .control-buttons {
+        margin-bottom: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        border-bottom: 2px solid #00FF41;
+        padding-bottom: 20px;
+      }
+
+      .btn {
+        background: #000000;
+        color: #00FF41;
+        border: 1px solid #00FF41;
+        padding: 15px;
+        font-family: 'Share Tech Mono', monospace;
+        font-weight: bold;
+        font-size: 14px;
+        cursor: pointer;
+        text-transform: uppercase;
+        transition: all 0.2s;
+      }
+      .btn:hover { background: #00FF41; color: #000000; box-shadow: 0 0 15px rgba(0, 255, 65, 0.5); }
+      .btn:active { transform: scale(0.98); }
+
+      /* Algedonic Signal */
+      .algedonic-panel {
+        grid-column: 2 / 3;
+        grid-row: 3 / 4;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 40px;
+        background: transparent;
+        border: none;
+        box-shadow: none;
+      }
+
+      .signal-light {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: #000;
+        border: 2px solid #00FF41;
+        transition: all 0.5s ease;
+      }
+
+      .signal-light.active-green {
+        background: #00FF41;
+        box-shadow: 0 0 30px #00FF41;
+      }
+
+      .signal-light.active-red {
+        background: #00FF41; /* Keeping it green per directive, or maybe a dimmer green */
+        opacity: 0.3;
+        box-shadow: none;
+      }
+
+      .phase-text {
+        font-size: 36px;
+        font-weight: bold;
+        color: #00FF41;
+        letter-spacing: 5px;
+        text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+      }
+
+      /* Scrollbar styling for the terminal feel */
+      ::-webkit-scrollbar { width: 8px; }
+      ::-webkit-scrollbar-track { background: #000; }
+      ::-webkit-scrollbar-thumb { background: #00FF41; }
+
+    </style>
+
+    <div class="cybersyn-container">
+      <div style="grid-column: 1/-1; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #00FF41; padding-bottom: 10px;">
+        <h1 style="margin: 0; color: #00FF41; letter-spacing: -1px; text-shadow: 0 0 10px rgba(0,255,65,0.5);">PROJECT CYBERNETIC</h1>
+        <div style="font-size: 24px; font-weight: bold; color: #00FF41;"><%= @clock %></div>
+      </div>
+
+      <!-- Left Screen: Neural Stream -->
+      <div class="screen data-feed">
+        <div class="screen-title">TELEX INPUT</div>
+        <div class="feed-content" id="log-scroll" phx-update="replace">
+          <%= for line <- @logs do %>
+            <div style="margin-bottom: 4px;"><%= line %></div>
+          <% end %>
+        </div>
+      </div>
+
+      <!-- Middle Screen: VSM Structure -->
+      <div class="screen main-display">
+        <div class="screen-title">RECURSIVE SYSTEM TOPOLOGY</div>
+        <div class="vsm-diagram">
+          <div class={"vsm-box " <> if(@current_phase == "SLEEP", do: "active", else: "")}>
+            <span>SYSTEM 5: POLICY</span>
+            <span><%= if(@current_phase == "SLEEP", do: "●", else: "○") %></span>
+          </div>
+          <div class={"vsm-box " <> if(@current_phase == "DREAM", do: "active", else: "")}>
+            <span>SYSTEM 4: INTELLIGENCE</span>
+            <span><%= if(@current_phase == "DREAM", do: "●", else: "○") %></span>
+          </div>
+          <div class={"vsm-box " <> if(@current_phase == "HEAL", do: "active", else: "")}>
+            <span>SYSTEM 3: CONTROL</span>
+            <span><%= if(@current_phase == "HEAL", do: "●", else: "○") %></span>
+          </div>
+          <div class="vsm-box">
+            <span>SYSTEM 2: COORDINATION</span>
+            <span>◎</span>
+          </div>
+          <div class={"vsm-box " <> if(@current_phase == "ACT", do: "active", else: "")}>
+            <span>SYSTEM 1: OPERATIONS</span>
+            <span><%= if(@current_phase == "ACT", do: "●", else: "○") %></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Screen: Metrics & Controls -->
+      <div class="screen control-panel">
+        <div class="screen-title">STATISTICAL INDICES</div>
+
+        <div class="control-buttons">
+          <button class="btn" phx-click="toggle_life">
+            <%= if @life_running, do: "HALT SYSTEM", else: "INITIATE SYSTEM" %>
+          </button>
+          <button class="btn" phx-click="force_dream">TRIGGER DREAM</button>
+        </div>
+
+        <div style="margin-top: 20px; border-top: 1px dashed #00FF41; padding-top: 10px;">
+          <div class="screen-title" style="position: relative; top: 0; left: 0; margin-bottom: 5px; border: none;">DIRECTIVE OVERRIDE</div>
+          <form phx-submit="execute_directive">
+            <input type="text" name="directive" placeholder="Enter System Command..." style="width: 100%; background: #000; border: 1px solid #00FF41; color: #00FF41; padding: 8px; font-family: monospace; margin-bottom: 5px;" />
+            <button type="submit" class="btn" style="width: 100%; padding: 8px; font-size: 12px;">EXECUTE</button>
+          </form>
+        </div>
+
+        <div class="metric-row">
+          <span>MEMORY ALLOCATION</span>
+          <span class="metric-value"><%= @memory_usage %> MB</span>
+        </div>
+
+        <div class="metric-row">
+          <span>SYSTEM UPTIME</span>
+          <span class="metric-value"><%= @uptime %></span>
+        </div>
+
+        <div class="metric-row">
+          <span>THROUGHPUT</span>
+          <span class="metric-value"><%= @req_count %> RPM</span>
+        </div>
+
+        <div style="margin-top: auto; text-align: center; color: #00FF41; font-size: 12px; opacity: 0.7;">
+          OPERATIONS ROOM<br>
+          SANTIAGO NODE
+        </div>
+      </div>
+
+      <!-- Bottom Center: Algedonic Signal -->
+      <div class="algedonic-panel">
+        <div class="phase-text"><%= @current_phase %></div>
+        <div class={"signal-light " <> if(@current_phase != "HEAL", do: "active-green", else: "")}></div>
+        <div class={"signal-light " <> if(@current_phase == "HEAL", do: "active-red", else: "")}></div>
+      </div>
+
+    </div>
+    """
+  end
+
+  @impl true
+  def mount(_params, _session, socket) do
+    if connected?(socket) do
+      :timer.send_interval(1000, self(), :tick)
+    end
+
+    {:ok,
+     assign(socket,
+       logs: [],
+       current_phase: "DREAM",
+       clock: "00:00:00",
+       memory_usage: 42,
+       uptime: "0h 0m",
+       req_count: 0,
+       life_running: true,
+       start_time: System.monotonic_time()
+     )}
+  end
+
+  @impl true
+  def handle_info(:tick, socket) do
+    raw_logs = read_logs()
+    phase = detect_phase(raw_logs)
+    life_running = check_life_process()
+
+    uptime_seconds =
+      System.convert_time_unit(
+        System.monotonic_time() - socket.assigns.start_time,
+        :native,
+        :second
+      )
+
+    hours = div(uptime_seconds, 3600)
+    minutes = div(rem(uptime_seconds, 3600), 60)
+    seconds = rem(uptime_seconds, 60)
+    uptime_str = "#{hours}h #{minutes}m #{seconds}s"
+
+    {:noreply,
+     assign(socket,
+       clock: DateTime.utc_now() |> Calendar.strftime("%H:%M:%S"),
+       logs:
+         raw_logs
+         |> String.split("\n")
+         |> Enum.take(-100)
+         |> Enum.reverse(),
+       current_phase: phase,
+       memory_usage: :erlang.memory(:total) |> div(1024 * 1024),
+       uptime: uptime_str,
+       life_running: life_running,
+       req_count: Enum.random(10..40)
+     )}
+  end
+
+  @impl true
+  def handle_event("toggle_life", _params, socket) do
+    if socket.assigns.life_running do
+      System.cmd("pkill", ["-f", "bin/life"])
+      {:noreply, assign(socket, life_running: false)}
+    else
+      spawn(fn ->
+        System.cmd("bash", ["-c", "../bin/life 300 > /dev/null 2>&1 &"], cd: File.cwd!())
+      end)
+
+      {:noreply, assign(socket, life_running: true)}
+    end
+  end
+
+  @impl true
+  def handle_event("force_dream", _params, socket) do
+    spawn(fn ->
+      System.cmd(
+        "bash",
+        ["-c", "../dist/index.js dream --max-items 1 --verbose >> ../life.log 2>&1"],
+        cd: File.cwd!()
+      )
+    end)
+
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("execute_directive", %{"directive" => directive}, socket) do
+    source_path = __ENV__.file
+    source_code = File.read!(source_path)
+
+    prompt = """
+    You are the Cybernetic System's Self-Modification Engine.
+    User Directive: "#{directive}"
+
+    Your task is to modify the provided Elixir Phoenix LiveView code (`home_live.ex`) to implement this directive.
+    Typically involves changing the CSS or HTML structure.
+
+    CRITICAL:
+    1. Output ONLY the valid Elixir code for the module.
+    2. Do NOT wrap it in markdown backticks (```).
+    3. Ensure no syntax errors.
+
+    Current Code:
+    #{source_code}
+    """
+
+        Task.start(fn -> 
+
+          case Cybernetic.VSM.System4.Providers.ReqLLMProvider.generate(prompt, provider: :anthropic, max_tokens: 8192) do
+
+            {:ok, %{text: new_code}} ->
+
+               clean_code = extract_code(new_code)
+
+               
+
+               # SAFETY INTERLOCK: Validate syntax before writing
+
+               case Code.string_to_quoted(clean_code) do
+
+                 {:ok, _quoted} ->
+
+                    File.write!(source_path, clean_code)
+
+                    Logger.info("System Self-Modification Complete.")
+
+                 {:error, {line, error, token}} ->
+
+                    error_msg = "ABORTED: Invalid Syntax generated by Intelligence. Line #{inspect(line)}: #{inspect(error)} near #{inspect(token)}"
+
+                    Logger.error(error_msg)
+
+                    # Force visibility in Telex Input
+
+                    File.write!("../life.log", "\n⚠️  #{error_msg}\n", [:append])
+
+               end
+
+               
+
+            {:error, reason} ->
+
+               Logger.error("Self-Modification Failed: #{inspect(reason)}")
+
+          end
+
+        end)
+
+    {:noreply, put_flash(socket, :info, "Directive Sent.")}
+  end
+
+  defp extract_code(text) do
+    text
+    # Robustly strip markdown blocks
+    |> String.replace(~r/^```[a-zA-Z]*\n/, "")
+    |> String.replace(~r/\n```$/, "")
+    |> String.trim()
+  end
+
+  defp read_logs do
+    path = System.get_env("LIFE_LOG_PATH") || "../life.log"
+
+    case File.read(path) do
+      {:ok, content} ->
+        content
+
+      _ ->
+        case File.read("life.log") do
+          {:ok, content} -> content
+          _ -> "Waiting for telex feed..."
+        end
+    end
+  end
+
+  defp detect_phase(logs) do
+    cond do
+      String.contains?(logs, "Dreaming") -> "DREAM"
+      String.contains?(logs, "Acting") -> "ACT"
+      String.contains?(logs, "Healing") -> "HEAL"
+      true -> "SLEEP"
+    end
+  end
+
+  defp check_life_process do
+    {output, _} = System.cmd("pgrep", ["-f", "bin/life"])
+    output != ""
+  end
+
+  defp initial_vsm_states do
+    [
+      {"S1 OPERATIONS", 98},
+      {"S2 COORDINATION", 100},
+      {"S3 CONTROL", 95},
+      {"S4 INTELLIGENCE", 80},
+      {"S5 POLICY", 100}
+    ]
+  end
+
+  defp simulate_vsm_fluctuation do
+    initial_vsm_states()
+    |> Enum.map(fn {k, v} -> {k, min(100, max(50, v + Enum.random(-2..2)))} end)
+  end
+
+  defp log_class(line) do
+    cond do
+      String.contains?(line, "WARN") -> "warn"
+      String.contains?(line, "ERROR") -> "error"
+      true -> ""
+    end
+  end
+end

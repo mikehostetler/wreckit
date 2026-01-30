@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "id": "014-dreamer-address-13-skipped-tests-blocking-ci-confi",
+  "title": "[DREAMER] Address 13 Skipped Tests Blocking CI Confidence",
+  "section": "Testing",
+  "state": "idea",
+  "overview": "Grep search revealed 13 test files containing 'skip: true':\n- test/cybernetic/vsm/system3/control_supervisor_test.exs\n- test/cybernetic/vsm/system5/policy_intelligence_test.exs\n- test/cybernetic/vsm/system5/policy_test.exs\n- test/cybernetic/vsm/system5/sop_engine_test.exs\n- test/cybernetic/vsm/system2/coordinator_priority_test.exs\n- test/cybernetic/vsm/system2/coordinator_test.exs\n- test/cybernetic/vsm/system2/starvation_test.exs\n- test/cybernetic/vsm/system4/llm/pipeline_golden_test.exs\n- test/cybernetic/vsm/system4/memory_test.exs\n- test/cybernetic/core/security/rate_limiter_test.exs\n- test/integration/otel_trace_propagation_test.exs\n- test/integration/s4_multi_provider_test.exs\n- test/integration/vsm_messaging_test.exs\n\nThese skipped tests span critical VSM systems (S2, S3, S4, S5), core security (rate limiter), and observability (OpenTelemetry).\n\n**Motivation:** Skipped tests represent several risks:\n1. System 3 Control Supervisor tests skipped → unverified fault tolerance\n2. System 5 Policy/SOP tests skipped → unverified governance logic\n3. System 2 Coordinator tests skipped → unverified workload balancing\n4. Rate limiter tests skipped → unverified DoS protection\n5. Integration tests skipped → unverified cross-module interactions\n\nThe test coverage threshold is only 24% (mix.exs line 13), and skipping tests further reduces actual coverage. These tests were likely skipped due to environment dependencies (e.g., RabbitMQ, PostgreSQL) or flaky behavior, but leaving them permanently skipped defeats their purpose.\n\n**Success criteria:**\n- All 13 skipped test files are re-enabled\n- Tests pass consistently in CI environment\n- Required external services (RabbitMQ, PostgreSQL) are available in CI\n- Flaky tests are identified and fixed (not re-skipped)\n- Test coverage increases above 24% threshold\n- CI pipeline enforces that skipped tests must have tickets with ETA\n\n**Technical constraints:**\n- Some tests may require docker-compose services (need to ensure CI runs these)\n- Integration tests may need environment variables for external services\n- Flaky tests may need timeout adjustments or better synchronization\n- Some tests may be OS-specific (Linux vs Mac)\n- May need to add test fixtures or mocks for external dependencies\n\n**In scope:**\n- All 13 test files with skip: true annotations\n- .github/workflows/ (ensure test services are available)\n- test/test_helper.exs (may need better setup/teardown)\n- docker-compose.yml (test environment configuration)\n**Out of scope:**\n- Writing NEW tests (this is about enabling EXISTING tests)\n- Performance optimization tests (separate concern)\n- Property-based tests (separate initiative)\n\n**Signals:** priority: medium, urgency: Affects CI reliability and confidence in changes across all VSM systems.",
+  "branch": null,
+  "pr_url": null,
+  "pr_number": null,
+  "last_error": null,
+  "created_at": "2026-01-29T01:39:01.631Z",
+  "updated_at": "2026-01-29T01:39:01.631Z",
+  "problem_statement": "Grep search revealed 13 test files containing 'skip: true':\n- test/cybernetic/vsm/system3/control_supervisor_test.exs\n- test/cybernetic/vsm/system5/policy_intelligence_test.exs\n- test/cybernetic/vsm/system5/policy_test.exs\n- test/cybernetic/vsm/system5/sop_engine_test.exs\n- test/cybernetic/vsm/system2/coordinator_priority_test.exs\n- test/cybernetic/vsm/system2/coordinator_test.exs\n- test/cybernetic/vsm/system2/starvation_test.exs\n- test/cybernetic/vsm/system4/llm/pipeline_golden_test.exs\n- test/cybernetic/vsm/system4/memory_test.exs\n- test/cybernetic/core/security/rate_limiter_test.exs\n- test/integration/otel_trace_propagation_test.exs\n- test/integration/s4_multi_provider_test.exs\n- test/integration/vsm_messaging_test.exs\n\nThese skipped tests span critical VSM systems (S2, S3, S4, S5), core security (rate limiter), and observability (OpenTelemetry).",
+  "motivation": "Skipped tests represent several risks:\n1. System 3 Control Supervisor tests skipped → unverified fault tolerance\n2. System 5 Policy/SOP tests skipped → unverified governance logic\n3. System 2 Coordinator tests skipped → unverified workload balancing\n4. Rate limiter tests skipped → unverified DoS protection\n5. Integration tests skipped → unverified cross-module interactions\n\nThe test coverage threshold is only 24% (mix.exs line 13), and skipping tests further reduces actual coverage. These tests were likely skipped due to environment dependencies (e.g., RabbitMQ, PostgreSQL) or flaky behavior, but leaving them permanently skipped defeats their purpose.",
+  "success_criteria": [
+    "All 13 skipped test files are re-enabled",
+    "Tests pass consistently in CI environment",
+    "Required external services (RabbitMQ, PostgreSQL) are available in CI",
+    "Flaky tests are identified and fixed (not re-skipped)",
+    "Test coverage increases above 24% threshold",
+    "CI pipeline enforces that skipped tests must have tickets with ETA"
+  ],
+  "technical_constraints": [
+    "Some tests may require docker-compose services (need to ensure CI runs these)",
+    "Integration tests may need environment variables for external services",
+    "Flaky tests may need timeout adjustments or better synchronization",
+    "Some tests may be OS-specific (Linux vs Mac)",
+    "May need to add test fixtures or mocks for external dependencies"
+  ],
+  "scope_in_scope": [
+    "All 13 test files with skip: true annotations",
+    ".github/workflows/ (ensure test services are available)",
+    "test/test_helper.exs (may need better setup/teardown)",
+    "docker-compose.yml (test environment configuration)"
+  ],
+  "scope_out_of_scope": [
+    "Writing NEW tests (this is about enabling EXISTING tests)",
+    "Performance optimization tests (separate concern)",
+    "Property-based tests (separate initiative)"
+  ],
+  "priority_hint": "medium",
+  "urgency_hint": "Affects CI reliability and confidence in changes across all VSM systems."
+}
