@@ -2,7 +2,7 @@ import * as fs from "node:fs/promises";
 import * as readline from "node:readline";
 import type { Logger } from "../logging";
 import { findRootFromOptions } from "../fs/paths";
-import { persistItems, generateSlug } from "../domain/ideas";
+import { persistItems, generateSlug, parseIdeasFromText } from "../domain/ideas"; // Added parseIdeasFromText
 import { parseIdeasWithAgent } from "../domain/ideas-agent";
 import {
   runIdeaInterview,
@@ -98,22 +98,18 @@ export async function ideasCommand(
   // Warn if user has uncommitted changes before ideation
   await warnIfUncommittedChanges(root, logger, options.dryRun);
 
-  let ideas: Awaited<ReturnType<typeof parseIdeasWithAgent>> = [];
+  let ideas: any[] = [];
 
   // Determine input mode
   if (inputOverride !== undefined) {
     // Direct input override (for testing)
-    logger.info("Parsing ideas with agent...");
-    ideas = await parseIdeasWithAgent(inputOverride, root, {
-      verbose: options.verbose,
-    });
+    logger.info("Parsing ideas with text parser...");
+    ideas = parseIdeasFromText(inputOverride);
   } else if (options.file) {
     // File input
     const input = await readFile(options.file);
-    logger.info("Parsing ideas with agent...");
-    ideas = await parseIdeasWithAgent(input, root, {
-      verbose: options.verbose,
-    });
+    logger.info("Parsing ideas with text parser...");
+    ideas = parseIdeasFromText(input);
   } else if (hasStdinInput()) {
     // Piped stdin input
     const input = await readStdin();
@@ -121,10 +117,8 @@ export async function ideasCommand(
       console.log("No input provided");
       return;
     }
-    logger.info("Parsing ideas with agent...");
-    ideas = await parseIdeasWithAgent(input, root, {
-      verbose: options.verbose,
-    });
+    logger.info("Parsing ideas with text parser...");
+    ideas = parseIdeasFromText(input);
   } else {
     // No input and TTY - start interview mode
     try {
