@@ -1,4 +1,5 @@
 import chokidar from "chokidar";
+import type { FSWatcher } from "chokidar";
 import * as path from "node:path";
 import { resolveCwd, findRepoRoot } from "../fs/paths";
 import { safeRebuild } from "./builder";
@@ -25,7 +26,7 @@ export interface WatcherHandle {
  * Monitors source files for changes and triggers rebuilds.
  */
 export class FileWatcher {
-  private watcher?: chokidar.FSWatcher;
+  private watcher?: FSWatcher;
   private rebuildTimeout?: NodeJS.Timeout;
   private options: WatcherOptions;
   private root: string;
@@ -37,7 +38,7 @@ export class FileWatcher {
       ...options,
     };
     this.root = this.options.root ?? findRepoRoot(options.cwd ?? resolveCwd());
-    this.log = this.options.logger || console;
+    this.log = (this.options.logger || console) as Logger;
   }
 
   /**
@@ -85,7 +86,7 @@ export class FileWatcher {
       changedFiles = [];
     });
 
-    this.watcher.on("error", (error: Error) => {
+    this.watcher.on("error", (error: unknown) => {
       this.log.error(`Watcher error: ${error}`);
     });
 

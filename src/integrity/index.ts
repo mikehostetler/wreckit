@@ -13,11 +13,7 @@ export {
   type BuildMetadata,
 } from "./metadata";
 
-export {
-  safeRebuild,
-  type BuildOptions,
-  type BuildResult,
-} from "./builder";
+export { safeRebuild, type BuildOptions, type BuildResult } from "./builder";
 
 export {
   FileWatcher,

@@ -6,16 +6,17 @@ import type { GitOptions } from "../../git";
 const mockedSpawn = vi.fn();
 
 afterAll(() => {
-  mock.module("node:child_process", () => realChildProcess);
+  mock.restore();
 });
 
+// Preserve all exports from node:child_process, only mock spawn
 mock.module("node:child_process", () => ({
+  ...realChildProcess,
   spawn: mockedSpawn,
 }));
 
-const { getCurrentBranch, branchExists, ensureBranch } = await import(
-  "../../git"
-);
+const { getCurrentBranch, branchExists, ensureBranch } =
+  await import("../../git");
 
 function createMockLogger(): Logger {
   return {

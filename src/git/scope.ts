@@ -174,7 +174,7 @@ export function parseShortStat(stdout: string): {
 
   // Match: " 3 files changed, 50 insertions(+), 10 deletions(-)"
   const match = stdout.match(
-    /(\d+)\s+files?\s+changed(?:,\s+(\d+)\s+insertions?\(\+\))?(?:,\s+(\d+)\s+deletions?\(\-\))?/
+    /(\d+)\s+files?\s+changed(?:,\s+(\d+)\s+insertions?\(\+\))?(?:,\s+(\d+)\s+deletions?\(\-\))?/,
   );
 
   if (match) {
@@ -196,7 +196,7 @@ export function parseShortStat(stdout: string): {
  */
 export async function getDiffStats(
   baseRef: string,
-  options: GitOptions
+  options: GitOptions,
 ): Promise<DiffStats> {
   const { cwd, logger } = options;
 
@@ -204,7 +204,7 @@ export async function getDiffStats(
     // Get per-file stats using --stat
     const statResult = await runGitCommand(
       ["diff", "--stat", baseRef, "HEAD"],
-      { cwd, logger }
+      { cwd, logger },
     );
 
     const fileDiffs = parseDiffStat(statResult.stdout);
@@ -212,13 +212,14 @@ export async function getDiffStats(
     // Get total stats using --shortstat
     const shortStatResult = await runGitCommand(
       ["diff", "--shortstat", baseRef, "HEAD"],
-      { cwd, logger }
+      { cwd, logger },
     );
 
     const totals = parseShortStat(shortStatResult.stdout);
 
     return {
-      totalLines: totals.totalLines || fileDiffs.reduce((sum, f) => sum + f.lines, 0),
+      totalLines:
+        totals.totalLines || fileDiffs.reduce((sum, f) => sum + f.lines, 0),
       totalFiles: totals.files || fileDiffs.length,
       totalBytes: fileDiffs.reduce((sum, f) => sum + f.bytes, 0),
       fileDiffs,
@@ -241,7 +242,7 @@ export async function getDiffStats(
  * @returns Diff statistics
  */
 export async function getWorkingTreeDiffStats(
-  options: GitOptions
+  options: GitOptions,
 ): Promise<DiffStats> {
   try {
     // Get per-file stats using --stat
@@ -252,13 +253,14 @@ export async function getWorkingTreeDiffStats(
     // Get total stats using --shortstat
     const shortStatResult = await runGitCommand(
       ["diff", "--shortstat"],
-      options
+      options,
     );
 
     const totals = parseShortStat(shortStatResult.stdout);
 
     return {
-      totalLines: totals.totalLines || fileDiffs.reduce((sum, f) => sum + f.lines, 0),
+      totalLines:
+        totals.totalLines || fileDiffs.reduce((sum, f) => sum + f.lines, 0),
       totalFiles: totals.files || fileDiffs.length,
       totalBytes: fileDiffs.reduce((sum, f) => sum + f.bytes, 0),
       fileDiffs,
@@ -286,7 +288,7 @@ export async function getWorkingTreeDiffStats(
 export function isApproachingThreshold(
   value: number,
   maximum: number,
-  thresholdPercent: number = 80
+  thresholdPercent: number = 80,
 ): boolean {
   if (maximum === 0) return false;
   return (value / maximum) * 100 >= thresholdPercent;
@@ -303,7 +305,7 @@ export function isApproachingThreshold(
 export function validateStoryScope(
   stats: DiffStats,
   options: StoryScopeOptions,
-  storyId?: string
+  storyId?: string,
 ): StoryScopeResult {
   const violations: ScopeViolation[] = [];
   const warnings: string[] = [];
@@ -321,21 +323,21 @@ export function validateStoryScope(
     (fileDiff) =>
       !excludePatterns.some((pattern) => {
         const regex = new RegExp(
-          "^" + pattern.replace(/\*/g, ".*").replace(/\?/g, ".") + "$"
+          "^" + pattern.replace(/\*/g, ".*").replace(/\?/g, ".") + "$",
         );
         return regex.test(fileDiff.path);
-      })
+      }),
   );
 
   // Recalculate totals after filtering
   const filteredTotalLines = filteredFileDiffs.reduce(
     (sum, f) => sum + f.lines,
-    0
+    0,
   );
   const filteredTotalFiles = filteredFileDiffs.length;
   const filteredTotalBytes = filteredFileDiffs.reduce(
     (sum, f) => sum + f.bytes,
-    0
+    0,
   );
 
   // Check file count
@@ -350,7 +352,7 @@ export function validateStoryScope(
     isApproachingThreshold(filteredTotalFiles, maxFiles, warningThreshold)
   ) {
     warnings.push(
-      `Approaching file limit: ${filteredTotalFiles} files changed (max: ${maxFiles})`
+      `Approaching file limit: ${filteredTotalFiles} files changed (max: ${maxFiles})`,
     );
   }
 
@@ -366,7 +368,7 @@ export function validateStoryScope(
     isApproachingThreshold(filteredTotalLines, maxLines, warningThreshold)
   ) {
     warnings.push(
-      `Approaching line limit: ${filteredTotalLines} lines changed (max: ${maxLines})`
+      `Approaching line limit: ${filteredTotalLines} lines changed (max: ${maxLines})`,
     );
   }
 
@@ -386,7 +388,7 @@ export function validateStoryScope(
     const sizeKb = (filteredTotalBytes / 1024).toFixed(2);
     const maxKb = (maxBytes / 1024).toFixed(2);
     warnings.push(
-      `Approaching size limit: ${sizeKb} KB changed (max: ${maxKb} KB)`
+      `Approaching size limit: ${sizeKb} KB changed (max: ${maxKb} KB)`,
     );
   }
 
@@ -412,7 +414,7 @@ export function validateStoryScope(
  */
 export function formatScopeViolations(
   result: StoryScopeResult,
-  storyId: string
+  storyId: string,
 ): string {
   if (result.valid) {
     return "";
@@ -442,8 +444,12 @@ export function formatScopeViolations(
   lines.push("");
   lines.push("Suggestions:");
   lines.push("  - Consider splitting this work into multiple stories");
-  lines.push("  - Check if generated files should be excluded from scope checks");
-  lines.push("  - Review the changes and ensure they align with story acceptance criteria");
+  lines.push(
+    "  - Check if generated files should be excluded from scope checks",
+  );
+  lines.push(
+    "  - Review the changes and ensure they align with story acceptance criteria",
+  );
   lines.push("  - Update scope limits in config if this is expected behavior");
 
   return lines.join("\n");
@@ -459,7 +465,7 @@ export function formatScopeViolations(
 export function logScopeWarnings(
   result: StoryScopeResult,
   logger: Logger,
-  storyId?: string
+  storyId?: string,
 ): void {
   if (result.warnings.length === 0) {
     return;

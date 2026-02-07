@@ -149,22 +149,30 @@ export async function createProjectArchive(
 
   return new Promise((resolve) => {
     // tar czf .wreckit/project-sync.tar.gz --exclude ... -C projectRoot .
-    const tar = spawn("tar", [
-      "czf",
-      archivePath,
-      ...excludeArgs,
-      "-C",
-      projectRoot,
-      ".",
-    ], {
-      env: { ...process.env, COPYFILE_DISABLE: "1" }
-    });
+    const tar = spawn(
+      "tar",
+      ["czf", archivePath, ...excludeArgs, "-C", projectRoot, "."],
+      {
+        env: { ...process.env, COPYFILE_DISABLE: "1" },
+        stdio: ["ignore", "pipe", "pipe"],
+      },
+    );
+
+    if (!tar) {
+      resolve({
+        success: false,
+        error: "Failed to spawn tar process",
+      });
+      return;
+    }
 
     let stderr = "";
 
-    tar.stderr?.on("data", (data) => {
-      stderr += data.toString();
-    });
+    if (tar.stderr && typeof (tar.stderr as any).on === "function") {
+      tar.stderr.on("data", (data) => {
+        stderr += data.toString();
+      });
+    }
 
     tar.on("close", async (code) => {
       if (code !== 0) {
@@ -214,91 +222,64 @@ export async function uploadToSpriteVM(
 
   const targetDir = "/home/user/project";
 
-    try {
+  try {
+    // We don't read the file into memory anymore for streaming.
 
-      // We don't read the file into memory anymore for streaming.
+    // Instead, we let the Sprite CLI handle the upload via the -file flag.
 
-      // Instead, we let the Sprite CLI handle the upload via the -file flag.
+    const remoteArchive = "/tmp/project-sync.tar.gz";
 
-      const remoteArchive = "/tmp/project-sync.tar.gz";
+    // Ensure target directory exists
 
-  
+    await execSprite(
+      vmName,
 
-      // Ensure target directory exists
+      ["mkdir", "-p", targetDir],
 
-      await execSprite(
+      config,
 
-        vmName,
+      logger,
+    );
 
-        ["mkdir", "-p", targetDir],
+    // Upload archive using -file flag and extract it
 
-        config,
+    // The execSprite wrapper maps 'files' to '-file source:dest' arguments
 
-        logger,
+    const result = await execSprite(
+      vmName,
 
-      );
+      ["tar", "xzf", remoteArchive, "-C", targetDir],
 
-  
+      config,
 
-      // Upload archive using -file flag and extract it
+      logger,
 
-      // The execSprite wrapper maps 'files' to '-file source:dest' arguments
+      {
+        files: [`${archivePath}:${remoteArchive}`],
+      },
+    );
 
-      const result = await execSprite(
-
-        vmName,
-
-        ["tar", "xzf", remoteArchive, "-C", targetDir],
-
-        config,
-
-        logger,
-
-        { 
-
-          files: [`${archivePath}:${remoteArchive}`]
-
-        },
-
-      );
-
-  
-
-      if (!result.success && result.exitCode !== 0) {
-
-        return {
-
-          success: false,
-
-          error: `Upload/Extract failed: ${result.stderr}`,
-
-        };
-
-      }
-
-  
-
-      // Cleanup remote archive (best effort)
-
-      await execSprite(vmName, ["rm", "-f", remoteArchive], config, logger);
-
-  
-
-      logger.debug(`Archive extracted to ${targetDir}`);
-
-  
-
+    if (!result.success && result.exitCode !== 0) {
       return {
+        success: false,
 
-        success: true,
-
-        vmPath: targetDir,
-
+        error: `Upload/Extract failed: ${result.stderr}`,
       };
+    }
 
-    } catch (err) {
+    // Cleanup remote archive (best effort)
 
-      return {
+    await execSprite(vmName, ["rm", "-f", remoteArchive], config, logger);
+
+    logger.debug(`Archive extracted to ${targetDir}`);
+
+    return {
+      success: true,
+
+      vmPath: targetDir,
+    };
+  } catch (err) {
+    return {
       success: false,
       error: `Upload error: ${(err as Error).message}`,
     };
@@ -358,8 +339,13 @@ export async function syncProjectToVM(
     try {
       const remoteCwd = uploadResult.vmPath;
       logger.debug(`Initializing git in VM at ${remoteCwd}...`);
-      
-      await execSprite(vmName, ["sh", "-c", `cd ${remoteCwd} && git init`], config, logger);
+
+      await execSprite(
+        vmName,
+        ["sh", "-c", `cd ${remoteCwd} && git init`],
+        config,
+        logger,
+      );
 
       // Try to get host git config
       let userName = "WreckIt Bot";
@@ -369,10 +355,14 @@ export async function syncProjectToVM(
         const { exec } = await import("node:child_process");
         const { promisify } = await import("node:util");
         const execAsync = promisify(exec);
-        
-        const nameRes = await execAsync("git config get user.name").catch(() => ({ stdout: "" }));
-        const emailRes = await execAsync("git config get user.email").catch(() => ({ stdout: "" }));
-        
+
+        const nameRes = await execAsync("git config get user.name").catch(
+          () => ({ stdout: "" }),
+        );
+        const emailRes = await execAsync("git config get user.email").catch(
+          () => ({ stdout: "" }),
+        );
+
         if (nameRes.stdout.trim()) userName = nameRes.stdout.trim();
         if (emailRes.stdout.trim()) userEmail = emailRes.stdout.trim();
       } catch (e) {
@@ -487,21 +477,37 @@ export async function extractProjectArchive(
 
     // Extract using system tar
     return new Promise((resolve) => {
-      const tar = spawn("tar", [
-        "xzf",
-        tempArchivePath,
-        "-C",
-        projectRoot,
-        "-m",
-        "--no-same-owner",
-        "--no-same-permissions",
-      ]);
+      const tar = spawn(
+        "tar",
+        [
+          "xzf",
+          tempArchivePath,
+          "-C",
+          projectRoot,
+          "-m",
+          "--no-same-owner",
+          "--no-same-permissions",
+        ],
+        {
+          stdio: ["ignore", "pipe", "pipe"],
+        },
+      );
+
+      if (!tar) {
+        resolve({
+          success: false,
+          error: "Failed to spawn tar process",
+        });
+        return;
+      }
 
       let stderr = "";
 
-      tar.stderr?.on("data", (data) => {
-        stderr += data.toString();
-      });
+      if (tar.stderr && typeof (tar.stderr as any).on === "function") {
+        tar.stderr.on("data", (data) => {
+          stderr += data.toString();
+        });
+      }
 
       tar.on("close", async (code) => {
         // Clean up temp archive

@@ -190,14 +190,18 @@ export async function watchdogCommand(
   process.on("SIGINT", async () => {
     log.info("\nShutting down Watchdog...");
     await handle.stop();
-    log.info(`Final stats: ${buildCount} builds, ${successCount} successful, ${errorCount} failed`);
+    log.info(
+      `Final stats: ${buildCount} builds, ${successCount} successful, ${errorCount} failed`,
+    );
     process.exit(0);
   });
 
   process.on("SIGTERM", async () => {
     log.info("\nShutting down Watchdog...");
     await handle.stop();
-    log.info(`Final stats: ${buildCount} builds, ${successCount} successful, ${errorCount} failed`);
+    log.info(
+      `Final stats: ${buildCount} builds, ${successCount} successful, ${errorCount} failed`,
+    );
     process.exit(0);
   });
 

@@ -15,7 +15,11 @@ async function findFiles(dir, extension) {
   for (const entry of entries) {
     const fullPath = path.join(dir, entry.name);
     if (entry.isDirectory()) {
-      if (entry.name !== "node_modules" && entry.name !== "dist" && entry.name !== ".git") {
+      if (
+        entry.name !== "node_modules" &&
+        entry.name !== "dist" &&
+        entry.name !== ".git"
+      ) {
         const subFiles = await findFiles(fullPath, extension);
         files.push(...subFiles);
       }
@@ -54,7 +58,10 @@ async function main() {
   };
 
   await fs.mkdir(".wreckit", { recursive: true });
-  await fs.writeFile(".wreckit/build-metadata.json", JSON.stringify(metadata, null, 2));
+  await fs.writeFile(
+    ".wreckit/build-metadata.json",
+    JSON.stringify(metadata, null, 2),
+  );
 
   console.log("Build metadata created successfully");
   console.log("Source hash:", srcHash);

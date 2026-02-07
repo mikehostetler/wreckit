@@ -76,6 +76,7 @@ import {
   getWorkingTreeDiffStats,
   configToOptions,
   formatScopeViolations,
+  validateStoryScope,
   type PrMergeabilityResult,
   type GitPreflightError,
   type GitFileChange,
@@ -232,7 +233,7 @@ async function buildPromptVariables(
           `JIT context: ${Object.keys(context.files).length} file(s), ${Object.keys(context.artifacts).length} artifact(s)`,
         );
       }
-    if (context.errors.length > 0) {
+      if (context.errors.length > 0) {
         console.warn(`Context loading errors: ${context.errors.join("; ")}`);
       }
     }
@@ -867,7 +868,11 @@ export async function runPhaseImplement(
 
       // Validate against scope limits
       const scopeOptions = configToOptions(storyScopeConfig);
-      const scopeResult = validateGitDiffScope(diffStats, scopeOptions, currentStory.id);
+      const scopeResult = validateStoryScope(
+        diffStats,
+        scopeOptions,
+        currentStory.id,
+      );
 
       // Log warnings if approaching thresholds
       if (scopeResult.warnings.length > 0) {
@@ -888,7 +893,7 @@ export async function runPhaseImplement(
       // Log scope validation passed with stats
       logger.info(
         `Story ${currentStory.id} scope validation passed: ` +
-          `${scopeResult.stats.totalFiles} file(s), ${scopeResult.stats.totalLines} line(s) changed`
+          `${scopeResult.stats.totalFiles} file(s), ${scopeResult.stats.totalLines} line(s) changed`,
       );
     } else {
       // Legacy scope checking: just log changes for awareness (Item 084 - backward compatibility)

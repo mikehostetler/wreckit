@@ -198,8 +198,8 @@ function validateOptimizedPrompt(
 ): { passed: boolean; errors: string[] } {
   const errors: string[] = [];
 
-  // Extract variables from both prompts
-  const variablePattern = /\{\{\w+\}\}/g;
+  // Extract variables from both prompts - use capture group to extract variable name
+  const variablePattern = /\{\{(\w+)\}\}/g;
   const originalVars = new Set<string>();
   let match;
 
@@ -207,6 +207,8 @@ function validateOptimizedPrompt(
     originalVars.add(match[1]);
   }
 
+  // Reset lastIndex for reuse
+  variablePattern.lastIndex = 0;
   const optimizedVars = new Set<string>();
   while ((match = variablePattern.exec(optimizedPrompt)) !== null) {
     optimizedVars.add(match[1]);
@@ -450,7 +452,7 @@ ${patternsList}
 
 ### Changes Made
 
-${optimization.validationPassed ? "✅ All validations passed" : "⚠️ Validation warnings:\n" + optimization.validationErrors.map(e => `- ${e}`).join("\n")}
+${optimization.validationPassed ? "✅ All validations passed" : "⚠️ Validation warnings:\n" + optimization.validationErrors.map((e) => `- ${e}`).join("\n")}
 
 ### Review Checklist
 
@@ -550,7 +552,10 @@ export async function geneticistCommand(
 
   // Process each prompt that needs optimization
   for (const [promptName, patterns] of groupedPatterns.entries()) {
-    const totalOccurrences = patterns.reduce((sum, p) => sum + p.occurrences, 0);
+    const totalOccurrences = patterns.reduce(
+      (sum, p) => sum + p.occurrences,
+      0,
+    );
     logger.info(
       `\n📝 Optimizing ${promptName}.md (${patterns.length} patterns, ${totalOccurrences} total occurrences)`,
     );

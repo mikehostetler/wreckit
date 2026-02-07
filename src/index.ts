@@ -33,10 +33,7 @@ import { learnCommand } from "./commands/learn";
 import { dreamCommand } from "./commands/dream";
 import { summarizeCommand } from "./commands/summarize";
 import { geneticistCommand } from "./commands/geneticist";
-import {
-  checkIntegrityCommand,
-  watchdogCommand,
-} from "./commands/watchdog";
+import { checkIntegrityCommand, watchdogCommand } from "./commands/watchdog";
 // import { sdkInfoCommand } from "./commands/sdk-info";
 import { runOnboardingIfNeeded } from "./onboarding";
 import { resolveId } from "./domain/resolveId";
@@ -1113,8 +1110,12 @@ program
             autoMerge: options.autoMerge,
             cwd: resolveCwd(globalOpts.cwd),
             verbose: globalOpts.verbose,
-            timeWindowHours: options.timeWindow ? parseInt(options.timeWindow, 10) : 48,
-            minErrorCount: options.minErrors ? parseInt(options.minErrors, 10) : 3,
+            timeWindowHours: options.timeWindow
+              ? parseInt(options.timeWindow, 10)
+              : 48,
+            minErrorCount: options.minErrors
+              ? parseInt(options.minErrors, 10)
+              : 3,
           },
           logger,
         );
@@ -1171,7 +1172,9 @@ program
         await watchdogCommand(
           {
             cwd: resolveCwd(globalOpts.cwd),
-            debounceMs: options.debounceMs ? parseInt(options.debounceMs, 10) : 500,
+            debounceMs: options.debounceMs
+              ? parseInt(options.debounceMs, 10)
+              : 500,
             json: options.json,
           },
           logger,
@@ -1192,9 +1195,8 @@ async function main(): Promise<void> {
   setupInterruptHandler(logger, {
     cleanup: async () => {
       // Clean up any ephemeral VM if running
-      const { getCurrentEphemeralVM } = await import(
-        "./agent/sprite-runner.js"
-      );
+      const { getCurrentEphemeralVM } =
+        await import("./agent/sprite-runner.js");
       const currentVM = getCurrentEphemeralVM();
       if (currentVM) {
         const { killSprite } = await import("./agent/sprite-core.js");

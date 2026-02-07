@@ -71,7 +71,7 @@ export async function dispatchAgent(
 
   switch (config.kind) {
     case "process": {
-      return runProcessAgent({
+      return runProcessAgent(config as ProcessAgentConfig, {
         config: config as ProcessAgentConfig,
         cwd: options.cwd,
         prompt: options.prompt,
@@ -113,7 +113,6 @@ export async function dispatchAgent(
         prompt: options.prompt,
         logger: options.logger,
         dryRun: options.dryRun,
-        mockAgent: options.mockAgent,
         onStdoutChunk: options.onStdoutChunk,
         onStderrChunk: options.onStderrChunk,
         onAgentEvent: options.onAgentEvent,
@@ -130,7 +129,6 @@ export async function dispatchAgent(
         prompt: options.prompt,
         logger: options.logger,
         dryRun: options.dryRun,
-        mockAgent: options.mockAgent,
         onStdoutChunk: options.onStdoutChunk,
         onStderrChunk: options.onStderrChunk,
         onAgentEvent: options.onAgentEvent,
@@ -147,7 +145,6 @@ export async function dispatchAgent(
         prompt: options.prompt,
         logger: options.logger,
         dryRun: options.dryRun,
-        mockAgent: options.mockAgent,
         onStdoutChunk: options.onStdoutChunk,
         onStderrChunk: options.onStderrChunk,
         onAgentEvent: options.onAgentEvent,
@@ -164,7 +161,6 @@ export async function dispatchAgent(
         prompt: options.prompt,
         logger: options.logger,
         dryRun: options.dryRun,
-        mockAgent: options.mockAgent,
         onStdoutChunk: options.onStdoutChunk,
         onStderrChunk: options.onStderrChunk,
         onAgentEvent: options.onAgentEvent,

@@ -163,7 +163,6 @@ export async function runPhaseCommand(
   const config = await loadConfig(
     root,
     sandbox ? { sandbox } : undefined,
-    logger,
   );
 
   const itemDir = getItemDir(root, itemId);

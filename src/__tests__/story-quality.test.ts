@@ -188,8 +188,8 @@ describe("Story Quality Validation (Gap 3)", () => {
         const result = validateStoryQuality(prd, defaultOptions);
         expect(result.valid).toBe(false);
         expect(
-          result.storyErrors[0].errors.some((e) =>
-            e.includes("US-###") || e.includes("US-{item}-{seq}")
+          result.storyErrors[0].errors.some(
+            (e) => e.includes("US-###") || e.includes("US-{item}-{seq}"),
           ),
         ).toBe(true);
       });
@@ -209,8 +209,8 @@ describe("Story Quality Validation (Gap 3)", () => {
         const result = validateStoryQuality(prd, defaultOptions);
         expect(result.valid).toBe(false);
         expect(
-          result.storyErrors[0].errors.some((e) =>
-            e.includes("US-###") || e.includes("US-{item}-{seq}")
+          result.storyErrors[0].errors.some(
+            (e) => e.includes("US-###") || e.includes("US-{item}-{seq}"),
           ),
         ).toBe(true);
       });
@@ -230,8 +230,8 @@ describe("Story Quality Validation (Gap 3)", () => {
         const result = validateStoryQuality(prd, defaultOptions);
         expect(result.valid).toBe(false);
         expect(
-          result.storyErrors[0].errors.some((e) =>
-            e.includes("US-###") || e.includes("US-{item}-{seq}")
+          result.storyErrors[0].errors.some(
+            (e) => e.includes("US-###") || e.includes("US-{item}-{seq}"),
           ),
         ).toBe(true);
       });
@@ -251,8 +251,8 @@ describe("Story Quality Validation (Gap 3)", () => {
         const result = validateStoryQuality(prd, defaultOptions);
         expect(result.valid).toBe(false);
         expect(
-          result.storyErrors[0].errors.some((e) =>
-            e.includes("US-###") || e.includes("US-{item}-{seq}")
+          result.storyErrors[0].errors.some(
+            (e) => e.includes("US-###") || e.includes("US-{item}-{seq}"),
           ),
         ).toBe(true);
       });

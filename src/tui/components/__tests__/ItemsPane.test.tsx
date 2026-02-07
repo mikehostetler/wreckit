@@ -354,7 +354,7 @@ describe("ItemsPane", () => {
     });
 
     it("does not include story ID when absent", () => {
-      const item = {
+      const item: Record<string, any> = {
         id: "item1",
         state: "idea",
         title: "Item 1",

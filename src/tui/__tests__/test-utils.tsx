@@ -13,11 +13,11 @@ import type { IndexItem } from "../../schemas";
 export function createMockTuiState(
   overrides: Partial<TuiState> = {},
 ): TuiState {
-  const items: IndexItem[] = [
+  const items = [
     {
       id: "foundation/001-core-types",
       title: "Core Types",
-      state: "done",
+      state: "done" as const,
       section: "foundation",
       overview: "",
       branch: null,
@@ -30,7 +30,7 @@ export function createMockTuiState(
     {
       id: "features/001-auth",
       title: "Authentication",
-      state: "implementing",
+      state: "implementing" as const,
       section: "features",
       overview: "",
       branch: null,
@@ -43,7 +43,7 @@ export function createMockTuiState(
     {
       id: "features/002-user-profile",
       title: "User Profile",
-      state: "idea",
+      state: "idea" as const,
       section: "features",
       overview: "",
       branch: null,
@@ -53,7 +53,7 @@ export function createMockTuiState(
       created_at: "2025-01-01T00:00:00Z",
       updated_at: "2025-01-01T00:00:00Z",
     },
-  ];
+  ] as unknown as IndexItem[];
 
   const baseState = createTuiState(items);
 
@@ -140,7 +140,7 @@ export function createMockIndexItem(
   return {
     id: "foundation/001-test",
     title: "Test Item",
-    state: "idea",
+    state: "idea" as const,
     section: "foundation",
     overview: "",
     branch: null,
@@ -150,5 +150,5 @@ export function createMockIndexItem(
     created_at: "2025-01-01T00:00:00Z",
     updated_at: "2025-01-01T00:00:00Z",
     ...overrides,
-  };
+  } as unknown as IndexItem;
 }

@@ -1,4 +1,13 @@
-import { describe, it, expect, beforeEach, mock, spyOn } from "bun:test";
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterAll,
+  mock,
+  spyOn,
+} from "bun:test";
+import * as originalSpriteCore from "../../agent/sprite-core";
 import { buildRemoteToolRegistry } from "../../agent/remote-tools";
 import type { SpriteAgentConfig } from "../../schemas";
 
@@ -12,11 +21,20 @@ function createMockLogger() {
   } as any;
 }
 
-// Mock execSprite in sprite-runner module
+// Mock execSprite in sprite-core module (used by remote-tools), preserve all other exports
 const mockExecSprite = mock();
-mock.module("../../agent/sprite-runner", () => ({
+mock.module("../../agent/sprite-core", () => ({
+  ...originalSpriteCore,
   execSprite: mockExecSprite,
+  startSprite: mock(),
+  listSprites: mock(),
+  killSprite: mock(),
+  attachSprite: mock(),
 }));
+
+afterAll(() => {
+  mock.restore();
+});
 
 describe("Remote Tools", () => {
   const config: SpriteAgentConfig = {
@@ -51,14 +69,17 @@ describe("Remote Tools", () => {
       exitCode: 0,
     });
 
-    const result = await readTool!.func({ file_path: "test.txt" });
+    // Implementation uses 'path' parameter, not 'file_path'
+    const result = await readTool!.func({ path: "test.txt" });
     expect(result).toBe("Hello World");
 
-    // Verify arguments
+    // Verify arguments - implementation prefixes with cd to remoteCwd
     const calls = mockExecSprite.mock.calls;
     expect(calls.length).toBe(1);
     expect(calls[0][0]).toBe(vmName);
-    expect(calls[0][1]).toEqual(["sh", "-c", 'cat "test.txt" | base64']);
+    expect(calls[0][1][0]).toBe("sh");
+    expect(calls[0][1][1]).toBe("-c");
+    expect(calls[0][1][2]).toContain('cat "test.txt" | base64');
   });
 
   it("Remote Write Tool: writes file via base64", async () => {
@@ -75,14 +96,16 @@ describe("Remote Tools", () => {
 
     const content = "Hello World";
     // base64 is SGVsbG8gV29ybGQ=
+    // Implementation uses 'path' parameter, not 'file_path'
     const result = await writeTool!.func({
-      file_path: "test.txt",
+      path: "test.txt",
       content,
     });
 
     expect(result).toContain("Successfully wrote");
 
     const args = mockExecSprite.mock.calls[0][1];
+    // Command includes cd prefix and base64 write command
     expect(args[2]).toContain(
       'echo "SGVsbG8gV29ybGQ=" | base64 -d > "test.txt"',
     );
@@ -103,8 +126,11 @@ describe("Remote Tools", () => {
     const result = await bashTool!.func({ command: "ls -la" });
     expect(result).toBe("command output");
 
+    // Implementation uses sh -c and prefixes with cd to remoteCwd
     const args = mockExecSprite.mock.calls[0][1];
-    expect(args).toEqual(["bash", "-c", "ls -la"]);
+    expect(args[0]).toBe("sh");
+    expect(args[1]).toBe("-c");
+    expect(args[2]).toContain("ls -la");
   });
 
   it("Handles execution errors gracefully", async () => {

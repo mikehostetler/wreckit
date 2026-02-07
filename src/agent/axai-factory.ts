@@ -14,7 +14,7 @@ import type { Logger } from "../logging";
 export function createAxAI(
   env: Record<string, string>,
   logger: Logger,
-): AxAIService {
+): AxAIService<any> {
   // Detection for Z.AI proxy
   const isZai = env.ANTHROPIC_BASE_URL?.includes("z.ai");
 
@@ -23,14 +23,15 @@ export function createAxAI(
     // prompt compatibility for GLM models than the Anthropic provider.
     const zaiUrl = env.ANTHROPIC_BASE_URL!.replace(/\/anthropic\/?$/, "/v1");
 
-    logger.debug(`Z.AI detected. Switching to OpenAI-compatible provider at ${zaiUrl}`);
+    logger.debug(
+      `Z.AI detected. Switching to OpenAI-compatible provider at ${zaiUrl}`,
+    );
 
     return new AxAIOpenAI({
       apiKey: env.ANTHROPIC_AUTH_TOKEN,
       apiURL: zaiUrl,
       model: env.ANTHROPIC_DEFAULT_SONNET_MODEL || "glm-4.7",
-      config: { maxRetries: 3 }
-    });
+    } as any);
   }
 
   if (env.ANTHROPIC_API_KEY || env.ANTHROPIC_AUTH_TOKEN) {

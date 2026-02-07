@@ -9,7 +9,11 @@
 import type { Logger } from "../logging";
 import type { GitFileChange } from "../git/status";
 import type { StoryScopeConfig } from "../schemas";
-import { getWorkingTreeDiffStats, configToOptions, formatScopeViolations } from "../git/scope";
+import {
+  getWorkingTreeDiffStats,
+  configToOptions,
+  formatScopeViolations,
+} from "../git/scope";
 
 // Re-export types from git/scope for convenience
 export type {
@@ -86,7 +90,10 @@ function calculatePercentage(value: number, max: number): number {
 /**
  * Format a scope validation error message
  */
-export function formatScopeErrors(result: ScopeValidationResult, storyId: string): string {
+export function formatScopeErrors(
+  result: ScopeValidationResult,
+  storyId: string,
+): string {
   if (result.valid) {
     return "";
   }
@@ -110,8 +117,12 @@ export function formatScopeErrors(result: ScopeValidationResult, storyId: string
   lines.push("");
   lines.push("Suggestions:");
   lines.push("  - Consider splitting this work into multiple stories");
-  lines.push("  - Check if generated files should be excluded from scope checks");
-  lines.push("  - Review the changes and ensure they align with the story acceptance criteria");
+  lines.push(
+    "  - Check if generated files should be excluded from scope checks",
+  );
+  lines.push(
+    "  - Review the changes and ensure they align with the story acceptance criteria",
+  );
 
   return lines.join("\n");
 }
@@ -127,7 +138,9 @@ export function formatScopeErrors(result: ScopeValidationResult, storyId: string
  * @param options - Validation options
  * @returns Validation result with details
  */
-export function validateStoryScope(options: ScopeValidationOptions): ScopeValidationResult {
+export function validateStoryScope(
+  options: ScopeValidationOptions,
+): ScopeValidationResult {
   const { storyId, changes, config, diffStats } = options;
   const errors: string[] = [];
   const warnings: string[] = [];
@@ -137,7 +150,7 @@ export function validateStoryScope(options: ScopeValidationOptions): ScopeValida
     return !config.exclude_patterns.some((pattern) => {
       // Simple glob pattern matching (supports * wildcards)
       const regex = new RegExp(
-        "^" + pattern.replace(/\*/g, ".*").replace(/\?/g, ".") + "$"
+        "^" + pattern.replace(/\*/g, ".*").replace(/\?/g, ".") + "$",
       );
       return regex.test(change.path);
     });
@@ -154,22 +167,22 @@ export function validateStoryScope(options: ScopeValidationOptions): ScopeValida
   // Validate file count
   if (stats.totalFiles > config.max_diff_files) {
     errors.push(
-      `Too many files changed: ${stats.totalFiles} files (max: ${config.max_diff_files})`
+      `Too many files changed: ${stats.totalFiles} files (max: ${config.max_diff_files})`,
     );
   } else if (stats.totalFiles > config.max_diff_files * 0.8) {
     warnings.push(
-      `Approaching file limit: ${stats.totalFiles} files changed (max: ${config.max_diff_files})`
+      `Approaching file limit: ${stats.totalFiles} files changed (max: ${config.max_diff_files})`,
     );
   }
 
   // Validate line count
   if (stats.totalLines > config.max_diff_lines) {
     errors.push(
-      `Too many lines changed: ${stats.totalLines} lines (max: ${config.max_diff_lines})`
+      `Too many lines changed: ${stats.totalLines} lines (max: ${config.max_diff_lines})`,
     );
   } else if (stats.totalLines > config.max_diff_lines * 0.8) {
     warnings.push(
-      `Approaching line limit: ${stats.totalLines} lines changed (max: ${config.max_diff_lines})`
+      `Approaching line limit: ${stats.totalLines} lines changed (max: ${config.max_diff_lines})`,
     );
   }
 
@@ -177,14 +190,12 @@ export function validateStoryScope(options: ScopeValidationOptions): ScopeValida
   if (stats.totalBytes > config.max_diff_bytes) {
     const sizeKb = (stats.totalBytes / 1024).toFixed(2);
     const maxKb = (config.max_diff_bytes / 1024).toFixed(2);
-    errors.push(
-      `Diff too large: ${sizeKb} KB (max: ${maxKb} KB)`
-    );
+    errors.push(`Diff too large: ${sizeKb} KB (max: ${maxKb} KB)`);
   } else if (stats.totalBytes > config.max_diff_bytes * 0.8) {
     const sizeKb = (stats.totalBytes / 1024).toFixed(2);
     const maxKb = (config.max_diff_bytes / 1024).toFixed(2);
     warnings.push(
-      `Approaching size limit: ${sizeKb} KB changed (max: ${maxKb} KB)`
+      `Approaching size limit: ${sizeKb} KB changed (max: ${maxKb} KB)`,
     );
   }
 
@@ -228,7 +239,7 @@ export class ScopeEnforcer {
   async validateAfterStory(
     storyId: string,
     afterStatus: GitFileChange[],
-    diffStats?: ScopeStats
+    diffStats?: ScopeStats,
   ): Promise<ScopeValidationResult> {
     if (!this.enabled) {
       this.logger.debug("Scope enforcement disabled, skipping validation");
@@ -248,7 +259,7 @@ export class ScopeEnforcer {
     // Find new changes (files that are in after but not in before)
     const beforePaths = new Set(this.beforeStatus.map((c) => c.path));
     const newChanges = afterStatus.filter(
-      (change) => !beforePaths.has(change.path)
+      (change) => !beforePaths.has(change.path),
     );
 
     const result = validateStoryScope({
@@ -261,17 +272,17 @@ export class ScopeEnforcer {
     if (result.valid) {
       if (result.warnings.length > 0) {
         this.logger.warn(
-          `Story ${storyId} scope warnings:\n${result.warnings.join("\n")}`
+          `Story ${storyId} scope warnings:\n${result.warnings.join("\n")}`,
         );
       } else {
         this.logger.debug(
           `Story ${storyId} scope validation passed: ${result.stats.totalFiles} files, ` +
-            `${result.stats.totalLines} lines`
+            `${result.stats.totalLines} lines`,
         );
       }
     } else {
       this.logger.error(
-        `Story ${storyId} scope validation failed:\n${formatScopeErrors(result, storyId)}`
+        `Story ${storyId} scope validation failed:\n${formatScopeErrors(result, storyId)}`,
       );
     }
 

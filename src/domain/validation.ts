@@ -62,6 +62,16 @@ export function canEnterImplementing(
   return { valid: true };
 }
 
+export function canEnterCritique(
+  ctx: Pick<ValidationContext, "prd">,
+): ValidationResult {
+  // Critique requires all stories to be done
+  if (!allStoriesDone(ctx.prd)) {
+    return { valid: false, reason: "not all stories are done" };
+  }
+  return { valid: true };
+}
+
 export function canEnterInPr(
   ctx: Pick<ValidationContext, "prd" | "hasPr">,
 ): ValidationResult {
@@ -103,6 +113,9 @@ export function validateTransition(
       return canEnterPlanned(ctx);
     case "implementing":
       return canEnterImplementing(ctx);
+    case "critique":
+      // Critique requires all stories to be done (same as in_pr entry requirement)
+      return canEnterCritique(ctx);
     case "in_pr":
       return canEnterInPr(ctx);
     case "done":
@@ -732,7 +745,9 @@ function validateSingleStory(
 
   // Check story ID format
   if (options.enforceStoryIdFormat && !isValidStoryId(story.id)) {
-    errors.push(`Story ID "${story.id}" does not match format US-### or US-{item}-{seq}`);
+    errors.push(
+      `Story ID "${story.id}" does not match format US-### or US-{item}-{seq}`,
+    );
   }
 
   // Check for non-empty title

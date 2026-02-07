@@ -91,7 +91,7 @@ export async function runClaudeSdkAgent(
 
       // Route to appropriate callback based on message type
       const isError =
-        message.type === "error" ||
+        (message.type as string) === "error" ||
         message.constructor?.name === "ErrorMessage";
 
       if (messageText) {

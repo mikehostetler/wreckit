@@ -22,7 +22,7 @@ import {
 } from "../fs/json";
 import { scanItems } from "./status";
 import { runCommand } from "./run";
-import { writeHealingLog, type HealingLogEntry } from "../agent/healingRunner";
+import { type HealingLogEntry } from "../agent/healingRunner";
 import type { DoctorConfig } from "../schemas";
 import { TuiViewAdapter } from "../views";
 import type { AgentEvent } from "../tui/agentEvents";
@@ -57,6 +57,8 @@ function createBatchProgress(
     completed: [],
     failed: [],
     skipped: skippedItems,
+    healing_attempts: 0,
+    last_healing_at: null,
   };
 }
 
@@ -150,7 +152,6 @@ export async function orchestrateAll(
       ...(agentKind ? { agentKind } : undefined),
       ...(sandbox ? { sandbox } : undefined),
     },
-    logger,
   );
 
   const items = await scanItems(root);
@@ -631,7 +632,6 @@ export async function orchestrateNext(
       ...(agentKind ? { agentKind } : undefined),
       ...(sandbox ? { sandbox } : undefined),
     },
-    logger,
   );
 
   const nextItemId = await getNextIncompleteItem(root);

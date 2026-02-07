@@ -99,7 +99,9 @@ describe("loadConfig", () => {
     expect(result.branch_prefix).toBe("custom/");
   });
 
-  it("throws SchemaValidationError for invalid config.json", async () => {
+  it("falls back to defaults for invalid config.json", async () => {
+    // The implementation was changed to be lenient: it catches validation
+    // errors and falls back to defaults with a warning instead of throwing
     const invalidConfig = {
       schema_version: "not a number",
       agent: "invalid",
@@ -109,16 +111,23 @@ describe("loadConfig", () => {
       JSON.stringify(invalidConfig),
     );
 
-    await expect(loadConfig(tempDir)).rejects.toThrow(SchemaValidationError);
+    const result = await loadConfig(tempDir);
+    // Should return defaults when validation fails
+    expect(result.schema_version).toBe(DEFAULT_CONFIG.schema_version);
+    expect(result.agent).toEqual(DEFAULT_CONFIG.agent);
   });
 
-  it("throws InvalidJsonError for malformed JSON", async () => {
+  it("falls back to defaults for malformed JSON", async () => {
+    // The implementation was changed to be lenient: it catches JSON parse
+    // errors and falls back to defaults instead of throwing
     await fs.writeFile(
       path.join(tempDir, ".wreckit", "config.json"),
       "{ invalid json }",
     );
 
-    await expect(loadConfig(tempDir)).rejects.toThrow(InvalidJsonError);
+    const result = await loadConfig(tempDir);
+    // Should return defaults when JSON parsing fails
+    expect(result).toEqual(DEFAULT_CONFIG);
   });
 });
 

@@ -20,7 +20,10 @@ interface CritiqueResult {
   critique: string;
 }
 
-function parseCritiqueJson(output: string, logger: Logger): CritiqueResult | null {
+function parseCritiqueJson(
+  output: string,
+  logger: Logger,
+): CritiqueResult | null {
   try {
     // Strategy 1: Look for JSON markdown block
     const codeBlockMatch = output.match(/```json\s*([\s\S]*?)\s*```/);
@@ -32,7 +35,9 @@ function parseCritiqueJson(output: string, logger: Logger): CritiqueResult | nul
         }
       } catch (err) {
         const errorMsg = err instanceof Error ? err.message : String(err);
-        logger.debug(`Failed to parse JSON code block in critique: ${errorMsg}`);
+        logger.debug(
+          `Failed to parse JSON code block in critique: ${errorMsg}`,
+        );
       }
     }
 
@@ -47,7 +52,9 @@ function parseCritiqueJson(output: string, logger: Logger): CritiqueResult | nul
           }
         } catch (err) {
           const errorMsg = err instanceof Error ? err.message : String(err);
-          logger.debug(`Failed to parse JSON object ${i}/${matches.length} in critique: ${errorMsg}`);
+          logger.debug(
+            `Failed to parse JSON object ${i}/${matches.length} in critique: ${errorMsg}`,
+          );
           continue;
         }
       }

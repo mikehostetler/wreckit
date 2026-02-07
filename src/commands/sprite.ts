@@ -541,9 +541,8 @@ export async function spritePullCommand(
     const vmSourcePath = options.vmPath || "/home/user/project";
 
     // We need to call the lower-level functions to support custom vmPath
-    const { downloadFromSpriteVM, extractProjectArchive } = await import(
-      "../fs/sync.js"
-    );
+    const { downloadFromSpriteVM, extractProjectArchive } =
+      await import("../fs/sync.js");
 
     logger.info(`Pulling files from Sprite '${options.name}'...`);
 

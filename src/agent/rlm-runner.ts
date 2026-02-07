@@ -1,7 +1,11 @@
-import { Anthropic } from "@anthropic-ai/sdk";
 import { createAxAI } from "./axai-factory";
 import { buildSdkEnv } from "./env";
-import { buildToolRegistry, JSRuntime, defaultLocalExecutor, type Executor } from "./rlm-tools";
+import {
+  buildToolRegistry,
+  JSRuntime,
+  defaultLocalExecutor,
+  type Executor,
+} from "./rlm-tools";
 import { buildRemoteToolRegistry } from "./remote-tools";
 import { adaptMcpServersToAxTools } from "./mcp/mcporterAdapter";
 import { registerSdkController, unregisterSdkController } from "./lifecycle";
@@ -66,116 +70,128 @@ async function ensureSpriteRunning(
 }
 
 function truncate(str: string, length: number = 20000): string {
-    if (!str || str.length <= length) return str;
-    return str.slice(0, length) + `\n...[truncated ${str.length - length} chars]...`;
+  if (!str || str.length <= length) return str;
+  return (
+    str.slice(0, length) + `\n...[truncated ${str.length - length} chars]...`
+  );
 }
 
-function parseToolCalls(content: string, logger: Logger): Array<{ name: string; args: any; error?: string }> {
-    const calls: Array<{ name: string; args: any; error?: string }> = [];
+function parseToolCalls(
+  content: string,
+  logger: Logger,
+): Array<{ name: string; args: any; error?: string }> {
+  const calls: Array<{ name: string; args: any; error?: string }> = [];
 
-    const invokeRegex = /<invoke\s+name=\"([^\"]+)\">([\s\S]*?)<\/invoke>/g;
-    let match;
-    while ((match = invokeRegex.exec(content)) !== null) {
-        const toolName = match[1];
-        const paramsText = match[2];
-        const params: Record<string, any> = {};
-        const paramRegex = /<parameter\s+name=\"([^\"]+)\">([\s\S]*?)<\/parameter>/g;
-        let pMatch;
-        while ((pMatch = paramRegex.exec(paramsText)) !== null) {
-            params[pMatch[1]] = pMatch[2].trim();
-        }
-        calls.push({ name: toolName, args: params });
+  const invokeRegex = /<invoke\s+name=\"([^\"]+)\">([\s\S]*?)<\/invoke>/g;
+  let match;
+  while ((match = invokeRegex.exec(content)) !== null) {
+    const toolName = match[1];
+    const paramsText = match[2];
+    const params: Record<string, any> = {};
+    const paramRegex =
+      /<parameter\s+name=\"([^\"]+)\">([\s\S]*?)<\/parameter>/g;
+    let pMatch;
+    while ((pMatch = paramRegex.exec(paramsText)) !== null) {
+      params[pMatch[1]] = pMatch[2].trim();
     }
+    calls.push({ name: toolName, args: params });
+  }
 
-    const executeRegex = /<(?:execute|execute_command)>([\s\S]*?)<\/(?:execute|execute_command)>/g;
-    while ((match = executeRegex.exec(content)) !== null) {
-        const inner = match[1];
-        const cmdMatch = /<command>([\s\S]*?)<\/command>/.exec(inner);
-        if (cmdMatch) {
-            calls.push({ name: "Bash", args: { command: cmdMatch[1].trim() } });
-        } else {
-            calls.push({ name: "Bash", args: { command: inner.trim() } });
-        }
+  const executeRegex =
+    /<(?:execute|execute_command)>([\s\S]*?)<\/(?:execute|execute_command)>/g;
+  while ((match = executeRegex.exec(content)) !== null) {
+    const inner = match[1];
+    const cmdMatch = /<command>([\s\S]*?)<\/command>/.exec(inner);
+    if (cmdMatch) {
+      calls.push({ name: "Bash", args: { command: cmdMatch[1].trim() } });
+    } else {
+      calls.push({ name: "Bash", args: { command: inner.trim() } });
     }
+  }
 
-    const toolCallRegex = /<tool_call>\s*([a-zA-Z0-9_]+)\s*([\s\S]*?)\s*<\/tool_call>/g;
-    while ((match = toolCallRegex.exec(content)) !== null) {
-        const toolName = match[1];
-        let argsStr = match[2];
-        if (argsStr.startsWith('"') && argsStr.endsWith('"')) {
-             try { 
-               argsStr = JSON.parse(argsStr); 
-             } catch (err) {
-               // Quoted string wasn't valid JSON, use original string
-               const errorMsg = err instanceof Error ? err.message : String(err);
-               logger.debug(`Failed to parse quoted tool args, using raw string: ${errorMsg}`);
-             }
-        }
-        let args = {};
-        let error: string | undefined;
-        try {
-            args = JSON.parse(argsStr);
-        } catch (e: any) {
-            if (toolName === "RunJS") {
-                args = { code: argsStr };
-            } else {
-                error = `Invalid JSON arguments: ${e.message}`;
-                // Keep the raw string as 'content' or similar for debugging if needed?
-                // For now, fail fast.
-            }
-        }
-        calls.push({ name: toolName, args, error });
+  const toolCallRegex =
+    /<tool_call>\s*([a-zA-Z0-9_]+)\s*([\s\S]*?)\s*<\/tool_call>/g;
+  while ((match = toolCallRegex.exec(content)) !== null) {
+    const toolName = match[1];
+    let argsStr = match[2];
+    if (argsStr.startsWith('"') && argsStr.endsWith('"')) {
+      try {
+        argsStr = JSON.parse(argsStr);
+      } catch (err) {
+        // Quoted string wasn't valid JSON, use original string
+        const errorMsg = err instanceof Error ? err.message : String(err);
+        logger.debug(
+          `Failed to parse quoted tool args, using raw string: ${errorMsg}`,
+        );
+      }
     }
-
-    const runJsRegex = /<RunJS>([\s\S]*?)<\/RunJS>/g;
-    while ((match = runJsRegex.exec(content)) !== null) {
-        const inner = match[1].trim();
-        let args = { code: inner };
-        try {
-            const json = JSON.parse(inner);
-            if (json.code) args = json;
-        } catch {}
-        calls.push({ name: "RunJS", args });
+    let args = {};
+    let error: string | undefined;
+    try {
+      args = JSON.parse(argsStr);
+    } catch (e: any) {
+      if (toolName === "RunJS") {
+        args = { code: argsStr };
+      } else {
+        error = `Invalid JSON arguments: ${e.message}`;
+        // Keep the raw string as 'content' or similar for debugging if needed?
+        // For now, fail fast.
+      }
     }
+    calls.push({ name: toolName, args, error });
+  }
 
-    if (calls.length > 0) logger.debug(`Parsed ${calls.length} tool calls from XML.`);
-    return calls;
+  const runJsRegex = /<RunJS>([\s\S]*?)<\/RunJS>/g;
+  while ((match = runJsRegex.exec(content)) !== null) {
+    const inner = match[1].trim();
+    let args = { code: inner };
+    try {
+      const json = JSON.parse(inner);
+      if (json.code) args = json;
+    } catch {}
+    calls.push({ name: "RunJS", args });
+  }
+
+  if (calls.length > 0)
+    logger.debug(`Parsed ${calls.length} tool calls from XML.`);
+  return calls;
 }
 
 async function simpleAnthropicChat(
-    baseUrl: string, 
-    apiKey: string, 
-    authToken: string | undefined, 
-    body: any,
-    logger: Logger
+  baseUrl: string,
+  apiKey: string,
+  authToken: string | undefined,
+  body: any,
+  logger: Logger,
 ): Promise<any> {
-    let url = baseUrl;
-    if (!url.endsWith("/")) url += "/";
-    if (!url.includes("/v1/")) url += "v1/";
-    if (!url.endsWith("/messages") && !url.endsWith("/messages/")) url += "messages";
-    
-    const headers: any = {
-        "Content-Type": "application/json",
-        "anthropic-version": "2023-06-01",
-        "x-api-key": apiKey
-    };
-    if (authToken) {
-        headers["Authorization"] = `Bearer ${authToken}`;
-        delete headers["x-api-key"]; 
-    }
+  let url = baseUrl;
+  if (!url.endsWith("/")) url += "/";
+  if (!url.includes("/v1/")) url += "v1/";
+  if (!url.endsWith("/messages") && !url.endsWith("/messages/"))
+    url += "messages";
 
-    const res = await fetch(url, {
-        method: "POST",
-        headers,
-        body: JSON.stringify(body)
-    });
+  const headers: any = {
+    "Content-Type": "application/json",
+    "anthropic-version": "2023-06-01",
+    "x-api-key": apiKey,
+  };
+  if (authToken) {
+    headers["Authorization"] = `Bearer ${authToken}`;
+    delete headers["x-api-key"];
+  }
 
-    if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`Anthropic API Error ${res.status}: ${text}`);
-    }
+  const res = await fetch(url, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(body),
+  });
 
-    return await res.json();
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Anthropic API Error ${res.status}: ${text}`);
+  }
+
+  return await res.json();
 }
 
 export async function runRlmAgent(
@@ -211,13 +227,13 @@ export async function runRlmAgent(
 
   try {
     const env = await buildSdkEnv({ cwd, logger });
-    
+
     // Debug logging for Auth troubleshooting
     logger.debug(`RLM Runner Env check:
       CWD: ${cwd}
       Base URL: ${env.ANTHROPIC_BASE_URL}
       Token present: ${!!env.ANTHROPIC_AUTH_TOKEN}
-      Token prefix: ${env.ANTHROPIC_AUTH_TOKEN ? env.ANTHROPIC_AUTH_TOKEN.substring(0, 15) + '...' : 'N/A'}
+      Token prefix: ${env.ANTHROPIC_AUTH_TOKEN ? env.ANTHROPIC_AUTH_TOKEN.substring(0, 15) + "..." : "N/A"}
       Model: ${config.model}
     `);
 
@@ -226,11 +242,11 @@ export async function runRlmAgent(
     if (config.sandbox) {
       vmName = `wreckit-rlm-sandbox-${Date.now()}`;
       const spriteConfig = {
+        ...config,
         kind: "sprite" as const,
         wispPath: config.wispPath || "sprite",
         token: env.SPRITES_TOKEN,
         timeout: 300,
-        ...config,
       };
 
       logger.info(`Initializing RLM Sandbox (${vmName})...`);
@@ -265,11 +281,11 @@ export async function runRlmAgent(
 
     if (config.sandbox && vmName) {
       const spriteConfig = {
+        ...config,
         kind: "sprite" as const,
         wispPath: config.wispPath || "sprite",
         token: env.SPRITES_TOKEN,
         timeout: 300,
-        ...config,
       };
       builtInAxTools = buildRemoteToolRegistry(
         vmName,
@@ -296,13 +312,14 @@ export async function runRlmAgent(
     let completionDetected = false;
     const taskCompleteTool: AxFunction = {
       name: "TaskComplete",
-      description: "Call this tool when you have completed the assigned task. Provide a summary of what was done.",
+      description:
+        "Call this tool when you have completed the assigned task. Provide a summary of what was done.",
       parameters: {
         type: "object",
         properties: {
-          summary: { type: "string", description: "Summary of work completed" }
+          summary: { type: "string", description: "Summary of work completed" },
         },
-        required: ["summary"]
+        required: ["summary"],
       } as any,
       func: async ({ summary }: { summary: string }) => {
         completionDetected = true;
@@ -310,12 +327,17 @@ export async function runRlmAgent(
         process.stdout.write(msg);
         if (onStdoutChunk) onStdoutChunk(msg);
         return `Task Marked Complete. Summary: ${summary}`;
-      }
+      },
     };
 
     const tools = [...builtInAxTools, ...mcpAxTools, taskCompleteTool];
-    const bash = tools.find(t => t.name === "Bash");
-    if (bash) tools.push({ ...bash, name: "execute_command", description: "Alias for Bash" });
+    const bash = tools.find((t) => t.name === "Bash");
+    if (bash)
+      tools.push({
+        ...bash,
+        name: "execute_command",
+        description: "Alias for Bash",
+      });
 
     const ai = createAxAI(env, logger);
 
@@ -323,10 +345,12 @@ export async function runRlmAgent(
 
     // Map host CWD to guest CWD for the agent's context
     const projectRoot = findRepoRoot(cwd);
-    const relativeCwd = cwd.startsWith(projectRoot) ? cwd.slice(projectRoot.length) : "";
+    const relativeCwd = cwd.startsWith(projectRoot)
+      ? cwd.slice(projectRoot.length)
+      : "";
     const agentCwd = config.sandbox ? `/home/user/project${relativeCwd}` : cwd;
 
-    const prdInfo = options.itemId 
+    const prdInfo = options.itemId
       ? `\nYour task is defined in the PRD at .wreckit/items/${options.itemId}/prd.json. You should update this file to mark stories as 'done' when completed.`
       : "";
 
@@ -344,7 +368,7 @@ IMPORTANT INSTRUCTIONS:
 `;
 
     const messages: any[] = [
-      { role: "user", content: `${systemPrompt}\n\n${prompt}` }
+      { role: "user", content: `${systemPrompt}\n\n${prompt}` },
     ];
 
     let fullOutput = "";
@@ -363,27 +387,27 @@ IMPORTANT INSTRUCTIONS:
       loopCount++;
 
       const response = await simpleAnthropicChat(
-           env.ANTHROPIC_BASE_URL || "https://api.anthropic.com/v1",
-           env.ANTHROPIC_API_KEY || "dummy",
-           env.ANTHROPIC_AUTH_TOKEN,
-           {
-               model: config.model || "glm-4.7",
-               max_tokens: 4096,
-               system: systemPrompt,
-               messages: messages,
-               tools: tools.map(t => ({
-                   name: t.name,
-                   description: t.description,
-                   input_schema: t.parameters
-               }))
-           },
-           logger
-       );
+        env.ANTHROPIC_BASE_URL || "https://api.anthropic.com/v1",
+        env.ANTHROPIC_API_KEY || "dummy",
+        env.ANTHROPIC_AUTH_TOKEN,
+        {
+          model: config.model || "glm-4.7",
+          max_tokens: 4096,
+          system: systemPrompt,
+          messages: messages,
+          tools: tools.map((t) => ({
+            name: t.name,
+            description: t.description,
+            input_schema: t.parameters,
+          })),
+        },
+        logger,
+      );
 
       logger.debug(`DEBUG RESPONSE: ${JSON.stringify(response, null, 2)}`);
 
       if (response.error) {
-          throw new Error(`Anthropic API Error: ${response.error.message}`);
+        throw new Error(`Anthropic API Error: ${response.error.message}`);
       }
 
       messages.push({ role: "assistant", content: response.content });
@@ -393,67 +417,83 @@ IMPORTANT INSTRUCTIONS:
 
       for (const block of response.content) {
         if (block.type === "text") {
-            process.stdout.write(block.text);
-            turnOutput += block.text;
-            if (onStdoutChunk) onStdoutChunk(block.text);
+          process.stdout.write(block.text);
+          turnOutput += block.text;
+          if (onStdoutChunk) onStdoutChunk(block.text);
 
-            const xmlCalls = parseToolCalls(block.text, logger);
-            for (const call of xmlCalls) {
-                const callId = `synthetic-${Date.now()}-${Math.random()}`;
-                if (onAgentEvent) onAgentEvent({ type: "tool_started", toolUseId: callId, toolName: call.name, input: call.args });
-                
-                let result = "";
-                if (call.error) {
-                    result = `Error: ${call.error}`;
-                } else {
-                    try {
-                        const tool = tools.find(t => t.name.toLowerCase() === call.name.toLowerCase());
-                        if (tool) result = await tool.func(call.args);
-                        else result = `Error: Tool ${call.name} not found`;
-                            } catch (e: any) { 
-                        logger.debug(`Tool execution error: ${e.message}`);
-                        result = `Error: ${e.message}`; 
-                    }
-                }
-                
-                result = truncate(result);
+          const xmlCalls = parseToolCalls(block.text, logger);
+          for (const call of xmlCalls) {
+            const callId = `synthetic-${Date.now()}-${Math.random()}`;
+            if (onAgentEvent)
+              onAgentEvent({
+                type: "tool_started",
+                toolUseId: callId,
+                toolName: call.name,
+                input: call.args,
+              });
 
-                if (onAgentEvent) onAgentEvent({ type: "tool_result", toolUseId: callId, result });
-                
-                contentParts.push({
-                    type: "text",
-                    text: `[System] Tool '${call.name}' execution result:\n${result}`
-                });
-            }
-        } else if (block.type === "tool_use") {
-            if (onAgentEvent) onAgentEvent({ type: "tool_started", toolUseId: block.id, toolName: block.name, input: block.input });
-            
             let result = "";
-            try {
-                const tool = tools.find(t => t.name === block.name);
-                if (tool) result = await tool.func(block.input);
-                else result = `Error: Tool ${block.name} not found`;
-                    } catch (e: any) { 
-                        logger.debug(`Tool execution error: ${e.message}`);
-                        result = `Error: ${e.message}`; 
-                    }
+            if (call.error) {
+              result = `Error: ${call.error}`;
+            } else {
+              try {
+                const tool = tools.find(
+                  (t) => t.name.toLowerCase() === call.name.toLowerCase(),
+                );
+                if (tool) result = (await tool.func(call.args)) as string;
+                else result = `Error: Tool ${call.name} not found`;
+              } catch (e: any) {
+                logger.debug(`Tool execution error: ${e.message}`);
+                result = `Error: ${e.message}`;
+              }
+            }
 
             result = truncate(result);
 
-            if (onAgentEvent) onAgentEvent({ type: "tool_result", toolUseId: block.id, result });
+            if (onAgentEvent)
+              onAgentEvent({ type: "tool_result", toolUseId: callId, result });
 
             contentParts.push({
-                type: "tool_result",
-                tool_use_id: block.id,
-                content: result
+              type: "text",
+              text: `[System] Tool '${call.name}' execution result:\n${result}`,
             });
+          }
+        } else if (block.type === "tool_use") {
+          if (onAgentEvent)
+            onAgentEvent({
+              type: "tool_started",
+              toolUseId: block.id,
+              toolName: block.name,
+              input: block.input,
+            });
+
+          let result = "";
+          try {
+            const tool = tools.find((t) => t.name === block.name);
+            if (tool) result = (await tool.func(block.input)) as string;
+            else result = `Error: Tool ${block.name} not found`;
+          } catch (e: any) {
+            logger.debug(`Tool execution error: ${e.message}`);
+            result = `Error: ${e.message}`;
+          }
+
+          result = truncate(result);
+
+          if (onAgentEvent)
+            onAgentEvent({ type: "tool_result", toolUseId: block.id, result });
+
+          contentParts.push({
+            type: "tool_result",
+            tool_use_id: block.id,
+            content: result,
+          });
         }
       }
-      
+
       fullOutput += turnOutput;
 
       if (contentParts.length > 0) {
-          messages.push({ role: "user", content: contentParts as any });
+        messages.push({ role: "user", content: contentParts as any });
       }
     }
 
@@ -461,7 +501,7 @@ IMPORTANT INSTRUCTIONS:
 
     // === SYNC BACK ===
     // Default to true if undefined
-    if (vmName && config.sandbox && config.syncOnSuccess !== false) {
+    if (vmName && config.sandbox && (config as any).syncOnSuccess !== false) {
       logger.info("Agent completed successfully, pulling changes from VM...");
       try {
         const projectRoot = findRepoRoot(cwd);
@@ -487,7 +527,6 @@ IMPORTANT INSTRUCTIONS:
       exitCode: 0,
       completionDetected: true,
     };
-
   } catch (error: any) {
     logger.error(`CRITICAL AGENT ERROR: ${error}`);
     if (timeoutId) clearTimeout(timeoutId);

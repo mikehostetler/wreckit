@@ -12,6 +12,7 @@ export {
   canEnterResearched,
   canEnterPlanned,
   canEnterImplementing,
+  canEnterCritique,
   canEnterInPr,
   canEnterDone,
   validateTransition,

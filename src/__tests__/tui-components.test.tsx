@@ -174,7 +174,7 @@ describe("InkApp handleScroll callback logic", () => {
 
   describe("autoScroll behavior", () => {
     it("disables autoScroll when offset becomes non-zero", () => {
-      const nextOffset = 5;
+      const nextOffset: number = 5;
       const autoScroll = nextOffset === 0;
       expect(autoScroll).toBe(false);
     });
@@ -186,7 +186,7 @@ describe("InkApp handleScroll callback logic", () => {
     });
 
     it("keeps autoScroll disabled at non-zero offset", () => {
-      const nextOffset = 10;
+      const nextOffset: number = 10;
       const autoScroll = nextOffset === 0;
       expect(autoScroll).toBe(false);
     });
@@ -339,8 +339,8 @@ describe("InkApp keyboard input handling", () => {
   describe("quit key bindings", () => {
     it("maps 'q' key to onQuit callback", () => {
       const onQuit = vi.fn();
-      const input = "q";
-      const key = { ctrl: false };
+      const input: string = "q";
+      const key: Record<string, boolean> = { ctrl: false };
 
       // Simulate useInput handler logic from InkApp.tsx:78-79
       if (input === "q" || (key.ctrl && input === "c")) {
@@ -352,8 +352,8 @@ describe("InkApp keyboard input handling", () => {
 
     it("maps Ctrl+C to onQuit callback", () => {
       const onQuit = vi.fn();
-      const input = "c";
-      const key = { ctrl: true };
+      const input: string = "c";
+      const key: Record<string, boolean> = { ctrl: true };
 
       if (input === "q" || (key.ctrl && input === "c")) {
         onQuit();
@@ -364,8 +364,8 @@ describe("InkApp keyboard input handling", () => {
 
     it("does not call onQuit for other keys", () => {
       const onQuit = vi.fn();
-      const input = "x";
-      const key = { ctrl: false };
+      const input: string = "x";
+      const key: Record<string, boolean> = { ctrl: false };
 
       if (input === "q" || (key.ctrl && input === "c")) {
         onQuit();
@@ -376,8 +376,8 @@ describe("InkApp keyboard input handling", () => {
 
     it("does not call onQuit for Ctrl+other keys", () => {
       const onQuit = vi.fn();
-      const input = "x";
-      const key = { ctrl: true };
+      const input: string = "x";
+      const key: Record<string, boolean> = { ctrl: true };
 
       if (input === "q" || (key.ctrl && input === "c")) {
         onQuit();
@@ -393,8 +393,8 @@ describe("InkApp keyboard input handling", () => {
       const setShowLogs = (value: boolean) => {
         showLogs = value;
       };
-      const input = "l";
-      const key = {};
+      const input: string = "l";
+      const key: Record<string, boolean> = {};
 
       // Simulate useInput handler logic from InkApp.tsx:80
       if (input === "l") {
@@ -409,8 +409,8 @@ describe("InkApp keyboard input handling", () => {
       const setShowLogs = (value: boolean) => {
         showLogs = value;
       };
-      const input = "l";
-      const key = {};
+      const input: string = "l";
+      const key: Record<string, boolean> = {};
 
       if (input === "l") {
         setShowLogs(!showLogs);
@@ -423,8 +423,8 @@ describe("InkApp keyboard input handling", () => {
   describe("scroll down key bindings", () => {
     it("maps 'j' key to handleScroll('down')", () => {
       const handleScroll = vi.fn();
-      const input = "j";
-      const key = { downArrow: false };
+      const input: string = "j";
+      const key: Record<string, boolean> = { downArrow: false };
 
       // Simulate useInput handler logic from InkApp.tsx:81-82
       if (input === "j" || key.downArrow) {
@@ -436,8 +436,8 @@ describe("InkApp keyboard input handling", () => {
 
     it("maps downArrow key to handleScroll('down')", () => {
       const handleScroll = vi.fn();
-      const input = "";
-      const key = { downArrow: true };
+      const input: string = "";
+      const key: Record<string, boolean> = { downArrow: true };
 
       if (input === "j" || key.downArrow) {
         handleScroll("down");
@@ -448,8 +448,8 @@ describe("InkApp keyboard input handling", () => {
 
     it("does not call handleScroll for other keys", () => {
       const handleScroll = vi.fn();
-      const input = "x";
-      const key = { downArrow: false };
+      const input: string = "x";
+      const key: Record<string, boolean> = { downArrow: false };
 
       if (input === "j" || key.downArrow) {
         handleScroll("down");
@@ -462,8 +462,8 @@ describe("InkApp keyboard input handling", () => {
   describe("scroll up key bindings", () => {
     it("maps 'k' key to handleScroll('up')", () => {
       const handleScroll = vi.fn();
-      const input = "k";
-      const key = { upArrow: false };
+      const input: string = "k";
+      const key: Record<string, boolean> = { upArrow: false };
 
       // Simulate useInput handler logic from InkApp.tsx:83-84
       if (input === "k" || key.upArrow) {
@@ -475,8 +475,8 @@ describe("InkApp keyboard input handling", () => {
 
     it("maps upArrow key to handleScroll('up')", () => {
       const handleScroll = vi.fn();
-      const input = "";
-      const key = { upArrow: true };
+      const input: string = "";
+      const key: Record<string, boolean> = { upArrow: true };
 
       if (input === "k" || key.upArrow) {
         handleScroll("up");
@@ -487,8 +487,8 @@ describe("InkApp keyboard input handling", () => {
 
     it("does not call handleScroll for other keys", () => {
       const handleScroll = vi.fn();
-      const input = "x";
-      const key = { upArrow: false };
+      const input: string = "x";
+      const key: Record<string, boolean> = { upArrow: false };
 
       if (input === "k" || key.upArrow) {
         handleScroll("up");
@@ -501,7 +501,7 @@ describe("InkApp keyboard input handling", () => {
   describe("page navigation key bindings", () => {
     it("maps pageDown key to handleScroll('pageDown')", () => {
       const handleScroll = vi.fn();
-      const key = { pageDown: true, pageUp: false };
+      const key: Record<string, boolean> = { pageDown: true, pageUp: false };
 
       // Simulate useInput handler logic from InkApp.tsx:85-86
       if (key.pageDown) {
@@ -515,7 +515,7 @@ describe("InkApp keyboard input handling", () => {
 
     it("maps pageUp key to handleScroll('pageUp')", () => {
       const handleScroll = vi.fn();
-      const key = { pageDown: false, pageUp: true };
+      const key: Record<string, boolean> = { pageDown: false, pageUp: true };
 
       if (key.pageDown) {
         handleScroll("pageDown");
@@ -528,7 +528,7 @@ describe("InkApp keyboard input handling", () => {
 
     it("handles both pageDown and pageUp being false", () => {
       const handleScroll = vi.fn();
-      const key = { pageDown: false, pageUp: false };
+      const key: Record<string, boolean> = { pageDown: false, pageUp: false };
 
       if (key.pageDown) {
         handleScroll("pageDown");
@@ -543,8 +543,8 @@ describe("InkApp keyboard input handling", () => {
   describe("jump to position key bindings", () => {
     it("maps lowercase 'g' to handleScroll('top')", () => {
       const handleScroll = vi.fn();
-      const input = "g";
-      const key = {};
+      const input: string = "g";
+      const key: Record<string, boolean> = {};
 
       // Simulate useInput handler logic from InkApp.tsx:87-88
       if (input === "g") {
@@ -558,8 +558,8 @@ describe("InkApp keyboard input handling", () => {
 
     it("maps uppercase 'G' to handleScroll('bottom')", () => {
       const handleScroll = vi.fn();
-      const input = "G";
-      const key = {};
+      const input: string = "G";
+      const key: Record<string, boolean> = {};
 
       if (input === "g") {
         handleScroll("top");
@@ -575,7 +575,7 @@ describe("InkApp keyboard input handling", () => {
       const handleScrollBottom = vi.fn();
 
       // Test lowercase 'g'
-      let input = "g";
+      let input: string = "g";
       if (input === "g") {
         handleScrollTop("top");
       } else if (input === "G") {
@@ -601,8 +601,8 @@ describe("InkApp keyboard input handling", () => {
 
     it("does not call handleScroll for other characters", () => {
       const handleScroll = vi.fn();
-      const input = "x";
-      const key = {};
+      const input: string = "x";
+      const key: Record<string, boolean> = {};
 
       if (input === "g") {
         handleScroll("top");
@@ -624,8 +624,8 @@ describe("InkApp keyboard input handling", () => {
       };
 
       // Press 'j' to scroll down
-      let input = "j";
-      let key = {};
+      let input: string = "j";
+      let key: Record<string, boolean> = {};
       if (input === "j" || key.downArrow) {
         handleScroll("down");
       }
@@ -663,8 +663,8 @@ describe("InkApp keyboard input handling", () => {
       const onQuit = vi.fn();
 
       // Ctrl+C should quit
-      let input = "c";
-      let key = { ctrl: true };
+      let input: string = "c";
+      let key: Record<string, boolean> = { ctrl: true };
       if (input === "q" || (key.ctrl && input === "c")) {
         onQuit();
       }
@@ -688,8 +688,8 @@ describe("InkApp keyboard input handling", () => {
       let showLogs = false;
 
       // Press 'q' - should only call onQuit
-      const input = "q";
-      const key = { ctrl: false };
+      const input: string = "q";
+      const key: Record<string, boolean> = { ctrl: false };
 
       if (input === "q" || (key.ctrl && input === "c")) {
         onQuit();
@@ -709,8 +709,8 @@ describe("InkApp keyboard input handling", () => {
       const setShowLogs = vi.fn();
 
       // Press 'j' - should only scroll down, not toggle logs
-      const input = "j";
-      const key = { downArrow: false };
+      const input: string = "j";
+      const key: Record<string, boolean> = { downArrow: false };
 
       if (input === "l") {
         setShowLogs(!false);

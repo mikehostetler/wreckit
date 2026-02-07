@@ -310,8 +310,8 @@ describe("InkApp integration tests with mocked hooks", () => {
           logs: [`log ${i}`],
         });
 
-        if (subscriberCallback) {
-          subscriberCallback(updatedState);
+        if (subscriberCallback !== null) {
+          (subscriberCallback as (state: any) => void)(updatedState);
           updates.push(updatedState);
         }
       }

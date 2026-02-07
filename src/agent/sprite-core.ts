@@ -272,7 +272,6 @@ export async function startSprite(
   return result;
 }
 
-
 export async function attachSprite(
   name: string,
   config: SpriteAgentConfig,

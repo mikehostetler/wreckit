@@ -140,7 +140,8 @@ function createRemoteEditTool(
   const remoteCwd = "/home/user/project";
   return {
     name: "Edit",
-    description: "Edit a file inside the Sprite VM by replacing a string with a new string.",
+    description:
+      "Edit a file inside the Sprite VM by replacing a string with a new string.",
     parameters: {
       type: "object",
       properties: {
@@ -181,7 +182,10 @@ function createRemoteEditTool(
           return `Error reading file ${filePath}: ${readResult.stderr}`;
         }
 
-        const content = Buffer.from(readResult.stdout.trim(), "base64").toString("utf-8");
+        const content = Buffer.from(
+          readResult.stdout.trim(),
+          "base64",
+        ).toString("utf-8");
 
         // 2. Perform replacement
         if (!content.includes(old_string)) {
@@ -277,7 +281,13 @@ function createRemoteGlobTool(
       },
       required: ["pattern"],
     } as AxFunctionJSONSchema,
-    func: async ({ pattern, path: searchPath }: { pattern: string; path?: string }) => {
+    func: async ({
+      pattern,
+      path: searchPath,
+    }: {
+      pattern: string;
+      path?: string;
+    }) => {
       try {
         const dir = searchPath || ".";
         let cmd = `find ${dir} -name "${pattern}"`;
@@ -291,8 +301,8 @@ function createRemoteGlobTool(
           // Case: "src/**/*.ts" -> find src -name "*.ts"
           const [base, rest] = pattern.split("/**/");
           if (base && rest && !rest.includes("/")) {
-             const searchDir = dir === "." ? base : `${dir}/${base}`;
-             cmd = `find ${searchDir} -name "${rest}"`;
+            const searchDir = dir === "." ? base : `${dir}/${base}`;
+            cmd = `find ${searchDir} -name "${rest}"`;
           }
         }
 
@@ -304,7 +314,7 @@ function createRemoteGlobTool(
         );
 
         if (result.exitCode !== 0) {
-          // find returns non-zero if dir doesn't exist, which is a valid "no files" case usually, 
+          // find returns non-zero if dir doesn't exist, which is a valid "no files" case usually,
           // or strictly an error. Let's return error to be safe, but maybe empty string is better?
           // If the dir doesn't exist, glob returns empty.
           if (result.stderr.includes("No such file or directory")) {
@@ -366,7 +376,12 @@ function createRemoteGrepTool(
         args.push(pattern);
         args.push(dir);
 
-        const result = await execSprite(vmName, ["sh", "-c", `cd ${remoteCwd} && ${args.join(" ")}`], config, logger);
+        const result = await execSprite(
+          vmName,
+          ["sh", "-c", `cd ${remoteCwd} && ${args.join(" ")}`],
+          config,
+          logger,
+        );
 
         if (result.exitCode !== 0 && result.exitCode !== 1) {
           // 1 means no matches, which is fine

@@ -56,110 +56,122 @@ describe("Edge Cases: Config Handling (Tests 42-46)", () => {
     });
   });
 
-  describe("Test 43: Invalid JSON in config - throws InvalidJsonError", () => {
-    it("throws InvalidJsonError for malformed JSON with missing quotes", async () => {
+  describe("Test 43: Invalid JSON in config - falls back to defaults", () => {
+    // Note: loadConfig was changed to be lenient - it catches errors and
+    // falls back to defaults with a console.warn instead of throwing
+
+    it("falls back to defaults for malformed JSON with missing quotes", async () => {
       await fs.writeFile(
         path.join(tempDir, ".wreckit", "config.json"),
         '{ base_branch: "main" }',
       );
 
-      await expect(loadConfig(tempDir)).rejects.toThrow(InvalidJsonError);
+      const result = await loadConfig(tempDir);
+      expect(result).toEqual(DEFAULT_CONFIG);
     });
 
-    it("throws InvalidJsonError for truncated JSON", async () => {
+    it("falls back to defaults for truncated JSON", async () => {
       await fs.writeFile(
         path.join(tempDir, ".wreckit", "config.json"),
         '{ "base_branch": "main"',
       );
 
-      await expect(loadConfig(tempDir)).rejects.toThrow(InvalidJsonError);
+      const result = await loadConfig(tempDir);
+      expect(result).toEqual(DEFAULT_CONFIG);
     });
 
-    it("throws InvalidJsonError for completely invalid content", async () => {
+    it("falls back to defaults for completely invalid content", async () => {
       await fs.writeFile(
         path.join(tempDir, ".wreckit", "config.json"),
         "this is not json at all",
       );
 
-      await expect(loadConfig(tempDir)).rejects.toThrow(InvalidJsonError);
+      const result = await loadConfig(tempDir);
+      expect(result).toEqual(DEFAULT_CONFIG);
     });
 
-    it("includes file path in error message", async () => {
+    it("falls back to defaults gracefully", async () => {
       const configPath = path.join(tempDir, ".wreckit", "config.json");
       await fs.writeFile(configPath, "{ invalid json }");
 
-      try {
-        await loadConfig(tempDir);
-        throw new Error("Should have thrown InvalidJsonError");
-      } catch (err) {
-        expect(err).toBeInstanceOf(InvalidJsonError);
-        expect((err as InvalidJsonError).message).toContain(configPath);
-      }
+      // Should not throw, should return defaults
+      const result = await loadConfig(tempDir);
+      expect(result).toEqual(DEFAULT_CONFIG);
     });
 
-    it("throws InvalidJsonError for empty file", async () => {
+    it("falls back to defaults for empty file", async () => {
       await fs.writeFile(path.join(tempDir, ".wreckit", "config.json"), "");
 
-      await expect(loadConfig(tempDir)).rejects.toThrow(InvalidJsonError);
+      const result = await loadConfig(tempDir);
+      expect(result).toEqual(DEFAULT_CONFIG);
     });
 
-    it("throws InvalidJsonError for JSON with trailing commas", async () => {
+    it("falls back to defaults for JSON with trailing commas", async () => {
       await fs.writeFile(
         path.join(tempDir, ".wreckit", "config.json"),
         '{ "base_branch": "main", }',
       );
 
-      await expect(loadConfig(tempDir)).rejects.toThrow(InvalidJsonError);
+      const result = await loadConfig(tempDir);
+      expect(result).toEqual(DEFAULT_CONFIG);
     });
   });
 
-  describe("Test 44: Schema validation failure - throws SchemaValidationError", () => {
-    it("throws SchemaValidationError when base_branch is a number", async () => {
+  describe("Test 44: Schema validation failure - falls back to defaults", () => {
+    // Note: loadConfig was changed to be lenient - it catches validation
+    // errors and falls back to defaults with a console.warn instead of throwing
+
+    it("falls back to defaults when base_branch is a number", async () => {
       await fs.writeFile(
         path.join(tempDir, ".wreckit", "config.json"),
         JSON.stringify({ base_branch: 123 }),
       );
 
-      await expect(loadConfig(tempDir)).rejects.toThrow(SchemaValidationError);
+      const result = await loadConfig(tempDir);
+      expect(result.base_branch).toBe(DEFAULT_CONFIG.base_branch);
     });
 
-    it("throws SchemaValidationError when schema_version is a string", async () => {
+    it("falls back to defaults when schema_version is a string", async () => {
       await fs.writeFile(
         path.join(tempDir, ".wreckit", "config.json"),
         JSON.stringify({ schema_version: "one" }),
       );
 
-      await expect(loadConfig(tempDir)).rejects.toThrow(SchemaValidationError);
+      const result = await loadConfig(tempDir);
+      expect(result.schema_version).toBe(DEFAULT_CONFIG.schema_version);
     });
 
-    it("throws SchemaValidationError when agent is a string instead of object", async () => {
+    it("falls back to defaults when agent is a string instead of object", async () => {
       await fs.writeFile(
         path.join(tempDir, ".wreckit", "config.json"),
         JSON.stringify({ agent: "invalid-agent" }),
       );
 
-      await expect(loadConfig(tempDir)).rejects.toThrow(SchemaValidationError);
+      const result = await loadConfig(tempDir);
+      expect(result.agent).toEqual(DEFAULT_CONFIG.agent);
     });
 
-    it("throws SchemaValidationError when max_iterations is negative", async () => {
+    it("falls back to defaults when max_iterations is negative", async () => {
       await fs.writeFile(
         path.join(tempDir, ".wreckit", "config.json"),
         JSON.stringify({ max_iterations: -5 }),
       );
 
-      await expect(loadConfig(tempDir)).rejects.toThrow(SchemaValidationError);
+      const result = await loadConfig(tempDir);
+      expect(result.max_iterations).toBe(DEFAULT_CONFIG.max_iterations);
     });
 
-    it("throws SchemaValidationError when timeout_seconds is a boolean", async () => {
+    it("falls back to defaults when timeout_seconds is a boolean", async () => {
       await fs.writeFile(
         path.join(tempDir, ".wreckit", "config.json"),
         JSON.stringify({ timeout_seconds: true }),
       );
 
-      await expect(loadConfig(tempDir)).rejects.toThrow(SchemaValidationError);
+      const result = await loadConfig(tempDir);
+      expect(result.timeout_seconds).toBe(DEFAULT_CONFIG.timeout_seconds);
     });
 
-    it("throws SchemaValidationError when agent.args is a string instead of array", async () => {
+    it("falls back to defaults when agent.args is a string instead of array", async () => {
       await fs.writeFile(
         path.join(tempDir, ".wreckit", "config.json"),
         JSON.stringify({
@@ -172,20 +184,18 @@ describe("Edge Cases: Config Handling (Tests 42-46)", () => {
         }),
       );
 
-      await expect(loadConfig(tempDir)).rejects.toThrow(SchemaValidationError);
+      const result = await loadConfig(tempDir);
+      // Falls back to defaults when validation fails
+      expect(result.agent).toEqual(DEFAULT_CONFIG.agent);
     });
 
-    it("includes file path in schema error message", async () => {
+    it("falls back gracefully for invalid config", async () => {
       const configPath = path.join(tempDir, ".wreckit", "config.json");
       await fs.writeFile(configPath, JSON.stringify({ base_branch: 123 }));
 
-      try {
-        await loadConfig(tempDir);
-        throw new Error("Should have thrown SchemaValidationError");
-      } catch (err) {
-        expect(err).toBeInstanceOf(SchemaValidationError);
-        expect((err as SchemaValidationError).message).toContain(configPath);
-      }
+      // Should not throw, should return defaults
+      const result = await loadConfig(tempDir);
+      expect(result.base_branch).toBe(DEFAULT_CONFIG.base_branch);
     });
   });
 

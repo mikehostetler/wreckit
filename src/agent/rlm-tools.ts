@@ -86,10 +86,13 @@ export function createRunJSTool(runtime: JSRuntime): AxFunction {
   };
 }
 
-export function createTools(executor: Executor = defaultLocalExecutor): ToolRegistry {
+export function createTools(
+  executor: Executor = defaultLocalExecutor,
+): ToolRegistry {
   const ReadTool: AxFunction = {
     name: "Read",
-    description: "Read the contents of a file. Returns the content as a string.",
+    description:
+      "Read the contents of a file. Returns the content as a string.",
     parameters: {
       type: "object",
       properties: {
@@ -100,12 +103,12 @@ export function createTools(executor: Executor = defaultLocalExecutor): ToolRegi
     func: async ({ path: filePath }: { path: string }) => {
       try {
         // TODO: For remote RLM, this should use cat via executor if remote
-        // For now, we assume FS is mounted or synced? 
+        // For now, we assume FS is mounted or synced?
         // Ideally we should abstract FS operations too (IFileSystem).
         // But for "Remote RLM", we sync the project to the VM.
         // If we want the RLM logic (running locally) to read files from the VM,
         // we MUST use the executor to cat the file.
-        
+
         // Let's use the executor for reading to be consistent!
         const { stdout } = await executor(`cat "${filePath}"`);
         return stdout;
@@ -135,29 +138,29 @@ export function createTools(executor: Executor = defaultLocalExecutor): ToolRegi
       content: string;
     }) => {
       try {
-        // Use executor to write. 
+        // Use executor to write.
         // We need to be careful with escaping.
         // A safer way for remote write is tricky without a proper file transfer mechanism.
         // But we can try a basic echo/cat with EOF.
-        
+
         // For safety, let's assume we can use a simple node script on the remote end?
         // Or just use local FS if we assume sync back?
         // NO. RLM running locally + Sprite VM means the "truth" is in the VM.
         // If we write locally, it won't be in the VM until sync.
-        
+
         // For now, let's use local FS for Read/Write and rely on Sync?
         // If we use local FS, then 'Read' reads local files.
         // But 'Bash' executes remote commands.
         // This causes split brain: 'ls' shows file X, 'Read X' fails if not synced.
-        
+
         // To do this properly, ALL IO must be remote.
         // Implementing robust remote file write via shell is hard (quoting hell).
-        
+
         // Compromise: For this iteration, we keep Read/Write LOCAL (using fs promises).
         // Why? Because RLM pulls the repo locally anyway.
         // The pattern is: Local logic -> Sync to VM -> Remote Exec -> Sync back.
         // So RLM writes to LOCAL disk.
-        
+
         await fs.mkdir(path.dirname(filePath), { recursive: true });
         await fs.writeFile(filePath, content, "utf-8");
         return `Successfully wrote to ${filePath}`;
@@ -166,16 +169,16 @@ export function createTools(executor: Executor = defaultLocalExecutor): ToolRegi
       }
     },
   };
-  
+
   // Re-override ReadTool to use local FS for consistency with WriteTool strategy
   // We assume bi-directional sync is handling the consistency.
   ReadTool.func = async ({ path: filePath }: { path: string }) => {
-      try {
-        const content = await fs.readFile(filePath, "utf-8");
-        return content;
-      } catch (error: any) {
-        return `Error reading file ${filePath}: ${error.message}`;
-      }
+    try {
+      const content = await fs.readFile(filePath, "utf-8");
+      return content;
+    } catch (error: any) {
+      return `Error reading file ${filePath}: ${error.message}`;
+    }
   };
 
   const EditTool: AxFunction = {
@@ -226,7 +229,8 @@ export function createTools(executor: Executor = defaultLocalExecutor): ToolRegi
         },
         path: {
           type: "string",
-          description: "The directory to search in (default: current directory)",
+          description:
+            "The directory to search in (default: current directory)",
         },
       },
       required: ["pattern"],
@@ -261,7 +265,8 @@ export function createTools(executor: Executor = defaultLocalExecutor): ToolRegi
         },
         path: {
           type: "string",
-          description: "The directory to search in (default: current directory)",
+          description:
+            "The directory to search in (default: current directory)",
         },
         include: {
           type: "string",
@@ -331,7 +336,7 @@ export function buildToolRegistry(
   executor: Executor = defaultLocalExecutor,
 ): AxFunction[] {
   const registry = createTools(executor);
-  
+
   let tools = allowedTools
     ? allowedTools
         .map((name) => registry[name])

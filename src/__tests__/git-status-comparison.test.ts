@@ -57,19 +57,23 @@ describe("git status comparison (Gap 1: Read-Only Enforcement)", () => {
     });
 
     it("parses modified file", () => {
-      const output = "M src/index.ts";
+      // Git porcelain format: XY<space>filename where XY is 2-char status
+      // " M" = modified in working tree only
+      const output = " M src/index.ts";
       const result = parseGitStatusPorcelain(output, tempDir);
       expect(result).toEqual([{ path: "src/index.ts", statusCode: "M" }]);
     });
 
     it("parses added file", () => {
-      const output = "A src/new-file.ts";
+      // "A " = added to staging area
+      const output = "A  src/new-file.ts";
       const result = parseGitStatusPorcelain(output, tempDir);
       expect(result).toEqual([{ path: "src/new-file.ts", statusCode: "A" }]);
     });
 
     it("parses deleted file", () => {
-      const output = "D src/old-file.ts";
+      // " D" = deleted in working tree
+      const output = " D src/old-file.ts";
       const result = parseGitStatusPorcelain(output, tempDir);
       expect(result).toEqual([{ path: "src/old-file.ts", statusCode: "D" }]);
     });
@@ -81,7 +85,7 @@ describe("git status comparison (Gap 1: Read-Only Enforcement)", () => {
     });
 
     it("parses multiple files", () => {
-      const output = "M src/index.ts\nA src/new.ts\n?? src/untracked.ts";
+      const output = " M src/index.ts\nA  src/new.ts\n?? src/untracked.ts";
       const result = parseGitStatusPorcelain(output, tempDir);
       expect(result).toEqual([
         { path: "src/index.ts", statusCode: "M" },

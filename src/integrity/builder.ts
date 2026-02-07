@@ -103,14 +103,10 @@ async function runBuildCommand(
   log: Logger,
 ): Promise<{ success: boolean; error?: string }> {
   return new Promise((resolve) => {
-    const buildProcess = spawn(
-      "bun",
-      ["run", "build"],
-      {
-        cwd: root,
-        stdio: "pipe",
-      },
-    );
+    const buildProcess = spawn("bun", ["run", "build"], {
+      cwd: root,
+      stdio: "pipe",
+    });
 
     let stdout = "";
     let stderr = "";
@@ -232,7 +228,9 @@ export async function safeRebuild(
             await restoreDist(root, backupId);
             log.info("Restored dist/ to pre-build state");
           } catch (restoreErr) {
-            log.error(`Failed to restore backup: ${(restoreErr as Error).message}`);
+            log.error(
+              `Failed to restore backup: ${(restoreErr as Error).message}`,
+            );
           }
         }
 

@@ -324,7 +324,9 @@ export async function loadConfig(
       partial = result.data;
     } else {
       // Log validation error but continue with defaults
-      console.warn(`Config validation failed for ${configPath}: ${result.error.message}`);
+      console.warn(
+        `Config validation failed for ${configPath}: ${result.error.message}`,
+      );
     }
   } catch (err) {
     // Ignore ENOENT for base config
@@ -334,7 +336,7 @@ export async function loadConfig(
   try {
     const content = await fs.readFile(localPath, "utf-8");
     const localData = JSON.parse(content);
-    
+
     // Deep merge local agent settings if present
     if (localData.agent) {
       partial.agent = {
@@ -346,7 +348,7 @@ export async function loadConfig(
         },
       };
     }
-    
+
     // Merge other top-level fields
     Object.assign(partial, {
       ...localData,

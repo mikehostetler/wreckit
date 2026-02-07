@@ -107,7 +107,10 @@ export async function buildSdkEnv(
   // Load from all sources
   const claudeSettingsEnv = await readClaudeUserEnv(logger);
   const wreckitConfigEnv = await readWreckitEnv(getConfigPath(root), logger);
-  const wreckitLocalEnv = await readWreckitEnv(getConfigLocalPath(root), logger);
+  const wreckitLocalEnv = await readWreckitEnv(
+    getConfigLocalPath(root),
+    logger,
+  );
 
   // Process env (filter undefined)
   const processEnv = Object.fromEntries(

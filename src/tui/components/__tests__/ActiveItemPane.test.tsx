@@ -81,7 +81,7 @@ describe("ActiveItemPane", () => {
     });
 
     it("handles missing item with empty title fallback", () => {
-      const item = undefined;
+      const item = undefined as { title: string } | undefined;
       const title = item?.title ?? "";
 
       expect(title).toBe("");
@@ -106,8 +106,8 @@ describe("ActiveItemPane", () => {
     });
 
     it("falls back to 'unknown' when both are null", () => {
-      const currentPhase = null;
-      const item = undefined;
+      const currentPhase = null as string | null;
+      const item = undefined as { state: string } | undefined;
       const activeState = currentPhase ?? item?.state ?? "unknown";
 
       expect(activeState).toBe("unknown");
@@ -148,7 +148,7 @@ describe("ActiveItemPane", () => {
     });
 
     it("handles unknown active state", () => {
-      const activeState = "unknown";
+      const activeState: string = "unknown";
 
       const workflowLine = WORKFLOW_STATES.map((s) =>
         s === activeState ? `[${s}]` : s,

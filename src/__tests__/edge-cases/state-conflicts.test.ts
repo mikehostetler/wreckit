@@ -15,14 +15,25 @@ import * as os from "node:os";
 import * as realChildProcess from "node:child_process";
 import { diagnose } from "../../doctor";
 import type { Item, Prd, Story } from "../../schemas";
+import type { Logger } from "../../logging";
+
+const noopLogger: Logger = {
+  info: () => {},
+  warn: () => {},
+  error: () => {},
+  debug: () => {},
+  json: () => {},
+};
 
 const mockedSpawn = vi.fn();
 
 afterAll(() => {
-  mock.module("node:child_process", () => realChildProcess);
+  mock.restore();
 });
 
+// Preserve all exports from node:child_process, only mock spawn
 mock.module("node:child_process", () => ({
+  ...realChildProcess,
   spawn: mockedSpawn,
 }));
 
@@ -183,7 +194,7 @@ describe("State Conflict Resolution", () => {
     it("69: Researched but research.md missing - should emit STATE_FILE_MISMATCH", async () => {
       await createItem(tempDir, "001-item", { state: "researched" });
 
-      const diagnostics = await diagnose(tempDir);
+      const diagnostics = await diagnose(tempDir, noopLogger);
       const mismatch = diagnostics.find(
         (d) => d.code === "STATE_FILE_MISMATCH",
       );
@@ -199,7 +210,7 @@ describe("State Conflict Resolution", () => {
       const itemDir = await createItem(tempDir, "001-item", { state: "idea" });
       await createResearch(itemDir);
 
-      const diagnostics = await diagnose(tempDir);
+      const diagnostics = await diagnose(tempDir, noopLogger);
 
       expect(diagnostics.every((d) => d.code !== "STATE_FILE_MISMATCH")).toBe(
         true,
@@ -213,7 +224,7 @@ describe("State Conflict Resolution", () => {
       await createResearch(itemDir);
       await createPrd(itemDir);
 
-      const diagnostics = await diagnose(tempDir);
+      const diagnostics = await diagnose(tempDir, noopLogger);
       const mismatch = diagnostics.find(
         (d) => d.code === "STATE_FILE_MISMATCH",
       );
@@ -229,7 +240,7 @@ describe("State Conflict Resolution", () => {
       await createResearch(itemDir);
       await createPlan(itemDir);
 
-      const diagnostics = await diagnose(tempDir);
+      const diagnostics = await diagnose(tempDir, noopLogger);
       const mismatch = diagnostics.find(
         (d) => d.code === "STATE_FILE_MISMATCH",
       );
@@ -255,7 +266,7 @@ describe("State Conflict Resolution", () => {
         },
       ]);
 
-      const diagnostics = await diagnose(tempDir);
+      const diagnostics = await diagnose(tempDir, noopLogger);
       const mismatch = diagnostics.find(
         (d) => d.code === "STATE_FILE_MISMATCH",
       );
@@ -281,7 +292,7 @@ describe("State Conflict Resolution", () => {
         },
       ]);
 
-      const diagnostics = await diagnose(tempDir);
+      const diagnostics = await diagnose(tempDir, noopLogger);
 
       expect(diagnostics.every((d) => d.code !== "STATE_FILE_MISMATCH")).toBe(
         true,
@@ -296,7 +307,7 @@ describe("State Conflict Resolution", () => {
       await createPlan(itemDir);
       await fs.writeFile(path.join(itemDir, "prd.json"), "{ invalid json }");
 
-      const diagnostics = await diagnose(tempDir);
+      const diagnostics = await diagnose(tempDir, noopLogger);
       const invalidPrd = diagnostics.find((d) => d.code === "INVALID_PRD");
 
       expect(invalidPrd).toBeDefined();
@@ -325,7 +336,7 @@ describe("State Conflict Resolution", () => {
         },
       ]);
 
-      const diagnostics = await diagnose(tempDir);
+      const diagnostics = await diagnose(tempDir, noopLogger);
       const mismatch = diagnostics.find(
         (d) => d.code === "STATE_FILE_MISMATCH",
       );
@@ -354,7 +365,7 @@ describe("State Conflict Resolution", () => {
         },
       ]);
 
-      const diagnostics = await diagnose(tempDir);
+      const diagnostics = await diagnose(tempDir, noopLogger);
 
       expect(
         diagnostics.filter((d) => d.code === "STATE_FILE_MISMATCH"),
@@ -381,7 +392,7 @@ describe("State Conflict Resolution", () => {
         },
       ]);
 
-      const diagnostics = await diagnose(tempDir);
+      const diagnostics = await diagnose(tempDir, noopLogger);
 
       expect(
         diagnostics.filter((d) => d.code === "STATE_FILE_MISMATCH"),
@@ -399,7 +410,7 @@ describe("State Conflict Resolution", () => {
       await createPlan(itemDir);
       await createPrd(itemDir);
 
-      const diagnostics = await diagnose(tempDir);
+      const diagnostics = await diagnose(tempDir, noopLogger);
 
       expect(
         diagnostics.filter((d) => d.code === "STATE_FILE_MISMATCH"),
@@ -413,7 +424,7 @@ describe("State Conflict Resolution", () => {
         pr_number: 123,
       });
 
-      const diagnostics = await diagnose(tempDir);
+      const diagnostics = await diagnose(tempDir, noopLogger);
 
       expect(
         diagnostics.filter((d) => d.code === "STATE_FILE_MISMATCH"),
@@ -431,7 +442,7 @@ describe("State Conflict Resolution", () => {
       await createPlan(itemDir);
       await createPrd(itemDir);
 
-      const diagnostics = await diagnose(tempDir);
+      const diagnostics = await diagnose(tempDir, noopLogger);
 
       expect(
         diagnostics.filter((d) => d.code === "STATE_FILE_MISMATCH"),
@@ -458,7 +469,7 @@ describe("State Conflict Resolution", () => {
         },
       ]);
 
-      const diagnostics = await diagnose(tempDir);
+      const diagnostics = await diagnose(tempDir, noopLogger);
       const mismatch = diagnostics.find(
         (d) => d.code === "STATE_FILE_MISMATCH",
       );
@@ -472,7 +483,7 @@ describe("State Conflict Resolution", () => {
         branch: "wreckit/001-item",
       });
 
-      const diagnostics = await diagnose(tempDir);
+      const diagnostics = await diagnose(tempDir, noopLogger);
       const mismatch = diagnostics.filter(
         (d) => d.code === "STATE_FILE_MISMATCH",
       );
@@ -489,7 +500,7 @@ describe("State Conflict Resolution", () => {
       await createPlan(itemDir);
       await createPrd(itemDir);
 
-      const diagnostics = await diagnose(tempDir);
+      const diagnostics = await diagnose(tempDir, noopLogger);
 
       expect(
         diagnostics.filter((d) => d.code === "STATE_FILE_MISMATCH"),
@@ -516,7 +527,7 @@ describe("State Conflict Resolution", () => {
         },
       ]);
 
-      const diagnostics = await diagnose(tempDir);
+      const diagnostics = await diagnose(tempDir, noopLogger);
 
       expect(
         diagnostics.filter((d) => d.code === "STATE_FILE_MISMATCH"),
@@ -543,7 +554,7 @@ describe("State Conflict Resolution", () => {
         },
       ]);
 
-      const diagnostics = await diagnose(tempDir);
+      const diagnostics = await diagnose(tempDir, noopLogger);
 
       expect(
         diagnostics.filter((d) => d.code === "STATE_FILE_MISMATCH"),
@@ -572,7 +583,7 @@ describe("State Conflict Resolution", () => {
         },
       ]);
 
-      const diagnostics = await diagnose(tempDir);
+      const diagnostics = await diagnose(tempDir, noopLogger);
       const mismatch = diagnostics.find(
         (d) => d.code === "STATE_FILE_MISMATCH",
       );
@@ -590,7 +601,7 @@ describe("State Conflict Resolution", () => {
       await createPlan(itemDir);
       await createPrd(itemDir);
 
-      const diagnostics = await diagnose(tempDir);
+      const diagnostics = await diagnose(tempDir, noopLogger);
 
       expect(
         diagnostics.filter((d) => d.code === "STATE_FILE_MISMATCH"),
@@ -606,7 +617,7 @@ describe("State Conflict Resolution", () => {
       await createPlan(itemDir);
       await createPrd(itemDir);
 
-      const diagnostics = await diagnose(tempDir);
+      const diagnostics = await diagnose(tempDir, noopLogger);
 
       expect(
         diagnostics.filter((d) => d.code === "STATE_FILE_MISMATCH"),
@@ -633,7 +644,7 @@ describe("State Conflict Resolution", () => {
         },
       ]);
 
-      const diagnostics = await diagnose(tempDir);
+      const diagnostics = await diagnose(tempDir, noopLogger);
       const mismatch = diagnostics.find(
         (d) => d.code === "STATE_FILE_MISMATCH",
       );
@@ -650,7 +661,7 @@ describe("State Conflict Resolution", () => {
       });
       await createPlan(itemDir);
 
-      const diagnostics = await diagnose(tempDir);
+      const diagnostics = await diagnose(tempDir, noopLogger);
       const mismatch = diagnostics.find(
         (d) => d.code === "STATE_FILE_MISMATCH",
       );
@@ -665,7 +676,7 @@ describe("State Conflict Resolution", () => {
       });
       await createPrd(itemDir);
 
-      const diagnostics = await diagnose(tempDir);
+      const diagnostics = await diagnose(tempDir, noopLogger);
       const mismatch = diagnostics.find(
         (d) => d.code === "STATE_FILE_MISMATCH",
       );
@@ -682,7 +693,7 @@ describe("State Conflict Resolution", () => {
       await createPlan(itemDir);
       await fs.writeFile(path.join(itemDir, "prd.json"), "{ invalid json }");
 
-      const diagnostics = await diagnose(tempDir);
+      const diagnostics = await diagnose(tempDir, noopLogger);
       const invalidPrd = diagnostics.find((d) => d.code === "INVALID_PRD");
 
       expect(invalidPrd).toBeDefined();
@@ -695,7 +706,7 @@ describe("State Conflict Resolution", () => {
       });
       await createResearch(itemDir);
 
-      const diagnostics = await diagnose(tempDir);
+      const diagnostics = await diagnose(tempDir, noopLogger);
 
       expect(
         diagnostics.filter((d) => d.code === "STATE_FILE_MISMATCH"),
@@ -705,7 +716,7 @@ describe("State Conflict Resolution", () => {
     it("raw state with no artifacts - no diagnostic", async () => {
       await createItem(tempDir, "001-item", { state: "idea" });
 
-      const diagnostics = await diagnose(tempDir);
+      const diagnostics = await diagnose(tempDir, noopLogger);
 
       expect(
         diagnostics.filter((d) => d.code === "STATE_FILE_MISMATCH"),
@@ -733,7 +744,7 @@ describe("State Conflict Resolution", () => {
         state: "researched",
       });
 
-      const diagnostics = await diagnose(tempDir);
+      const diagnostics = await diagnose(tempDir, noopLogger);
       const mismatches = diagnostics.filter(
         (d) => d.code === "STATE_FILE_MISMATCH",
       );
@@ -750,7 +761,7 @@ describe("State Conflict Resolution", () => {
       });
       await createResearch(item2Dir);
 
-      const diagnostics = await diagnose(tempDir);
+      const diagnostics = await diagnose(tempDir, noopLogger);
       const mismatches = diagnostics.filter(
         (d) => d.code === "STATE_FILE_MISMATCH",
       );
@@ -786,7 +797,7 @@ describe("State Conflict Resolution", () => {
         },
       ]);
 
-      const diagnostics = await diagnose(tempDir);
+      const diagnostics = await diagnose(tempDir, noopLogger);
 
       expect(
         diagnostics.filter((d) => d.code === "STATE_FILE_MISMATCH"),
@@ -801,7 +812,7 @@ describe("State Conflict Resolution", () => {
       await createPlan(itemDir);
       await createPrd(itemDir, []);
 
-      const diagnostics = await diagnose(tempDir);
+      const diagnostics = await diagnose(tempDir, noopLogger);
       const mismatch = diagnostics.find(
         (d) => d.code === "STATE_FILE_MISMATCH",
       );

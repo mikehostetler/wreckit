@@ -181,7 +181,7 @@ describe("LogsPane", () => {
 
   describe("position indicators", () => {
     it("shows ▲ when not at bottom", () => {
-      const effectiveOffset = 10;
+      const effectiveOffset: number = 10;
 
       const isAtBottom = effectiveOffset === 0;
 
@@ -197,7 +197,7 @@ describe("LogsPane", () => {
     });
 
     it("shows ▼ when not at top", () => {
-      const startIdx = 10;
+      const startIdx: number = 10;
 
       const isAtTop = startIdx === 0;
 
@@ -213,8 +213,8 @@ describe("LogsPane", () => {
     });
 
     it("shows both indicators when in middle", () => {
-      const effectiveOffset = 10;
-      const startIdx = 10;
+      const effectiveOffset: number = 10;
+      const startIdx: number = 10;
 
       const isAtBottom = effectiveOffset === 0;
       const isAtTop = startIdx === 0;

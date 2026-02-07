@@ -121,9 +121,11 @@ async function runCommand(
       if (code !== 0 && stderr) {
         logger.debug(`Command stderr: ${stderr}`);
       }
+      // Use trimEnd() instead of trim() to preserve leading whitespace
+      // (important for git status --porcelain which uses leading spaces)
       resolve({
-        stdout: stdout.trim(),
-        stderr: stderr.trim(),
+        stdout: stdout.trimEnd(),
+        stderr: stderr.trimEnd(),
         exitCode: code ?? 0,
       });
     });

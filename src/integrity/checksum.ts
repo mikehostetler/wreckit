@@ -13,10 +13,7 @@ async function hashFile(filePath: string): Promise<string> {
 /**
  * Find all files matching a pattern in a directory recursively.
  */
-async function findFiles(
-  dir: string,
-  extension: string,
-): Promise<string[]> {
+async function findFiles(dir: string, extension: string): Promise<string[]> {
   const files: string[] = [];
   const entries = await fs.readdir(dir, { withFileTypes: true });
 
