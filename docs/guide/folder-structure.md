@@ -35,6 +35,7 @@ Customizable prompt templates that control agent behavior:
 - `research.md` — How the agent analyzes your codebase
 - `plan.md` — How it designs solutions
 - `implement.md` — How it executes user stories
+- `critique.md` — How the agent reviews and quality-checks its work
 
 See [Customization](/agent-development/customization) for details.
 
@@ -46,7 +47,7 @@ Each item directory contains:
 
 ### item.json
 State and metadata for the item:
-- Current state (raw, researched, planned, implementing, in_pr, done)
+- Current state (idea, researched, planned, implementing, critique, in_pr, done)
 - Title and description
 - Creation timestamp
 - Branch name

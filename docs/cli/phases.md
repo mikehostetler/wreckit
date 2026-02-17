@@ -21,7 +21,7 @@ Run the research phase for an item.
 wreckit research <id>
 ```
 
-**Transition:** `raw` → `researched`
+**Transition:** `idea` → `researched`
 
 **What it does:**
 - Agent analyzes your codebase
@@ -84,6 +84,33 @@ wreckit implement <id>
 
 ---
 
+### wreckit critique
+
+Run the adversarial critique phase for an item.
+
+```bash
+wreckit critique <id>
+```
+
+**Transition:** `implementing` → `critique`
+
+**What it does:**
+- Agent reviews all changes made during implementation
+- Runs the full test suite and type checker
+- Verifies acceptance criteria from `prd.json`
+- Checks for regressions, security issues, and code quality
+- If quality is insufficient, rejects and re-implements
+
+**When to use:**
+- Manually triggering quality review after implementation
+- Re-running critique after fixing issues
+- Debugging critique phase failures
+
+**Options:**
+- `--force` — Force re-run critique even if already passed
+
+---
+
 ### wreckit pr
 
 Create a pull request for an implemented item.
@@ -92,7 +119,7 @@ Create a pull request for an implemented item.
 wreckit pr <id>
 ```
 
-**Transition:** `implementing` → `in_pr`
+**Transition:** `critique` → `in_pr`
 
 **What it does:**
 - Creates a pull request with all commits
@@ -103,6 +130,8 @@ wreckit pr <id>
 - Creating PR after manual implementation
 - Re-creating failed PR
 - Manually triggering PR creation
+
+**Note:** Only used in PR merge mode. In direct merge mode, code merges directly to the base branch after critique.
 
 ---
 
@@ -141,8 +170,8 @@ cat .wreckit/features/001-*/plan.md      # Review plan
 wreckit implement 1       # Implementation phase
 # Watch progress, Ctrl-C if needed
 
+wreckit critique 1        # Quality review
 wreckit pr 1              # Create PR
-
 wreckit complete 1        # Mark done
 ```
 

@@ -29,4 +29,4 @@ Wreckit v1.0.0 introduced **SDK mode** as the default agent execution method. In
 - [Environment Variables](/migration/environment) - Environment variable configuration
 - [Troubleshooting](/migration/troubleshooting) - Common issues and solutions
 
-For the complete migration guide, see [MIGRATION.md](https://github.com/mikehostetler/wreckit/blob/main/MIGRATION.md) in the repository.
+For the standalone migration guide, see [MIGRATION.md](https://github.com/mikehostetler/wreckit/blob/main/MIGRATION.md) in the repository root.

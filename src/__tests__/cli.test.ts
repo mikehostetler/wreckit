@@ -8,7 +8,7 @@ describe("wreckit CLI", () => {
   });
 
   it("should have correct version", () => {
-    expect(program.version()).toBe("0.0.1");
+    expect(program.version()).toBe("1.0.0");
   });
 
   it("should have correct description", () => {

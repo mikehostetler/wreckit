@@ -12,7 +12,7 @@
 
 - Manual recovery: `wreckit doctor --fix`
 - Automated validation before operations
-- Primary component: `src/doctor.ts`
+- Primary component: `src/commands/doctor.ts`
 
 ---
 
@@ -245,7 +245,7 @@ Fixed 2 issues
 
 | Feature                        | Status         | Notes                                    |
 | ------------------------------ | -------------- | ---------------------------------------- |
-| **Core doctor command**        | ✅ Implemented | See `src/doctor.ts`                      |
+| **Core doctor command**        | ✅ Implemented | See `src/commands/doctor.ts`                      |
 | **Config validation**          | ✅ Implemented | `MISSING_CONFIG`, `INVALID_CONFIG`       |
 | **Item validation**            | ✅ Implemented | `MISSING_ITEM_JSON`, `INVALID_ITEM_JSON` |
 | **PRD validation**             | ✅ Implemented | `INVALID_PRD`                            |
@@ -291,7 +291,7 @@ Fixes modify files without creating backups.
 
 **Impact:** Real errors masked as missing files.
 
-**Status:** Fixed - Doctor uses `checkPathAccess()` from `src/fs/util.ts:88-101` to distinguish "not found" from "cannot access". Reports `ARTIFACT_UNREADABLE` diagnostic with severity "error" when artifacts exist but cannot be read. See `src/doctor.ts:262-294`. Fix application also uses error-aware checks at lines 661-675. `diagnoseDependencies()` reports `ITEMS_DIR_UNREADABLE` diagnostic for directory permission errors.
+**Status:** Fixed - Doctor uses `checkPathAccess()` from `src/fs/util.ts:88-101` to distinguish "not found" from "cannot access". Reports `ARTIFACT_UNREADABLE` diagnostic with severity "error" when artifacts exist but cannot be read. See `src/commands/doctor.ts:262-294`. Fix application also uses error-aware checks at lines 661-675. `diagnoseDependencies()` reports `ITEMS_DIR_UNREADABLE` diagnostic for directory permission errors.
 
 ---
 

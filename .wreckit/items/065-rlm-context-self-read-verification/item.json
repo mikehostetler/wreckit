@@ -3,7 +3,7 @@
   "id": "065-rlm-context-self-read-verification",
   "title": "RLM context self-read verification",
   "section": "testing",
-  "state": "critique",
+  "state": "idea",
   "overview": "Need to confirm whether the RLM architecture is capable of reading its own context data.\n\n**Success criteria:**\n- RLM successfully reads CONTEXT_DATA\n- RLM outputs 'I SEE YOU' message upon reading context data",
   "branch": null,
   "pr_url": null,

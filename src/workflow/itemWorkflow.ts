@@ -1247,6 +1247,37 @@ export async function runPhasePr(
         gitOptions,
       );
 
+      // Restore other items' item.json from pre-merge state (issue #43: state clobber prevention)
+      // Feature branches may contain stale copies of other items' item.json due to branch chaining.
+      // After merge, restore all item.json files except the current item's.
+      try {
+        const itemsDir = path.join(root, ".wreckit", "items");
+        const allItemDirs = await fs.readdir(itemsDir).catch(() => [] as string[]);
+        for (const dir of allItemDirs) {
+          if (dir === item.id) continue;
+          const otherItemJson = path.join(".wreckit", "items", dir, "item.json");
+          // Restore from the pre-merge base (rollback SHA)
+          if (rollbackSha) {
+            const restoreResult = await runGitCommand(
+              ["checkout", rollbackSha, "--", otherItemJson],
+              gitOptions,
+            );
+            if (restoreResult.exitCode !== 0) {
+              // File may not have existed in the base — that's fine
+              logger.debug(`Could not restore ${otherItemJson} from ${rollbackSha} (may be new)`);
+            }
+          }
+        }
+        // Amend the merge commit if any files were restored
+        if (await hasUncommittedChanges(gitOptions)) {
+          await runGitCommand(["add", "-A"], gitOptions);
+          await runGitCommand(["commit", "--amend", "--no-edit"], gitOptions);
+          logger.info("Restored other items' state after merge (anti-clobber)");
+        }
+      } catch (restoreErr) {
+        logger.warn(`Item state restoration failed (non-fatal): ${restoreErr instanceof Error ? restoreErr.message : String(restoreErr)}`);
+      }
+
       // Verify merge landed on remote (Spec 006 Gap 2: Direct Mode Verification)
       // Fetch the remote state to confirm the merge is visible on the remote
       if (!dryRun) {
@@ -1328,6 +1359,11 @@ export async function runPhasePr(
       );
     } else {
       await fs.appendFile(progressPath, logEntry, "utf-8");
+    }
+
+    // Commit the "done" state + progress log so subsequent items see it
+    if (await hasUncommittedChanges(gitOptions)) {
+      await commitAll(`chore(${itemSlug}): mark done`, gitOptions);
     }
 
     logger.info(

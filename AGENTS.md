@@ -15,7 +15,7 @@
 
 | Command | Does |
 |---------|------|
-| `bun build` | Build the CLI |
+| `bun run build` | Build the CLI |
 | `bun test` | Run all tests |
 | `bun test src/__tests__/foo.test.ts` | Run single test file |
 | `bun run typecheck` | Type check the codebase |
@@ -25,7 +25,7 @@
 
 | Command | Does |
 |---------|------|
-| `wreckit` | Run all incomplete items (research → plan → implement → PR) |
+| `wreckit` | Run all incomplete items (research → plan → implement → critique → PR) |
 | `wreckit next` | Run next incomplete item |
 | `wreckit run <id>` | Run single item through all phases (id: `1`, `2`, or `001-slug`) |
 | `wreckit ideas < FILE` | Ingest ideas (create idea items) |
@@ -45,7 +45,8 @@
 | `wreckit research <id>` | idea → researched |
 | `wreckit plan <id>` | researched → planned |
 | `wreckit implement <id>` | planned → implementing |
-| `wreckit pr <id>` | implementing → in_pr |
+| `wreckit critique <id>` | implementing → critique |
+| `wreckit pr <id>` | critique → in_pr |
 | `wreckit complete <id>` | in_pr → done |
 
 ### Flags
@@ -58,6 +59,14 @@
 - `--force` — Regenerate artifacts
 - `--cwd <path>` — Override working directory
 - `--fix` — Auto-repair (doctor only)
+- `--parallel <n>` — Process N items in parallel (default: 1)
+- `--no-resume` — Start fresh batch run, ignoring saved progress
+- `--retry-failed` — Include previously failed items when resuming
+- `--no-healing` — Disable automatic self-healing
+- `--agent <kind>` — Override agent backend (claude_sdk, amp_sdk, codex_sdk, opencode_sdk, rlm, sprite)
+- `--rlm` — Shorthand for `--agent rlm`
+- `--sandbox` — Run in isolated Sprite VM
+- `--mock-agent` — Simulate agent responses without calling the real agent
 
 ## Meta-Agents
 
@@ -73,7 +82,7 @@ Wreckit includes specialized "meta-agents" that operate on the system itself rat
 ## State Flow
 
 ```
-idea → researched → planned → implementing → in_pr → done
+idea → researched → planned → implementing → critique → in_pr → done
 ```
 
 ## Architecture

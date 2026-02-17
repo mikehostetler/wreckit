@@ -3,7 +3,7 @@
   "id": "054-implement-payload-size-limits-in-ideas-ingestion-s",
   "title": "Implement payload size limits in ideas ingestion (spec 001 gap)",
   "section": "roadmap",
-  "state": "researched",
+  "state": "idea",
   "overview": "From milestone [M2] Payload Size Limits Enforcement\n\n**Motivation:** Strategic milestone: Payload Size Limits Enforcement",
   "branch": null,
   "pr_url": null,

@@ -153,7 +153,7 @@
         "Session files updated correctly after resume",
         "TypeScript compilation passes without errors"
       ],
-      "priority": 5,
+      "priority": 4,
       "status": "done",
       "notes": "Final story. Completes end-to-end resume functionality."
     },
@@ -175,7 +175,7 @@
         "Test session directory created automatically",
         "All tests pass"
       ],
-      "priority": 6,
+      "priority": 4,
       "status": "done",
       "notes": "Unit tests for session persistence layer. All 7 tests passing in src/__tests__/sprite-session-store.test.ts"
     },
@@ -194,7 +194,7 @@
         "Test LimitExceededError has correct properties (limitType, limitValue, actualValue)",
         "All tests pass"
       ],
-      "priority": 6,
+      "priority": 4,
       "status": "done",
       "notes": "Unit tests for limits enforcement module. All 6 tests passing in src/__tests__/limits.test.ts"
     },
@@ -212,7 +212,7 @@
         "Test executeAgentOnBackend() calls backend.executeAgent()",
         "All tests pass (may need to mock sprite calls)"
       ],
-      "priority": 6,
+      "priority": 4,
       "status": "done",
       "notes": "Unit tests for compute backend abstraction. All 4 tests passing in src/__tests__/compute-backend.test.ts"
     },
@@ -232,7 +232,7 @@
         "Test ConfigSchema makes compute and limits optional",
         "All tests pass"
       ],
-      "priority": 6,
+      "priority": 4,
       "status": "done",
       "notes": "Schema validation tests for new config sections. All 5 tests passing in src/__tests__/config-schema-new.test.ts"
     }

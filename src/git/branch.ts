@@ -1,11 +1,32 @@
 import type { Logger } from "../logging";
 import { runGitCommand } from "./index";
+import { hasUncommittedChanges } from "./validation";
 import {
   BranchError,
   PushError,
   MergeConflictError,
   GitError,
 } from "../errors";
+
+async function stashIfDirty(
+  options: { cwd: string; logger: Logger; dryRun?: boolean },
+): Promise<boolean> {
+  if (await hasUncommittedChanges(options)) {
+    options.logger.info("Stashing uncommitted changes before branch switch");
+    await runGitCommand(["stash", "push", "-m", "wreckit-auto-stash"], options);
+    return true;
+  }
+  return false;
+}
+
+async function unstash(
+  options: { cwd: string; logger: Logger; dryRun?: boolean },
+): Promise<void> {
+  const result = await runGitCommand(["stash", "pop"], options);
+  if (result.exitCode !== 0) {
+    options.logger.warn("Failed to pop stash — changes preserved in git stash list");
+  }
+}
 
 // Re-export GitOptions from index for type compatibility
 export type { GitOptions } from "./index";
@@ -92,14 +113,17 @@ export async function cleanupBranch(
   const currentBranch = await getCurrentBranch(options);
   if (currentBranch === branchName) {
     logger.info(`Currently on ${branchName}, checking out ${baseBranch} first`);
+    const stashed = await stashIfDirty(options);
     const checkoutResult = await runGitCommand(
       ["checkout", baseBranch],
       options,
     );
     if (checkoutResult.exitCode !== 0) {
+      if (stashed) await unstash(options);
       result.error = `Failed to checkout ${baseBranch} before deleting branch`;
       return result;
     }
+    if (stashed) await unstash(options);
   }
 
   const exists = await branchExists(branchName, options);
@@ -154,6 +178,8 @@ export async function ensureBranch(
     return { branchName, created: true };
   }
 
+  const stashed = await stashIfDirty(options);
+
   const exists = await branchExists(branchName, options);
 
   if (exists) {
@@ -163,35 +189,50 @@ export async function ensureBranch(
       options,
     );
     if (checkoutResult.exitCode !== 0) {
+      if (stashed) await unstash(options);
       throw new BranchError(
         branchName,
         "checkout",
         `Failed to checkout existing branch ${branchName}`,
       );
     }
+    if (stashed) await unstash(options);
     return { branchName, created: false };
   }
 
   logger.info(`Creating branch ${branchName} from ${baseBranch}`);
   const checkoutBase = await runGitCommand(["checkout", baseBranch], options);
   if (checkoutBase.exitCode !== 0) {
+    if (stashed) await unstash(options);
     throw new BranchError(
       baseBranch,
       "checkout",
       `Failed to checkout base branch ${baseBranch}`,
     );
   }
+
+  // Pull latest base to avoid branch chaining (issue #45)
+  const remoteCheck = await runGitCommand(["remote"], options);
+  if (remoteCheck.stdout.trim()) {
+    const pullResult = await runGitCommand(["pull", "--ff-only"], options);
+    if (pullResult.exitCode !== 0) {
+      logger.warn(`Failed to pull latest ${baseBranch}, continuing with local state`);
+    }
+  }
+
   const createBranch = await runGitCommand(
     ["checkout", "-b", branchName],
     options,
   );
   if (createBranch.exitCode !== 0) {
+    if (stashed) await unstash(options);
     throw new BranchError(
       branchName,
       "create",
       `Failed to create branch ${branchName}`,
     );
   }
+  if (stashed) await unstash(options);
 
   return { branchName, created: true };
 }
@@ -261,12 +302,17 @@ export async function mergeAndPushToBase(
     );
   }
 
-  // Pull latest changes from remote
-  const pullResult = await runGitCommand(["pull", "--ff-only"], options);
-  if (pullResult.exitCode !== 0) {
-    throw new GitError(
-      `Failed to pull latest ${baseBranch}. Resolve conflicts manually or try again.`,
-    );
+  // Pull latest changes from remote (skip if no remote configured)
+  const remoteCheck = await runGitCommand(["remote"], options);
+  if (remoteCheck.stdout.trim()) {
+    const pullResult = await runGitCommand(["pull", "--ff-only"], options);
+    if (pullResult.exitCode !== 0) {
+      throw new GitError(
+        `Failed to pull latest ${baseBranch}. Resolve conflicts manually or try again.`,
+      );
+    }
+  } else {
+    logger.info("No remote configured, skipping pull before merge");
   }
 
   // Merge feature branch with a merge commit
@@ -275,6 +321,11 @@ export async function mergeAndPushToBase(
     options,
   );
   if (mergeResult.exitCode !== 0) {
+    // Abort the failed merge to restore clean state
+    logger.warn(`Merge conflict detected, aborting merge and restoring ${baseBranch}`);
+    await runGitCommand(["merge", "--abort"], options);
+    // Switch back to feature branch so the item can be re-implemented
+    await runGitCommand(["checkout", featureBranch], options);
     throw new MergeConflictError(featureBranch, baseBranch);
   }
 

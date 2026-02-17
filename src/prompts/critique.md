@@ -32,6 +32,9 @@ The Builder has just finished implementing this item. You must review the code c
 1.  **Check Imports:** Look at `package.json` and the import statements. Do these packages exist?
 2.  **Check Exports:** If the code uses a library, does that library actually export the functions used? (Use `grep` or `ls` to check `node_modules` if needed).
 3.  **Check Logic:** Is the core logic implemented, or just stubbed out?
+4.  **Run Tests:** Execute the project's test suite (e.g. `bun test`, `npm test`, `cargo test`, `mix test`). Check `package.json` scripts or the project README for the correct test command. If tests fail, REJECT. If there is no test suite, note this in your critique.
+5.  **Run Build/Typecheck:** If applicable, run the build or typecheck command (e.g. `bun run typecheck`, `tsc --noEmit`). If it fails, REJECT.
+6.  **Verify End-to-End:** Don't just check that tests pass — verify the tests actually exercise the new logic. Tests that pass because they validate stubs or no-ops are a REJECT.
 
 ## Output Format
 
@@ -47,5 +50,14 @@ You must output a JSON object at the end of your response:
 
 If you reject, the item will be sent back to the `planned` state for re-implementation.
 If you approve, it will proceed to `in_pr`.
+
+**Anti-Gaming Checklist (REJECT if ANY are true):**
+
+- Functions contain `return true`, `return []`, `return {}`, `// TODO`, or no-op implementations
+- Tests only validate hardcoded return values rather than real computed outputs
+- Tests pass because the logic they test is stubbed out
+- Complex logic (dispatch, scheduling, concurrency, validation) is replaced with trivial implementations
+- Build or typecheck fails
+- Test suite fails
 
 **BE RUTHLESS. A false positive approval destroys the integrity of the system.**

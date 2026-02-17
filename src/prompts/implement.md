@@ -45,6 +45,14 @@ Implement the user stories for this item.
 7. Append learnings/notes to {{item_path}}/progress.log
 8. Repeat for remaining stories
 
+## Quality Rules (CRITICAL)
+
+- **No stubs:** Every function must contain real logic. `return true`, `return []`, `// TODO`, or empty implementations are NEVER acceptable. If a function is too complex, break it into smaller real functions.
+- **No gaming tests:** Tests must exercise real behavior with real inputs and verify real outputs. A test that validates a stub (`expect(stub()).toBe(true)`) is worse than no test.
+- **Build must pass:** Run `bun run typecheck` (or equivalent) before marking stories as done.
+- **Tests must pass:** Run `bun test` (or equivalent) before marking stories as done.
+- **Verify end-to-end:** After all stories are done, verify the feature works with a real invocation — not just that tests pass.
+
 ## Working Directory
 
 {{item_path}}

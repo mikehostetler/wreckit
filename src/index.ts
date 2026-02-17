@@ -46,7 +46,7 @@ program
   .description(
     "A CLI tool for turning ideas into automated PRs through an autonomous agent loop",
   )
-  .version("0.0.1")
+  .version("1.0.0")
   .option("--verbose", "Enable verbose output")
   .option("--quiet", "Suppress non-essential output")
   .option("--debug", "Output structured JSON logs (ndjson format)")

@@ -4,29 +4,35 @@ Core commands you'll use every day.
 
 ## wreckit
 
-Run all incomplete items through the full workflow (research → plan → implement → PR).
+Run all incomplete items through the full workflow (research → plan → implement → critique → PR).
 
 ```bash
 wreckit
 ```
 
 **What it does:**
-- Finds all items in `raw`, `researched`, or `planned` state
+- Finds all items in `idea`, `researched`, or `planned` state
 - Runs each item through all phases sequentially
 - Displays TUI progress interface
-- Creates pull requests when implementation is complete
+- Creates pull requests when implementation and critique are complete
 
 **Options:**
 - `--no-tui` - Disable TUI (useful for CI)
 - `--dry-run` - Preview without executing
 - `--verbose` - More detailed logging
 - `--quiet` - Errors only
+- `--parallel <n>` - Process N items simultaneously
+- `--no-resume` - Start fresh, ignoring saved progress
+- `--retry-failed` - Include previously failed items
+- `--no-healing` - Disable automatic self-healing
+- `--sandbox` - Run in isolated Sprite VMs
 
 **Example:**
 ```bash
 wreckit                    # Run all items
 wreckit --no-tui           # Run without TUI
 wreckit --dry-run          # Preview what would happen
+wreckit --parallel 3       # Process 3 items at once
 ```
 
 ---
@@ -47,7 +53,8 @@ wreckit init
 ├── prompts/                 # Prompt templates
 │   ├── research.md
 │   ├── plan.md
-│   └── implement.md
+│   ├── implement.md
+│   └── critique.md
 └── items/                   # Item directories (created as needed)
 ```
 
@@ -74,7 +81,7 @@ wreckit ideas --file ROADMAP.md
 - Reads ideas from input (one per line or markdown list)
 - Creates item directories under appropriate sections
 - Assigns sequential IDs
-- Sets initial state to `raw`
+- Sets initial state to `idea`
 
 **Input formats:**
 ```bash
@@ -108,9 +115,12 @@ wreckit status
 ```
 ID                              STATE     PR
 features/001-dark-mode-toggle   in_pr     #42
-bugs/001-login-timeout          raw
+bugs/001-login-timeout          idea
 infra/001-oauth2-migration      planned
 ```
+
+**Options:**
+- `--json` - Output as JSON for programmatic use
 
 **Useful for:**
 - Seeing what's ready for review
@@ -142,7 +152,8 @@ wreckit run features/001-dark-mode # Run with full path
 **What it does:**
 - Runs specified item through all phases
 - Skips completed phases
-- Creates PR when done
+- Resumes from current state if interrupted
+- Creates PR (or direct-merges) when done
 
 ---
 
@@ -155,62 +166,210 @@ wreckit next
 ```
 
 **What it does:**
-- Finds the first item in `raw`, `researched`, or `planned` state.
+- Finds the first item in `idea`, `researched`, or `planned` state.
 - Runs it through all phases.
 - Useful for iterative workflow.
 
 ---
 
-## wreckit joke
+## wreckit rollback
 
-**The "Proof of Life" Command.**
+Undo a direct-merge item, reverting its changes from the base branch.
 
 ```bash
-wreckit joke
+wreckit rollback <id>
 ```
 
 **What it does:**
-- Displays a random programming joke from a curated internal list.
-- This command was autonomously researched, planned, and implemented by Wreckit itself (Item 045) to prove its sovereignty.
+- Reverts the merge commit for a direct-merge item
+- Resets the item state to pre-merge
+- Only works for items merged via direct mode
+
+**Options:**
+- `--force` - Force rollback even if item is not in `done` state
+
+---
+
+## wreckit shell
+
+Execute a shell command in the context of a work item (on its branch, in its working directory).
+
+```bash
+wreckit shell <id> <command...>
+```
+
+**Example:**
+```bash
+wreckit shell 1 npm test         # Run tests on item 1's branch
+wreckit shell 1 git log --oneline  # See commits on item 1's branch
+```
+
+**What it does:**
+- Checks out the item's feature branch
+- Runs the given command
+- Returns to the previous branch
+
+---
+
+## wreckit summarize
+
+Generate feature visualization summaries for completed items.
+
+```bash
+wreckit summarize
+```
+
+**Options:**
+- `--item <id>` - Generate for specific item
+- `--phase <state>` - Generate for items in specific state
+- `--all` - Generate for all completed items
+
+---
+
+## wreckit execute-roadmap
+
+Convert active ROADMAP milestones into wreckit items.
+
+```bash
+wreckit execute-roadmap
+```
+
+**What it does:**
+- Reads `ROADMAP.md` in the project root
+- Converts active milestones and objectives into wreckit items
+- Bridges the gap between high-level roadmap planning and wreckit execution
+
+**Options:**
+- `--include-done` - Include completed objectives
+
+**Prerequisite:** Run `wreckit strategy` first to generate `ROADMAP.md`.
+
+---
+
+## wreckit check-integrity
+
+Check if the built `dist/` directory is in sync with `src/`.
+
+```bash
+wreckit check-integrity
+```
+
+**What it does:**
+- Compares source files with built output
+- Reports files that are out of sync
+- Useful for verifying builds in CI
+
+**Options:**
+- `--json` - Output as JSON
+
+---
+
+## wreckit watchdog
+
+Watch source files and automatically rebuild on changes.
+
+```bash
+wreckit watchdog
+```
+
+**What it does:**
+- Watches `src/` for file changes
+- Automatically runs `build` when changes are detected
+- Debounces rapid changes to avoid redundant builds
+
+**Options:**
+- `--debounce-ms <ms>` - Debounce delay in milliseconds (default: 500)
+- `--json` - Output as JSON
 
 ---
 
 ## wreckit dream
 
-**Autonomous Ideation.**
+Autonomous ideation: scan your codebase for improvement opportunities.
 
 ```bash
 wreckit dream [options]
 ```
 
 **What it does:**
-- Scans your codebase for `TODO` comments, technical debt, and architectural gaps.
-- Autonomously generates new roadmap items based on its findings.
-- This is the "Soul" of Wreckit—allowing it to plan its own future.
+- Scans your codebase for `TODO` comments, technical debt, and architectural gaps
+- Autonomously generates new roadmap items based on its findings
+- Acts as an AI product manager for your project
 
 **Options:**
-- `--max-items <n>` - Limit the number of items generated.
-- `--source <type>` - Filter by source (e.g., `todo`, `gap`).
+- `--max-items <n>` - Limit the number of items generated (default: 5)
+- `--source <type>` - Filter by source: `todo`, `gap`, `debt`, or `all` (default)
+
+---
+
+## wreckit strategy
+
+Analyze codebase and generate/update ROADMAP.md.
+
+```bash
+wreckit strategy
+```
+
+**What it does:**
+- Analyzes your codebase structure and patterns
+- Generates or updates a `ROADMAP.md` with milestones and objectives
+- Acts as an AI technical lead recommending next steps
+
+**Options:**
+- `--force` - Regenerate ROADMAP.md even if it exists
+- `--analyze-dirs <dirs...>` - Directories to analyze (default: `src`)
 
 ---
 
 ## wreckit geneticist
 
-**Recursive Prompt Optimization.**
+Recursive prompt optimization: improve system prompts based on error patterns.
 
 ```bash
 wreckit geneticist [options]
 ```
 
 **What it does:**
-- Analyzes the `.wreckit/healing-log.jsonl` file to identify recurring failure patterns.
-- Autonomously submits PRs to update the system prompts in `src/prompts/*.md`.
-- This is the "Brain" of Wreckit—allowing it to learn from its own mistakes and improve its instructions over time.
+- Analyzes `.wreckit/healing-log.jsonl` to identify recurring failure patterns
+- Autonomously optimizes system prompts in `src/prompts/*.md`
+- Acts as an immune system that learns from mistakes
 
 **Options:**
-- `--dry-run` - Preview the optimization without creating PRs.
-- `--auto-merge` - Automatically merge the optimization PRs if checks pass.
-- `--min-error-count <n>` - Minimum number of errors required to trigger an optimization.
+- `--auto-merge` - Automatically submit PRs for optimized prompts
+- `--time-window <hours>` - Analyze logs from last N hours (default: 48)
+- `--min-errors <count>` - Threshold for recurrent pattern detection (default: 3)
+
+---
+
+## wreckit learn
+
+Extract and compile codebase patterns into reusable Skill artifacts.
+
+```bash
+wreckit learn [patterns...]
+```
+
+**What it does:**
+- Analyzes completed items to identify reusable patterns
+- Compiles patterns into Skill artifacts stored in `.wreckit/skills.json`
+- Skills improve agent performance on future items
+
+**Options:**
+- `--item <id>` - Extract patterns from specific item
+- `--phase <state>` - Extract patterns from items in specific phase state
+- `--all` - Extract patterns from all completed items
+- `--output <path>` - Output path for skills.json (default: `.wreckit/skills.json`)
+- `--merge <strategy>` - Merge strategy: `append` (default), `ask`, or `replace`
+- `--review` - Review extracted skills before saving
+- `--dry-run` - Preview without writing changes
+
+**Examples:**
+```bash
+wreckit learn                      # Learn from recent completed items
+wreckit learn --all                # Learn from all completed items
+wreckit learn --item 001           # Learn from specific item
+wreckit learn --merge ask          # Interactive merge
+```
 
 ---
 
@@ -243,108 +402,5 @@ wreckit doctor --fix
 - Something seems wrong
 - After manual edits to `.wreckit/`
 - Before running Wreckit after a long break
-
----
-
-## wreckit learn
-
-Extract and compile codebase patterns into reusable Skill artifacts.
-
-```bash
-wreckit learn [patterns...]
-```
-
-**What it does:**
-- Analyzes completed items to identify reusable patterns
-- Compiles patterns into Skill artifacts stored in `.wreckit/skills.json`
-- Skills can be used in future work to leverage learned patterns
-- Improves over time as more items are completed
-
-**Options:**
-- `--item <id>` - Extract patterns from specific item
-- `--phase <state>` - Extract patterns from items in specific phase state
-- `--all` - Extract patterns from all completed items
-- `--output <path>` - Output path for skills.json (default: `.wreckit/skills.json`)
-- `--merge <strategy>` - Merge strategy: `append` (default), `ask`, or `replace`
-- `--review` - Review extracted skills before saving
-- `--dry-run` - Preview without writing changes
-
-**Merge Strategies:**
-
-### Append (default)
-Merges new skills with existing skills without removing any.
-
-```bash
-wreckit learn --merge append
-```
-
-**Behavior:**
-- Keeps all existing skills
-- Adds new skills from extracted patterns
-- Merges phase assignments (skill can be in multiple phases)
-- Keeps existing skill definitions (never overwrites)
-
-### Replace
-Replaces all existing skills with newly extracted skills.
-
-```bash
-wreckit learn --merge replace
-```
-
-**Behavior:**
-- Discards all existing skills
-- Uses only newly extracted skills
-- Useful for complete skill regeneration
-
-### Ask (interactive)
-Interactively choose which skills to keep for each conflict.
-
-```bash
-wreckit learn --merge ask
-```
-
-**Behavior:**
-- Prompts user for each skill phase conflict
-- Non-TTY environments (CI/CD, piped input) automatically fall back to `append`
-- Provides fine-grained control over skill merges
-- Options for each conflict:
-  - **Keep existing**: Maintain the skill's current phase assignment
-  - **Use extracted**: Move the skill to the extracted phase
-  - **Keep both**: Add the skill to both phases
-
-**When to use:**
-- Curating skills from multiple extraction sessions
-- Merging skills with conflicting phase assignments
-- Wanting manual control over which skills to keep
-
-**Example interaction:**
-```
-Interactive Skill Merge
-────────────────────────────────────────────────────────────
-Found 2 conflicts to resolve:
-
-[1/2] Skill: code-analysis
-  Existing: phase=research
-  Extracted: phase=plan
-  Choose: 1 keep research, 2 use plan, 3 add to both, [default: 1] > 2
-  → Moved to plan phase
-
-[2/2] Skill: test-generation
-  Existing: phase=implement
-  Extracted: phase=plan
-  Choose: 1 keep implement, 2 use plan, 3 add to both, [default: 1] > 3
-  → Added to both phases
-
-✓ Merge complete.
-```
-
-**Examples:**
-```bash
-wreckit learn                      # Learn from recent 5 completed items
-wreckit learn --all                # Learn from all completed items
-wreckit learn --item 001           # Learn from specific item
-wreckit learn --merge ask          # Interactive merge
-wreckit learn --dry-run            # Preview without writing
-```
 
 [Back to CLI Reference](/cli/)
