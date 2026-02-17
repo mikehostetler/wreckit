@@ -81,16 +81,17 @@ wreckit
 Each item progresses through states:
 
 ```
-raw → researched → planned → implementing → in_pr → done
+idea → researched → planned → implementing → critique → in_pr/done
 ```
 
 | State          | What Happened                                          |
 | -------------- | ------------------------------------------------------ |
-| `raw`          | Ingested, waiting for attention                        |
+| `idea`         | Ingested, waiting for attention                        |
 | `researched`   | Agent analyzed codebase, wrote `research.md`           |
 | `planned`      | Agent created `plan.md` + `prd.json` with user stories |
 | `implementing` | Agent coding through stories, committing as it goes    |
-| `in_pr`        | PR opened, awaiting your review                        |
+| `critique`     | Agent reviews its own work, runs tests, checks quality |
+| `in_pr`        | PR opened, awaiting your review (PR mode only)         |
 | `done`         | Merged. Ralph did it.                                  |
 
 ### The Workflow
@@ -101,7 +102,38 @@ raw → researched → planned → implementing → in_pr → done
 
 3. **Implement** — Agent picks the highest priority story, implements it, runs tests, commits, marks it done. Repeats until all stories complete.
 
-4. **PR** — Agent opens a pull request. You review. You merge. You ship.
+4. **Critique** — Agent reviews its own work: runs tests, checks types, verifies end-to-end behavior. Rejects substandard work and sends it back for re-implementation.
+
+5. **PR** — Agent opens a pull request. You review. You merge. You ship.
+
+### Merge Modes
+
+Wreckit supports two merge strategies, configured via `merge_mode` in `.wreckit/config.json`:
+
+**PR Mode** (`"pr"`, default):
+- Creates a feature branch per item
+- Opens a GitHub PR when implementation completes
+- You review, approve, merge
+- Requires `gh` CLI and a GitHub remote
+
+**Direct Mode** (`"direct"`):
+- Merges directly to the base branch without PRs — YOLO mode
+- Great for greenfield projects, solo devs, or local-only repos
+- Works without a GitHub remote (no `gh` CLI needed)
+- Includes safety features:
+  - **Anti-clobber**: After merge, restores other items' state files from pre-merge SHA
+  - **Stash-on-switch**: Automatically stashes uncommitted changes before branch switches
+  - **Merge conflict recovery**: Aborts failed merges and returns to the feature branch
+  - **Rollback**: Use `wreckit rollback <id>` to undo a direct-merge
+
+```json
+{
+  "merge_mode": "direct",
+  "pr_checks": {
+    "allow_unsafe_direct_merge": true
+  }
+}
+```
 
 ---
 
@@ -117,13 +149,14 @@ raw → researched → planned → implementing → in_pr → done
 | `wreckit status`       | List all items with state           |
 | `wreckit run <id>`     | Run single item through all phases  |
 | `wreckit next`         | Run the next incomplete item        |
+| `wreckit rollback <id>`| Undo a direct-merge item            |
 | `wreckit doctor`       | Validate items, find issues         |
 
 ### Phase Commands (for debugging)
 
 | Command                  | Transition             |
 | ------------------------ | ---------------------- |
-| `wreckit research <id>`  | raw → researched       |
+| `wreckit research <id>`  | idea → researched      |
 | `wreckit plan <id>`      | researched → planned   |
 | `wreckit implement <id>` | planned → implementing |
 | `wreckit pr <id>`        | implementing → in_pr   |
@@ -139,6 +172,19 @@ raw → researched → planned → implementing → in_pr → done
 | `--no-tui`  | Disable TUI (CI mode)                     |
 | `--dry-run` | Preview, don't execute                    |
 | `--force`   | Regenerate artifacts                      |
+| `--debug`   | JSON output (ndjson)                      |
+| `--cwd <path>` | Override working directory             |
+
+### Meta-Agents
+
+Wreckit includes specialized agents that operate on the system itself:
+
+| Command | Agent | Purpose |
+|---------|-------|---------|
+| `wreckit dream` | **Dreamer** | Scans the codebase for TODOs, gaps, and tech debt to generate new roadmap items |
+| `wreckit strategy` | **Strategy** | Analyzes project state to recommend the next best action |
+| `wreckit learn` | **Learn** | Extracts reusable patterns from completed items into skills |
+| `wreckit geneticist` | **Geneticist** | Analyzes healing logs to optimize system prompts via PRs |
 
 ---
 
@@ -297,10 +343,10 @@ Lives in `.wreckit/config.json`:
   "schema_version": 1,
   "base_branch": "main",
   "branch_prefix": "wreckit/",
+  "merge_mode": "pr",
   "agent": {
-    "command": "amp",
-    "args": ["--dangerously-allow-all"],
-    "completion_signal": "<promise>COMPLETE</promise>"
+    "kind": "claude_sdk",
+    "model": "claude-sonnet-4-20250514"
   },
   "max_iterations": 100,
   "timeout_seconds": 3600
@@ -410,12 +456,12 @@ See [MIGRATION.md](./MIGRATION.md) for detailed configuration and environment va
 ```
 .wreckit/
 ├── config.json              # Global config
-├── index.json               # Registry of all items
 ├── prompts/                 # Customizable prompt templates
 │   ├── research.md
 │   ├── plan.md
-│   └── implement.md
-└── <section>/
+│   ├── implement.md
+│   └── critique.md
+└── items/
     └── <nnn>-<slug>/
         ├── item.json        # State and metadata
         ├── research.md      # Codebase analysis
@@ -424,8 +470,6 @@ See [MIGRATION.md](./MIGRATION.md) for detailed configuration and environment va
         ├── prompt.md        # Generated agent prompt
         └── progress.log     # What the agent learned
 ```
-
-Items are organized by section (e.g., `features/`, `bugs/`, `infra/`) with sequential numbering.
 
 ---
 
@@ -438,6 +482,7 @@ Edit files in `.wreckit/prompts/` to customize agent behavior:
 - `research.md` — How the agent analyzes your codebase
 - `plan.md` — How it designs solutions
 - `implement.md` — How it executes user stories
+- `critique.md` — How the agent reviews and quality-checks its work
 
 ### Template Variables
 
@@ -518,8 +563,8 @@ wreckit next  # grabs the next incomplete item, runs it
 
 ## Requirements
 
-- Node.js 18+
-- `gh` CLI (for GitHub PRs)
+- Bun 1.0+ (or Node.js 18+)
+- `gh` CLI (only needed for PR mode — direct mode works without GitHub)
 - An AI agent:
   - **SDK Mode** (recommended):
     - **Direct API**: `export ANTHROPIC_API_KEY=sk-ant-...`

@@ -222,7 +222,9 @@ describe("orchestrator", () => {
     it("returns success/failure status", async () => {
       await setupItem(createTestItem({ id: "001-fail", state: "idea" }));
 
-      mockedRunCommand.mockRejectedValue(new Error("Phase failed"));
+      mockedRunCommand.mockImplementation(async () => {
+        throw new Error("Phase failed");
+      });
 
       const result = await orchestrateNext({}, mockLogger);
 

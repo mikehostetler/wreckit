@@ -173,7 +173,9 @@ describe("spriteStartCommand", () => {
     await setupSpriteConfig(tempDir);
 
     const { WispNotFoundError } = await import("../../errors");
-    mockStartSprite.mockRejectedValue(new WispNotFoundError("sprite"));
+    mockStartSprite.mockImplementation(async () => {
+      throw new WispNotFoundError("sprite");
+    });
 
     const consoleErrorSpy = mock();
     const originalError = console.error;
@@ -533,7 +535,9 @@ describe("spriteExecCommand", () => {
     await setupSpriteConfig(tempDir);
 
     const { WispNotFoundError } = await import("../../errors");
-    mockExecSprite.mockRejectedValue(new WispNotFoundError("sprite"));
+    mockExecSprite.mockImplementation(async () => {
+      throw new WispNotFoundError("sprite");
+    });
 
     const consoleErrorSpy = mock();
     const originalError = console.error;

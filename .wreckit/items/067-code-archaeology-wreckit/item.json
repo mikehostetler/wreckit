@@ -3,7 +3,7 @@
   "id": "067-code-archaeology-wreckit",
   "title": "Code Archaeology: Forensic Analysis of Wreckit",
   "section": "analysis",
-  "state": "researched",
+  "state": "idea",
   "overview": "A deep-dive forensic analysis of the Wreckit codebase. Not documentation, but archaeology: tracing the evolution of key modules, identifying hidden technical debt, uncovering copy-pasted patterns, and mapping the 'DNA' of the project from its origins to the new RLM architecture.",
   "branch": null,
   "pr_url": null,

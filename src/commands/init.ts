@@ -63,7 +63,16 @@ export async function initCommand(
       );
     }
     logger.warn("Overwriting existing .wreckit/ directory");
-    await fs.rm(path.join(cwd, ".wreckit"), { recursive: true, force: true });
+    // Only reset config and prompts — preserve items/ and other user data
+    const wreckitDir = path.join(cwd, ".wreckit");
+    const configPath = path.join(wreckitDir, "config.json");
+    const promptsDir = path.join(wreckitDir, "prompts");
+    try {
+      await fs.rm(configPath, { force: true });
+    } catch {}
+    try {
+      await fs.rm(promptsDir, { recursive: true, force: true });
+    } catch {}
   }
 
   const wreckitDir = path.join(cwd, ".wreckit");

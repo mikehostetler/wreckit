@@ -194,13 +194,18 @@ export async function checkMergeConflicts(
       };
     }
 
-    // Pull latest changes from remote
-    const pullResult = await runGitCommand(["pull", "--ff-only"], options);
-    if (pullResult.exitCode !== 0) {
-      return {
-        hasConflicts: true,
-        error: `Failed to pull latest ${baseBranch}. Branch may be out of sync with remote.`,
-      };
+    // Pull latest changes from remote (skip if no remote configured)
+    const remoteCheck = await runGitCommand(["remote"], options);
+    if (remoteCheck.stdout.trim()) {
+      const pullResult = await runGitCommand(["pull", "--ff-only"], options);
+      if (pullResult.exitCode !== 0) {
+        return {
+          hasConflicts: true,
+          error: `Failed to pull latest ${baseBranch}. Branch may be out of sync with remote.`,
+        };
+      }
+    } else {
+      logger.info("No remote configured, skipping pull before merge conflict check");
     }
 
     // Try a no-commit merge to detect conflicts

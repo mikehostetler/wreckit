@@ -1913,7 +1913,9 @@ describe("applyFixes - ORPHANED_VM_DETECTED", () => {
   });
 
   it("handles failure when killSprite() throws error", async () => {
-    killSpriteSpy.mockRejectedValue(new Error("VM not found"));
+    killSpriteSpy.mockImplementation(async () => {
+      throw new Error("VM not found");
+    });
 
     const diagnostics = [
       {

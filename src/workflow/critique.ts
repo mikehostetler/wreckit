@@ -12,7 +12,7 @@ import {
   getResearchPath,
 } from "../fs/paths";
 import { readItem, writeItem } from "../fs/json";
-import { getGitStatus, type GitFileChange } from "../git";
+import { getGitStatus, type GitFileChange, commitAll, hasUncommittedChanges } from "../git";
 
 interface CritiqueResult {
   status: "approved" | "rejected";
@@ -202,12 +202,25 @@ export async function runPhaseCritique(
       last_error: `Critique Failed: ${critique.reason}`,
     };
     await writeItem(itemDir, item);
+
+    // Commit critique metadata (state regression + progress log)
+    const gitOptions = { cwd: root, logger, dryRun };
+    if (await hasUncommittedChanges(gitOptions)) {
+      await commitAll(`critique(${item.id}): rejected — ${critique.reason.slice(0, 60)}`, gitOptions);
+    }
+
     return { success: true, item };
   }
 
   logger.info("Critic APPROVED implementation");
   item = { ...item, state: "critique", last_error: null };
   await writeItem(itemDir, item);
+
+  // Commit critique metadata (state change + progress log)
+  const gitOptions = { cwd: root, logger, dryRun };
+  if (await hasUncommittedChanges(gitOptions)) {
+    await commitAll(`critique(${item.id}): approved`, gitOptions);
+  }
 
   return { success: true, item };
 }

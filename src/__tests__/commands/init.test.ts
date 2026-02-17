@@ -158,22 +158,54 @@ describe("initCommand", () => {
     );
   });
 
-  it("overwrites with --force", async () => {
+  it("overwrites config and prompts with --force but preserves items", async () => {
     tempDir = await setupTempGitRepo();
     const wreckitDir = path.join(tempDir, ".wreckit");
-    await fs.mkdir(wreckitDir, { recursive: true });
+    const itemsDir = path.join(wreckitDir, "items", "001-test");
+    await fs.mkdir(itemsDir, { recursive: true });
     await fs.writeFile(
-      path.join(wreckitDir, "old-file.txt"),
-      "old content",
+      path.join(itemsDir, "item.json"),
+      '{"id":"001-test","state":"idea"}',
+      "utf-8",
+    );
+    await fs.mkdir(path.join(wreckitDir, "prompts"), { recursive: true });
+    await fs.writeFile(
+      path.join(wreckitDir, "prompts", "research.md"),
+      "old prompt",
+      "utf-8",
+    );
+    await fs.writeFile(
+      path.join(wreckitDir, "config.json"),
+      '{"old": true}',
       "utf-8",
     );
 
     await initCommand({ force: true, cwd: tempDir }, mockLogger);
 
     const entries = await fs.readdir(wreckitDir);
-    expect(entries).not.toContain("old-file.txt");
     expect(entries).toContain("config.json");
     expect(entries).toContain("prompts");
+    expect(entries).toContain("items");
+
+    // Items preserved
+    const itemEntries = await fs.readdir(itemsDir);
+    expect(itemEntries).toContain("item.json");
+
+    // Config reset to defaults
+    const config = JSON.parse(
+      await fs.readFile(path.join(wreckitDir, "config.json"), "utf-8"),
+    );
+    expect(config.old).toBeUndefined();
+    expect(config.schema_version).toBe(1);
+
+    // Prompts reset
+    const prompt = await fs.readFile(
+      path.join(wreckitDir, "prompts", "research.md"),
+      "utf-8",
+    );
+    expect(prompt).not.toBe("old prompt");
+    expect(prompt).toContain("# Research Phase");
+
     expect(mockLogger.messages.some((m) => m.includes("Overwriting"))).toBe(
       true,
     );

@@ -12,7 +12,8 @@
         "Agent returns failure result (not success) when sync-back fails"
       ],
       "priority": 1,
-      "status": "done"
+      "status": "done",
+      "notes": ""
     },
     {
       "id": "US-002",
@@ -22,7 +23,8 @@
         "Cleanup failures are logged using logger.warn()"
       ],
       "priority": 2,
-      "status": "done"
+      "status": "done",
+      "notes": ""
     },
     {
       "id": "US-003",
@@ -32,7 +34,8 @@
         "Individual item parse failures are logged using logger.warn()"
       ],
       "priority": 2,
-      "status": "done"
+      "status": "done",
+      "notes": ""
     },
     {
       "id": "US-004",
@@ -42,7 +45,8 @@
         "Directory read failures are logged using logger.warn()"
       ],
       "priority": 2,
-      "status": "done"
+      "status": "done",
+      "notes": ""
     },
     {
       "id": "US-005",
@@ -52,7 +56,8 @@
         "JSON parse failures in fallback strategies are logged using logger.debug()"
       ],
       "priority": 3,
-      "status": "done"
+      "status": "done",
+      "notes": ""
     },
     {
       "id": "US-006",
@@ -62,7 +67,8 @@
         "Only non-EEXIST errors are logged using logger.warn()"
       ],
       "priority": 3,
-      "status": "done"
+      "status": "done",
+      "notes": ""
     },
     {
       "id": "US-007",
@@ -72,7 +78,8 @@
         "JSON parse failures for quoted arguments are logged using logger.debug()"
       ],
       "priority": 4,
-      "status": "done"
+      "status": "done",
+      "notes": ""
     }
   ]
 }
